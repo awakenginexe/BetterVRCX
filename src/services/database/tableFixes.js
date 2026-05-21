@@ -19,19 +19,24 @@ const tableFixes = {
 
     async fixGameLogTraveling() {
         var travelingList = [];
-        await sqliteService.execute((dbRow) => {
-            var row = {
-                rowId: dbRow[0],
-                created_at: dbRow[1],
-                type: dbRow[2],
-                displayName: dbRow[3],
-                location: dbRow[4],
-                userId: dbRow[5],
-                time: dbRow[6]
-            };
-            travelingList.unshift(row);
-        }, "SELECT * FROM gamelog_join_leave WHERE type = 'OnPlayerLeft' AND location = 'traveling'");
-        travelingList.forEach(async (travelingEntry) => {
+        try {
+            await sqliteService.execute((dbRow) => {
+                var row = {
+                    rowId: dbRow[0],
+                    created_at: dbRow[1],
+                    type: dbRow[2],
+                    displayName: dbRow[3],
+                    location: dbRow[4],
+                    userId: dbRow[5],
+                    time: dbRow[6]
+                };
+                travelingList.unshift(row);
+            }, "SELECT * FROM gamelog_join_leave WHERE type = 'OnPlayerLeft' AND location = 'traveling'");
+        } catch (err) {
+            console.warn('Skipping legacy traveling game log repair.', err);
+            return;
+        }
+        for (const travelingEntry of travelingList) {
             await sqliteService.execute(
                 (dbRow) => {
                     var onPlayingJoin = {
@@ -57,7 +62,7 @@ const tableFixes = {
                     '@created_at': travelingEntry.created_at
                 }
             );
-        });
+        }
     },
 
     async fixNegativeGPS() {
@@ -88,6 +93,9 @@ const tableFixes = {
 
     async fixBrokenLeaveEntries() {
         var badEntries = await this.getBrokenLeaveEntries();
+        if (!badEntries.length) {
+            return;
+        }
         var badEntriesList = '';
         var count = badEntries.length;
         badEntries.forEach((entry) => {

@@ -26,11 +26,7 @@
                         @layout="handleLayout">
                         <template #default="{ layout }">
                             <ResizablePanel :default-size="mainDefaultSize" :order="1">
-                                <RouterView v-slot="{ Component }">
-                                    <KeepAlive exclude="ChartsInstance, ChartsMutual">
-                                        <component :is="Component" />
-                                    </KeepAlive>
-                                </RouterView>
+                                <PageTransitionShell />
                             </ResizablePanel>
 
                             <ResizableHandle
@@ -116,6 +112,7 @@
     import LaunchOptionsDialog from '../Settings/dialogs/LaunchOptionsDialog.vue';
     import MainDialogContainer from '../../components/dialogs/MainDialogContainer.vue';
     import NavMenu from '../../components/nav-menu/NavMenu.vue';
+    import PageTransitionShell from './PageTransitionShell.vue';
     import PrimaryPasswordDialog from '../Settings/dialogs/PrimaryPasswordDialog.vue';
     import SendBoopDialog from '../../components/dialogs/SendBoopDialog.vue';
     import Sidebar from '../Sidebar/Sidebar.vue';
@@ -126,7 +123,6 @@
     import SpotlightDialog from '../../components/onboarding/SpotlightDialog.vue';
 
     const router = useRouter();
-
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const { navWidth, isNavCollapsed } = storeToRefs(appearanceSettingsStore);
 

@@ -7,8 +7,8 @@ Import-Module (Join-Path $installPath "Common7\Tools\Microsoft.VisualStudio.DevS
 Enter-VsDevShell -VsInstallPath $installPath -SkipAutomaticLocation
 
 $Date = Get-Date -format yyyyMMdd
-$ZipName = "VRCX_" + $Date + ".zip"
-$SetupName = "VRCX_" + $Date + "_Setup.exe"
+$ZipName = "VRCX-Redesign_" + $Date + ".zip"
+$SetupName = "VRCX-Redesign_" + $Date + "_Setup.exe"
 
 Write-Host "Building .Net..." -ForegroundColor Green
 dotnet build Dotnet\VRCX-Cef.csproj -p:Configuration=Release -p:WarningLevel=0 -p:Platform=x64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m --self-contained
@@ -35,7 +35,7 @@ Out-File -FilePath "version_define.nsh" -Encoding UTF8 -InputObject "!define PRO
 $nsisPath = "C:\Program Files (x86)\NSIS\makensis.exe"
 &$nsisPath installer.nsi
 Start-Sleep -Seconds 1
-Move-Item VRCX_Setup.exe ..\$SetupName -Force
+Move-Item VRCX-Redesign_Setup.exe ..\$SetupName -Force
 cd ..
 
 Write-Host "Creating SHA256-hash..." -ForegroundColor Green

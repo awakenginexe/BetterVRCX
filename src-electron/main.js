@@ -37,8 +37,8 @@ if (fs.existsSync(bundledDotNetPath)) {
 if (!isDotNetInstalled()) {
     app.whenReady().then(() => {
         dialog.showErrorBox(
-            'VRCX',
-            'Please install .NET 9.0 Runtime "dotnet-runtime-9.0" to run VRCX.'
+            'VRCX-Redesign',
+            'Please install .NET 9.0 Runtime "dotnet-runtime-9.0" to run VRCX-Redesign.'
         );
         app.quit();
     });
@@ -545,7 +545,7 @@ function createTray() {
             }
         },
         {
-            label: 'Quit VRCX',
+            label: 'Quit VRCX-Redesign',
             type: 'normal',
             click: function () {
                 appIsQuitting = true;
@@ -553,7 +553,7 @@ function createTray() {
             }
         }
     ]);
-    tray.setToolTip('VRCX');
+    tray.setToolTip('VRCX-Redesign');
     tray.setContextMenu(contextMenu);
 
     tray.on('click', () => {
@@ -580,13 +580,13 @@ async function installVRCX() {
         return;
     }
 
-    // rename AppImage to VRCX.AppImage
+    // rename AppImage to VRCX-Redesign.AppImage
     const currentName = path.basename(appImagePath);
-    const expectedName = 'VRCX.AppImage';
+    const expectedName = 'VRCX-Redesign.AppImage';
     if (currentName !== expectedName) {
         const newPath = path.join(path.dirname(appImagePath), expectedName);
         try {
-            // remove existing VRCX.AppImage
+            // remove existing VRCX-Redesign.AppImage
             if (fs.existsSync(newPath)) {
                 fs.unlinkSync(newPath);
             }
@@ -595,19 +595,22 @@ async function installVRCX() {
             appImagePath = newPath;
         } catch (err) {
             console.error(`Error renaming AppImage ${newPath}`, err);
-            dialog.showErrorBox('VRCX', `Failed to rename AppImage ${newPath}`);
+            dialog.showErrorBox(
+                'VRCX-Redesign',
+                `Failed to rename AppImage ${newPath}`
+            );
             return;
         }
     }
 
     // ask to move AppImage to ~/Applications
-    const appImageHomePath = `${homePath}/Applications/VRCX.AppImage`;
+    const appImageHomePath = `${homePath}/Applications/VRCX-Redesign.AppImage`;
     if (!hasAskedToMoveAppImage && appImagePath !== appImageHomePath) {
         const result = dialog.showMessageBoxSync(mainWindow, {
             type: 'question',
-            title: 'VRCX',
-            message: 'Do you want to install VRCX?',
-            detail: 'VRCX will be moved to your ~/Applications folder.',
+            title: 'VRCX-Redesign',
+            message: 'Do you want to install VRCX-Redesign?',
+            detail: 'VRCX-Redesign will be moved to your ~/Applications folder.',
             buttons: ['No', 'Yes']
         });
         if (result === 0) {
@@ -624,7 +627,7 @@ async function installVRCX() {
                 if (!fs.existsSync(applicationsPath)) {
                     fs.mkdirSync(applicationsPath);
                 }
-                // remove existing VRCX.AppImage
+                // remove existing VRCX-Redesign.AppImage
                 if (fs.existsSync(appImageHomePath)) {
                     fs.unlinkSync(appImageHomePath);
                 }
@@ -635,7 +638,7 @@ async function installVRCX() {
             } catch (err) {
                 console.error(`Error moving AppImage ${appImageHomePath}`, err);
                 dialog.showErrorBox(
-                    'VRCX',
+                    'VRCX-Redesign',
                     `Failed to move AppImage ${appImageHomePath}`
                 );
                 return;
@@ -668,18 +671,21 @@ async function createDesktopFile() {
             })
             .catch((err) => {
                 console.error('Error downloading icon:', err);
-                dialog.showErrorBox('VRCX', 'Failed to download the icon.');
+                dialog.showErrorBox(
+                    'VRCX-Redesign',
+                    'Failed to download the icon.'
+                );
             });
     }
 
     // Create the desktop file
     const desktopFilePath = path.join(
         homePath,
-        '.local/share/applications/VRCX.desktop'
+        '.local/share/applications/VRCX-Redesign.desktop'
     );
 
     const dotDesktop = {
-        Name: 'VRCX',
+        Name: 'VRCX-Redesign',
         Version: version,
         Comment: 'Friendship management tool for VRChat',
         Exec: `${appImagePath} --ozone-platform-hint=auto %U`,
@@ -687,7 +693,7 @@ async function createDesktopFile() {
         Type: 'Application',
         Categories: 'Network;InstantMessaging;Game;',
         Terminal: 'false',
-        StartupWMClass: 'VRCX',
+        StartupWMClass: 'VRCX-Redesign',
         MimeType: 'x-scheme-handler/vrcx;'
     };
     const desktopFile =
@@ -713,7 +719,7 @@ async function createDesktopFile() {
 
             const result = spawnSync(
                 'xdg-mime',
-                ['default', 'VRCX.desktop', 'x-scheme-handler/vrcx'],
+                ['default', 'VRCX-Redesign.desktop', 'x-scheme-handler/vrcx'],
                 {
                     encoding: 'utf-8'
                 }
@@ -726,7 +732,7 @@ async function createDesktopFile() {
         }
     } catch (err) {
         console.error('Error creating desktop file:', err);
-        dialog.showErrorBox('VRCX', 'Failed to create desktop entry.');
+        dialog.showErrorBox('VRCX-Redesign', 'Failed to create desktop entry.');
         return;
     }
 }
@@ -810,13 +816,13 @@ function getVersion() {
         const version = versionFile.split('-');
         console.log('Version:', versionFile);
         if (version.length > 0 && version[version.length - 1].length == 7) {
-            return `VRCX (Linux) Nightly ${versionFile}`;
+            return `VRCX-Redesign (Linux) Nightly ${versionFile}`;
         } else {
-            return `VRCX (Linux) ${versionFile}`;
+            return `VRCX-Redesign (Linux) ${versionFile}`;
         }
     } catch (err) {
         console.error('Error reading Version:', err);
-        return 'VRCX (Linux) Nightly Build';
+        return 'VRCX-Redesign (Linux) Nightly Build';
     }
 }
 
@@ -875,7 +881,7 @@ function tryCopyFromWinePrefix() {
     } catch (err) {
         console.error('Error copying from wine prefix:', err);
         dialog.showErrorBox(
-            'VRCX',
+            'VRCX-Redesign',
             'Failed to copy database from wine prefix.'
         );
     }

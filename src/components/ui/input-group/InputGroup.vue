@@ -12,8 +12,8 @@
         role="group"
         :class="
             cn(
-                'group/input-group border-input dark:bg-input/30 relative flex w-full items-center rounded-md border shadow-xs transition-[color,box-shadow] outline-none',
-                'h-9 min-w-0 has-[>textarea]:h-auto',
+                'vrcx-liquid-input group/input-group border-input dark:bg-input/30 relative flex w-full items-center rounded-[1rem] border shadow-xs transition-[color,box-shadow,background-color,border-color] outline-none',
+                'h-10 min-w-0 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
                 'has-[>[data-align=inline-start]]:[&>input]:pl-2',

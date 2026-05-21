@@ -37,7 +37,7 @@
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="overflow-hidden p-0 sm:max-w-2xl" :show-close-button="false">
+        <DialogContent class="x-quick-search-dialog overflow-hidden p-0 sm:max-w-2xl" :show-close-button="false">
             <DialogHeader class="sr-only">
                 <DialogTitle>{{ t('side_panel.search_placeholder') }}</DialogTitle>
                 <DialogDescription>{{ t('side_panel.search_placeholder') }}</DialogDescription>
@@ -237,6 +237,8 @@
     :deep([data-slot='command-input-wrapper']) {
         height: 3rem; /* h-12 */
         gap: 0.625rem;
+        border-bottom-color: color-mix(in oklch, var(--border) 78%, transparent);
+        background: color-mix(in oklch, var(--card) 34%, transparent);
     }
 
     /* Larger input text */
@@ -263,5 +265,23 @@
         font-size: 0.8125rem; /* ~13px */
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+    }
+
+    :deep(.x-quick-search-dialog) {
+        top: 42% !important;
+        bottom: auto !important;
+        width: min(720px, calc(100svw - 40px)) !important;
+        max-height: min(620px, calc(100svh - 96px)) !important;
+        transform: translate(-50%, -50%) !important;
+    }
+
+    :deep(.x-quick-search-dialog [data-slot='command']) {
+        max-height: min(620px, calc(100svh - 96px));
+        border-radius: inherit;
+        background: transparent;
+    }
+
+    :deep(.x-quick-search-dialog [data-slot='command-list']) {
+        max-height: min(500px, calc(100svh - 170px)) !important;
     }
 </style>

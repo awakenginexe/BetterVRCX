@@ -1,16 +1,47 @@
+# Dependencies
 node_modules/
+
+# Build output
 build/
+dist/
+out/
+bin/
 obj/
 obj1/
-.idea/
-*.log
-*.DotSettings.user
-.vs/
-Installer/version_define.nsh
-bun.lock
+coverage/
+TestResults/
 
+# Local .NET SDK/tooling
+.dotnet-sdk/
+dotnet-install.ps1
+
+# IDE/editor state
+.idea/
+.vs/
+*.DotSettings.user
+*.user
+*.suo
+
+# Logs and diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Generated installer files
+Installer/version_define.nsh
+
+# Local environment/secrets
+.env
+.env.*
+!.env.example
 .env.sentry-build-plugin
+
+# Local assistant notes
 AGENTS.md
 AI_GUIDE.md
 CLAUDE.md
-coverage/
+
+# Alternate package-manager lockfiles
+bun.lock

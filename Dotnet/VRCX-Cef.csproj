@@ -11,22 +11,22 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <AssemblyTitle>VRCX</AssemblyTitle>
-    <Product>VRCX</Product>
+    <AssemblyTitle>VRCX-Redesign</AssemblyTitle>
+    <Product>VRCX-Redesign</Product>
     <Copyright>vrcx-team, pypy, natsumi</Copyright>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Title>VRCX</Title>
-    <Description>VRCX</Description>
+    <Title>VRCX-Redesign</Title>
+    <Description>Unofficial redesign fork of VRCX</Description>
     <PackageIcon>..\images\VRCX.png</PackageIcon>
     <RepositoryUrl>https://github.com/vrcx-team/VRCX</RepositoryUrl>
     <ResourceLanguages>en</ResourceLanguages>
     <SatelliteResourceLanguages>en-US;en</SatelliteResourceLanguages>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <AssemblyName>VRCX</AssemblyName>
+    <AssemblyName>VRCX-Redesign</AssemblyName>
     <RootNamespace>VRCX</RootNamespace>
-    <PackageId>VRCX</PackageId>
-    <Company>VRCX</Company>
+    <PackageId>VRCX-Redesign</PackageId>
+    <Company>VRCX Redesign Contributors</Company>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <!-- Fix fail fast exception -->
@@ -116,7 +116,7 @@
   </Target>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(ProjectDir)..\Dotnet\build-tools\Topten.nvpatch.exe&quot; --enable &quot;$(ProjectDir)..\build\Cef\VRCX.exe&quot;" />
+    <Exec Command="&quot;$(ProjectDir)..\Dotnet\build-tools\Topten.nvpatch.exe&quot; --enable &quot;$(ProjectDir)..\build\Cef\VRCX-Redesign.exe&quot;" />
   </Target>
 
   <ItemGroup>

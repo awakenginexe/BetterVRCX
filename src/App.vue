@@ -6,6 +6,14 @@
             id="x-app"
             class="flex w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
             :class="{ 'pt-7': isMacOS }">
+            <!-- Liquid background blobs for organic morphing aurora effect -->
+            <div class="vrcx-liquid-bg-blobs">
+                <div class="vrcx-blob vrcx-blob-1"></div>
+                <div class="vrcx-blob vrcx-blob-2"></div>
+                <div class="vrcx-blob vrcx-blob-3"></div>
+                <div class="vrcx-blob vrcx-blob-4"></div>
+            </div>
+
             <RouterView></RouterView>
             <Toaster position="top-center" :theme="theme"></Toaster>
 

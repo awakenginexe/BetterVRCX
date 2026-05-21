@@ -1,6 +1,8 @@
 <template>
     <div class="x-login-container">
-        <div class="m-1.5" style="position: absolute; top: 0; left: 0">
+        <div class="x-login-glow x-login-glow-a" aria-hidden="true"></div>
+        <div class="x-login-glow x-login-glow-b" aria-hidden="true"></div>
+        <div class="x-login-toolbar m-1.5">
             <LoginSettingsDialog />
             <TooltipWrapper v-if="!noUpdater" side="top" :content="t('view.login.updater')">
                 <Button class="rounded-full mr-2 text-xs" size="icon-sm" variant="ghost" @click="showVRCXUpdateDialog">
@@ -44,8 +46,11 @@
                 </AlertDescription>
             </Alert>
             <div class="x-login-form-container">
-                <div>
-                    <h2 class="m-0" style="font-weight: bold; text-align: center">{{ t('view.login.login') }}</h2>
+                <div class="x-login-panel x-login-primary-panel">
+                    <div class="x-login-brand">
+                        <img src="../../../images/VRCX.png" alt="" class="x-login-logo" />
+                        <h2 class="x-login-title m-0">{{ t('view.login.login') }}</h2>
+                    </div>
                     <form id="login-form" @submit.prevent="onSubmit">
                         <FieldGroup class="gap-3">
                             <VeeField v-slot="{ field, errors }" name="username">
@@ -96,13 +101,13 @@
                         </label>
 
                         <Field class="mt-4">
-                            <Button type="submit" size="lg" style="width: 100%">{{ t('view.login.login') }}</Button>
+                            <Button type="submit" size="lg" class="x-login-submit">{{ t('view.login.login') }}</Button>
                         </Field>
                     </form>
                     <Button
                         variant="Secondary"
                         size="lg"
-                        style="width: 100%"
+                        class="x-login-register"
                         @click="openExternalLink('https://vrchat.com/register')"
                         >{{ t('view.login.register') }}</Button
                     >
@@ -110,8 +115,8 @@
 
                 <hr v-if="Object.keys(savedCredentials).length !== 0" class="x-vertical-divider" />
 
-                <div v-if="Object.keys(savedCredentials).length !== 0">
-                    <h2 class="m-0" style="font-weight: bold; text-align: center">
+                <div v-if="Object.keys(savedCredentials).length !== 0" class="x-login-panel">
+                    <h2 class="x-login-title m-0">
                         {{ t('view.login.savedAccounts') }}
                     </h2>
                     <div class="x-scroll-wrapper mt-2">
@@ -417,31 +422,112 @@
         justify-content: center;
         width: 100%;
         height: 100%;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .x-login-toolbar {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .x-login {
         display: grid;
         grid-template-rows: repeat(2, auto);
         align-items: center;
-        max-width: clamp(600px, 60svw, 800px);
+        width: min(880px, calc(100svw - 48px));
+        max-width: 880px;
+        z-index: 1;
+        animation: login-panel-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .x-login-form-container {
         display: grid;
-        gap: 8px;
-        height: 380px;
+        gap: 14px;
+        min-height: 430px;
+        padding: 14px;
+        border: 1px solid color-mix(in oklch, var(--border) 72%, white 12%);
+        border-radius: 34px;
+        background:
+            linear-gradient(140deg, color-mix(in oklch, var(--card) 78%, transparent), color-mix(in oklch, var(--accent) 18%, transparent)),
+            radial-gradient(circle at 18% 0, color-mix(in oklch, var(--primary) 20%, transparent), transparent 42%);
+        box-shadow:
+            0 34px 80px color-mix(in oklch, black 30%, transparent),
+            inset 0 1px 0 color-mix(in oklch, white 34%, transparent);
+        backdrop-filter: blur(28px) saturate(170%);
     }
 
     .x-login-form-container:has(> div:nth-child(3)) {
-        grid-template-columns: 1fr 1px 1fr;
+        grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
     }
 
     .x-login-form-container > div {
         display: flex;
         flex-direction: column;
         min-height: 0;
-        padding: 16px;
+        padding: 22px;
         overflow-y: auto;
+    }
+
+    .x-login-panel {
+        position: relative;
+        border: 1px solid color-mix(in oklch, var(--border) 70%, white 12%);
+        border-radius: 26px;
+        background:
+            linear-gradient(155deg, color-mix(in oklch, var(--card) 66%, transparent), color-mix(in oklch, var(--secondary) 28%, transparent)),
+            radial-gradient(circle at 100% 0, color-mix(in oklch, var(--primary) 16%, transparent), transparent 42%);
+        box-shadow: inset 0 1px 0 color-mix(in oklch, white 28%, transparent);
+        backdrop-filter: blur(22px) saturate(160%);
+    }
+
+    .x-login-primary-panel::before {
+        content: '';
+        position: absolute;
+        inset: 10px;
+        z-index: -1;
+        border-radius: 22px;
+        background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 20%, transparent), transparent 45%);
+        filter: blur(24px);
+        opacity: 0.7;
+    }
+
+    .x-login-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .x-login-logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        box-shadow:
+            0 18px 42px color-mix(in oklch, var(--primary) 24%, transparent),
+            inset 0 1px 0 color-mix(in oklch, white 34%, transparent);
+        animation: login-logo-float 4.8s ease-in-out infinite;
+    }
+
+    .x-login-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+
+    .x-login-submit,
+    .x-login-register {
+        width: 100%;
+    }
+
+    .x-login-register {
+        margin-top: 10px;
     }
 
     .x-scroll-wrapper {
@@ -455,17 +541,103 @@
         width: 100%;
         margin: 0;
         border: 0;
+        border-radius: 999px;
+        background: linear-gradient(180deg, transparent, color-mix(in oklch, var(--border) 90%, white 20%), transparent);
     }
 
     .x-saved-account-list {
         display: grid;
+        gap: 8px;
     }
 
     .x-saved-account-list > div {
         width: 100%;
+        border-radius: 18px;
+        transition:
+            background-color 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+    }
+
+    .x-saved-account-list > div:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px color-mix(in oklch, var(--primary) 12%, transparent);
     }
 
     .x-legal-notice-container {
-        margin-top: 8px;
+        margin-top: 12px;
+        color: color-mix(in oklch, var(--foreground) 62%, transparent);
+    }
+
+    .x-login-glow {
+        position: absolute;
+        z-index: 0;
+        width: 34svw;
+        min-width: 320px;
+        aspect-ratio: 1;
+        border-radius: 999px;
+        pointer-events: none;
+        filter: blur(50px);
+        opacity: 0.45;
+        animation: login-glow-drift 12s ease-in-out infinite alternate;
+    }
+
+    .x-login-glow-a {
+        left: 8%;
+        top: 14%;
+        background: color-mix(in oklch, var(--primary) 58%, transparent);
+    }
+
+    .x-login-glow-b {
+        right: 8%;
+        bottom: 8%;
+        background: color-mix(in oklch, var(--chart-3) 46%, transparent);
+        animation-delay: -4s;
+    }
+
+    @keyframes login-panel-enter {
+        from {
+            opacity: 0;
+            transform: translateY(22px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes login-logo-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    @keyframes login-glow-drift {
+        from {
+            transform: translate3d(-4%, -2%, 0) scale(0.96);
+        }
+        to {
+            transform: translate3d(4%, 3%, 0) scale(1.08);
+        }
+    }
+
+    @media (max-width: 760px) {
+        .x-login {
+            width: calc(100svw - 24px);
+        }
+
+        .x-login-form-container,
+        .x-login-form-container:has(> div:nth-child(3)) {
+            grid-template-columns: 1fr;
+        }
+
+        hr.x-vertical-divider {
+            height: 1px;
+            min-height: 1px;
+        }
     }
 </style>

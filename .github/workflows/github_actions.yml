@@ -1,4 +1,4 @@
-name: VRCX
+name: VRCX-Redesign
 
 on:
     - workflow_dispatch
@@ -87,8 +87,8 @@ jobs:
                       ${{ github.workspace }}\build\Cef\libEGL.dll
                       ${{ github.workspace }}\build\Cef\libGLESv2.dll
                       ${{ github.workspace }}\build\Cef\librsync.net.dll
-                      ${{ github.workspace }}\build\Cef\VRCX.dll
-                      ${{ github.workspace }}\build\Cef\VRCX.exe
+                      ${{ github.workspace }}\build\Cef\VRCX-Redesign.dll
+                      ${{ github.workspace }}\build\Cef\VRCX-Redesign.exe
 
             - name: Download Cef-html artifacts
               uses: actions/download-artifact@v8
@@ -104,9 +104,9 @@ jobs:
                   additional-plugin-paths: Installer/Plugins
             - name: Rename setup
               run: |
-                  file_name="VRCX_${{ needs.set_version.outputs.version }}_Setup.exe"
+                  file_name="VRCX-Redesign_${{ needs.set_version.outputs.version }}_Setup.exe"
                   echo "Setup FileName: ${file_name}"
-                  mv Installer/VRCX_Setup.exe $file_name
+                  mv Installer/VRCX-Redesign_Setup.exe $file_name
             - name: Sign Cef setup
               uses: azure/trusted-signing-action@v1
               if: steps.check_sign.outputs.sign == 'true'
@@ -121,7 +121,7 @@ jobs:
                   timestamp-rfc3161: http://timestamp.acs.microsoft.com
                   timestamp-digest: SHA256
                   files: |
-                      ${{ github.workspace }}\VRCX_${{ needs.set_version.outputs.version }}_Setup.exe
+                      ${{ github.workspace }}\VRCX-Redesign_${{ needs.set_version.outputs.version }}_Setup.exe
 
             - name: Upload Cef dotnet artifacts
               uses: actions/upload-artifact@v7
@@ -132,7 +132,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: Cef-Setup
-                  path: VRCX_${{ needs.set_version.outputs.version }}_Setup.exe
+                  path: VRCX-Redesign_${{ needs.set_version.outputs.version }}_Setup.exe
 
     build_dotnet_linux:
         runs-on: ubuntu-latest
@@ -224,7 +224,7 @@ jobs:
             - name: Node.js
               uses: actions/setup-node@v6
               with:
-                  node-version: lts/*
+                  node-version: '24'
             - name: Get npm cache directory
               id: npm-cache-dir
               shell: bash
@@ -263,7 +263,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: Electron-AppImage-x64
-                  path: 'build/VRCX_${{ needs.set_version.outputs.version }}_x64.AppImage'
+                  path: 'build/VRCX-Redesign_${{ needs.set_version.outputs.version }}_x64.AppImage'
 
             - name: Download Electron arm64 dotnet artifacts
               uses: actions/download-artifact@v8
@@ -276,7 +276,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: Electron-AppImage-arm64
-                  path: 'build/VRCX_${{ needs.set_version.outputs.version }}_arm64.AppImage'
+                  path: 'build/VRCX-Redesign_${{ needs.set_version.outputs.version }}_arm64.AppImage'
 
     build_macos:
         runs-on: macos-latest
@@ -290,7 +290,7 @@ jobs:
             - name: Use Node.js
               uses: actions/setup-node@v6
               with:
-                  node-version: lts/*
+                  node-version: '24'
             - name: Get npm cache directory
               id: npm-cache-dir
               shell: bash
@@ -318,7 +318,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: Electron-MacDmg-x64
-                  path: 'build/VRCX_${{ needs.set_version.outputs.version }}_x64.dmg'
+                  path: 'build/VRCX-Redesign_${{ needs.set_version.outputs.version }}_x64.dmg'
 
             - name: Cleanup
               run: |
@@ -338,7 +338,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: Electron-MacDmg-arm64
-                  path: 'build/VRCX_${{ needs.set_version.outputs.version }}_arm64.dmg'
+                  path: 'build/VRCX-Redesign_${{ needs.set_version.outputs.version }}_arm64.dmg'
 
     create_setup:
         runs-on: ubuntu-latest
@@ -369,7 +369,7 @@ jobs:
 
             - name: Make zip
               run: |
-                  file_name="VRCX_${{ needs.set_version.outputs.version }}.zip"
+                  file_name="VRCX-Redesign_${{ needs.set_version.outputs.version }}.zip"
                   cd build/Cef
                   7z a -tzip ${file_name} * -mx=7 -xr0!*.log
                   mv ${file_name} ../../${file_name}
@@ -377,5 +377,5 @@ jobs:
             - name: Upload Zip artifact
               uses: actions/upload-artifact@v7
               with:
-                  name: VRCX-Zip
-                  path: 'VRCX_${{ needs.set_version.outputs.version }}.zip'
+                  name: VRCX-Redesign-Zip
+                  path: 'VRCX-Redesign_${{ needs.set_version.outputs.version }}.zip'

@@ -4,7 +4,11 @@
             <slot name="toolbar"></slot>
         </div>
 
-        <div :class="['rounded-md border', autoHeight && 'flex-1 min-h-0 flex flex-col overflow-hidden']">
+        <div
+            :class="[
+                'data-table-frame rounded-md border',
+                autoHeight && 'flex-1 min-h-0 flex flex-col overflow-hidden'
+            ]">
             <div
                 ref="tableScrollRef"
                 :class="['max-w-full overflow-auto relative', autoHeight && 'flex-1 min-h-0']"
@@ -193,68 +197,72 @@
                             </TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
-                        <template v-if="table.getRowModel().rows?.length">
-                            <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                <ContextMenu v-if="$slots['row-context-menu']">
-                                    <ContextMenuTrigger as-child>
-                                        <TableRow
-                                            @click="handleRowClick(row)"
-                                            :class="[
-                                                'group/row',
-                                                isDataTableStriped ? 'even:bg-muted/20' : '',
-                                                rowClass?.(row) ?? ''
-                                            ]">
-                                            <TableCell
-                                                v-for="cell in row.getVisibleCells()"
-                                                :key="cell.id"
-                                                :class="getCellClass(cell)"
-                                                :style="getPinnedStyle(cell.column)">
-                                                <FlexRender
-                                                    :render="cell.column.columnDef.cell"
-                                                    :props="cell.getContext()" />
-                                            </TableCell>
-                                        </TableRow>
-                                    </ContextMenuTrigger>
-                                    <slot name="row-context-menu" :row="row" />
-                                </ContextMenu>
-                                <TableRow
-                                    v-else
-                                    @click="handleRowClick(row)"
-                                    :class="[
-                                        'group/row',
-                                        isDataTableStriped ? 'even:bg-muted/20' : '',
-                                        rowClass?.(row) ?? ''
-                                    ]">
-                                    <TableCell
-                                        v-for="cell in row.getVisibleCells()"
-                                        :key="cell.id"
-                                        :class="getCellClass(cell)"
-                                        :style="getPinnedStyle(cell.column)">
-                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow v-if="row.getIsExpanded() && (expandedRenderer || $slots.expanded)">
-                                    <TableCell :colspan="row.getVisibleCells().length">
-                                        <template v-if="$slots.expanded">
-                                            <slot name="expanded" :row="row"></slot>
-                                        </template>
-                                        <template v-else>
-                                            <FlexRender :render="expandedRenderer" :props="{ row }" />
-                                        </template>
-                                    </TableCell>
-                                </TableRow>
+                    <Transition :name="bodyTransitionName" mode="out-in">
+                        <TableBody :key="bodyTransitionKey ?? 'static'">
+                            <template v-if="table.getRowModel().rows?.length">
+                                <template v-for="row in table.getRowModel().rows" :key="row.id">
+                                    <ContextMenu v-if="$slots['row-context-menu']">
+                                        <ContextMenuTrigger as-child>
+                                            <TableRow
+                                                @click="handleRowClick(row)"
+                                                :class="[
+                                                    'group/row',
+                                                    isDataTableStriped ? 'even:bg-muted/20' : '',
+                                                    rowClass?.(row) ?? ''
+                                                ]">
+                                                <TableCell
+                                                    v-for="cell in row.getVisibleCells()"
+                                                    :key="cell.id"
+                                                    :class="getCellClass(cell)"
+                                                    :style="getPinnedStyle(cell.column)">
+                                                    <FlexRender
+                                                        :render="cell.column.columnDef.cell"
+                                                        :props="cell.getContext()" />
+                                                </TableCell>
+                                            </TableRow>
+                                        </ContextMenuTrigger>
+                                        <slot name="row-context-menu" :row="row" />
+                                    </ContextMenu>
+                                    <TableRow
+                                        v-else
+                                        @click="handleRowClick(row)"
+                                        :class="[
+                                            'group/row',
+                                            isDataTableStriped ? 'even:bg-muted/20' : '',
+                                            rowClass?.(row) ?? ''
+                                        ]">
+                                        <TableCell
+                                            v-for="cell in row.getVisibleCells()"
+                                            :key="cell.id"
+                                            :class="getCellClass(cell)"
+                                            :style="getPinnedStyle(cell.column)">
+                                            <FlexRender
+                                                :render="cell.column.columnDef.cell"
+                                                :props="cell.getContext()" />
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow v-if="row.getIsExpanded() && (expandedRenderer || $slots.expanded)">
+                                        <TableCell :colspan="row.getVisibleCells().length">
+                                            <template v-if="$slots.expanded">
+                                                <slot name="expanded" :row="row"></slot>
+                                            </template>
+                                            <template v-else>
+                                                <FlexRender :render="expandedRenderer" :props="{ row }" />
+                                            </template>
+                                        </TableCell>
+                                    </TableRow>
+                                </template>
                             </template>
-                        </template>
 
-                        <TableRow v-else>
-                            <TableCell class="h-24 text-center" :colspan="table.getVisibleLeafColumns().length">
-                                <slot name="empty">
-                                    <DataTableEmpty v-if="!loading" :type="emptyType" />
-                                </slot>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
+                            <TableRow v-else>
+                                <TableCell class="h-24 text-center" :colspan="table.getVisibleLeafColumns().length">
+                                    <slot name="empty">
+                                        <DataTableEmpty v-if="!loading" :type="emptyType" />
+                                    </slot>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Transition>
                 </Table>
                 <div v-if="loading" class="absolute inset-0 z-20 flex items-center justify-center bg-background/60">
                     <Spinner class="text-2xl" />
@@ -406,6 +414,14 @@
         autoHeight: {
             type: Boolean,
             default: false
+        },
+        bodyTransitionKey: {
+            type: [String, Number],
+            default: null
+        },
+        bodyTransitionName: {
+            type: String,
+            default: 'vrcx-list-swap'
         }
     });
 

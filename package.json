@@ -1,7 +1,8 @@
 {
-    "name": "VRCX",
+    "name": "VRCX-Redesign",
+    "version": "2026.05.03",
     "private": true,
-    "description": "Friendship management tool for VRChat",
+    "description": "Unofficial redesign fork of VRCX",
     "keywords": [
         "vrchat"
     ],
@@ -10,7 +11,7 @@
         "url": "https://github.com/vrcx-team/VRCX/issues"
     },
     "license": "MIT",
-    "author": "VRCX Team",
+    "author": "VRCX Redesign Contributors",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/vrcx-team/VRCX.git"
@@ -117,8 +118,8 @@
         "npm": ">=11.5.0"
     },
     "build": {
-        "appId": "app.vrcx",
-        "productName": "VRCX",
+        "appId": "app.vrcx-redesign",
+        "productName": "VRCX-Redesign",
         "icon": "images/VRCX.png",
         "files": [
             "build/html/**/*",
@@ -169,17 +170,17 @@
             "output": "build"
         },
         "linux": {
-            "artifactName": "VRCX_Version.${ext}",
+            "artifactName": "VRCX-Redesign_Version.${ext}",
             "target": [
                 "AppImage"
             ],
             "icon": "images/VRCX.png",
             "category": "Utility",
-            "executableName": "vrcx",
+            "executableName": "vrcx-redesign",
             "desktop": {
                 "entry": {
-                    "Name": "VRCX",
-                    "Comment": "Friendship management tool for VRChat",
+                    "Name": "VRCX-Redesign",
+                    "Comment": "Unofficial redesign fork of VRCX",
                     "Icon": "VRCX",
                     "Terminal": "false",
                     "Type": "Application",
@@ -187,16 +188,16 @@
                 }
             },
             "maintainer": "rs189 <35667100+rs189@users.noreply.github.com>",
-            "description": "Friendship management tool for VRChat"
+            "description": "Unofficial redesign fork of VRCX"
         },
         "mac": {
-            "artifactName": "VRCX_Version.${ext}",
+            "artifactName": "VRCX-Redesign_Version.${ext}",
             "target": [
                 "dmg"
             ],
             "icon": "images/VRCX.png",
             "category": "public.app-category.utilities",
-            "executableName": "VRCX"
+            "executableName": "VRCX-Redesign"
         }
     }
 }

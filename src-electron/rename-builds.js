@@ -20,10 +20,13 @@ try {
 
 function renameBuild(arch, platform) {
     if (platform === 'linux') {
-        const oldAppImage = path.join(buildDir, `VRCX_Version.AppImage`);
+        const oldAppImage = path.join(
+            buildDir,
+            `VRCX-Redesign_Version.AppImage`
+        );
         const newAppImage = path.join(
             buildDir,
-            `VRCX_${version}_${arch}.AppImage`
+            `VRCX-Redesign_${version}_${arch}.AppImage`
         );
         try {
             if (fs.existsSync(oldAppImage)) {
@@ -37,8 +40,11 @@ function renameBuild(arch, platform) {
             process.exit(1);
         }
     } else if (platform === 'darwin') {
-        const oldDmg = path.join(buildDir, `VRCX_Version.dmg`);
-        const newDmg = path.join(buildDir, `VRCX_${version}_${arch}.dmg`);
+        const oldDmg = path.join(buildDir, `VRCX-Redesign_Version.dmg`);
+        const newDmg = path.join(
+            buildDir,
+            `VRCX-Redesign_${version}_${arch}.dmg`
+        );
         try {
             if (fs.existsSync(oldDmg)) {
                 fs.renameSync(oldDmg, newDmg);

@@ -1,5 +1,5 @@
 <template>
-    <div class="x-container flex h-full min-h-0 flex-col gap-3 py-3">
+    <div class="x-container vrcx-feed-dashboard vrcx-dashboard-view flex h-full min-h-0 flex-col gap-3 py-3">
         <DashboardEditToolbar
             v-if="isEditing"
             v-model:name="editName"
@@ -7,7 +7,7 @@
             @cancel="handleCancelEdit"
             @delete="handleDelete" />
 
-        <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+        <div class="vrcx-dashboard-canvas flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
             <template v-if="displayRows.length && !isEditing">
                 <ResizablePanelGroup direction="vertical" :auto-save-id="`dashboard-${id}`" class="flex-1 min-h-0">
                     <template v-for="(row, rowIndex) in displayRows" :key="rowIndex">
@@ -35,21 +35,21 @@
                     @remove-panel="handleRemovePanel" />
 
                 <div
-                    class="mt-auto flex min-h-[80px] flex-1 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    class="vrcx-dashboard-add-row mt-auto flex min-h-[80px] flex-1 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
                     :class="showAddRowOptions ? 'items-start p-4' : 'cursor-pointer'"
                     @click="handleAddRowAreaClick">
                     <div v-if="showAddRowOptions" class="flex flex-wrap items-center gap-3">
                         <span class="text-xs text-muted-foreground">{{ t('dashboard.actions.add_row') }}:</span>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="vrcx-dashboard-row-option flex h-10 w-16 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
                             :title="t('dashboard.actions.add_full_row')"
                             @click.stop="handleAddRow(1)">
                             <div class="h-6 w-12 rounded bg-muted-foreground/20" />
                         </button>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="vrcx-dashboard-row-option flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
                             :title="t('dashboard.actions.add_split_row')"
                             @click.stop="handleAddRow(2)">
                             <div class="h-6 w-5 rounded bg-muted-foreground/20" />
@@ -57,7 +57,7 @@
                         </button>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="vrcx-dashboard-row-option flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
                             :title="t('dashboard.actions.add_vertical_row')"
                             @click.stop="handleAddRow(2, 'vertical')">
                             <div class="flex flex-col gap-0.5">
@@ -72,7 +72,7 @@
 
             <div
                 v-else
-                class="flex flex-1 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                class="vrcx-dashboard-empty flex flex-1 items-center justify-center rounded-md border border-dashed text-muted-foreground">
                 <div class="flex flex-col items-center gap-3">
                     <p>{{ t('dashboard.empty') }}</p>
                     <Button @click="isEditing = true">{{ t('dashboard.actions.start_editing') }}</Button>
@@ -222,3 +222,46 @@
         router.replace({ name: 'feed' });
     };
 </script>
+
+<style scoped>
+    .vrcx-dashboard-view {
+        animation: vrcx-panel-enter var(--vrcx-motion-panel) var(--vrcx-ease-fluid) both;
+    }
+
+    .vrcx-dashboard-canvas {
+        scrollbar-gutter: stable;
+    }
+
+    .vrcx-dashboard-add-row,
+    .vrcx-dashboard-empty {
+        border-color: color-mix(in oklch, var(--vrcx-border-glass) 68%, transparent);
+        border-radius: 0.95rem;
+        background:
+            linear-gradient(180deg, color-mix(in oklch, var(--card) 22%, transparent), color-mix(in oklch, var(--input) 20%, transparent)),
+            color-mix(in oklch, var(--background) 20%, transparent);
+        box-shadow: inset 0 1px 0 color-mix(in oklch, white 8%, transparent);
+        transition:
+            background-color var(--vrcx-motion-base) var(--vrcx-ease-fluid),
+            border-color var(--vrcx-motion-base) var(--vrcx-ease-fluid),
+            transform var(--vrcx-motion-base) var(--vrcx-ease-fluid);
+    }
+
+    .vrcx-dashboard-add-row:hover {
+        border-color: color-mix(in oklch, var(--primary) 38%, transparent);
+        background:
+            linear-gradient(180deg, color-mix(in oklch, var(--primary) 8%, transparent), color-mix(in oklch, var(--card) 24%, transparent)),
+            color-mix(in oklch, var(--background) 22%, transparent);
+        transform: translateY(-1px);
+    }
+
+    .vrcx-dashboard-row-option {
+        background: color-mix(in oklch, var(--card) 36%, transparent);
+        box-shadow: inset 0 1px 0 color-mix(in oklch, white 10%, transparent);
+    }
+
+    .vrcx-dashboard-empty p {
+        margin: 0;
+        color: color-mix(in oklch, var(--foreground) 66%, transparent);
+        font-size: 0.9rem;
+    }
+</style>

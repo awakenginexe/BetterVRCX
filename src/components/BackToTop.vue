@@ -202,10 +202,4 @@
         transform: translateY(0);
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .back-to-top-enter-active,
-        .back-to-top-leave-active {
-            transition: none;
-        }
-    }
 </style>

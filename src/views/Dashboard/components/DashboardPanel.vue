@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex min-h-0 flex-1 overflow-hidden rounded-md border bg-card">
+    <div class="vrcx-dashboard-panel relative flex min-h-0 flex-1 overflow-hidden rounded-md border bg-card">
         <template v-if="isEditing">
             <Button
                 v-if="showRemove"
@@ -9,7 +9,7 @@
                 @click="emit('remove')">
                 <X class="size-4" />
             </Button>
-            <div class="flex w-full min-h-0 flex-col items-center justify-center gap-2 p-3">
+            <div class="vrcx-dashboard-panel-editor flex w-full min-h-0 flex-col items-center justify-center gap-2 p-3">
                 <template v-if="panelKey">
                     <div class="flex items-center gap-2 text-base text-muted-foreground">
                         <i v-if="panelIcon" :class="panelIcon" class="text-base" />
@@ -29,12 +29,16 @@
         </template>
 
         <template v-else-if="panelKey && panelComponent">
-            <div class="dashboard-panel h-full w-full overflow-y-auto">
-                <component :is="panelComponent" v-bind="widgetProps" />
-            </div>
+            <Transition name="vrcx-panel-swap" mode="out-in">
+                <div :key="panelContentKey" class="dashboard-panel h-full w-full overflow-y-auto">
+                    <component :is="panelComponent" v-bind="widgetProps" />
+                </div>
+            </Transition>
         </template>
 
-        <div v-else class="flex w-full items-center justify-center text-sm text-muted-foreground">
+        <div
+            v-else
+            class="vrcx-dashboard-panel-empty flex w-full items-center justify-center text-sm text-muted-foreground">
             {{ t('dashboard.panel.not_configured') }}
         </div>
 
@@ -105,6 +109,8 @@
         };
     });
 
+    const panelContentKey = computed(() => `${panelKey.value}:${JSON.stringify(panelConfig.value)}`);
+
     const widgetDefs = {
         'widget:feed': { icon: 'ri-rss-line', labelKey: 'dashboard.widget.feed' },
         'widget:game-log': { icon: 'ri-history-line', labelKey: 'dashboard.widget.game_log' },
@@ -143,12 +149,59 @@
 </script>
 
 <style scoped>
+    .vrcx-dashboard-panel {
+        border-color: var(--vrcx-border-glass);
+        border-radius: 0.9rem;
+        background:
+            linear-gradient(
+                145deg,
+                color-mix(in oklch, var(--card) 74%, transparent),
+                color-mix(in oklch, var(--background) 54%, transparent)
+            ),
+            radial-gradient(circle at 18% 0, color-mix(in oklch, var(--primary) 10%, transparent), transparent 38%);
+        box-shadow:
+            inset 0 1px 0 color-mix(in oklch, white 13%, transparent),
+            0 12px 28px color-mix(in oklch, black 18%, transparent);
+        backdrop-filter: blur(14px) saturate(130%);
+        animation: vrcx-panel-enter var(--vrcx-motion-panel) var(--vrcx-ease-fluid) both;
+    }
+
+    .vrcx-dashboard-panel::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background:
+            linear-gradient(135deg, color-mix(in oklch, white 10%, transparent), transparent 28%),
+            radial-gradient(circle at 90% 0, color-mix(in oklch, var(--primary) 9%, transparent), transparent 34%);
+        opacity: 0.72;
+    }
+
+    .vrcx-dashboard-panel > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .vrcx-dashboard-panel-editor,
+    .vrcx-dashboard-panel-empty {
+        color: color-mix(in oklch, var(--foreground) 62%, transparent);
+    }
+
     .dashboard-panel :deep(.x-container) {
         height: 100%;
         margin: 0;
         border: none;
         border-radius: 0;
         background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    .dashboard-panel :deep(.data-table-frame) {
+        border-color: color-mix(in oklch, var(--vrcx-border-glass) 76%, transparent);
+        background: color-mix(in oklch, var(--background) 36%, transparent);
     }
 
     /* Compact pagination for dashboard panels */

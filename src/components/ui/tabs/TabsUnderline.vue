@@ -107,6 +107,7 @@
         <TabsContent
             v-for="it in itemsList"
             :key="it.value"
+            data-slot="tabs-content"
             :value="it.value"
             :class="[
                 'pt-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background',
