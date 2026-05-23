@@ -5,9 +5,12 @@
         <div
             id="x-app"
             class="flex w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
-            :class="{ 'pt-7': isMacOS }">
+            :class="{
+                'pt-7': isMacOS,
+                'disable-bg-effects': store.appearanceSettings.disableBackgroundEffects
+            }">
             <!-- Liquid background blobs for organic morphing aurora effect -->
-            <div class="vrcx-liquid-bg-blobs">
+            <div v-if="!store.appearanceSettings.disableBackgroundEffects" class="vrcx-liquid-bg-blobs">
                 <div class="vrcx-blob vrcx-blob-1"></div>
                 <div class="vrcx-blob vrcx-blob-2"></div>
                 <div class="vrcx-blob vrcx-blob-3"></div>

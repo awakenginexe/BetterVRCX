@@ -916,6 +916,8 @@
                     "table_density_standard": "標準",
                     "table_density_comfortable": "やや低め",
                     "table_density_compact": "低め",
+                    "disable_background_effects": "背景効果とぼかしの無効化",
+                    "disable_background_effects_description": "背景のアニメーションバブル、グリッドの移動、グラスモーフィズムのぼかしを無効にして、CPUとGPUの使用率を大幅に削減します。",
                     "table_entries_settings": "最大読み込み件数",
                     "table_entries_settings_description": "表示や検索で読み込む、最大エントリ数を設定します"
                 },

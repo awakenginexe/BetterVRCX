@@ -105,6 +105,14 @@
                         saveOpenVROption();
                     " />
             </SettingsItem>
+
+            <SettingsItem
+                :label="t('view.settings.appearance.appearance.disable_background_effects')"
+                :description="t('view.settings.appearance.appearance.disable_background_effects_description')">
+                <Switch
+                    :model-value="disableBackgroundEffects"
+                    @update:modelValue="setDisableBackgroundEffects" />
+            </SettingsItem>
         </SettingsGroup>
 
         <SettingsGroup :title="t('view.settings.appearance.display.header')">
@@ -438,7 +446,8 @@
         isDataTableStriped,
         accessibleStatusIndicators,
         useOfficialStatusColors,
-        showNewDashboardButton
+        showNewDashboardButton,
+        disableBackgroundEffects
     } = storeToRefs(appearanceSettingsStore);
 
     const appLanguageDisplayName = computed(() => getLanguageName(String(appLanguage.value)));
@@ -464,6 +473,7 @@
         toggleAccessibleStatusIndicators,
         toggleOfficialStatusColors,
         setShowNewDashboardButton,
+        setDisableBackgroundEffects,
         setAppFontFamily,
         setCustomFontFamily,
         setAppCjkFontPack

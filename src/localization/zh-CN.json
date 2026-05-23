@@ -917,6 +917,8 @@
                     "table_density_standard": "标准",
                     "table_density_comfortable": "舒适",
                     "table_density_compact": "紧凑",
+                    "disable_background_effects": "禁用背景特效和模糊",
+                    "disable_background_effects_description": "禁用背景动画气泡、网格移动和毛玻璃模糊，以大幅降低 CPU 和 GPU 使用率。",
                     "table_entries_settings": "条目读取设置",
                     "table_entries_settings_description": "控制读取列表和进行搜索时加载的条目数量"
                 },

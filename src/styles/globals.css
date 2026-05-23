@@ -1824,3 +1824,148 @@ html:not(.dark) .vrcx-blob {
     }
 }
 
+/* ==========================================================================
+   VRCX Rendering Performance Mode Overrides
+   When .disable-bg-effects is set on <html>, this kills every continuous
+   GPU workload: backdrop-filters, SVG feTurbulence noise textures,
+   infinite CSS animations, will-change compositor layer promotions,
+   and the animated grid/blob background layers.
+   ========================================================================== */
+
+/* --- 1. Token overrides ------------------------------------------------- */
+.disable-bg-effects {
+    /* Make glass tokens fully opaque so text is legible without blur */
+    --vrcx-glass: var(--card) !important;
+    --vrcx-glass-strong: var(--card) !important;
+    /* Kill the SVG feTurbulence noise texture — extremely expensive filter */
+    --vrcx-noise-overlay: none !important;
+}
+
+/* --- 2. Remove the grid pseudo-element entirely ------------------------- */
+.disable-bg-effects #x-app::before {
+    display: none !important;
+}
+
+/* --- 3. Remove background blobs ----------------------------------------- */
+.disable-bg-effects .vrcx-liquid-bg-blobs,
+.disable-bg-effects .vrcx-blob {
+    display: none !important;
+}
+
+/* --- 4. Disable ALL backdrop-filters (targeted, not wildcard) ----------- */
+.disable-bg-effects .x-container,
+.disable-bg-effects [data-sidebar='sidebar'],
+.disable-bg-effects [data-slot='card'],
+.disable-bg-effects [data-slot='popover-content'],
+.disable-bg-effects [data-slot='hover-card-content'],
+.disable-bg-effects [data-slot='dropdown-menu-content'],
+.disable-bg-effects [data-slot='context-menu-content'],
+.disable-bg-effects [data-slot='select-content'],
+.disable-bg-effects [data-slot='sheet-content'],
+.disable-bg-effects [data-slot='dialog-content'],
+.disable-bg-effects [data-slot='dialog-overlay'],
+.disable-bg-effects [data-slot='button'],
+.disable-bg-effects [data-slot='tabs-list'],
+.disable-bg-effects .vrcx-liquid-button,
+.disable-bg-effects .vrcx-liquid-input,
+.disable-bg-effects .x-aside-container,
+.disable-bg-effects .vrcx-feed-dashboard,
+.disable-bg-effects .shrink-0.h-\[22px\].flex.items-center.bg-sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* --- 5. Kill all infinite CSS animations -------------------------------- */
+/* Sidebar active indicator pulse */
+.disable-bg-effects [data-slot='sidebar-menu-button'][data-active='true']::before {
+    animation: none !important;
+}
+
+/* Notification dot pulse */
+.disable-bg-effects .notify-dot-not-collapsed,
+.disable-bg-effects .absolute.top-1.right-1\.25.size-1\.5.rounded-full.bg-red-500 {
+    animation: none !important;
+}
+
+/* Login page animations */
+.disable-bg-effects .x-login-glow {
+    display: none !important;
+}
+
+.disable-bg-effects .x-login-logo {
+    animation: none !important;
+}
+
+/* --- 6. Remove will-change layer promotions ----------------------------- */
+.disable-bg-effects [data-slot='table-row'],
+.disable-bg-effects .x-hover-list,
+.disable-bg-effects .x-hover-card {
+    will-change: auto !important;
+}
+
+/* --- 7. Simplify complex backgrounds to flat solids --------------------- */
+.disable-bg-effects .x-container {
+    background: var(--card) !important;
+}
+
+.disable-bg-effects [data-sidebar='sidebar'] {
+    background: var(--sidebar) !important;
+}
+
+.disable-bg-effects .x-aside-container {
+    background: var(--sidebar) !important;
+}
+
+.disable-bg-effects [data-slot='card'],
+.disable-bg-effects [data-slot='popover-content'],
+.disable-bg-effects [data-slot='hover-card-content'],
+.disable-bg-effects [data-slot='dropdown-menu-content'],
+.disable-bg-effects [data-slot='context-menu-content'],
+.disable-bg-effects [data-slot='select-content'],
+.disable-bg-effects [data-slot='sheet-content'],
+.disable-bg-effects [data-slot='dialog-content'] {
+    background: var(--card) !important;
+}
+
+.disable-bg-effects .vrcx-feed-dashboard {
+    background: var(--card) !important;
+}
+
+.disable-bg-effects [data-slot='sidebar-menu-button'][data-active='true'] {
+    background: color-mix(in oklch, var(--primary) 18%, var(--sidebar)) !important;
+}
+
+/* --- 8. Simplify page transitions --------------------------------------- */
+.disable-bg-effects .vrcx-page-down-enter-active,
+.disable-bg-effects .vrcx-page-down-leave-active,
+.disable-bg-effects .vrcx-page-up-enter-active,
+.disable-bg-effects .vrcx-page-up-leave-active,
+.disable-bg-effects .vrcx-page-fade-enter-active,
+.disable-bg-effects .vrcx-page-fade-leave-active {
+    will-change: auto !important;
+}
+
+/* --- 9. Kill dialog overlay blur animation ------------------------------ */
+.disable-bg-effects [data-slot='dialog-overlay'] {
+    background: oklch(0.1 0.025 255 / 58%) !important;
+}
+
+.disable-bg-effects [data-slot='dialog-overlay'][data-state='open'] {
+    animation: none !important;
+    opacity: 1;
+}
+
+.disable-bg-effects [data-slot='dialog-overlay'][data-state='closed'] {
+    animation: none !important;
+    opacity: 0;
+}
+
+/* --- 10. Simplify status bar area --------------------------------------- */
+.disable-bg-effects .shrink-0.h-\[22px\].flex.items-center.bg-sidebar {
+    background: var(--sidebar) !important;
+}
+
+/* --- 11. Simplify tabs -------------------------------------------------- */
+.disable-bg-effects [data-slot='tabs-list'] {
+    background: var(--muted) !important;
+}

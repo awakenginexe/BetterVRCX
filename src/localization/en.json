@@ -916,6 +916,8 @@
                     "table_density_standard": "Standard",
                     "table_density_comfortable": "Comfortable",
                     "table_density_compact": "Compact",
+                    "disable_background_effects": "Disable Background Effects & Blurs",
+                    "disable_background_effects_description": "Disables animated background blobs, grid movement, and glass blurs to significantly reduce CPU and GPU usage.",
                     "table_entries_settings": "Table Entries Settings",
                     "table_entries_settings_description": "Control how many items are loaded for lists and searches."
                 },

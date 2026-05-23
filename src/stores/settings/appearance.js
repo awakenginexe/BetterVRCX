@@ -119,6 +119,7 @@ export const useAppearanceSettingsStore = defineStore(
         const accessibleStatusIndicators = ref(false);
         const useOfficialStatusColors = ref(true);
         const showNewDashboardButton = ref(true);
+        const disableBackgroundEffects = ref(true);
         const tableLimitsDialog = ref({
             visible: false,
             maxTableSize: 500,
@@ -184,7 +185,8 @@ export const useAppearanceSettingsStore = defineStore(
                 appFontFamilyConfig,
                 customFontFamilyConfig,
                 appCjkFontPackConfig,
-                lastDarkThemeConfig
+                lastDarkThemeConfig,
+                disableBackgroundEffectsConfig
             ] = await Promise.all([
                 configRepository.getString('VRCX_appLanguage'),
                 configRepository.getBool('displayVRCPlusIconsAsAvatar', true),
@@ -268,7 +270,8 @@ export const useAppearanceSettingsStore = defineStore(
                 configRepository.getString(
                     'VRCX_lastDarkTheme',
                     fallbackDarkTheme
-                )
+                ),
+                configRepository.getBool('VRCX_disableBackgroundEffects', true)
             ]);
 
             if (appLanguageConfig) {
@@ -376,9 +379,11 @@ export const useAppearanceSettingsStore = defineStore(
             accessibleStatusIndicators.value = accessibleStatusIndicatorsConfig;
             useOfficialStatusColors.value = useOfficialStatusColorsConfig;
             showNewDashboardButton.value = showNewDashboardButtonConfig;
+            disableBackgroundEffects.value = disableBackgroundEffectsConfig;
 
             applyAccessibleStatusClass();
             applyOfficialStatusColorsClass();
+            applyBackgroundEffectsClass();
 
             await configRepository.remove('VRCX_navWidth');
 
@@ -1188,6 +1193,21 @@ export const useAppearanceSettingsStore = defineStore(
             }
         }
 
+        function applyBackgroundEffectsClass() {
+            const classList = document.documentElement.classList;
+            if (disableBackgroundEffects.value) {
+                classList.add('disable-bg-effects');
+            } else {
+                classList.remove('disable-bg-effects');
+            }
+        }
+
+        function setDisableBackgroundEffects(value) {
+            disableBackgroundEffects.value = value;
+            configRepository.setBool('VRCX_disableBackgroundEffects', value);
+            applyBackgroundEffectsClass();
+        }
+
         return {
             appLanguage,
             themeMode,
@@ -1230,6 +1250,7 @@ export const useAppearanceSettingsStore = defineStore(
             accessibleStatusIndicators,
             useOfficialStatusColors,
             showNewDashboardButton,
+            disableBackgroundEffects,
             tableLimitsDialog,
             TABLE_MAX_SIZE_MIN,
             TABLE_MAX_SIZE_MAX,
@@ -1267,6 +1288,7 @@ export const useAppearanceSettingsStore = defineStore(
             toggleAccessibleStatusIndicators,
             toggleOfficialStatusColors,
             setShowNewDashboardButton,
+            setDisableBackgroundEffects,
             setTableDensity,
             setTrustColor,
             tryInitUserColours,

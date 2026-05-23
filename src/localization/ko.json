@@ -258,7 +258,9 @@
                     "sort_favorite_by_date": "시간순",
                     "sort_instance_users_by": "인스턴스 유저 순서",
                     "sort_instance_users_by_time": "시간순",
-                    "sort_instance_users_by_alphabet": "이름순"
+                    "sort_instance_users_by_alphabet": "이름순",
+                    "disable_background_effects": "배경 효과 및 블러 비활성화",
+                    "disable_background_effects_description": "배경의 애니메이션 버블, 그리드 이동, 글래스모피즘 블러 효과를 비활성화하여 CPU 및 GPU 사용량을 크게 줄입니다."
                 },
                 "timedate": {
                     "header": "시간/날짜",
