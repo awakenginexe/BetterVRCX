@@ -198,7 +198,10 @@
                         </TableRow>
                     </TableHeader>
                     <Transition :name="bodyTransitionName" mode="out-in">
-                        <TableBody :key="bodyTransitionKey ?? 'static'">
+                        <TableBody
+                            :key="bodyTransitionKey ?? 'static'"
+                            :is-transition-group="enableRowAnimation"
+                            transition-name="vrcx-list-swap">
                             <template v-if="table.getRowModel().rows?.length">
                                 <template v-for="row in table.getRowModel().rows" :key="row.id">
                                     <ContextMenu v-if="$slots['row-context-menu']">
@@ -410,6 +413,10 @@
         enableColumnVisibility: {
             type: Boolean,
             default: true
+        },
+        enableRowAnimation: {
+            type: Boolean,
+            default: false
         },
         autoHeight: {
             type: Boolean,

@@ -6,34 +6,41 @@
                 if (!open) cancel();
             }
         ">
-        <DialogContent class="x-dialog sm:max-w-125 translate-y-0" style="top: 10vh" :show-close-button="false">
+        <DialogContent class="x-dialog sm:max-w-125" :show-close-button="false">
             <DialogHeader>
                 <DialogTitle>{{ t('dialog.user.note_memo.header') }}</DialogTitle>
             </DialogHeader>
 
-            <div>
+            <FieldGroup class="gap-4 py-2 flex-1 overflow-y-auto">
                 <template v-if="!hideUserNotes || (hideUserNotes && hideUserMemos)">
-                    <span class="name">{{ t('dialog.user.info.note') }}</span>
-                    <InputGroupTextareaField
-                        v-model="note"
-                        :autosize="{ minRows: 6, maxRows: 20 }"
-                        :maxlength="256"
-                        :rows="6"
-                        :placeholder="t('dialog.user.info.note_placeholder')"
-                        input-class="text-xs resize-none"
-                        class="my-2"
-                        show-count />
+                    <Field>
+                        <FieldLabel>{{ t('dialog.user.info.note') }}</FieldLabel>
+                        <FieldContent>
+                            <InputGroupTextareaField
+                                v-model="note"
+                                :autosize="{ minRows: 6, maxRows: 12 }"
+                                :maxlength="256"
+                                :rows="6"
+                                :placeholder="t('dialog.user.info.note_placeholder')"
+                                input-class="resize-none"
+                                show-count />
+                        </FieldContent>
+                    </Field>
                 </template>
                 <template v-if="!hideUserMemos || (hideUserNotes && hideUserMemos)">
-                    <span class="name">{{ t('dialog.user.info.memo') }}</span>
-                    <InputGroupTextareaField
-                        v-model="memo"
-                        class="text-xs mt-2"
-                        :rows="6"
-                        :placeholder="t('dialog.user.info.memo_placeholder')"
-                        input-class="resize-none min-h-0" />
+                    <Field>
+                        <FieldLabel>{{ t('dialog.user.info.memo') }}</FieldLabel>
+                        <FieldContent>
+                            <InputGroupTextareaField
+                                v-model="memo"
+                                :autosize="{ minRows: 6, maxRows: 12 }"
+                                :rows="6"
+                                :placeholder="t('dialog.user.info.memo_placeholder')"
+                                input-class="resize-none" />
+                        </FieldContent>
+                    </Field>
                 </template>
-            </div>
+            </FieldGroup>
 
             <DialogFooter>
                 <Button variant="secondary" @click="cancel" class="mr-2">{{
@@ -50,6 +57,7 @@
     import { ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
     import { InputGroupTextareaField } from '@/components/ui/input-group';
+    import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
 

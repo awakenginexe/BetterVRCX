@@ -36,6 +36,7 @@
                 :table="table"
                 :loading="gameLogTable.loading"
                 auto-height
+                enable-row-animation
                 :page-sizes="pageSizes"
                 :total-items="totalItems"
                 :on-page-size-change="handlePageSizeChange">

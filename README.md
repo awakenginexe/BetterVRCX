@@ -76,7 +76,7 @@ Beta/nightly build available [here](https://vrcx.app/github/nightly) or in-app `
 
 <h3>Login</h3>
 
-<img src="./images/preview/login.png" alt="Login preview">
+<img src="./images/preview/login.png" alt="Login preview" width="48%"> <img src="./images/preview/VRCX_X4p6G6TTcx.png" alt="Login preview alt" width="48%">
 
 <h3>Feed</h3>
 

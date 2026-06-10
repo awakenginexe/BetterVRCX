@@ -6,6 +6,7 @@
             auto-height
             table-class="vrcx-feed-table"
             :body-transition-key="feedBodyTransitionKey"
+            enable-row-animation
             :page-sizes="pageSizes"
             :total-items="totalItems"
             :on-page-size-change="handlePageSizeChange">
@@ -202,9 +203,6 @@
     });
 
     const feedBodyTransitionKey = computed(() => {
-        const rows = table.getRowModel().rows;
-        const firstRowId = rows[0]?.id ?? '';
-        const lastRowId = rows[rows.length - 1]?.id ?? '';
         const state = table.getState?.() ?? {};
 
         return JSON.stringify({
@@ -215,8 +213,7 @@
             vip: feedTable.value.vip,
             pageIndex: state.pagination?.pageIndex ?? 0,
             pageSize: state.pagination?.pageSize ?? 0,
-            sorting: state.sorting ?? [],
-            rows: `${rows.length}:${firstRowId}:${lastRowId}`
+            sorting: state.sorting ?? []
         });
     });
 

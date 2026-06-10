@@ -238,7 +238,7 @@
         height: 3rem; /* h-12 */
         gap: 0.625rem;
         border-bottom-color: color-mix(in oklch, var(--border) 78%, transparent);
-        background: color-mix(in oklch, var(--card) 34%, transparent);
+        background: transparent;
     }
 
     /* Larger input text */
@@ -268,11 +268,8 @@
     }
 
     :deep(.x-quick-search-dialog) {
-        top: 42% !important;
-        bottom: auto !important;
         width: min(720px, calc(100svw - 40px)) !important;
         max-height: min(620px, calc(100svh - 96px)) !important;
-        transform: translate(-50%, -50%) !important;
     }
 
     :deep(.x-quick-search-dialog [data-slot='command']) {

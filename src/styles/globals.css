@@ -534,6 +534,8 @@ body {
 
 [data-slot='table-header'],
 [data-slot='table-header'] [data-slot='table-row'] {
+    position: relative;
+    z-index: 12;
     background-color: transparent;
 }
 
@@ -1001,30 +1003,48 @@ button,
 
 [data-slot='dialog-content'].x-dialog {
     display: flex;
+    flex-direction: column;
     max-height: min(85vh, calc(100svh - 72px));
     min-height: 0;
     overflow: hidden;
+}
+
+#x-dialog-portal {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+#x-dialog-portal > * {
+    pointer-events: auto;
+}
+
+[data-slot='input-group'] input,
+[data-slot='input-group'] textarea {
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 [data-slot='dialog-content'].x-quick-search-dialog {
     top: 42% !important;
     bottom: auto !important;
     left: 50% !important;
-    width: min(720px, calc(100svw - 40px)) !important;
-    max-width: min(720px, calc(100svw - 40px)) !important;
-    max-height: min(620px, calc(100svh - 96px)) !important;
+    width: min(720px, calc(100vw - 40px)) !important;
+    max-width: min(720px, calc(100vw - 40px)) !important;
+    max-height: min(620px, calc(100vh - 96px)) !important;
     transform: translate(-50%, -50%) !important;
     overflow: hidden !important;
 }
 
 .x-quick-search-dialog [data-slot='command'] {
-    max-height: min(620px, calc(100svh - 96px));
+    max-height: min(620px, calc(100vh - 96px));
     border-radius: inherit;
     background: transparent;
 }
 
 .x-quick-search-dialog [data-slot='command-list'] {
-    max-height: min(500px, calc(100svh - 170px)) !important;
+    max-height: min(500px, calc(100vh - 170px)) !important;
 }
 
 [data-slot='command'] {
@@ -1498,11 +1518,7 @@ html:not(.dark) .vrcx-blob {
 }
 
 .vrcx-feed-dashboard [data-slot='table-head'] {
-    background: color-mix(
-        in oklch,
-        var(--background) 72%,
-        var(--card) 28%
-    ) !important;
+    background: var(--background) !important;
     border-bottom-color: color-mix(
         in oklch,
         var(--vrcx-border-glass) 82%,
@@ -1510,6 +1526,7 @@ html:not(.dark) .vrcx-blob {
     );
     color: color-mix(in oklch, var(--foreground) 72%, transparent);
     backdrop-filter: none;
+    z-index: 11;
 }
 
 .vrcx-feed-dashboard [data-slot='table-row'] {
