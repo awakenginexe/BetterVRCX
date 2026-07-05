@@ -59,6 +59,9 @@ const mocks = vi.hoisted(() => ({
     instanceStore: {
         cachedInstances: new Map()
     },
+    availabilityNotifyStore: {
+        openDialog: vi.fn()
+    },
     configRepository: {
         getBool: vi.fn(),
         setBool: vi.fn(),
@@ -114,6 +117,7 @@ vi.mock('../../../../stores', () => ({
     useAppearanceSettingsStore: () => mocks.appearanceStore,
     useAdvancedSettingsStore: () => mocks.advancedStore,
     useFavoriteStore: () => mocks.favoriteStore,
+    useFriendAvailabilityNotifyStore: () => mocks.availabilityNotifyStore,
     useGameStore: () => mocks.gameStore,
     useLaunchStore: () => mocks.launchStore,
     useLocationStore: () => mocks.locationStore,
@@ -195,6 +199,15 @@ vi.mock('../../../../components/BackToTop.vue', () => ({
     default: { template: '<div data-testid="back-to-top" />' }
 }));
 
+vi.mock(
+    '../../../../components/dialogs/FriendAvailabilityNotifyDialog.vue',
+    () => ({
+        default: {
+            template: '<div data-testid="friend-availability-dialog" />'
+        }
+    })
+);
+
 vi.mock('../../../../components/Location.vue', () => ({
     default: {
         props: ['location', 'traveling', 'link'],
@@ -210,6 +223,7 @@ vi.mock('../FriendItem.vue', () => ({
 }));
 
 vi.mock('lucide-vue-next', () => ({
+    Bell: { template: '<span data-testid="bell" />' },
     ChevronDown: { template: '<span data-testid="chevron" />' },
     Clock: { template: '<span data-testid="clock" />' },
     User: { template: '<i />' }
@@ -263,6 +277,7 @@ describe('FriendsSidebar.vue', () => {
         mocks.configRepository.setBool.mockResolvedValue(undefined);
         mocks.configRepository.getArray.mockResolvedValue([]);
         mocks.configRepository.setArray.mockResolvedValue(undefined);
+        mocks.availabilityNotifyStore.openDialog.mockReset();
         vi.clearAllMocks();
     });
 
@@ -316,5 +331,29 @@ describe('FriendsSidebar.vue', () => {
         expect(wrapper.text()).toContain('side_panel.same_instance');
         expect(wrapper.findAll('[data-testid="friend-item"]').length).toBe(2);
         expect(wrapper.text()).toContain('(2)');
+    });
+
+    test('opens availability notify dialog from friend context menu', async () => {
+        const friend = makeFriend('usr_online');
+        mocks.friendStore.onlineFriends.value = [friend];
+
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        await nextTick();
+
+        const button = wrapper
+            .findAll('button')
+            .find((node) =>
+                node
+                    .text()
+                    .includes('dialog.user.actions.notify_when_available')
+            );
+        expect(button).toBeTruthy();
+
+        await button.trigger('click');
+
+        expect(mocks.availabilityNotifyStore.openDialog).toHaveBeenCalledWith(
+            friend
+        );
     });
 });

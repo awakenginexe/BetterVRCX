@@ -2,6 +2,7 @@ import { getGroupName, getWorldName, isRealInstance } from '../shared/utils';
 import { AppDebug } from '../services/appConfig';
 import { database } from '../services/database';
 import { useFeedStore } from '../stores/feed';
+import { useFriendAvailabilityNotifyStore } from '../stores/friendAvailabilityNotify';
 import { useFriendStore } from '../stores/friend';
 import { useNotificationStore } from '../stores/notification';
 import { syncFriendSearchIndex } from './searchIndexCoordinator';
@@ -29,6 +30,7 @@ export async function runUpdateFriendDelayedCheckFlow(
     const friendStore = useFriendStore();
     const feedStore = useFeedStore();
     const notificationStore = useNotificationStore();
+    const availabilityNotifyStore = useFriendAvailabilityNotifyStore();
     const sharedFeedStore = useSharedFeedStore();
     const { friends, localFavoriteFriends } = friendStore;
 
@@ -36,6 +38,7 @@ export async function runUpdateFriendDelayedCheckFlow(
     let groupName;
     let worldName;
     const id = ctx.id;
+    const previousState = ctx.state;
     if (AppDebug.debugFriendState) {
         console.log(
             `${ctx.name} updateFriendState ${ctx.state} -> ${newState}`
@@ -115,6 +118,12 @@ export async function runUpdateFriendDelayedCheckFlow(
     if (ctx.state !== newState) {
         ctx.state = newState;
         friendStore.updateOnlineFriendCounter();
+        await availabilityNotifyStore.handlePresenceTransition({
+            friend: ctx,
+            previousState,
+            newState,
+            now: now()
+        });
     }
     if (ref?.displayName) {
         ctx.name = ref.displayName;

@@ -1301,6 +1301,25 @@
         "prompt": {
             "input_invalid": "Invalid input"
         },
+        "friend_availability_notify": {
+            "title": "Notify when available",
+            "description": "Send a notification when {name} is available.",
+            "duration": "Duration",
+            "duration_once": "Only this time",
+            "duration_7_days": "7 days",
+            "duration_30_days": "30 days",
+            "duration_forever": "Forever",
+            "triggers": "Notify when",
+            "active": "ACTIVE",
+            "active_hint": "Friend is active from VRChat web, API, or VRCX.",
+            "online": "ONLINE",
+            "online_hint": "Friend is in-game in VRChat.",
+            "trigger_required": "Choose at least one notification trigger.",
+            "save": "Save",
+            "remove": "Remove",
+            "saved": "Availability notification saved for {name}.",
+            "removed": "Availability notification removed for {name}."
+        },
         "user": {
             "status": {
                 "active": "Active",
@@ -1334,6 +1353,7 @@
                 "invite_with_message": "Invite With Message",
                 "request_invite": "Request Invite",
                 "request_invite_with_message": "Request Invite With Message",
+                "notify_when_available": "Notify When Available",
                 "invite_to_group": "Invite To Group",
                 "group_moderation": "Group Moderation",
                 "send_boop": "Send Boop",
@@ -2825,6 +2845,8 @@
         "online_location": "has logged in to {location}",
         "online": "has logged in",
         "offline": "has logged out",
+        "friend_availability_active": "is active",
+        "friend_availability_online": "is online",
         "status_update": "status is now {status} {description}",
         "invite": "has invited you to {location} {message}",
         "request_invite": "has requested an invite {message}",

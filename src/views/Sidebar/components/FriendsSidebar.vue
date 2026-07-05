@@ -147,6 +147,11 @@
                                             :is-group-by-instance="item.row.isGroupByInstance" />
                                     </ContextMenuTrigger>
                                     <ContextMenuContent>
+                                        <ContextMenuItem @click="openAvailabilityNotifyDialog(item.row.friend)">
+                                            <Bell class="size-4" />
+                                            {{ t('dialog.user.actions.notify_when_available') }}
+                                        </ContextMenuItem>
+                                        <ContextMenuSeparator />
                                         <ContextMenuItem
                                             v-if="item.row.friend.state === 'online'"
                                             @click="friendRequestInvite(item.row.friend)">
@@ -199,12 +204,13 @@
             </div>
         </div>
         <BackToTop :virtualizer="virtualizer" :target="scrollViewportRef" :tooltip="false" />
+        <FriendAvailabilityNotifyDialog />
     </div>
 </template>
 
 <script setup>
     import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
-    import { ChevronDown, Clock, User } from 'lucide-vue-next';
+    import { Bell, ChevronDown, Clock, User } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
@@ -227,6 +233,7 @@
         useAdvancedSettingsStore,
         useAppearanceSettingsStore,
         useFavoriteStore,
+        useFriendAvailabilityNotifyStore,
         useFriendStore,
         useGameStore,
         useLaunchStore,
@@ -243,6 +250,7 @@
     import { parseLocation } from '../../../shared/utils';
 
     import BackToTop from '../../../components/BackToTop.vue';
+    import FriendAvailabilityNotifyDialog from '../../../components/dialogs/FriendAvailabilityNotifyDialog.vue';
     import FriendItem from './FriendItem.vue';
     import Location from '../../../components/Location.vue';
     import configRepository from '../../../services/config';
@@ -254,6 +262,7 @@
     const { t } = useI18n();
 
     const friendStore = useFriendStore();
+    const availabilityNotifyStore = useFriendAvailabilityNotifyStore();
     const {
         allFavoriteOnlineFriends,
         allFavoriteFriendIds,
@@ -782,6 +791,10 @@
             .then(() => {
                 toast.success('Status updated');
             });
+    }
+
+    function openAvailabilityNotifyDialog(friend) {
+        availabilityNotifyStore.openDialog(friend);
     }
 
     const canInviteToMyLocation = computed(() => checkCanInvite(lastLocation.value.location));

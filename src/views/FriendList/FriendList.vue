@@ -104,6 +104,14 @@
                         </div>
                     </div>
                 </template>
+                <template #row-context-menu="{ row }">
+                    <ContextMenuContent>
+                        <ContextMenuItem @click="openAvailabilityNotifyDialog(row.original)">
+                            <Bell class="size-4" />
+                            {{ t('dialog.user.actions.notify_when_available') }}
+                        </ContextMenuItem>
+                    </ContextMenuContent>
+                </template>
             </DataTableLayout>
             <Dialog v-model:open="friendsListLoadDialogVisible">
                 <DialogContent
@@ -129,6 +137,7 @@
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            <FriendAvailabilityNotifyDialog />
         </div>
     </div>
 </template>
@@ -140,7 +149,7 @@
     import { Button } from '@/components/ui/button';
     import { InputGroupField } from '@/components/ui/input-group';
     import { Progress } from '@/components/ui/progress';
-    import { Star } from 'lucide-vue-next';
+    import { Bell, Star } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
@@ -150,6 +159,7 @@
     import {
         useAppearanceSettingsStore,
         useChartsStore,
+        useFriendAvailabilityNotifyStore,
         useFriendStore,
         useModalStore,
         useSearchStore,
@@ -157,6 +167,8 @@
     } from '../../stores';
     import { friendRequest, userRequest } from '../../api';
     import { DataTableLayout } from '../../components/ui/data-table';
+    import { ContextMenuContent, ContextMenuItem } from '../../components/ui/context-menu';
+    import FriendAvailabilityNotifyDialog from '../../components/dialogs/FriendAvailabilityNotifyDialog.vue';
     import { Switch } from '../../components/ui/switch';
     import { Toggle } from '../../components/ui/toggle';
     import { TooltipWrapper } from '../../components/ui/tooltip';
@@ -173,6 +185,7 @@
     const emit = defineEmits(['lookup-user']);
 
     const { friends, allFavoriteFriendIds } = storeToRefs(useFriendStore());
+    const availabilityNotifyStore = useFriendAvailabilityNotifyStore();
     const modalStore = useModalStore();
     const { getAllUserStats, getAllUserMutualCount, getAllUserMutualOptedOut } = useFriendStore();
     const chartsStore = useChartsStore();
@@ -575,6 +588,10 @@
         if (!val) return;
         if (!val.id) emit('lookup-user', val);
         else showUserDialog(val.id);
+    }
+
+    function openAvailabilityNotifyDialog(friend) {
+        availabilityNotifyStore.openDialog(friend);
     }
 
     /**

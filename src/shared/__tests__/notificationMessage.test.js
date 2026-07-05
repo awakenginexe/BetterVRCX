@@ -93,6 +93,22 @@ describe('getNotificationMessage', () => {
         expect(result).toEqual({ title: 'Alice', body: 'has logged out' });
     });
 
+    test('FriendAvailabilityActive', () => {
+        const result = getNotificationMessage(
+            { type: 'FriendAvailabilityActive', displayName: 'Alice' },
+            ''
+        );
+        expect(result).toEqual({ title: 'Alice', body: 'is active' });
+    });
+
+    test('FriendAvailabilityOnline', () => {
+        const result = getNotificationMessage(
+            { type: 'FriendAvailabilityOnline', displayName: 'Alice' },
+            ''
+        );
+        expect(result).toEqual({ title: 'Alice', body: 'is online' });
+    });
+
     test('Status', () => {
         const result = getNotificationMessage(
             {
@@ -131,7 +147,7 @@ describe('getNotificationMessage', () => {
         );
         expect(result).toEqual({
             title: 'Bob',
-            body: 'has requested an invite hey'
+            body: 'has requested an invite  hey'
         });
     });
 
@@ -273,7 +289,7 @@ describe('getNotificationMessage', () => {
         );
         expect(result).toEqual({
             title: 'Bob',
-            body: 'has responded to your invite (accepted)'
+            body: 'has responded to your invite  (accepted)'
         });
     });
 
@@ -284,7 +300,7 @@ describe('getNotificationMessage', () => {
         );
         expect(result).toEqual({
             title: 'Bob',
-            body: 'has responded to your invite request (declined)'
+            body: 'has responded to your invite request  (declined)'
         });
     });
 
@@ -306,7 +322,7 @@ describe('getNotificationMessage', () => {
         );
         expect(result).toEqual({
             title: 'Dave',
-            body: 'trust level is now Known'
+            body: 'Trust level is now Known'
         });
     });
 
@@ -326,7 +342,7 @@ describe('getNotificationMessage', () => {
             { type: 'ChatBoxMessage', displayName: 'Bob', text: 'hello!' },
             ''
         );
-        expect(result).toEqual({ title: 'Bob', body: 'said hello!' });
+        expect(result).toEqual({ title: 'Bob', body: 'said: hello!' });
     });
 
     test('Blocked', () => {

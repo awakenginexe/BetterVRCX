@@ -13,9 +13,12 @@ const mocks = vi.hoisted(() => ({
     friendsListSearch: null,
     getAllUserStats: vi.fn(),
     getAllUserMutualCount: vi.fn(),
+    getAllUserMutualOptedOut: vi.fn(),
+    fetchMutualGraph: vi.fn().mockResolvedValue(undefined),
     confirmDeleteFriend: vi.fn(),
     handleFriendDelete: vi.fn(),
     showUserDialog: vi.fn(),
+    openAvailabilityDialog: vi.fn(),
     modalConfirm: vi.fn().mockResolvedValue({ ok: true }),
     modalAlert: vi.fn(),
     userGetUser: vi.fn().mockResolvedValue({}),
@@ -70,7 +73,15 @@ vi.mock('../../../stores', () => ({
         friends: mocks.friends,
         allFavoriteFriendIds: mocks.allFavoriteFriendIds,
         getAllUserStats: mocks.getAllUserStats,
-        getAllUserMutualCount: mocks.getAllUserMutualCount
+        getAllUserMutualCount: mocks.getAllUserMutualCount,
+        getAllUserMutualOptedOut: mocks.getAllUserMutualOptedOut
+    }),
+    useChartsStore: () => ({
+        mutualGraphStatus: { isFetching: false },
+        fetchMutualGraph: (...args) => mocks.fetchMutualGraph(...args)
+    }),
+    useFriendAvailabilityNotifyStore: () => ({
+        openDialog: (...args) => mocks.openAvailabilityDialog(...args)
     }),
     useModalStore: () => ({
         confirm: (...args) => mocks.modalConfirm(...args),
@@ -80,7 +91,9 @@ vi.mock('../../../stores', () => ({
         stringComparer: mocks.stringComparer,
         friendsListSearch: mocks.friendsListSearch
     }),
-    useUserStore: () => ({}),
+    useUserStore: () => ({
+        currentUser: { hasSharedConnectionsOptOut: false }
+    }),
     useAppearanceSettingsStore: () => ({
         tablePageSizes: [10, 25, 50],
         tablePageSize: 25,
@@ -158,10 +171,28 @@ vi.mock('@/components/ui/data-table', () => ({
         template:
             '<div data-testid="friend-list-layout">' +
             '<slot name="toolbar" />' +
+            '<slot name="row-context-menu" :row="{ original: { id: \'usr_ctx\', displayName: \'Context Friend\' } }" />' +
             '<button data-testid="set-page-size" @click="onPageSizeChange?.(50)">set-page-size</button>' +
             '<button data-testid="trigger-row-click" @click="onRowClick?.({ original: { id: \'usr_row\' } })">row-click</button>' +
             '<span data-testid="total-items">{{ totalItems }}</span>' +
             '</div>'
+    }
+}));
+
+vi.mock(
+    '../../../components/dialogs/FriendAvailabilityNotifyDialog.vue',
+    () => ({
+        default: {
+            template: '<div data-testid="friend-availability-dialog" />'
+        }
+    })
+);
+
+vi.mock('../../../components/ui/context-menu', () => ({
+    ContextMenuContent: { template: '<div><slot /></div>' },
+    ContextMenuItem: {
+        emits: ['click'],
+        template: '<button @click="$emit(\'click\')"><slot /></button>'
     }
 }));
 
@@ -236,6 +267,7 @@ vi.mock('@/components/ui/tooltip', () => ({
 }));
 
 vi.mock('lucide-vue-next', () => ({
+    Bell: { template: '<span />' },
     Star: { template: '<span />' }
 }));
 
@@ -286,7 +318,10 @@ describe('FriendList.vue', () => {
         mocks.routerPush.mockReset();
         mocks.getAllUserStats.mockReset();
         mocks.getAllUserMutualCount.mockReset();
+        mocks.getAllUserMutualOptedOut.mockReset();
+        mocks.fetchMutualGraph.mockClear();
         mocks.showUserDialog.mockReset();
+        mocks.openAvailabilityDialog.mockReset();
         mocks.modalConfirm.mockClear();
         mocks.modalAlert.mockReset();
         mocks.userGetUser.mockReset();
@@ -398,7 +433,7 @@ describe('FriendList.vue', () => {
         expect(mocks.getAllUserMutualCount).toHaveBeenCalledTimes(2);
     });
 
-    test('opens charts tab from toolbar button', async () => {
+    test('loads mutual friends from toolbar button', async () => {
         const wrapper = mount(FriendList);
 
         await clickButtonByText(
@@ -406,7 +441,9 @@ describe('FriendList.vue', () => {
             'view.friend_list.load_mutual_friends'
         );
 
-        expect(mocks.routerPush).toHaveBeenCalledWith({ name: 'charts' });
+        expect(mocks.fetchMutualGraph).toHaveBeenCalledTimes(1);
+        expect(mocks.getAllUserMutualCount).toHaveBeenCalled();
+        expect(mocks.getAllUserMutualOptedOut).toHaveBeenCalled();
     });
 
     test('loads missing user profiles and shows completion toast', async () => {
@@ -451,6 +488,20 @@ describe('FriendList.vue', () => {
             displayName: 'Unknown'
         });
         expect(mocks.showUserDialog).toHaveBeenCalledWith('usr_99');
+    });
+
+    test('opens availability dialog from row context menu', async () => {
+        const wrapper = mount(FriendList);
+
+        await clickButtonByText(
+            wrapper,
+            'dialog.user.actions.notify_when_available'
+        );
+
+        expect(mocks.openAvailabilityDialog).toHaveBeenCalledWith({
+            id: 'usr_ctx',
+            displayName: 'Context Friend'
+        });
     });
 
     test('toggles bulk mode column visibility and resets page size', async () => {

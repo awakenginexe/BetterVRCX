@@ -12,6 +12,7 @@ import { useDashboardStore } from './dashboard';
 import { useDiscordPresenceSettingsStore } from './settings/discordPresence';
 import { useFavoriteStore } from './favorite';
 import { useFeedStore } from './feed';
+import { useFriendAvailabilityNotifyStore } from './friendAvailabilityNotify';
 import { useFriendStore } from './friend';
 import { useGalleryStore } from './gallery';
 import { useGameLogStore } from './gameLog';
@@ -133,6 +134,7 @@ export function createGlobalStores() {
         wristOverlaySettings: useWristOverlaySettingsStore(),
         avatarProvider: useAvatarProviderStore(),
         favorite: useFavoriteStore(),
+        friendAvailabilityNotify: useFriendAvailabilityNotifyStore(),
         friend: useFriendStore(),
         photon: usePhotonStore(),
         user: useUserStore(),
@@ -172,6 +174,7 @@ export {
     useAvatarProviderStore,
     useFavoriteStore,
     useFeedStore,
+    useFriendAvailabilityNotifyStore,
     useFriendStore,
     useGalleryStore,
     useGameStore,

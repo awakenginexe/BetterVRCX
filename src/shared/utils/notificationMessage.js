@@ -55,6 +55,16 @@ export function getNotificationMessage(noty, message, displayNameOverride) {
         }
         case 'Offline':
             return { title: name, body: t('notifications.offline') };
+        case 'FriendAvailabilityActive':
+            return {
+                title: name,
+                body: t('notifications.friend_availability_active')
+            };
+        case 'FriendAvailabilityOnline':
+            return {
+                title: name,
+                body: t('notifications.friend_availability_online')
+            };
         case 'Status':
             return {
                 title: name,
