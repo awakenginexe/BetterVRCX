@@ -1,5 +1,9 @@
 import { ActivityType, StatusDisplayType } from '../constants/discord';
 
+const DEFAULT_DISCORD_APP_ID = '1523727103336513546';
+const DEFAULT_DISCORD_BIG_ICON = 'vrchat';
+const DEFAULT_DISCORD_ASSET_TEXT = 'Powered by VRCX Redesign';
+
 /**
  * RPC world configuration table.
  * Maps worldId → { activityType, statusDisplayType, appId, bigIcon }.
@@ -158,6 +162,55 @@ export function isPopcornPalaceWorld(worldId) {
 }
 
 /**
+ * Format the Discord secondary line for the current instance.
+ * @param {string} accessName
+ * @param {string} instanceName
+ * @param {string} platform
+ * @param {boolean} showInstanceNumber
+ * @returns {string}
+ */
+export function formatDiscordInstanceLine(
+    accessName,
+    instanceName,
+    platform,
+    showInstanceNumber
+) {
+    let instanceLine = accessName;
+    if (showInstanceNumber && instanceName) {
+        instanceLine = `${instanceLine} #${instanceName}`;
+    }
+    return `${instanceLine}${platform}`;
+}
+
+/**
+ * Resolve Discord party fields from the player-count preference.
+ * @param {boolean} showPlayerCount
+ * @param {string} partyId
+ * @param {number} partySize
+ * @param {number} partyMaxSize
+ * @returns {{ partyId: string, partySize: number, partyMaxSize: number }}
+ */
+export function resolveDiscordParty(
+    showPlayerCount,
+    partyId,
+    partySize,
+    partyMaxSize
+) {
+    if (!showPlayerCount || partySize === 0) {
+        return {
+            partyId: '',
+            partySize: 0,
+            partyMaxSize: 0
+        };
+    }
+    return {
+        partyId,
+        partySize,
+        partyMaxSize: Math.max(partySize, partyMaxSize)
+    };
+}
+
+/**
  * Get the platform display label for Discord RPC.
  * @param {string} platform - VRC platform string (e.g. 'standalonewindows', 'android')
  * @param {boolean} isGameRunning
@@ -226,3 +279,9 @@ export function getStatusInfo(status, discordHideInvite, t) {
             };
     }
 }
+
+export {
+    DEFAULT_DISCORD_APP_ID,
+    DEFAULT_DISCORD_ASSET_TEXT,
+    DEFAULT_DISCORD_BIG_ICON
+};

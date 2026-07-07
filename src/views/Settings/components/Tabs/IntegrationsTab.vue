@@ -30,12 +30,32 @@
                     " />
             </SettingsItem>
 
-            <SettingsItem :label="t('view.settings.discord_presence.discord_presence.instance_type_player_count')">
+            <SettingsItem :label="t('view.settings.discord_presence.discord_presence.show_instance_type')">
                 <Switch
-                    :model-value="discordInstance"
+                    :model-value="discordInstanceType"
                     :disabled="!discordActive"
                     @update:modelValue="
-                        setDiscordInstance();
+                        setDiscordInstanceType();
+                        saveDiscordOption();
+                    " />
+            </SettingsItem>
+
+            <SettingsItem :label="t('view.settings.discord_presence.discord_presence.show_instance_number')">
+                <Switch
+                    :model-value="discordInstanceNumber"
+                    :disabled="!discordActive || !discordInstanceType"
+                    @update:modelValue="
+                        setDiscordInstanceNumber();
+                        saveDiscordOption();
+                    " />
+            </SettingsItem>
+
+            <SettingsItem :label="t('view.settings.discord_presence.discord_presence.show_player_count')">
+                <Switch
+                    :model-value="discordPlayerCount"
+                    :disabled="!discordActive"
+                    @update:modelValue="
+                        setDiscordPlayerCount();
                         saveDiscordOption();
                     " />
             </SettingsItem>
@@ -43,7 +63,7 @@
             <SettingsItem :label="t('view.settings.discord_presence.discord_presence.show_current_platform')">
                 <Switch
                     :model-value="discordShowPlatform"
-                    :disabled="!discordActive || !discordInstance"
+                    :disabled="!discordActive || !discordInstanceType"
                     @update:modelValue="
                         setDiscordShowPlatform();
                         saveDiscordOption();
@@ -176,7 +196,9 @@
 
     const {
         setDiscordActive,
-        setDiscordInstance,
+        setDiscordInstanceType,
+        setDiscordPlayerCount,
+        setDiscordInstanceNumber,
         setDiscordHideInvite,
         setDiscordJoinButton,
         setDiscordHideImage,
@@ -188,7 +210,9 @@
 
     const {
         discordActive,
-        discordInstance,
+        discordInstanceType,
+        discordPlayerCount,
+        discordInstanceNumber,
         discordHideInvite,
         discordJoinButton,
         discordHideImage,

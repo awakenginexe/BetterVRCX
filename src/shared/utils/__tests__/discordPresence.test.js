@@ -1,14 +1,79 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import {
+    DEFAULT_DISCORD_APP_ID,
+    DEFAULT_DISCORD_ASSET_TEXT,
+    formatDiscordInstanceLine,
     getPlatformLabel,
     getStatusInfo,
     getRpcWorldConfig,
-    isPopcornPalaceWorld
+    isPopcornPalaceWorld,
+    resolveDiscordParty
 } from '../discordPresence';
 import { ActivityType, StatusDisplayType } from '../../constants/discord';
 
 const t = (key) => key;
+
+describe('default Discord RPC branding', () => {
+    test('uses the VRCX-Redesign Discord application id', () => {
+        expect(DEFAULT_DISCORD_APP_ID).toBe('1523727103336513546');
+        expect(DEFAULT_DISCORD_ASSET_TEXT).toBe('Powered by VRCX Redesign');
+    });
+});
+
+describe('formatDiscordInstanceLine', () => {
+    test('includes instance number when enabled', () => {
+        expect(
+            formatDiscordInstanceLine('Public', '12345', ' (VR)', true)
+        ).toBe('Public #12345 (VR)');
+    });
+
+    test('hides instance number while keeping access type and platform', () => {
+        expect(
+            formatDiscordInstanceLine('Public', '12345', ' (VR)', false)
+        ).toBe('Public (VR)');
+    });
+
+    test('does not add an empty instance marker', () => {
+        expect(
+            formatDiscordInstanceLine('Group(test)', '', ' (Desktop)', true)
+        ).toBe('Group(test) (Desktop)');
+    });
+});
+
+describe('resolveDiscordParty', () => {
+    test('keeps player count when enabled', () => {
+        expect(resolveDiscordParty(true, 'wrld_test:12345', 3, 10)).toEqual({
+            partyId: 'wrld_test:12345',
+            partySize: 3,
+            partyMaxSize: 10
+        });
+    });
+
+    test('hides player count without changing instance type text', () => {
+        expect(resolveDiscordParty(false, 'wrld_test:12345', 3, 10)).toEqual({
+            partyId: '',
+            partySize: 0,
+            partyMaxSize: 0
+        });
+    });
+
+    test('expands party max to current count when the room is over capacity', () => {
+        expect(resolveDiscordParty(true, 'wrld_test:12345', 12, 10)).toEqual({
+            partyId: 'wrld_test:12345',
+            partySize: 12,
+            partyMaxSize: 12
+        });
+    });
+
+    test('hides empty player counts', () => {
+        expect(resolveDiscordParty(true, 'wrld_test:12345', 0, 10)).toEqual({
+            partyId: '',
+            partySize: 0,
+            partyMaxSize: 0
+        });
+    });
+});
 
 describe('getPlatformLabel', () => {
     test('returns VR label when game is running in VR', () => {

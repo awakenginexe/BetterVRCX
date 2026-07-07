@@ -72,9 +72,9 @@ namespace VRCX
                 // look for trailing git hash "-22bcd96" to indicate nightly build
                 var version = versionFile.Split('-');
                 if (version.Length > 0 && version[^1].Length == 7)
-                    Version = "VRCX-Redesign Nightly 2.0.0";
+                    Version = "VRCX-Redesign Nightly 2.1.0";
                 else
-                    Version = "VRCX-Redesign 2.0.0";
+                    Version = "VRCX-Redesign 2.1.0";
             }
             catch (Exception ex)
             {

@@ -10,10 +10,15 @@ import {
     parseLocation
 } from '../../shared/utils';
 import {
+    DEFAULT_DISCORD_APP_ID,
+    DEFAULT_DISCORD_ASSET_TEXT,
+    DEFAULT_DISCORD_BIG_ICON,
+    formatDiscordInstanceLine,
     getPlatformLabel,
     getRpcWorldConfig,
     getStatusInfo,
-    isPopcornPalaceWorld
+    isPopcornPalaceWorld,
+    resolveDiscordParty
 } from '../../shared/utils/discordPresence';
 import {
     ActivityType,
@@ -58,6 +63,9 @@ export const useDiscordPresenceSettingsStore = defineStore(
 
         const discordActive = ref(false);
         const discordInstance = ref(true);
+        const discordInstanceType = ref(true);
+        const discordPlayerCount = ref(true);
+        const discordInstanceNumber = ref(true);
         const discordHideInvite = ref(true);
         const discordJoinButton = ref(false);
         const discordHideImage = ref(false);
@@ -78,6 +86,36 @@ export const useDiscordPresenceSettingsStore = defineStore(
         function setDiscordInstance() {
             discordInstance.value = !discordInstance.value;
             configRepository.setBool('discordInstance', discordInstance.value);
+        }
+        /**
+         *
+         */
+        function setDiscordInstanceType() {
+            discordInstanceType.value = !discordInstanceType.value;
+            configRepository.setBool(
+                'discordInstanceType',
+                discordInstanceType.value
+            );
+        }
+        /**
+         *
+         */
+        function setDiscordPlayerCount() {
+            discordPlayerCount.value = !discordPlayerCount.value;
+            configRepository.setBool(
+                'discordPlayerCount',
+                discordPlayerCount.value
+            );
+        }
+        /**
+         *
+         */
+        function setDiscordInstanceNumber() {
+            discordInstanceNumber.value = !discordInstanceNumber.value;
+            configRepository.setBool(
+                'discordInstanceNumber',
+                discordInstanceNumber.value
+            );
         }
         /**
          *
@@ -148,6 +186,9 @@ export const useDiscordPresenceSettingsStore = defineStore(
             const [
                 discordActiveConfig,
                 discordInstanceConfig,
+                discordInstanceTypeConfig,
+                discordPlayerCountConfig,
+                discordInstanceNumberConfig,
                 discordHideInviteConfig,
                 discordJoinButtonConfig,
                 discordHideImageConfig,
@@ -157,6 +198,9 @@ export const useDiscordPresenceSettingsStore = defineStore(
             ] = await Promise.all([
                 configRepository.getBool('discordActive', false),
                 configRepository.getBool('discordInstance', true),
+                configRepository.getBool('discordInstanceType', null),
+                configRepository.getBool('discordPlayerCount', null),
+                configRepository.getBool('discordInstanceNumber', null),
                 configRepository.getBool('discordHideInvite', true),
                 configRepository.getBool('discordJoinButton', false),
                 configRepository.getBool('discordHideImage', false),
@@ -170,6 +214,11 @@ export const useDiscordPresenceSettingsStore = defineStore(
 
             discordActive.value = discordActiveConfig;
             discordInstance.value = discordInstanceConfig;
+            discordInstanceType.value =
+                discordInstanceTypeConfig ?? discordInstanceConfig;
+            discordPlayerCount.value =
+                discordPlayerCountConfig ?? discordInstanceConfig;
+            discordInstanceNumber.value = discordInstanceNumberConfig ?? true;
             discordHideInvite.value = discordHideInviteConfig;
             discordJoinButton.value = discordJoinButtonConfig;
             discordHideImage.value = discordHideImageConfig;
@@ -239,7 +288,7 @@ export const useDiscordPresenceSettingsStore = defineStore(
                 }
 
                 let platform = '';
-                if (discordShowPlatform.value) {
+                if (discordShowPlatform.value && discordInstanceType.value) {
                     platform = getPlatformLabel(
                         userStore.currentUser.presence.platform,
                         gameStore.isGameRunning,
@@ -259,29 +308,51 @@ export const useDiscordPresenceSettingsStore = defineStore(
                         );
                     }
                 }
+                const formatAccessName = (accessName) =>
+                    formatDiscordInstanceLine(
+                        accessName,
+                        L.instanceName,
+                        platform,
+                        discordInstanceNumber.value
+                    );
                 switch (L.accessType) {
                     case 'public':
                         state.lastLocationDetails.joinUrl = getLaunchURL(L);
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_public')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_public')
+                        );
                         break;
                     case 'invite+':
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_invite_plus')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_invite_plus')
+                        );
                         break;
                     case 'invite':
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_invite')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_invite')
+                        );
                         break;
                     case 'friends':
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_friend')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_friend')
+                        );
                         break;
                     case 'friends+':
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_friend_plus')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_friend_plus')
+                        );
                         break;
                     case 'group':
-                        state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_group')} #${L.instanceName}${platform}`;
+                        state.lastLocationDetails.accessName = formatAccessName(
+                            t('dialog.new_instance.access_type_group')
+                        );
                         try {
                             const groupName = await getGroupName(L.groupId);
                             if (groupName) {
-                                state.lastLocationDetails.accessName = `${t('dialog.new_instance.access_type_group')}${state.lastLocationDetails.groupAccessName}(${groupName}) #${L.instanceName}${platform}`;
+                                state.lastLocationDetails.accessName =
+                                    formatAccessName(
+                                        `${t('dialog.new_instance.access_type_group')}${state.lastLocationDetails.groupAccessName}(${groupName})`
+                                    );
                             }
                         } catch (e) {
                             console.error(
@@ -318,25 +389,18 @@ export const useDiscordPresenceSettingsStore = defineStore(
             let statusDisplayType = discordWorldNameAsDiscordStatus.value
                 ? StatusDisplayType.Details
                 : StatusDisplayType.Name;
-            let appId = '883308884863901717';
-            let bigIcon = 'vrchat';
+            let appId = DEFAULT_DISCORD_APP_ID;
+            let bigIcon = DEFAULT_DISCORD_BIG_ICON;
             let detailsUrl = state.lastLocationDetails.worldLink;
-            let poweredBy = t(
-                'view.settings.discord_presence.rpc.powered_by_vrcx'
-            );
+            let poweredBy = DEFAULT_DISCORD_ASSET_TEXT;
 
-            let partyId = `${state.lastLocationDetails.worldId}:${state.lastLocationDetails.instanceName}`;
-            let partySize = locationStore.lastLocation.playerList.size;
-            let partyMaxSize = state.lastLocationDetails.worldCapacity;
-            if (partySize > partyMaxSize) {
-                partyMaxSize = partySize;
-            }
-            if (partySize === 0) {
-                partyMaxSize = 0;
-            }
-            if (!discordInstance.value) {
-                partySize = 0;
-                partyMaxSize = 0;
+            let { partyId, partySize, partyMaxSize } = resolveDiscordParty(
+                discordPlayerCount.value,
+                `${state.lastLocationDetails.worldId}:${state.lastLocationDetails.instanceName}`,
+                locationStore.lastLocation.playerList.size,
+                state.lastLocationDetails.worldCapacity
+            );
+            if (!discordInstanceType.value) {
                 stateText = '';
             }
             let buttonText = 'Join';
@@ -392,8 +456,8 @@ export const useDiscordPresenceSettingsStore = defineStore(
                 stateText = '';
                 startTime = 0;
                 endTime = 0;
-                appId = '883308884863901717'; // default VRChat app id
-                bigIcon = 'vrchat';
+                appId = DEFAULT_DISCORD_APP_ID;
+                bigIcon = DEFAULT_DISCORD_BIG_ICON;
                 activityType = ActivityType.Playing;
                 statusDisplayType = StatusDisplayType.Name;
             }
@@ -451,6 +515,9 @@ export const useDiscordPresenceSettingsStore = defineStore(
 
             discordActive,
             discordInstance,
+            discordInstanceType,
+            discordPlayerCount,
+            discordInstanceNumber,
             discordHideInvite,
             discordJoinButton,
             discordHideImage,
@@ -460,6 +527,9 @@ export const useDiscordPresenceSettingsStore = defineStore(
 
             setDiscordActive,
             setDiscordInstance,
+            setDiscordInstanceType,
+            setDiscordPlayerCount,
+            setDiscordInstanceNumber,
             setDiscordHideInvite,
             setDiscordJoinButton,
             setDiscordHideImage,
