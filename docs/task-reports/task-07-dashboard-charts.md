@@ -52,3 +52,42 @@ Result: 8 files passed, 60 tests passed.
 - No scoped Dashboard/Charts baseline failures were encountered. The full repository test suite was not run because Task 7 requires focused and relevant broader coverage rather than whole-branch verification; Task 10 owns that aggregate gate.
 - Visual desktop smoke testing was not performed in this non-interactive run. The production build validates compilation and the focused tests validate the exposed builder/analytics contracts, but manual interaction with live ECharts and Sigma rendering remains a final verification concern.
 - Pre-existing untracked migrated documentation under `docs/` was preserved and excluded from both Task 7 commits.
+
+## Fix round 1 — independent review follow-up
+
+- Review base: `c501acd2f63c370e99d1e12aa984238a5e52caab`
+- Fix implementation: `61eb0bcbdf82b36699d5500ee95625afac8718b3` (`fix: harden dashboard and analytics redesign`)
+
+### Findings addressed
+
+- Replaced all source-text marker tests with mounted Vue behavior tests. The Dashboard suite now exercises edit/save/cancel/delete, the native add-row trigger and vertical split draft, widget selection, visible row direction chrome, panel remove accessibility, and rendered panel metadata. The analytics suite mounts Hot Worlds, Mutual Friends, and Instance Activity with focused dependency stubs to exercise window reload/detail retrieval, resize containment, cancellation/progress, and date/filter callbacks.
+- Removed the 360px/420px analytics height floors. The Instance Activity, Mutual Friends, and Hot Worlds workspace roots now have `height: 100%`/`min-height: 0` layout-safe frames and their resize observers attach to the actual root workspace. Instance Activity refreshes ECharts after root resize and Mutual Friends refreshes Sigma when present. The Hot Worlds mounted regression test verifies a 180px containing workspace keeps the content at `height: 100%` and is the observed target.
+- Replaced Dashboard's click-on-container add-row mechanism with a native localized button using `aria-expanded` and `aria-controls`; layout choices are sibling native buttons, so no interactive controls are nested. Added localized accessible names to all modified icon-only controls, including DashboardPanel remove, Instance Activity help/refresh/settings/date navigation, Mutual Friends stop/settings, and Hot Worlds help.
+- Added visible builder boundaries and direction-preview chrome to DashboardRow, compact localized panel headers/type badges to rendered DashboardPanel content, and visible Widgets/Full Pages metadata under PanelSelector options. Existing localization keys were reused; no locale files changed.
+
+### Fix-round TDD and verification
+
+RED after replacing the marker tests:
+
+```text
+npm test -- src/views/Dashboard/__tests__/DashboardWorkspace.test.js src/views/Charts/__tests__/analyticsWorkspace.test.js
+```
+
+Expected failures observed: Dashboard had no native builder trigger or visible selector metadata; Hot Worlds imposed `360px` rather than content-sized containment; Mutual Friends stop had no accessible name; and Instance Activity date navigation had no accessible name. The initial test harness omitted framework exports in two mocks; those were corrected before recording this behavior-level RED run.
+
+GREEN / relevant broader verification:
+
+```text
+npm test -- src/views/Dashboard/__tests__/DashboardWorkspace.test.js src/views/Charts/__tests__/analyticsWorkspace.test.js src/views/Charts/composables/__tests__/useActivityDataFilter.test.js src/views/Charts/composables/__tests__/useActivityStats.test.js src/views/Charts/composables/__tests__/useChartHelpers.test.js src/views/Charts/composables/__tests__/useDateNavigation.test.js src/views/Charts/__tests__/graphLayoutWorker.test.js src/components/dialogs/UserDialog/__tests__/UserDialogMutualFriendsTab.test.js
+```
+
+Result: 8 files passed, 62 tests passed. No scoped baseline failures occurred.
+
+- Registry audit: PASS — 20 persisted panel keys and 20 component imports.
+- `npm run prod`: PASS (exit 0). Vite transformed 4,406 modules and completed in 6.08 seconds; the license manifest has 105 entries with one existing review-required entry. Plugin timing diagnostics were non-failing.
+- `npx oxfmt --check` across all 10 fix-round source/test/style files: PASS.
+- `git diff --check`: PASS before the fix commit.
+
+### Remaining concern
+
+The focused resize regression verifies containment and observer ownership without a live ECharts or Sigma canvas. A manual desktop visual/interaction pass remains appropriate for Task 10, especially resizing a dashboard row while an active chart or graph is rendered.
