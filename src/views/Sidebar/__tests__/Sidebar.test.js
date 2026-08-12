@@ -32,6 +32,7 @@ vi.mock('../../../stores', () => ({
         hasUnseenNotifications: mocks.hasUnseen,
         markAllAsSeen: (...a) => mocks.markAllAsSeen(...a)
     }),
+    useNotificationsSettingsStore: () => ({ notificationLayout: ref('card') }),
     useAppearanceSettingsStore: () => ({
         sidebarSortMethod1: ref(''),
         sidebarSortMethod2: ref(''),
@@ -103,7 +104,8 @@ vi.mock('@/components/ui/field', () => ({
 }));
 vi.mock('@/components/ui/tabs', () => ({
     TabsUnderline: {
-        template: '<div><slot name="friends" /><slot name="groups" /></div>'
+        template:
+            '<div data-testid="sidebar-tabs"><slot name="friends" /><slot name="groups" /></div>'
     }
 }));
 vi.mock('@/components/ui/switch', () => ({ Switch: { template: '<div />' } }));
@@ -132,10 +134,10 @@ vi.mock('lucide-vue-next', () => ({
     Settings: { template: '<i />' }
 }));
 vi.mock('../components/FriendsSidebar.vue', () => ({
-    default: { template: '<div />' }
+    default: { template: '<div data-testid="friends-sidebar" />' }
 }));
 vi.mock('../components/GroupsSidebar.vue', () => ({
-    default: { template: '<div />' }
+    default: { template: '<div data-testid="groups-sidebar" />' }
 }));
 vi.mock('../components/FavoriteFriendGroupOrderDialog.vue', () => ({
     default: { template: '<div />' }
@@ -168,5 +170,22 @@ describe('Sidebar.vue', () => {
 
         expect(mocks.openSearch).toHaveBeenCalled();
         expect(mocks.markAllAsSeen).toHaveBeenCalled();
+    });
+
+    it('unmounts Friends and Groups lists in the compact 60px rail', () => {
+        const wrapper = mount(Sidebar, { props: { compact: true } });
+
+        expect(
+            wrapper.get('[data-shell-region="right-rail"]').classes()
+        ).toContain('bv-right-sidebar--compact');
+        expect(wrapper.find('[data-testid="sidebar-tabs"]').exists()).toBe(
+            false
+        );
+        expect(wrapper.find('[data-testid="friends-sidebar"]').exists()).toBe(
+            false
+        );
+        expect(wrapper.find('[data-testid="groups-sidebar"]').exists()).toBe(
+            false
+        );
     });
 });

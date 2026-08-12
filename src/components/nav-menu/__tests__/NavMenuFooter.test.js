@@ -77,4 +77,19 @@ describe('NavMenuFooter', () => {
 
         expect(wrapper.emitted('toggle-theme')).toHaveLength(1);
     });
+
+    it('labels the pending update marker with the non-color danger variant', () => {
+        const wrapper = mount(NavMenuFooter, {
+            props: { ...baseProps, hasPendingUpdate: true }
+        });
+
+        const updateIndicator = wrapper.get('.bv-status-dot');
+
+        expect(updateIndicator.attributes()).toMatchObject({
+            'data-status': 'danger',
+            role: 'img',
+            'aria-label': 'nav_menu.update_available'
+        });
+        expect(updateIndicator.classes()).not.toContain('bg-red-500');
+    });
 });

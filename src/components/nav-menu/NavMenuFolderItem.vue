@@ -24,8 +24,10 @@
                                     class="inline-flex size-6 items-center justify-center text-lg relative"
                                     ><span
                                         v-if="isNavItemNotified(item)"
-                                        class="notify-dot bg-red-500 -right-1!"
-                                        aria-hidden="true"></span
+                                        class="notify-dot bv-status-dot -right-1!"
+                                        data-status="danger"
+                                        role="img"
+                                        :aria-label="t('nav_menu.mark_all_read')"></span
                                 ></i>
                                 <span v-show="!isCollapsed">{{
                                     item.titleIsCustom ? item.title : t(item.title || '')
@@ -43,8 +45,10 @@
                                     class="inline-flex size-4 items-center justify-center text-base relative"
                                     ><span
                                         v-if="isEntryNotified(entry)"
-                                        class="notify-dot bg-red-500 -right-1! top-0.5!"
-                                        aria-hidden="true"></span
+                                        class="notify-dot bv-status-dot -right-1! top-0.5!"
+                                        data-status="danger"
+                                        role="img"
+                                        :aria-label="t('nav_menu.mark_all_read')"></span
                                 ></i>
                                 <span v-if="entry.titleIsCustom">{{ entry.label }}</span>
                                 <span v-else>{{ t(entry.label) }}</span>
@@ -74,8 +78,10 @@
                                         class="inline-flex size-6 items-center justify-center text-lg relative"
                                         ><span
                                             v-if="isNavItemNotified(item)"
-                                            class="notify-dot bg-red-500"
-                                            aria-hidden="true"></span
+                                            class="notify-dot bv-status-dot"
+                                            data-status="danger"
+                                            role="img"
+                                            :aria-label="t('nav_menu.mark_all_read')"></span
                                     ></i>
                                     <span v-show="!isCollapsed">{{
                                         item.titleIsCustom ? item.title : t(item.title || '')
@@ -101,8 +107,10 @@
                                                         class="inline-flex size-5 items-center justify-center text-base relative"
                                                         ><span
                                                             v-if="isEntryNotified(entry)"
-                                                            class="notify-dot bg-red-500 -right-0.5!"
-                                                            aria-hidden="true"></span
+                                                            class="notify-dot bv-status-dot -right-0.5!"
+                                                            data-status="danger"
+                                                            role="img"
+                                                            :aria-label="t('nav_menu.mark_all_read')"></span
                                                     ></i>
                                                     <span v-if="entry.titleIsCustom">{{ entry.label }}</span>
                                                     <span v-else>{{ t(entry.label) }}</span>
@@ -240,9 +248,5 @@
         position: absolute;
         top: 4px;
         right: 0;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        transform: translateY(-50%);
     }
 </style>

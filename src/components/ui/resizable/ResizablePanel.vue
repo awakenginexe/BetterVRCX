@@ -9,6 +9,11 @@
         maxSize: { type: Number, required: false },
         minSize: { type: Number, required: false },
         order: { type: Number, required: false },
+        sizeUnit: {
+            type: String,
+            required: false,
+            validator: (value) => value === '%' || value === 'px'
+        },
         asChild: { type: Boolean, required: false },
         as: { type: null, required: false }
     });

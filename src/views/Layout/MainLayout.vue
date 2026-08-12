@@ -27,7 +27,7 @@
                         ]"
                         @layout="handleLayout">
                         <template #default="{ layout }">
-                            <ResizablePanel :default-size="mainDefaultSize" :order="1">
+                            <ResizablePanel :order="1">
                                 <div class="bv-route-content" data-shell-region="content">
                                     <RouterView v-slot="{ Component }">
                                         <KeepAlive exclude="ChartsInstance, ChartsMutual">
@@ -40,19 +40,20 @@
                             <ResizableHandle
                                 with-handle
                                 :class="[
-                                    isAsideCollapsed(layout) ? 'opacity-100' : 'opacity-0',
+                                    isAsideCollapsedStatic ? 'opacity-100' : 'opacity-0',
                                     'z-20 [&>div]:-translate-x-1/2'
                                 ]"></ResizableHandle>
                             <ResizablePanel
                                 ref="asidePanelRef"
                                 :default-size="asideDefaultSize"
                                 :min-size="asideMinSize"
-                                :collapsed-size="0"
+                                :max-size="asideMaxSize"
+                                :collapsed-size="asideCollapsedSize"
+                                :size-unit="asideSizeUnit"
                                 collapsible
                                 :order="2"
-                                class="bv-right-rail-panel"
-                                :style="{ maxWidth: `${asideMaxPx}px` }">
-                                <Sidebar></Sidebar>
+                                class="bv-right-rail-panel">
+                                <Sidebar :compact="isAsideCollapsedStatic"></Sidebar>
                             </ResizablePanel>
                         </template>
                     </ResizablePanelGroup>
@@ -181,11 +182,11 @@
 
     const {
         asideDefaultSize,
+        asideCollapsedSize,
+        asideSizeUnit,
         asideMinSize,
-        asideMaxPx,
-        mainDefaultSize,
+        asideMaxSize,
         handleLayout,
-        isAsideCollapsed,
         isAsideCollapsedStatic,
         isSideBarTabShow
     } = useMainLayoutResizable();
@@ -246,7 +247,8 @@
     }
 
     .bv-right-rail-panel {
-        min-width: 60px;
+        min-width: 0;
+        overflow: hidden;
         border-left: 1px solid var(--bv-border);
         background: var(--bv-bg-rail);
     }

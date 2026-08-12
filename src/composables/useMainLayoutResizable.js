@@ -7,15 +7,16 @@ export function useMainLayoutResizable() {
     const appearanceStore = useAppearanceSettingsStore();
     const { isSideBarTabShow } = storeToRefs(appearanceStore);
 
-    const asideDefaultSize = 25;
-    const mainDefaultSize = 75;
-    const asideMinSize = 12;
-    const asideMaxPx = 700;
+    const asideDefaultSize = 260;
+    const asideCollapsedSize = 60;
+    const asideSizeUnit = 'px';
+    const asideMinSize = 260;
+    const asideMaxSize = 700;
 
     const isAsideCollapsed = (layout) =>
         Array.isArray(layout) &&
         layout.length >= 2 &&
-        layout[layout.length - 1] <= 1;
+        layout[layout.length - 1] <= asideCollapsedSize;
 
     const isAsideCollapsedState = ref(false);
     const handleLayout = (sizes) => {
@@ -32,9 +33,10 @@ export function useMainLayoutResizable() {
 
     return {
         asideDefaultSize,
+        asideCollapsedSize,
+        asideSizeUnit,
         asideMinSize,
-        asideMaxPx,
-        mainDefaultSize,
+        asideMaxSize,
         handleLayout,
         isAsideCollapsed,
         isAsideCollapsedStatic,

@@ -82,7 +82,7 @@ export const useAppearanceSettingsStore = defineStore(
             'Sort by Time in Instance',
             'Sort by Last Active'
         ]);
-        const navWidth = ref(240);
+        const navWidth = ref(220);
         const isSidebarGroupByInstance = ref(true);
         const isHideFriendsInSameInstance = ref(false);
         const isSameInstanceAboveFavorites = ref(false);
@@ -228,7 +228,7 @@ export const useAppearanceSettingsStore = defineStore(
                         'Sort by Last Active'
                     ])
                 ),
-                configRepository.getInt('VRCX_navPanelWidth', 240),
+                configRepository.getInt('VRCX_navPanelWidth', 220),
                 configRepository.getBool('VRCX_sidebarGroupByInstance', true),
                 configRepository.getBool(
                     'VRCX_hideFriendsInSameInstance',

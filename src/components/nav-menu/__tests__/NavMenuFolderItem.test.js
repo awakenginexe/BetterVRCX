@@ -113,4 +113,32 @@ describe('NavMenuFolderItem', () => {
 
         expect(wrapper.emitted('collapsed-dropdown-open-change')).toBeTruthy();
     });
+
+    it('labels unread folder notifications with the non-color danger marker', () => {
+        const wrapper = mount(NavMenuFolderItem, {
+            props: {
+                item: folderItem,
+                isCollapsed: false,
+                activeMenuIndex: '',
+                collapsedDropdownOpenId: null,
+                hasNotifications: true,
+                isEntryNotified: () => true,
+                isNavItemNotified: () => true,
+                isDashboardItem: () => false,
+                isToolItem: () => false
+            }
+        });
+
+        const unreadIndicators = wrapper.findAll('.bv-status-dot');
+
+        expect(unreadIndicators).toHaveLength(2);
+        for (const unreadIndicator of unreadIndicators) {
+            expect(unreadIndicator.classes()).not.toContain('bg-red-500');
+            expect(unreadIndicator.attributes()).toMatchObject({
+                'data-status': 'danger',
+                role: 'img',
+                'aria-label': 'nav_menu.mark_all_read'
+            });
+        }
+    });
 });

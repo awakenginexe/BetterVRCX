@@ -1,6 +1,9 @@
 <template>
-    <div class="x-aside-container bv-right-sidebar" data-shell-region="right-rail">
-        <div style="display: flex; align-items: baseline">
+    <div
+        class="x-aside-container bv-right-sidebar"
+        :class="{ 'bv-right-sidebar--compact': props.compact }"
+        data-shell-region="right-rail">
+        <div class="bv-right-sidebar-header">
             <div class="search-container p-2 pl-0" style="flex: 1">
                 <button
                     type="button"
@@ -14,7 +17,7 @@
                     <Kbd class="search-kbd shrink-0">K</Kbd>
                 </button>
             </div>
-            <div class="flex items-center mx-1 gap-1">
+            <div class="bv-right-sidebar-actions flex items-center mx-1 gap-1">
                 <TooltipWrapper side="bottom" :content="t('side_panel.refresh_tooltip')">
                     <Button
                         class="rounded-full"
@@ -293,6 +296,7 @@
             </div>
         </div>
         <TabsUnderline
+            v-if="!props.compact"
             default-value="friends"
             :items="sidebarTabs"
             :unmount-on-hide="false"
@@ -369,6 +373,13 @@
     import FavoriteFriendGroupOrderDialog from './components/FavoriteFriendGroupOrderDialog.vue';
     import GroupsSidebar from './components/GroupsSidebar.vue';
     import NotificationCenterSheet from './components/NotificationCenterSheet.vue';
+
+    const props = defineProps({
+        compact: {
+            type: Boolean,
+            default: false
+        }
+    });
 
     const { friends, isRefreshFriendsLoading, onlineFriendCount } = storeToRefs(useFriendStore());
     const { groupInstances } = storeToRefs(useGroupStore());
@@ -487,6 +498,27 @@
     .bv-right-sidebar {
         container-type: inline-size;
         background: var(--bv-bg-rail);
+    }
+
+    .bv-right-sidebar-header {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .bv-right-sidebar--compact .bv-right-sidebar-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bv-right-sidebar--compact .search-container {
+        width: 100%;
+        padding: 0;
+    }
+
+    .bv-right-sidebar--compact .bv-right-sidebar-actions {
+        flex-direction: column;
+        align-items: center;
+        margin: 6px 0 0;
     }
 
     .sidebar-tab-count {
