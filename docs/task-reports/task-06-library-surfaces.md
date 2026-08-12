@@ -2,7 +2,7 @@
 
 ## Exact scope
 
-- Initial Task 6 commit: `0846db75`; fix-round base: `435b0cd8`; visual/test fix: `8fe8a582`.
+- Task 6 base: `435b0cd8`; initial implementation: `0846db75`; fix-round base: `0846db75`; visual/test fix: `8fe8a582`.
 - Reworked only the existing Favorites rails, content panes, toolbar, selection controls, move destination menu, My Avatars workspace, and Gallery media surfaces. The implementation uses the existing components, stores, coordinators, localization, and virtualization paths.
 - Replaced marker assertions with behavior-level coverage for Favorites destination filtering/capacity/action flow, My Avatars persisted grid/table controls, and Gallery tab selection/upload-refresh routing.
 - Kept the pre-existing untracked redesign/planning files under `docs/` untouched and excluded from commits.
