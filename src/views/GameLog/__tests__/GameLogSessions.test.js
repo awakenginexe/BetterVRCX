@@ -221,4 +221,18 @@ describe('GameLogSessions.vue', () => {
         expect(mocks.setSessionsDateRange.mock.calls[0][0]).toContain('T');
         expect(mocks.setSessionsDateRange.mock.calls[0][1]).toContain('T');
     });
+
+    test('renders raised session controls and an explicit empty state', () => {
+        const wrapper = mount(GameLogSessions);
+
+        expect(wrapper.get('.game-log-sessions__controls').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.game-log-sessions__timeline').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.game-log-sessions__empty').classes()).toContain(
+            'bv-empty-state'
+        );
+    });
 });

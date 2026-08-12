@@ -5,7 +5,6 @@ import { nextTick } from 'vue';
 const mocks = vi.hoisted(() => ({
     makeRef: (value) => ({ value, __v_isRef: true }),
     route: { path: '/friend-list' },
-    routerPush: vi.fn(),
     friends: null,
     allFavoriteFriendIds: null,
     randomUserColours: null,
@@ -13,6 +12,8 @@ const mocks = vi.hoisted(() => ({
     friendsListSearch: null,
     getAllUserStats: vi.fn(),
     getAllUserMutualCount: vi.fn(),
+    getAllUserMutualOptedOut: vi.fn(),
+    fetchMutualGraph: vi.fn().mockResolvedValue(new Map()),
     confirmDeleteFriend: vi.fn(),
     handleFriendDelete: vi.fn(),
     showUserDialog: vi.fn(),
@@ -70,7 +71,12 @@ vi.mock('../../../stores', () => ({
         friends: mocks.friends,
         allFavoriteFriendIds: mocks.allFavoriteFriendIds,
         getAllUserStats: mocks.getAllUserStats,
-        getAllUserMutualCount: mocks.getAllUserMutualCount
+        getAllUserMutualCount: mocks.getAllUserMutualCount,
+        getAllUserMutualOptedOut: mocks.getAllUserMutualOptedOut
+    }),
+    useChartsStore: () => ({
+        mutualGraphStatus: { isFetching: false },
+        fetchMutualGraph: (...args) => mocks.fetchMutualGraph(...args)
     }),
     useModalStore: () => ({
         confirm: (...args) => mocks.modalConfirm(...args),
@@ -80,7 +86,9 @@ vi.mock('../../../stores', () => ({
         stringComparer: mocks.stringComparer,
         friendsListSearch: mocks.friendsListSearch
     }),
-    useUserStore: () => ({}),
+    useUserStore: () => ({
+        currentUser: { hasSharedConnectionsOptOut: false }
+    }),
     useAppearanceSettingsStore: () => ({
         tablePageSizes: [10, 25, 50],
         tablePageSize: 25,
@@ -101,9 +109,7 @@ vi.mock('../../../coordinators/friendRelationshipCoordinator', () => ({
 }));
 
 vi.mock('../../../plugins/router', () => ({
-    router: {
-        push: (...args) => mocks.routerPush(...args)
-    }
+    router: {}
 }));
 
 vi.mock('../../../api', () => ({
@@ -236,6 +242,7 @@ vi.mock('@/components/ui/tooltip', () => ({
 }));
 
 vi.mock('lucide-vue-next', () => ({
+    Loader2: { template: '<span />' },
     Star: { template: '<span />' }
 }));
 
@@ -283,9 +290,11 @@ describe('FriendList.vue', () => {
         mocks.pagination.value = { pageIndex: 3, pageSize: 10 };
         mocks.sorting.value = [];
 
-        mocks.routerPush.mockReset();
         mocks.getAllUserStats.mockReset();
         mocks.getAllUserMutualCount.mockReset();
+        mocks.getAllUserMutualOptedOut.mockReset();
+        mocks.fetchMutualGraph.mockReset();
+        mocks.fetchMutualGraph.mockResolvedValue(new Map());
         mocks.showUserDialog.mockReset();
         mocks.modalConfirm.mockClear();
         mocks.modalAlert.mockReset();
@@ -398,15 +407,18 @@ describe('FriendList.vue', () => {
         expect(mocks.getAllUserMutualCount).toHaveBeenCalledTimes(2);
     });
 
-    test('opens charts tab from toolbar button', async () => {
+    test('loads mutual graph and refreshes mutual friend state from toolbar button', async () => {
         const wrapper = mount(FriendList);
 
         await clickButtonByText(
             wrapper,
             'view.friend_list.load_mutual_friends'
         );
+        await flushAsync();
 
-        expect(mocks.routerPush).toHaveBeenCalledWith({ name: 'charts' });
+        expect(mocks.fetchMutualGraph).toHaveBeenCalledTimes(1);
+        expect(mocks.getAllUserMutualCount).toHaveBeenCalledTimes(1);
+        expect(mocks.getAllUserMutualOptedOut).toHaveBeenCalledTimes(1);
     });
 
     test('loads missing user profiles and shows completion toast', async () => {
@@ -457,14 +469,40 @@ describe('FriendList.vue', () => {
         const wrapper = mount(FriendList);
         mocks.toggleBulkColumnVisibility.mockReset();
 
+        expect(
+            wrapper.get('.friend-list__bulk-controls').classes()
+        ).not.toContain('bv-danger-zone');
         await wrapper.get('[data-testid="bulk-switch"]').trigger('click');
         await nextTick();
         expect(mocks.toggleBulkColumnVisibility).toHaveBeenCalledWith(true);
+        expect(wrapper.get('.friend-list__bulk-controls').classes()).toContain(
+            'bv-danger-zone'
+        );
 
         await wrapper.get('[data-testid="set-page-size"]').trigger('click');
         expect(mocks.pagination.value).toEqual({
             pageIndex: 0,
             pageSize: 50
         });
+    });
+
+    test('renders a surfaced friend directory with live filtered row context', async () => {
+        mocks.friends.value = new Map([
+            ['usr_1', makeFriendCtx({ id: 'usr_1', displayName: 'Alice' })],
+            ['usr_2', makeFriendCtx({ id: 'usr_2', displayName: 'Bob' })]
+        ]);
+        const wrapper = mount(FriendList);
+        await flushAsync();
+
+        const header = wrapper.get('.friend-list__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.friend_list');
+        expect(header.get('.friend-list__record-count').text()).toBe('2');
+        expect(
+            wrapper.get('.friend-list__control-surface').classes()
+        ).toContain('bv-surface-raised');
+        expect(wrapper.get('.friend-list__table-surface').classes()).toContain(
+            'bv-surface'
+        );
     });
 });

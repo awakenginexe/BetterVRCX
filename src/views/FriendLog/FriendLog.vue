@@ -1,49 +1,61 @@
 <template>
-    <div class="x-container x-container--auto-height" ref="friendLogRef">
-        <DataTableLayout
-            :table="table"
-            :loading="friendLogTable.loading"
-            auto-height
-            :page-sizes="pageSizes"
-            :total-items="totalItems"
-            :on-page-size-change="handlePageSizeChange">
-            <template #toolbar>
-                <div class="mt-0 mx-0 mb-2" style="display: flex; align-items: center">
-                    <Select
-                        multiple
-                        :model-value="
-                            Array.isArray(friendLogTable.filters?.[0]?.value) ? friendLogTable.filters[0].value : []
-                        "
-                        @update:modelValue="handleFriendLogFilterChange">
-                        <SelectTrigger class="w-full" style="flex: 1">
-                            <SelectValue :placeholder="t('view.friend_log.filter_placeholder')" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem
-                                    v-for="type in [
-                                        'Friend',
-                                        'Unfriend',
-                                        'FriendRequest',
-                                        'CancelFriendRequest',
-                                        'DisplayName',
-                                        'TrustLevel'
-                                    ]"
-                                    :key="type"
-                                    :value="type">
-                                    {{ t('view.friend_log.filters.' + type) }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <InputGroupField
-                        class="ml-2"
-                        v-model="friendLogTable.filters[1].value"
-                        :placeholder="t('view.friend_log.search_placeholder')"
-                        style="flex: 0.4" />
-                </div>
-            </template>
-        </DataTableLayout>
+    <div class="friend-log x-container x-container--auto-height" ref="friendLogRef">
+        <header class="friend-log__page-header bv-surface">
+            <div class="friend-log__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.friend_log') }}</h1>
+            </div>
+            <div class="friend-log__summary" aria-live="polite">
+                <span class="friend-log__record-count bv-badge" data-tone="accent">{{ totalItems }}</span>
+            </div>
+        </header>
+
+        <section class="friend-log__table-surface bv-surface" :aria-label="t('nav_tooltip.friend_log')">
+            <DataTableLayout
+                class="friend-log__table bv-surface-raised"
+                :table="table"
+                :loading="friendLogTable.loading"
+                auto-height
+                :page-sizes="pageSizes"
+                :total-items="totalItems"
+                :on-page-size-change="handlePageSizeChange">
+                <template #toolbar>
+                    <div class="friend-log__control-surface bv-surface-raised">
+                        <Select
+                            multiple
+                            :model-value="
+                                Array.isArray(friendLogTable.filters?.[0]?.value) ? friendLogTable.filters[0].value : []
+                            "
+                            @update:modelValue="handleFriendLogFilterChange">
+                            <SelectTrigger class="friend-log__type-filter bv-focus-ring">
+                                <SelectValue :placeholder="t('view.friend_log.filter_placeholder')" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem
+                                        v-for="type in [
+                                            'Friend',
+                                            'Unfriend',
+                                            'FriendRequest',
+                                            'CancelFriendRequest',
+                                            'DisplayName',
+                                            'TrustLevel'
+                                        ]"
+                                        :key="type"
+                                        :value="type">
+                                        {{ t('view.friend_log.filters.' + type) }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <InputGroupField
+                            class="friend-log__search bv-focus-ring"
+                            v-model="friendLogTable.filters[1].value"
+                            :placeholder="t('view.friend_log.search_placeholder')" />
+                    </div>
+                </template>
+            </DataTableLayout>
+        </section>
     </div>
 </template>
 
@@ -209,3 +221,94 @@
         };
     };
 </script>
+
+<style scoped>
+    .friend-log {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .friend-log__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .friend-log__identity {
+        display: grid;
+        min-width: 0;
+        gap: 4px;
+    }
+
+    .friend-log__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .friend-log__summary {
+        display: flex;
+        flex: none;
+        align-items: center;
+    }
+
+    .friend-log__record-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .friend-log__table-surface {
+        flex: 1;
+        min-height: 0;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .friend-log__table {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .friend-log__control-surface {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 10px;
+        padding: 8px;
+    }
+
+    .friend-log__type-filter {
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .friend-log__search {
+        flex: 0 1 320px;
+        min-width: 180px;
+    }
+
+    .friend-log__table :deep(tbody button:focus-visible) {
+        outline: 2px solid var(--bv-accent);
+        outline-offset: 2px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 760px) {
+        .friend-log__control-surface {
+            flex-wrap: wrap;
+        }
+
+        .friend-log__type-filter,
+        .friend-log__search {
+            flex: 1 1 100%;
+            min-width: 0;
+        }
+    }
+</style>

@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
     friendLogTable: null,
     pagination: null,
     configSetString: vi.fn(),
+    modalConfirm: vi.fn(),
     deleteFriendLogHistory: vi.fn(),
+    columnHandlers: null,
     removeFromArray: vi.fn((arr, row) => {
         const idx = arr.indexOf(row);
         if (idx !== -1) {
@@ -48,7 +50,7 @@ vi.mock('../../../stores', () => ({
         friendLogTable: mocks.friendLogTable
     }),
     useModalStore: () => ({
-        confirm: vi.fn().mockResolvedValue({ ok: true })
+        confirm: (...args) => mocks.modalConfirm(...args)
     }),
     useVrcxStore: () => ({
         maxTableSize: 100
@@ -65,7 +67,10 @@ vi.mock('../../../lib/table/useVrcxVueTable', () => ({
 }));
 
 vi.mock('../columns.jsx', () => ({
-    createColumns: () => []
+    createColumns: (handlers) => {
+        mocks.columnHandlers = handlers;
+        return [];
+    }
 }));
 
 vi.mock('../../../components/ui/data-table', () => ({
@@ -134,8 +139,11 @@ describe('FriendLog.vue', () => {
             pageSize: 10
         };
         mocks.configSetString.mockReset();
+        mocks.modalConfirm.mockReset();
+        mocks.modalConfirm.mockResolvedValue({ ok: true });
         mocks.deleteFriendLogHistory.mockReset();
         mocks.removeFromArray.mockClear();
+        mocks.columnHandlers = null;
     });
 
     test('syncs hideUnfriends setting to table filter via watcher', () => {
@@ -209,6 +217,18 @@ describe('FriendLog.vue', () => {
         expect(mocks.deleteFriendLogHistory).toHaveBeenCalledWith(row);
     });
 
+    test('confirms before deleting a friend log row', async () => {
+        const row = { rowId: 55 };
+        mocks.friendLogTable.value.data = [row];
+        mount(FriendLog);
+
+        await mocks.columnHandlers.onDeletePrompt(row);
+        await Promise.resolve();
+
+        expect(mocks.modalConfirm).toHaveBeenCalledTimes(1);
+        expect(mocks.deleteFriendLogHistory).toHaveBeenCalledWith(row);
+    });
+
     test('resets page index when page size changes', async () => {
         const wrapper = mount(FriendLog);
 
@@ -218,5 +238,25 @@ describe('FriendLog.vue', () => {
             pageIndex: 0,
             pageSize: 50
         });
+    });
+
+    test('renders a surfaced history hierarchy with filtered row context', () => {
+        mocks.friendLogTable.value.data = [
+            { rowId: 1, type: 'Friend', displayName: 'Alice' },
+            { rowId: 2, type: 'Unfriend', displayName: 'Bob' }
+        ];
+        mocks.friendLogTable.value.filters[0].value = ['Friend'];
+        const wrapper = mount(FriendLog);
+
+        const header = wrapper.get('.friend-log__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.friend_log');
+        expect(header.get('.friend-log__record-count').text()).toBe('1');
+        expect(wrapper.get('.friend-log__control-surface').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.friend-log__table-surface').classes()).toContain(
+            'bv-surface'
+        );
     });
 });

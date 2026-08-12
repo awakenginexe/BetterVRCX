@@ -1,6 +1,16 @@
 <template>
-    <div class="x-container x-container--auto-height" ref="moderationRef">
-        <div class="mb-4 flex items-center">
+    <div class="moderation x-container x-container--auto-height" ref="moderationRef">
+        <header class="moderation__page-header bv-surface">
+            <div class="moderation__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.moderation') }}</h1>
+            </div>
+            <div class="moderation__summary" aria-live="polite">
+                <span class="moderation__record-count bv-badge" data-tone="accent">{{ totalItems }}</span>
+            </div>
+        </header>
+
+        <div class="moderation__control-surface bv-surface-raised">
             <Select
                 multiple
                 :model-value="
@@ -9,7 +19,7 @@
                         : []
                 "
                 @update:modelValue="handleModerationFilterChange">
-                <SelectTrigger class="w-full" style="flex: 1">
+                <SelectTrigger class="moderation__type-filter bv-focus-ring">
                     <SelectValue :placeholder="t('view.moderation.filter_placeholder')" />
                 </SelectTrigger>
                 <SelectContent>
@@ -23,10 +33,10 @@
             <InputGroupField
                 v-model="playerModerationTable.filters[1].value"
                 :placeholder="t('view.moderation.search_placeholder')"
-                class="w-[150px] mx-2.5 flex-[0.4]" />
+                class="moderation__search bv-focus-ring" />
             <TooltipWrapper side="bottom" :content="t('view.moderation.refresh_tooltip')">
                 <Button
-                    class="rounded-full"
+                    class="rounded-full bv-focus-ring"
                     variant="ghost"
                     size="icon-sm"
                     :disabled="playerModerationTable.loading"
@@ -37,13 +47,16 @@
             </TooltipWrapper>
         </div>
 
-        <DataTableLayout
-            :table="table"
-            :loading="playerModerationTable.loading"
-            auto-height
-            :page-sizes="pageSizes"
-            :total-items="totalItems"
-            :on-page-size-change="handlePageSizeChange" />
+        <section class="moderation__table-surface bv-surface" :aria-label="t('nav_tooltip.moderation')">
+            <DataTableLayout
+                class="moderation__table bv-surface-raised"
+                :table="table"
+                :loading="playerModerationTable.loading"
+                auto-height
+                :page-sizes="pageSizes"
+                :total-items="totalItems"
+                :on-page-size-change="handlePageSizeChange" />
+        </section>
     </div>
 </template>
 
@@ -174,3 +187,94 @@
         };
     };
 </script>
+
+<style scoped>
+    .moderation {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .moderation__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .moderation__identity {
+        display: grid;
+        min-width: 0;
+        gap: 4px;
+    }
+
+    .moderation__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .moderation__summary {
+        display: flex;
+        flex: none;
+        align-items: center;
+    }
+
+    .moderation__record-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .moderation__control-surface {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 10px;
+        padding: 8px;
+    }
+
+    .moderation__type-filter {
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .moderation__search {
+        flex: 0 1 320px;
+        min-width: 180px;
+    }
+
+    .moderation__table-surface {
+        flex: 1;
+        min-height: 0;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .moderation__table {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .moderation__table :deep(tbody button:focus-visible) {
+        outline: 2px solid var(--bv-accent);
+        outline-offset: 2px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 760px) {
+        .moderation__control-surface {
+            flex-wrap: wrap;
+        }
+
+        .moderation__type-filter,
+        .moderation__search {
+            flex: 1 1 100%;
+            min-width: 0;
+        }
+    }
+</style>

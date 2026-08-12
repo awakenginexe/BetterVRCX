@@ -296,4 +296,25 @@ describe('Moderation.vue', () => {
             pageSize: 50
         });
     });
+
+    test('renders a surfaced moderation ledger with filtered row context', async () => {
+        mocks.configGetString.mockResolvedValueOnce('[]');
+        mocks.playerModerationTable.value.data = [
+            { id: 'pm_1', type: 'block' },
+            { id: 'pm_2', type: 'mute' }
+        ];
+        const wrapper = mountModeration();
+        await flushAsync();
+
+        const header = wrapper.get('.moderation__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.moderation');
+        expect(header.get('.moderation__record-count').text()).toBe('2');
+        expect(wrapper.get('.moderation__control-surface').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.moderation__table-surface').classes()).toContain(
+            'bv-surface'
+        );
+    });
 });

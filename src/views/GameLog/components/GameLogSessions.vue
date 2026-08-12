@@ -1,12 +1,13 @@
 <template>
-    <div class="flex h-full flex-col overflow-hidden">
-        <div class="flex shrink-0 items-center gap-2 border-b border-border px-0 pb-4">
+    <div class="game-log-sessions flex h-full flex-col overflow-hidden">
+        <div class="game-log-sessions__controls bv-surface-raised">
             <div class="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap">
                 <slot name="leading" />
 
                 <TooltipWrapper side="bottom" :content="t('view.feed.favorites_only_tooltip')">
                     <div class="shrink-0">
                         <Toggle
+                            class="bv-focus-ring"
                             variant="outline"
                             size="sm"
                             :model-value="sessionsVipFilter"
@@ -23,7 +24,7 @@
                         <Button
                             variant="outline"
                             size="sm"
-                            class="h-8 shrink-0 gap-1.5"
+                            class="h-8 shrink-0 gap-1.5 bv-focus-ring"
                             :class="hasDateFilter && 'bg-accent text-accent-foreground'"
                             :ariaLabel="t('view.tools.group.calendar')">
                             <CalendarRange class="size-4" />
@@ -45,10 +46,10 @@
                             :week-starts-on="weekStartsOn"
                             :is-date-unavailable="isDateUnavailable" />
                         <div class="mt-3 flex justify-end gap-2">
-                            <Button variant="outline" size="sm" @click="handleClearDateRange">
+                            <Button variant="outline" size="sm" class="bv-focus-ring" @click="handleClearDateRange">
                                 {{ t('common.actions.clear') }}
                             </Button>
-                            <Button size="sm" @click="handleApplyDateRange">
+                            <Button size="sm" class="bv-focus-ring" @click="handleApplyDateRange">
                                 {{ t('common.actions.confirm') }}
                             </Button>
                         </div>
@@ -62,10 +63,14 @@
                     :model-value="sessionsEventFilterSelection"
                     @update:model-value="gameLogStore.handleSessionsEventFilterChange"
                     class="shrink-0 justify-start">
-                    <ToggleGroupItem value="All">
+                    <ToggleGroupItem value="All" class="bv-focus-ring">
                         {{ t('view.search.avatar.all') }}
                     </ToggleGroupItem>
-                    <ToggleGroupItem v-for="type in sessionsEventFilterTypes" :key="type" :value="type">
+                    <ToggleGroupItem
+                        v-for="type in sessionsEventFilterTypes"
+                        :key="type"
+                        :value="type"
+                        class="bv-focus-ring">
                         {{ t(`view.game_log.filters.${type}`) }}
                     </ToggleGroupItem>
                 </ToggleGroup>
@@ -73,7 +78,7 @@
 
             <InputGroupField
                 :model-value="sessionsSearch"
-                class="w-60 shrink-0"
+                class="game-log-sessions__search bv-focus-ring"
                 :placeholder="t('view.game_log.search_placeholder')"
                 clearable
                 @update:modelValue="handleSessionsSearchInput"
@@ -81,7 +86,7 @@
                 @change="gameLogStore.setSessionsSearch(sessionsSearch)" />
         </div>
 
-        <div ref="scrollContainerRef" class="flex-1 overflow-y-auto">
+        <div ref="scrollContainerRef" class="game-log-sessions__timeline bv-surface-raised">
             <div v-if="showInitialSkeleton" class="flex flex-col gap-4 p-4">
                 <div v-for="i in 3" :key="i" class="space-y-2">
                     <Skeleton class="h-5 w-48" />
@@ -94,7 +99,7 @@
                 </div>
             </div>
 
-            <div v-else-if="segments.length === 0" class="m-4">
+            <div v-else-if="segments.length === 0" class="game-log-sessions__empty bv-empty-state">
                 <DataTableEmpty v-if="!sessionsLoading" type="nodata" />
             </div>
 
@@ -320,3 +325,47 @@
         { flush: 'post' }
     );
 </script>
+
+<style scoped>
+    .game-log-sessions {
+        gap: 10px;
+    }
+
+    .game-log-sessions__controls {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 10px;
+        padding: 8px;
+    }
+
+    .game-log-sessions__search {
+        width: min(320px, 32vw);
+        min-width: 190px;
+        flex: none;
+    }
+
+    .game-log-sessions__timeline {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .game-log-sessions__empty {
+        margin: 12px;
+    }
+
+    @media (max-width: 960px) {
+        .game-log-sessions__controls {
+            flex-wrap: wrap;
+        }
+
+        .game-log-sessions__controls > :first-child {
+            flex-basis: 100%;
+        }
+
+        .game-log-sessions__search {
+            width: 100%;
+        }
+    }
+</style>

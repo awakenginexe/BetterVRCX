@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
     makeRef: (value) => ({ value, __v_isRef: true }),
     setSessionsViewMode: vi.fn(),
     table: { value: { vip: false, filter: [], search: '' } },
-    sessionsViewMode: { value: 'table', __v_isRef: true }
+    tableData: { value: [], __v_isRef: true },
+    sessionsViewMode: { value: 'table', __v_isRef: true },
+    filteredRows: []
 }));
 
 vi.mock('pinia', async (i) => ({ ...(await i()), storeToRefs: (s) => s }));
@@ -17,7 +19,7 @@ vi.mock('../../../stores', () => ({
         gameLogTableLookup: (...a) => mocks.lookup(...a),
         setSessionsViewMode: (...a) => mocks.setSessionsViewMode(...a),
         gameLogTable: mocks.table,
-        gameLogTableData: ref([]),
+        gameLogTableData: mocks.tableData,
         sessionsViewMode: mocks.sessionsViewMode
     }),
     useAppearanceSettingsStore: () => ({
@@ -75,7 +77,7 @@ vi.mock('../../../services/database', () => ({
 vi.mock('../../../shared/utils', () => ({ removeFromArray: vi.fn() }));
 vi.mock('../../../lib/table/useVrcxVueTable', () => ({
     useVrcxVueTable: () => ({
-        table: { getFilteredRowModel: () => ({ rows: [] }) },
+        table: { getFilteredRowModel: () => ({ rows: mocks.filteredRows }) },
         pagination: ref({ pageIndex: 0, pageSize: 20 })
     })
 }));
@@ -84,11 +86,49 @@ vi.mock('../columns.jsx', () => ({ createColumns: () => [] }));
 import GameLog from '../GameLog.vue';
 
 describe('GameLog.vue', () => {
+    beforeEach(() => {
+        mocks.lookup.mockReset();
+        mocks.setSessionsViewMode.mockReset();
+        mocks.table.value = { vip: false, filter: [], search: '' };
+        mocks.tableData.value = [];
+        mocks.sessionsViewMode.value = 'table';
+        mocks.filteredRows = [];
+    });
+
     it('updates filter and triggers lookup when filter changes', async () => {
         const wrapper = mount(GameLog);
         await wrapper.get('[data-testid="sel"]').trigger('click');
 
         expect(mocks.lookup).toHaveBeenCalled();
         expect(mocks.table.value.filter).toEqual(['Event']);
+    });
+
+    it('renders a surfaced log hierarchy with live table context', () => {
+        mocks.filteredRows = [{ rowId: 1 }, { rowId: 2 }];
+        const wrapper = mount(GameLog);
+
+        const header = wrapper.get('.game-log__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.game_log');
+        expect(header.get('.game-log__record-count').text()).toBe('2');
+        expect(wrapper.get('.game-log__control-surface').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.game-log__table-surface').classes()).toContain(
+            'bv-surface'
+        );
+    });
+
+    it('keeps table and sessions mode changes routed through the store', () => {
+        const wrapper = mount(GameLog);
+
+        wrapper.vm.handleViewModeChange('sessions');
+        wrapper.vm.handleViewModeChange('table');
+        wrapper.vm.handleViewModeChange(undefined);
+
+        expect(mocks.setSessionsViewMode.mock.calls).toEqual([
+            ['sessions'],
+            ['table']
+        ]);
     });
 });

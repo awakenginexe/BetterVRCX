@@ -1,119 +1,141 @@
 <template>
-    <div class="x-container x-container--auto-height" ref="friendsListRef">
-        <div class="flex-1 min-h-0 flex flex-col">
-            <DataTableLayout
-                class="min-w-0 w-full"
-                :table="table"
-                :loading="friendsListLoading"
-                auto-height
-                :page-sizes="pageSizes"
-                :total-items="totalItems"
-                table-class="min-w-max w-max [&_tbody_tr]:cursor-pointer"
-                :on-page-size-change="handlePageSizeChange"
-                :on-row-click="handleRowClick">
-                <template #toolbar>
-                    <div class="mb-2 flex items-center justify-between">
-                        <div class="flex flex-none mr-2 items-center">
-                            <TooltipWrapper side="bottom" :content="t('view.friend_list.favorites_only_tooltip')">
-                                <div>
-                                    <Toggle
-                                        variant="outline"
-                                        size="sm"
-                                        :model-value="friendsListSearchFilterVIP"
-                                        :ariaLabel="t('view.friend_list.favorites_only_tooltip')"
-                                        @update:modelValue="
-                                            (v) => {
-                                                friendsListSearchFilterVIP = v;
-                                                friendsListSearchChange();
-                                            }
-                                        ">
-                                        <Star fill="currentColor" v-if="friendsListSearchFilterVIP" />
-                                        <Star v-else />
-                                    </Toggle>
-                                </div>
-                            </TooltipWrapper>
-                            <Select
-                                multiple
-                                :model-value="Array.isArray(friendsListSearchFilters) ? friendsListSearchFilters : []"
-                                @update:modelValue="handleFriendListFilterChange">
-                                <SelectTrigger class="mx-2 w-37.5">
-                                    <SelectValue :placeholder="t('view.friend_list.filter_placeholder')" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem
-                                            v-for="type in [
-                                                'Display Name',
-                                                'User Name',
-                                                'Rank',
-                                                'Status',
-                                                'Bio',
-                                                'Note',
-                                                'Memo'
-                                            ]"
-                                            :key="type"
-                                            :value="type">
-                                            {{ type }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputGroupField
-                                v-model="friendsListSearch"
-                                :placeholder="t('view.friend_list.search_placeholder')"
-                                clearable
-                                class="w-[250px]"
-                                @input="scheduleFriendsListSearchChange"
-                                @change="friendsListSearchChange" />
-                        </div>
-                        <div class="flex items-center">
-                            <div v-if="friendsListBulkUnfriendMode" class="inline-block mr-2">
-                                <Button variant="outline" @click="showBulkUnfriendSelectionConfirm">
-                                    {{ t('view.friend_list.bulk_unfriend_selection') }}
-                                </Button>
-                                <!-- el-button(size="small" @click="showBulkUnfriendAllConfirm") Bulk Unfriend All-->
-                            </div>
-                            <div class="flex items-center mr-2">
-                                <span class="name mr-2 text-xs">{{ t('view.friend_list.bulk_unfriend') }}</span>
-                                <Switch
-                                    v-model="friendsListBulkUnfriendMode"
-                                    :ariaLabel="t('view.friend_list.bulk_unfriend')"
-                                    @update:modelValue="toggleFriendsListBulkUnfriendMode" />
-                            </div>
-                            <div class="flex items-center">
-                                <TooltipWrapper
-                                    v-if="isMutualFetching"
-                                    :content="t('view.friend_list.mutual_loading_hint')">
-                                    <span>
-                                        <Button variant="outline" class="mr-2" disabled>
-                                            <Loader2 class="h-4 w-4 animate-spin" />
-                                            {{ t('view.friend_list.load_mutual_friends') }}
-                                        </Button>
-                                    </span>
-                                </TooltipWrapper>
-                                <Button
-                                    v-else
-                                    variant="outline"
-                                    class="mr-2"
-                                    :disabled="isMutualOptOut"
-                                    @click="loadMutualFriends">
-                                    {{ t('view.friend_list.load_mutual_friends') }}
-                                </Button>
+    <div class="friend-list x-container x-container--auto-height" ref="friendsListRef">
+        <header class="friend-list__page-header bv-surface">
+            <div class="friend-list__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.friend_list') }}</h1>
+            </div>
+            <div class="friend-list__summary" aria-live="polite">
+                <span class="friend-list__record-count bv-badge" data-tone="accent">{{ totalItems }}</span>
+            </div>
+        </header>
 
-                                <Button variant="outline" @click="friendsListLoadUsers">{{
-                                    t('view.friend_list.load')
-                                }}</Button>
+        <div class="friend-list__content">
+            <section class="friend-list__table-surface bv-surface" :aria-label="t('nav_tooltip.friend_list')">
+                <DataTableLayout
+                    class="friend-list__table bv-surface-raised"
+                    :table="table"
+                    :loading="friendsListLoading"
+                    auto-height
+                    :page-sizes="pageSizes"
+                    :total-items="totalItems"
+                    table-class="min-w-max w-max [&_tbody_tr]:cursor-pointer"
+                    :on-page-size-change="handlePageSizeChange"
+                    :on-row-click="handleRowClick">
+                    <template #toolbar>
+                        <div class="friend-list__control-surface bv-surface-raised">
+                            <div class="friend-list__filters">
+                                <TooltipWrapper side="bottom" :content="t('view.friend_list.favorites_only_tooltip')">
+                                    <div>
+                                        <Toggle
+                                            class="bv-focus-ring"
+                                            variant="outline"
+                                            size="sm"
+                                            :model-value="friendsListSearchFilterVIP"
+                                            :ariaLabel="t('view.friend_list.favorites_only_tooltip')"
+                                            @update:modelValue="
+                                                (v) => {
+                                                    friendsListSearchFilterVIP = v;
+                                                    friendsListSearchChange();
+                                                }
+                                            ">
+                                            <Star fill="currentColor" v-if="friendsListSearchFilterVIP" />
+                                            <Star v-else />
+                                        </Toggle>
+                                    </div>
+                                </TooltipWrapper>
+                                <Select
+                                    multiple
+                                    :model-value="
+                                        Array.isArray(friendsListSearchFilters) ? friendsListSearchFilters : []
+                                    "
+                                    @update:modelValue="handleFriendListFilterChange">
+                                    <SelectTrigger class="friend-list__type-filter bv-focus-ring">
+                                        <SelectValue :placeholder="t('view.friend_list.filter_placeholder')" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem
+                                                v-for="type in [
+                                                    'Display Name',
+                                                    'User Name',
+                                                    'Rank',
+                                                    'Status',
+                                                    'Bio',
+                                                    'Note',
+                                                    'Memo'
+                                                ]"
+                                                :key="type"
+                                                :value="type">
+                                                {{ type }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <InputGroupField
+                                    v-model="friendsListSearch"
+                                    :placeholder="t('view.friend_list.search_placeholder')"
+                                    clearable
+                                    class="friend-list__search bv-focus-ring"
+                                    @input="scheduleFriendsListSearchChange"
+                                    @change="friendsListSearchChange" />
+                            </div>
+                            <div class="friend-list__actions">
+                                <div
+                                    class="friend-list__bulk-controls"
+                                    :class="{ 'bv-danger-zone': friendsListBulkUnfriendMode }">
+                                    <Button
+                                        v-if="friendsListBulkUnfriendMode"
+                                        variant="outline"
+                                        class="bv-focus-ring"
+                                        @click="showBulkUnfriendSelectionConfirm">
+                                        {{ t('view.friend_list.bulk_unfriend_selection') }}
+                                    </Button>
+                                    <div class="friend-list__bulk-switch">
+                                        <span class="name text-xs">{{ t('view.friend_list.bulk_unfriend') }}</span>
+                                        <Switch
+                                            class="bv-focus-ring"
+                                            v-model="friendsListBulkUnfriendMode"
+                                            :ariaLabel="t('view.friend_list.bulk_unfriend')"
+                                            @update:modelValue="toggleFriendsListBulkUnfriendMode" />
+                                    </div>
+                                </div>
+                                <div class="friend-list__load-actions">
+                                    <TooltipWrapper
+                                        v-if="isMutualFetching"
+                                        :content="t('view.friend_list.mutual_loading_hint')">
+                                        <span>
+                                            <Button variant="outline" class="bv-focus-ring" disabled>
+                                                <Loader2 class="h-4 w-4 animate-spin" />
+                                                {{ t('view.friend_list.load_mutual_friends') }}
+                                            </Button>
+                                        </span>
+                                    </TooltipWrapper>
+                                    <Button
+                                        v-else
+                                        variant="outline"
+                                        class="bv-focus-ring"
+                                        :disabled="isMutualOptOut"
+                                        @click="loadMutualFriends">
+                                        {{ t('view.friend_list.load_mutual_friends') }}
+                                    </Button>
+
+                                    <Button class="bv-focus-ring" @click="friendsListLoadUsers">
+                                        {{ t('view.friend_list.load') }}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </template>
-            </DataTableLayout>
+                    </template>
+                </DataTableLayout>
+            </section>
+
             <Dialog v-model:open="friendsListLoadDialogVisible">
                 <DialogContent
                     :show-close-button="false"
                     @interact-outside.prevent
                     @escape-key-down.prevent
-                    class="sm:max-w-[420px]">
+                    class="sm:max-w-[420px] bv-surface">
                     <DialogHeader>
                         <DialogTitle>{{ t('view.friend_list.load_dialog_title') }}</DialogTitle>
                     </DialogHeader>
@@ -126,7 +148,7 @@
                         <span>{{ friendsListLoadingCurrent }} / {{ friendsListLoadingTotal }}</span>
                     </div>
                     <DialogFooter>
-                        <Button variant="secondary" @click="cancelFriendsListLoad">
+                        <Button variant="secondary" class="bv-focus-ring" @click="cancelFriendsListLoad">
                             {{ t('view.friend_list.load_cancel') }}
                         </Button>
                     </DialogFooter>
@@ -598,3 +620,154 @@
         friendsListSearchChange();
     }
 </script>
+
+<style scoped>
+    .friend-list {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .friend-list__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .friend-list__identity {
+        display: grid;
+        min-width: 0;
+        gap: 4px;
+    }
+
+    .friend-list__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .friend-list__summary {
+        display: flex;
+        flex: none;
+        align-items: center;
+    }
+
+    .friend-list__record-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .friend-list__content,
+    .friend-list__table-surface {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+    }
+
+    .friend-list__table-surface {
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .friend-list__table {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .friend-list__control-surface {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 10px;
+        padding: 8px;
+    }
+
+    .friend-list__filters,
+    .friend-list__actions,
+    .friend-list__load-actions,
+    .friend-list__bulk-controls,
+    .friend-list__bulk-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .friend-list__filters {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .friend-list__actions {
+        flex: none;
+    }
+
+    .friend-list__type-filter {
+        width: 150px;
+    }
+
+    .friend-list__search {
+        min-width: 180px;
+        width: min(260px, 26vw);
+    }
+
+    .friend-list__bulk-controls {
+        min-height: 34px;
+        padding: 0 8px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+    }
+
+    .friend-list__bulk-controls.bv-danger-zone {
+        padding: 5px 8px;
+        border-radius: 8px;
+    }
+
+    .friend-list__table :deep(tbody button:focus-visible),
+    .friend-list__table :deep(tbody [role='button']:focus-visible) {
+        outline: 2px solid var(--bv-accent);
+        outline-offset: 2px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 1180px) {
+        .friend-list__control-surface,
+        .friend-list__actions {
+            flex-wrap: wrap;
+        }
+
+        .friend-list__control-surface {
+            align-items: flex-start;
+        }
+
+        .friend-list__actions {
+            justify-content: flex-end;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .friend-list__control-surface,
+        .friend-list__filters,
+        .friend-list__actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .friend-list__type-filter,
+        .friend-list__search {
+            width: 100%;
+        }
+
+        .friend-list__bulk-controls,
+        .friend-list__load-actions {
+            justify-content: space-between;
+        }
+    }
+</style>
