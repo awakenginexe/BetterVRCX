@@ -171,7 +171,7 @@
     import GameLogSessions from './components/GameLogSessions.vue';
 
     const { gameLogTableLookup, setSessionsViewMode } = useGameLogStore();
-    const { gameLogTable, gameLogTableData, sessionsViewMode } = storeToRefs(useGameLogStore());
+    const { gameLogTable, gameLogTableData, sessionsViewMode, sessionsSegments } = storeToRefs(useGameLogStore());
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const vrcxStore = useVrcxStore();
     const modalStore = useModalStore();
@@ -277,6 +277,9 @@
     });
 
     const totalItems = computed(() => {
+        if (sessionsViewMode.value === 'sessions') {
+            return sessionsSegments.value.length;
+        }
         const length = table.getFilteredRowModel().rows.length;
         const max = vrcxStore.maxTableSize;
         return length > max && length < max + 51 ? max : length;

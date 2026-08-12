@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     table: { value: { vip: false, filter: [], search: '' } },
     tableData: { value: [], __v_isRef: true },
     sessionsViewMode: { value: 'table', __v_isRef: true },
+    sessionsSegments: { value: [], __v_isRef: true },
     filteredRows: []
 }));
 
@@ -20,7 +21,8 @@ vi.mock('../../../stores', () => ({
         setSessionsViewMode: (...a) => mocks.setSessionsViewMode(...a),
         gameLogTable: mocks.table,
         gameLogTableData: mocks.tableData,
-        sessionsViewMode: mocks.sessionsViewMode
+        sessionsViewMode: mocks.sessionsViewMode,
+        sessionsSegments: mocks.sessionsSegments
     }),
     useAppearanceSettingsStore: () => ({
         tablePageSizes: [20, 50],
@@ -92,6 +94,7 @@ describe('GameLog.vue', () => {
         mocks.table.value = { vip: false, filter: [], search: '' };
         mocks.tableData.value = [];
         mocks.sessionsViewMode.value = 'table';
+        mocks.sessionsSegments.value = [];
         mocks.filteredRows = [];
     });
 
@@ -117,6 +120,16 @@ describe('GameLog.vue', () => {
         expect(wrapper.get('.game-log__table-surface').classes()).toContain(
             'bv-surface'
         );
+    });
+
+    it('uses the active sessions count instead of table rows in sessions mode', () => {
+        mocks.sessionsViewMode.value = 'sessions';
+        mocks.sessionsSegments.value = [{}, {}, {}];
+        mocks.filteredRows = [{ rowId: 1 }];
+
+        const wrapper = mount(GameLog);
+
+        expect(wrapper.get('.game-log__record-count').text()).toBe('3');
     });
 
     it('keeps table and sessions mode changes routed through the store', () => {

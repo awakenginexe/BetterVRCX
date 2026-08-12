@@ -58,3 +58,50 @@ The same command passed after the scoped implementation: 7 test files passed, 35
 
 - The first baseline focused run had 8 Friend List fixture errors because its store mock predated the existing `useChartsStore`, mutual opt-out, and in-place mutual-graph workflow. The focused fixture and stale route assertion were updated to mirror current production behavior before the Task 5A RED cycle; no production behavior was changed for that repair.
 - Pre-existing untracked redesign/planning documents under `docs/` were left untouched and excluded from this task's commit.
+
+## Fix round 1
+
+### Review findings disposition
+
+- Friend List: not a Task 5A regression. `git merge-base --is-ancestor 620ac3b4 c891a027` returned `0`, and both `620ac3b4` and `c891a027` already define `loadMutualFriends()` as `chartsStore.fetchMutualGraph()` followed by mutual-count/opt-out refreshes. The Task 5A revision (`06e7613f`) preserves that production function and only restructures the template plus repairs the stale test harness assertion that still expected Charts navigation.
+- Game Log: fixed. The route-header count previously always used `table.getFilteredRowModel().rows`, which reports the inactive table in Sessions mode. It now uses the existing `sessionsSegments` Pinia state when `sessionsViewMode === 'sessions'`, retaining the pre-existing table calculation (including its max-table-size handling) in Table mode.
+
+### TDD evidence
+
+#### RED
+
+```text
+npx vitest run src/views/GameLog/__tests__/GameLog.test.js
+
+Test Files  1 failed (1)
+Tests  1 failed | 3 passed (4)
+AssertionError: expected '1' to be '3'
+```
+
+The added `uses the active sessions count instead of table rows in sessions mode` regression test supplied three session segments and one table row, proving the header read the inactive table count before the production change.
+
+#### GREEN
+
+```text
+npx vitest run src/views/GameLog/__tests__/GameLog.test.js
+
+Test Files  1 passed (1)
+Tests  4 passed (4)
+```
+
+### Focused verification
+
+```text
+npx vitest run src/views/GameLog/__tests__/GameLog.test.js src/views/GameLog/__tests__/GameLogSessions.test.js src/views/GameLog/__tests__/buildGameLogSessions.test.js src/views/FriendLog/__tests__/FriendLog.test.js src/views/FriendList/__tests__/FriendList.test.js src/views/Moderation/__tests__/Moderation.test.js src/views/Moderation/__tests__/columns.test.js
+
+Test Files  7 passed (7)
+Tests  36 passed (36)
+```
+
+The amended Game Log source and focused test were formatted with `npx oxfmt`, then checked with `npx oxfmt --check src/views/GameLog/GameLog.vue src/views/GameLog/__tests__/GameLog.test.js`; `git diff --check` also passed. No APIs, stores, routes, persistence, columns, or session transformations were changed.
+
+### Fix-round files changed
+
+- `src/views/GameLog/GameLog.vue`
+- `src/views/GameLog/__tests__/GameLog.test.js`
+- `docs/task-reports/task-05a-logs-friends-moderation.md`
