@@ -74,9 +74,7 @@
                     }}</span>
                 </div>
 
-                <div
-                    data-testid="hot-worlds-ranking"
-                    class="mx-auto mt-3 flex max-w-[1100px] flex-col gap-2 lg:flex-row lg:gap-x-6">
+                <div data-testid="hot-worlds-ranking" class="analytics-workspace__ranking mx-auto mt-3 max-w-[1100px]">
                     <div v-for="(column, colIdx) in columns" :key="colIdx" class="min-w-0 flex-1">
                         <button
                             v-for="world in column"
@@ -353,11 +351,5 @@
 
     .analytics-workspace__stats > div {
         background: var(--bv-bg-control);
-    }
-
-    @media (max-width: 640px) {
-        .analytics-workspace__stats > div {
-            flex: 1 1 auto;
-        }
     }
 </style>

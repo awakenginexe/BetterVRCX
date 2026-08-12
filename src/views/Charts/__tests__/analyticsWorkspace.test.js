@@ -283,6 +283,9 @@ describe('analytics workspace behavior', () => {
 
         expect(mocks.getHotWorlds).toHaveBeenLastCalledWith(7);
         expect(mocks.getHotWorldFriendDetail).toHaveBeenCalledWith('wrld_1', 7);
+        const ranking = wrapper.get('[data-testid="hot-worlds-ranking"]');
+        expect(ranking.classes()).toContain('analytics-workspace__ranking');
+        expect(ranking.classes()).not.toContain('lg:flex-row');
         expect(
             wrapper.get('.analytics-workspace__content').element.style.height
         ).toBe('100%');

@@ -282,6 +282,8 @@ html.dark {
 
 .analytics-workspace,
 .analytics-workspace.x-container {
+    container-name: analytics-workspace;
+    container-type: inline-size;
     display: flex;
     height: 100%;
     min-height: 0;
@@ -329,15 +331,7 @@ html.dark {
     gap: 6px;
 }
 
-@media (max-width: 640px) {
-    .analytics-workspace__toolbar,
-    .analytics-workspace__filters {
-        align-items: stretch;
-        justify-content: flex-start;
-    }
-}
-
-@container (max-width: 42rem) {
+@container analytics-workspace (max-width: 42rem) {
     .analytics-workspace__toolbar,
     .analytics-workspace__filters {
         align-items: stretch;
@@ -346,6 +340,29 @@ html.dark {
 
     .analytics-workspace__toolbar [data-slot='button'] {
         max-width: 100%;
+    }
+}
+
+.analytics-workspace__ranking {
+    display: grid;
+    width: 100%;
+    gap: 8px;
+}
+
+.analytics-workspace__ranking > * {
+    min-width: 0;
+}
+
+@container analytics-workspace (min-width: 42rem) {
+    .analytics-workspace__ranking {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 24px;
+    }
+}
+
+@container analytics-workspace (max-width: 42rem) {
+    .analytics-workspace__stats > div {
+        flex: 1 1 auto;
     }
 }
 
