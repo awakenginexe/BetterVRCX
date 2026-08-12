@@ -1,90 +1,102 @@
 <template>
     <div class="x-container feed x-container--auto-height" ref="feedRef">
-        <DataTableLayout
-            :table="table"
-            :loading="feedTable.loading"
-            auto-height
-            :page-sizes="pageSizes"
-            :total-items="totalItems"
-            :on-page-size-change="handlePageSizeChange">
-            <template #toolbar>
-                <div class="mt-0 mx-0 mb-2" style="display: flex; align-items: center">
-                    <div style="flex: none; display: flex; align-items: center" class="mr-2">
-                        <Popover v-model:open="popoverOpen">
-                            <PopoverTrigger as-child>
-                                <Button variant="outline" size="sm" class="mx-2 h-8 gap-1.5">
-                                    <ListFilter class="size-4" />
-                                    {{ t('view.my_avatars.filter') }}
-                                    <Badge
-                                        v-if="activeFilterCount"
-                                        variant="secondary"
-                                        class="ml-0.5 h-4.5 min-w-4.5 rounded-full px-1 text-xs">
-                                        {{ activeFilterCount }}
-                                    </Badge>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent class="w-auto" side="bottom" align="end">
-                                <RangeCalendar
-                                    v-model="dateRange"
-                                    :locale="locale"
-                                    :max-value="todayDate"
-                                    :number-of-months="2"
-                                    :week-starts-on="weekStartsOn" />
-                                <div class="flex justify-end gap-2 mt-3">
-                                    <Button variant="outline" size="sm" @click="clearDateFilter">
-                                        {{ t('common.actions.clear') }}
+        <header class="feed__page-header bv-surface">
+            <div class="feed__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.feed') }}</h1>
+            </div>
+            <div class="feed__summary" aria-live="polite">
+                <span class="feed__record-count bv-badge" data-tone="accent">{{ totalItems }}</span>
+                <span class="feed__filter-context">{{ filterContextLabel }}</span>
+            </div>
+        </header>
+
+        <section class="feed__table-surface bv-surface" :aria-label="t('nav_tooltip.feed')">
+            <DataTableLayout
+                :table="table"
+                :loading="feedTable.loading"
+                auto-height
+                :page-sizes="pageSizes"
+                :total-items="totalItems"
+                :on-page-size-change="handlePageSizeChange">
+                <template #toolbar>
+                    <div class="feed__filter-surface bv-surface-raised">
+                        <div class="feed__filter-actions">
+                            <Popover v-model:open="popoverOpen">
+                                <PopoverTrigger as-child>
+                                    <Button variant="outline" size="sm" class="h-8 gap-1.5 bv-focus-ring">
+                                        <ListFilter class="size-4" />
+                                        {{ t('view.my_avatars.filter') }}
+                                        <Badge
+                                            v-if="activeFilterCount"
+                                            variant="secondary"
+                                            class="ml-0.5 h-4.5 min-w-4.5 rounded-full px-1 text-xs">
+                                            {{ activeFilterCount }}
+                                        </Badge>
                                     </Button>
-                                    <Button size="sm" @click="applyDateFilter">
-                                        {{ t('common.actions.confirm') }}
-                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent class="w-auto" side="bottom" align="end">
+                                    <RangeCalendar
+                                        v-model="dateRange"
+                                        :locale="locale"
+                                        :max-value="todayDate"
+                                        :number-of-months="2"
+                                        :week-starts-on="weekStartsOn" />
+                                    <div class="flex justify-end gap-2 mt-3">
+                                        <Button variant="outline" size="sm" @click="clearDateFilter">
+                                            {{ t('common.actions.clear') }}
+                                        </Button>
+                                        <Button size="sm" @click="applyDateFilter">
+                                            {{ t('common.actions.confirm') }}
+                                        </Button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            <TooltipWrapper side="bottom" :content="t('view.feed.favorites_only_tooltip')">
+                                <div>
+                                    <Toggle
+                                        class="bv-focus-ring"
+                                        variant="outline"
+                                        size="sm"
+                                        :model-value="feedTable.vip"
+                                        :ariaLabel="t('view.feed.favorites_only_tooltip')"
+                                        @update:modelValue="
+                                            (v) => {
+                                                feedTable.vip = v;
+                                                feedTableLookup();
+                                            }
+                                        ">
+                                        <Star fill="currentColor" v-if="feedTable.vip" />
+                                        <Star v-else />
+                                    </Toggle>
                                 </div>
-                            </PopoverContent>
-                        </Popover>
-                        <TooltipWrapper side="bottom" :content="t('view.feed.favorites_only_tooltip')">
-                            <div>
-                                <Toggle
-                                    variant="outline"
-                                    size="sm"
-                                    :model-value="feedTable.vip"
-                                    :ariaLabel="t('view.feed.favorites_only_tooltip')"
-                                    @update:modelValue="
-                                        (v) => {
-                                            feedTable.vip = v;
-                                            feedTableLookup();
-                                        }
-                                    ">
-                                    <Star fill="currentColor" v-if="feedTable.vip" />
-                                    <Star v-else />
-                                </Toggle>
-                            </div>
-                        </TooltipWrapper>
+                            </TooltipWrapper>
+                        </div>
+                        <ToggleGroup
+                            type="multiple"
+                            variant="outline"
+                            size="sm"
+                            :model-value="activeFilterSelection"
+                            @update:model-value="handleFeedFilterChange"
+                            class="feed__type-filters">
+                            <ToggleGroupItem value="All">
+                                {{ t('view.search.avatar.all') }}
+                            </ToggleGroupItem>
+                            <ToggleGroupItem v-for="type in feedFilterTypes" :key="type" :value="type">
+                                {{ t('view.feed.filters.' + type) }}
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                        <InputGroupField
+                            class="feed__search"
+                            v-model="feedTable.search"
+                            :placeholder="t('view.feed.search_placeholder')"
+                            clearable
+                            @keyup.enter="feedTableLookup"
+                            @change="feedTableLookup" />
                     </div>
-                    <ToggleGroup
-                        type="multiple"
-                        variant="outline"
-                        size="sm"
-                        :model-value="activeFilterSelection"
-                        @update:model-value="handleFeedFilterChange"
-                        class="w-full justify-start"
-                        style="flex: 1">
-                        <ToggleGroupItem value="All">
-                            {{ t('view.search.avatar.all') }}
-                        </ToggleGroupItem>
-                        <ToggleGroupItem v-for="type in feedFilterTypes" :key="type" :value="type">
-                            {{ t('view.feed.filters.' + type) }}
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                    <InputGroupField
-                        class="ml-2"
-                        v-model="feedTable.search"
-                        :placeholder="t('view.feed.search_placeholder')"
-                        clearable
-                        style="flex: 0.4"
-                        @keyup.enter="feedTableLookup"
-                        @change="feedTableLookup" />
-                </div>
-            </template>
-        </DataTableLayout>
+                </template>
+            </DataTableLayout>
+        </section>
     </div>
 </template>
 
@@ -173,7 +185,7 @@
         const location = row?.location ?? row?.details?.location ?? '';
         const message = row?.message ?? '';
 
-        return `${type}:${createdAt}:${userId}:${location}:${message}:${Date.now()}`;
+        return `${type}:${createdAt}:${userId}:${location}:${message}`;
     }
 
     const { table, pagination } = useVrcxVueTable({
@@ -219,6 +231,13 @@
         return filter;
     });
 
+    const filterContextLabel = computed(() => {
+        if (activeFilterSelection.value.includes('All')) {
+            return t('view.search.avatar.all');
+        }
+        return activeFilterSelection.value.map((type) => t(`view.feed.filters.${type}`)).join(' · ');
+    });
+
     /**
      *
      * @param value
@@ -241,6 +260,91 @@
 </script>
 
 <style scoped>
+    .feed {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 0;
+    }
+
+    .feed__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .feed__identity {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .feed__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .feed__summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        color: var(--bv-text-muted);
+        font-size: 12px;
+    }
+
+    .feed__record-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .feed__filter-context {
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .feed__table-surface {
+        flex: 1;
+        min-height: 0;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .feed__filter-surface {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 10px;
+        padding: 8px;
+    }
+
+    .feed__filter-actions {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .feed__type-filters {
+        flex: 1;
+        justify-content: flex-start;
+        min-width: 320px;
+        overflow-x: auto;
+    }
+
+    .feed__search {
+        flex: 0 1 320px;
+        min-width: 180px;
+    }
+
     .feed :deep(.x-text-removed) {
         text-decoration: line-through;
         color: #ff0000;
@@ -254,5 +358,20 @@
         background-color: rgba(76, 255, 80, 0.2);
         padding: 2px 2px;
         border-radius: 4px;
+    }
+
+    @media (max-width: 960px) {
+        .feed__filter-surface {
+            flex-wrap: wrap;
+        }
+
+        .feed__type-filters {
+            order: 3;
+            flex-basis: 100%;
+        }
+
+        .feed__search {
+            flex: 1;
+        }
     }
 </style>

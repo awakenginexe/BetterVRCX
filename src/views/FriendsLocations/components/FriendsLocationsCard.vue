@@ -1,9 +1,14 @@
 <template>
     <UserContextMenu :user-id="friend.id" :state="friend.state" :location="friend.ref?.location">
         <Card
-            class="friend-card x-hover-card hover:bg-muted relative"
+            class="friend-card bv-surface-raised bv-focus-ring x-hover-card relative"
             :style="cardStyle"
-            @click="showUserDialog(friend.id)">
+            role="button"
+            tabindex="0"
+            :aria-label="friend.name"
+            @click="activateFriend"
+            @keydown.enter.prevent="activateFriend"
+            @keydown.space.prevent="activateFriend">
             <div class="friend-card__header grid items-center mb-1.75">
                 <div class="relative inline-block flex-none size-9 mr-2.5">
                     <Avatar class="size-full rounded-full">
@@ -13,9 +18,6 @@
                         </AvatarFallback>
                     </Avatar>
                 </div>
-                <span
-                    class="friend-card__status-dot absolute rounded-full pointer-events-none"
-                    :class="statusDotClass"></span>
                 <div
                     class="friend-card__name font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
                     :title="friend.name">
@@ -23,12 +25,6 @@
                 </div>
             </div>
             <div class="friend-card__body grid">
-                <div
-                    class="friend-card__signature flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
-                    :title="friend.ref?.statusDescription">
-                    <Pencil v-if="friend.ref?.statusDescription" class="h-3.5 w-3.5 mr-0.5" style="opacity: 0.7" />
-                    {{ friend.ref?.statusDescription || '&nbsp;' }}
-                </div>
                 <div
                     v-if="displayInstanceInfo"
                     @click.stop
@@ -41,6 +37,22 @@
                         enable-context-menu
                         link />
                 </div>
+                <div class="friend-card__metadata">
+                    <div class="friend-card__status bv-badge">
+                        <span
+                            class="friend-card__status-dot bv-status-dot pointer-events-none"
+                            :class="statusPresentation.className"
+                            :data-status="statusPresentation.tone"
+                            aria-hidden="true"></span>
+                        <span class="friend-card__status-label">{{ statusPresentation.label }}</span>
+                    </div>
+                    <div
+                        class="friend-card__signature flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
+                        :title="friend.ref?.statusDescription">
+                        <Pencil v-if="friend.ref?.statusDescription" class="h-3.5 w-3.5 mr-0.5" style="opacity: 0.7" />
+                        {{ friend.ref?.statusDescription || '&nbsp;' }}
+                    </div>
+                </div>
             </div>
         </Card>
     </UserContextMenu>
@@ -51,6 +63,7 @@
     import { Card } from '@/components/ui/card';
     import { Pencil, User } from 'lucide-vue-next';
     import { computed } from 'vue';
+    import { useI18n } from 'vue-i18n';
 
     import { useUserDisplay } from '../../../composables/useUserDisplay';
 
@@ -59,6 +72,7 @@
     import { showUserDialog } from '../../../coordinators/userCoordinator';
 
     const { userImage, userStatusClass } = useUserDisplay();
+    const { t } = useI18n();
 
     const props = defineProps({
         friend: {
@@ -87,39 +101,81 @@
         paddingBottom: `${6 * props.cardScale}px !important`
     }));
 
-    const statusDotClass = computed(() => {
+    const statusPresentation = computed(() => {
         const status = userStatusClass(props.friend.ref, props.friend.pendingOffline);
 
         if (status?.online) {
-            return 'friend-card__status-dot--online';
+            return {
+                className: 'friend-card__status-dot--online',
+                tone: 'online',
+                label: t('dialog.user.status.online')
+            };
         }
         if (status?.['active-joinme']) {
-            return 'friend-card__status-dot--active-joinme';
+            return {
+                className: 'friend-card__status-dot--active-joinme',
+                tone: 'joinme',
+                label: t('dialog.user.status.join_me')
+            };
         }
         if (status?.['active-askme']) {
-            return 'friend-card__status-dot--active-askme';
+            return {
+                className: 'friend-card__status-dot--active-askme',
+                tone: 'askme',
+                label: t('dialog.user.status.ask_me')
+            };
         }
         if (status?.['active-busy']) {
-            return 'friend-card__status-dot--active-busy';
+            return {
+                className: 'friend-card__status-dot--active-busy',
+                tone: 'busy',
+                label: t('dialog.user.status.busy')
+            };
         }
         if (status?.active) {
-            return 'friend-card__status-dot--active';
+            return {
+                className: 'friend-card__status-dot--active',
+                tone: 'online',
+                label: t('dialog.user.status.active')
+            };
         }
         if (status?.joinme) {
-            return 'friend-card__status-dot--joinme';
+            return {
+                className: 'friend-card__status-dot--joinme',
+                tone: 'joinme',
+                label: t('dialog.user.status.join_me')
+            };
         }
         if (status?.askme) {
-            return 'friend-card__status-dot--askme';
+            return {
+                className: 'friend-card__status-dot--askme',
+                tone: 'askme',
+                label: t('dialog.user.status.ask_me')
+            };
         }
         if (status?.busy) {
-            return 'friend-card__status-dot--busy';
+            return {
+                className: 'friend-card__status-dot--busy',
+                tone: 'busy',
+                label: t('dialog.user.status.busy')
+            };
         }
         if (status?.offline) {
-            return 'friend-card__status-dot--offline';
+            return {
+                className: 'friend-card__status-dot--offline',
+                tone: 'offline',
+                label: t('dialog.user.status.offline')
+            };
         }
 
-        return 'friend-card__status-dot--hidden';
+        return {
+            className: 'friend-card__status-dot--hidden',
+            tone: 'offline',
+            label: t('dialog.user.status.offline')
+        };
     });
+
+    const activateFriend = () => showUserDialog(props.friend.id);
 </script>
 
 <style scoped>
@@ -129,6 +185,16 @@
         gap: calc(14px * var(--card-scale) * var(--card-spacing));
         max-width: var(--friend-card-target-width, 220px);
         min-width: var(--friend-card-min-width, 220px);
+        color: var(--bv-text-strong);
+        transition:
+            border-color 160ms ease,
+            background-color 160ms ease,
+            box-shadow 160ms ease;
+    }
+
+    .friend-card:hover {
+        border-color: color-mix(in srgb, var(--bv-accent) 42%, var(--bv-border));
+        background: var(--bv-bg-hover);
     }
 
     .friend-card__header {
@@ -137,62 +203,12 @@
     }
 
     .friend-card__status-dot {
-        top: calc(8px * var(--card-scale));
-        right: calc(8px * var(--card-scale));
-        inline-size: calc(12px * var(--card-scale));
-        block-size: calc(12px * var(--card-scale));
+        inline-size: calc(8px * var(--card-scale));
+        block-size: calc(8px * var(--card-scale));
     }
 
     .friend-card__status-dot--hidden {
         display: none;
-    }
-
-    .friend-card__status-dot--online {
-        background: var(--status-online);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-online) 40%, transparent);
-    }
-
-    .friend-card__status-dot--active {
-        background: transparent;
-        border: calc(2px * var(--card-scale)) solid var(--status-online);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-online) 40%, transparent);
-    }
-
-    .friend-card__status-dot--active-joinme {
-        background: transparent;
-        border: calc(2px * var(--card-scale)) solid var(--status-joinme);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-joinme) 40%, transparent);
-    }
-
-    .friend-card__status-dot--active-askme {
-        background: transparent;
-        border: calc(2px * var(--card-scale)) solid var(--status-askme);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-askme) 40%, transparent);
-    }
-
-    .friend-card__status-dot--active-busy {
-        background: transparent;
-        border: calc(2px * var(--card-scale)) solid var(--status-busy);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-busy) 40%, transparent);
-    }
-
-    .friend-card__status-dot--joinme {
-        background: var(--status-joinme);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-joinme) 40%, transparent);
-    }
-
-    .friend-card__status-dot--busy {
-        background: var(--status-busy);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-busy) 40%, transparent);
-    }
-
-    .friend-card__status-dot--askme {
-        background: var(--status-askme);
-        box-shadow: 0 0 calc(8px * var(--card-scale)) color-mix(in oklch, var(--status-askme) 40%, transparent);
-    }
-
-    .friend-card__status-dot--offline {
-        background: var(--status-offline-card);
     }
 
     .friend-card__body {
@@ -205,7 +221,6 @@
 
     .friend-card__signature {
         font-size: calc(12px * var(--card-scale));
-        padding: calc(7px * var(--card-scale)) calc(8px * var(--card-scale));
         line-height: 1.4;
         gap: calc(4px * var(--card-scale));
     }
@@ -220,6 +235,28 @@
         border-radius: calc(var(--radius-lg) * var(--card-scale));
         font-size: calc(12px * var(--card-scale));
         line-height: 1.3;
+        border: 1px solid var(--bv-border);
+        background: var(--bv-bg-surface);
+    }
+
+    .friend-card__metadata {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: calc(8px * var(--card-scale) * var(--card-spacing));
+        min-width: 0;
+        padding: calc(5px * var(--card-scale)) 0 0;
+    }
+
+    .friend-card__status {
+        gap: calc(5px * var(--card-scale));
+        min-height: calc(20px * var(--card-scale));
+        padding: calc(2px * var(--card-scale)) calc(6px * var(--card-scale));
+        font-size: calc(10px * var(--card-scale));
+    }
+
+    .friend-card__status-label {
+        line-height: 1.2;
     }
 
     :global(html.dark) .friend-card__world,
@@ -264,5 +301,11 @@
     .friend-card__location :deep(.flags) {
         scale: calc(1 * var(--card-scale));
         filter: brightness(1.05);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .friend-card {
+            transition-duration: 0.01ms;
+        }
     }
 </style>

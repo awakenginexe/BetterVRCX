@@ -271,6 +271,29 @@ describe('FriendsLocations.vue', () => {
         expect(cards.map((node) => node.text())).toEqual(['Alice', 'Bob']);
     });
 
+    test('renders semantic page, control, and virtualized location surfaces with live context', async () => {
+        mocks.onlineFriends.value = [
+            makeFriend('usr_1', 'Alice'),
+            makeFriend('usr_2', 'Bob')
+        ];
+        const wrapper = mount(FriendsLocations);
+        await flushSettings();
+
+        const header = wrapper.get('.friend-view__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.friends_locations');
+        expect(header.get('.friend-view__record-count').text()).toBe('2');
+        expect(header.get('.friend-view__segment-label').text()).toBe(
+            'view.friends_locations.online'
+        );
+        expect(wrapper.get('.friend-view__toolbar').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.friend-view__scroll').classes()).toContain(
+            'bv-surface'
+        );
+    });
+
     test('filters cards by search text in DOM', async () => {
         mocks.onlineFriends.value = [
             makeFriend('usr_1', 'Alice'),
@@ -342,8 +365,8 @@ describe('FriendsLocations.vue', () => {
         const wrapper = mount(FriendsLocations);
         await flushSettings();
 
-        expect(wrapper.get('[data-testid="empty-state"]').text()).toBe(
-            'nomatch'
-        );
+        const empty = wrapper.get('.friend-view__empty');
+        expect(empty.classes()).toContain('bv-empty-state');
+        expect(empty.get('[data-testid="empty-state"]').text()).toBe('nomatch');
     });
 });

@@ -240,6 +240,25 @@ describe('Feed.vue', () => {
         expect(wrapper.get('[data-testid="total-items"]').text()).toBe('100');
     });
 
+    test('renders the feed as a semantic activity surface with filter and record context', () => {
+        mocks.filteredRows = [{ id: 'r1' }, { id: 'r2' }, { id: 'r3' }];
+        const wrapper = mount(Feed);
+
+        const header = wrapper.get('.feed__page-header');
+        expect(header.classes()).toContain('bv-surface');
+        expect(header.get('h1').text()).toBe('nav_tooltip.feed');
+        expect(header.get('.feed__record-count').text()).toBe('3');
+        expect(header.get('.feed__filter-context').text()).toBe(
+            'view.search.avatar.all'
+        );
+        expect(wrapper.get('.feed__filter-surface').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.feed__table-surface').classes()).toContain(
+            'bv-surface'
+        );
+    });
+
     test('builds stable row id fallback for rows without id', () => {
         const wrapper = mount(Feed);
 

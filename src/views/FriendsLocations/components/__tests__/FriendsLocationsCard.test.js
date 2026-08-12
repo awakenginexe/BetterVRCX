@@ -196,7 +196,8 @@ const i18n = createI18n({
     messages: { en }
 });
 
-vi.mock('lucide-vue-next', () => ({
+vi.mock('lucide-vue-next', async (importOriginal) => ({
+    ...(await importOriginal()),
     Pencil: { template: '<span class="pencil-icon" />' },
     User: { template: '<span class="user-icon" />' }
 }));
@@ -222,7 +223,7 @@ const stubs = {
     },
     Card: {
         template:
-            '<div data-testid="card" v-bind="$attrs" @click="$emit(\'click\')"><slot /></div>',
+            '<div data-testid="card" v-bind="$attrs" :class="$props.class" :style="$props.style" @click="$emit(\'click\')"><slot /></div>',
         props: ['class', 'style'],
         emits: ['click']
     },
@@ -462,8 +463,8 @@ describe('FriendsLocationsCard.vue', () => {
                 })
             });
             expect(
-                wrapper.find('[data-testid="context-menu-separator"]').exists()
-            ).toBe(true);
+                wrapper.findAll('[data-testid="context-menu-separator"]')
+            ).toHaveLength(2);
         });
 
         test('hides separator when friend has no real location', () => {
@@ -474,8 +475,8 @@ describe('FriendsLocationsCard.vue', () => {
                 })
             });
             expect(
-                wrapper.find('[data-testid="context-menu-separator"]').exists()
-            ).toBe(false);
+                wrapper.findAll('[data-testid="context-menu-separator"]')
+            ).toHaveLength(1);
         });
 
         test('shows Invite but disabled when cannot invite to my location', () => {
@@ -593,6 +594,19 @@ describe('FriendsLocationsCard.vue', () => {
             await wrapper.find('[data-testid="card"]').trigger('click');
             expect(mockShowUserDialog).toHaveBeenCalledWith('usr_test123');
         });
+
+        test('card is a keyboard-activatable BetterVRCX surface', async () => {
+            const wrapper = mountCard();
+            const card = wrapper.get('[data-testid="card"]');
+
+            expect(card.classes()).toContain('bv-surface-raised');
+            expect(card.classes()).toContain('bv-focus-ring');
+            expect(card.attributes('role')).toBe('button');
+            expect(card.attributes('tabindex')).toBe('0');
+
+            await card.trigger('keydown.enter');
+            expect(mockShowUserDialog).toHaveBeenCalledWith('usr_test123');
+        });
     });
 
     describe('status dot classes', () => {
@@ -605,14 +619,15 @@ describe('FriendsLocationsCard.vue', () => {
             const wrapper = mountCard();
             expect(
                 wrapper.find('.friend-card__status-dot').classes()
-            ).toContain('friend-card__status-dot--join');
+            ).toContain('friend-card__status-dot--joinme');
         });
 
         test('shows active busy status class when active + busy', () => {
             mockUserStatusClass.mockReturnValue({
                 joinme: false,
                 online: false,
-                active: true
+                active: false,
+                'active-busy': true
             });
             const wrapper = mountCard({
                 friend: makeFriend({ status: 'busy' })
@@ -620,6 +635,24 @@ describe('FriendsLocationsCard.vue', () => {
             expect(
                 wrapper.find('.friend-card__status-dot').classes()
             ).toContain('friend-card__status-dot--active-busy');
+        });
+
+        test('pairs the semantic status marker with visible status text', () => {
+            mockUserStatusClass.mockReturnValue({
+                joinme: false,
+                online: false,
+                active: false,
+                askme: true
+            });
+            const wrapper = mountCard();
+            const marker = wrapper.get('.friend-card__status-dot');
+
+            expect(marker.classes()).toContain('bv-status-dot');
+            expect(marker.attributes('data-status')).toBe('askme');
+            expect(marker.attributes('aria-hidden')).toBe('true');
+            expect(wrapper.get('.friend-card__status-label').text()).toBe(
+                'Ask Me'
+            );
         });
     });
 });

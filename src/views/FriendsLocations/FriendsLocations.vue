@@ -1,6 +1,19 @@
 <template>
     <div class="friend-view x-container">
-        <div v-if="settingsReady" class="friend-view__toolbar">
+        <header class="friend-view__page-header bv-surface">
+            <div class="friend-view__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.friends_locations') }}</h1>
+            </div>
+            <div class="friend-view__summary" aria-live="polite">
+                <span class="friend-view__record-count bv-badge" data-tone="accent">
+                    {{ filteredFriends.length }}
+                </span>
+                <span class="friend-view__segment-label">{{ currentSegmentLabel }}</span>
+            </div>
+        </header>
+
+        <div v-if="settingsReady" class="friend-view__toolbar bv-surface-raised">
             <Tabs v-model="activeSegment" class="friend-view__tabs">
                 <TabsList>
                     <TabsTrigger v-for="option in segmentedOptions" :key="option.value" :value="option.value">
@@ -18,7 +31,7 @@
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
-                                    class="rounded-full mr-2"
+                                    class="rounded-full bv-focus-ring"
                                     size="icon"
                                     variant="ghost"
                                     :ariaLabel="t('view.charts.instance_activity.settings.header')">
@@ -78,10 +91,10 @@
                 </TooltipWrapper>
             </div>
         </div>
-        <div v-else class="friend-view__toolbar friend-view__toolbar--loading">
+        <div v-else class="friend-view__toolbar friend-view__toolbar--loading bv-surface-raised">
             <span class="friend-view__loading-text">{{ t('view.friends_locations.loading_more') }}</span>
         </div>
-        <div v-if="settingsReady" ref="scrollbarRef" class="friend-view__scroll">
+        <div v-if="settingsReady" ref="scrollbarRef" class="friend-view__scroll bv-surface">
             <div v-if="virtualRows.length" class="friend-view__virtual" :style="virtualContainerStyle">
                 <template v-for="item in virtualItems" :key="String(item.virtualItem.key)">
                     <div
@@ -92,7 +105,7 @@
                         :ref="virtualizer.measureElement"
                         :style="{ transform: `translateY(${item.virtualItem.start}px)` }">
                         <template v-if="item.row.type === 'header'">
-                            <header class="friend-view__instance-header">
+                            <header class="friend-view__instance-header bv-surface-raised">
                                 <Location
                                     class="text-xs"
                                     :location="getRowInstanceId(item.row)"
@@ -103,8 +116,12 @@
 
                         <template v-else-if="item.row.type === 'group-header'">
                             <div
-                                class="flex cursor-pointer select-none items-center gap-1.5 px-1 py-1.5 text-[13px] font-semibold hover:opacity-80"
-                                @click="toggleGroupCollapse(item.row.groupKey)">
+                                class="friend-view__group-header bv-surface-raised bv-focus-ring"
+                                role="button"
+                                tabindex="0"
+                                @click="toggleGroupCollapse(item.row.groupKey)"
+                                @keydown.enter.prevent="toggleGroupCollapse(item.row.groupKey)"
+                                @keydown.space.prevent="toggleGroupCollapse(item.row.groupKey)">
                                 <ChevronDown
                                     class="size-4 shrink-0 transition-transform duration-200 ease-in-out"
                                     :class="{ '-rotate-90': item.row.collapsed }" />
@@ -131,11 +148,11 @@
                     </div>
                 </template>
             </div>
-            <div v-else class="friend-view__empty">
+            <div v-else class="friend-view__empty bv-empty-state">
                 <DataTableEmpty type="nomatch" />
             </div>
         </div>
-        <div v-else class="friend-view__initial-loading">
+        <div v-else class="friend-view__initial-loading bv-surface">
             <Loader2 class="friend-view__loading-icon" :size="22" />
         </div>
     </div>
@@ -262,6 +279,9 @@
 
     const activeSegment = ref('online');
     const searchTerm = ref('');
+    const currentSegmentLabel = computed(
+        () => segmentedOptions.value.find((option) => option.value === activeSegment.value)?.label ?? ''
+    );
 
     const scrollbarRef = ref();
     const gridWidth = ref(0);
@@ -927,8 +947,8 @@
 <style scoped>
     .friend-view {
         display: grid;
-        grid-template-rows: auto 1fr;
-        gap: 16px;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        gap: 14px;
         min-height: 0;
         height: 100%;
         overflow: hidden;
@@ -940,9 +960,44 @@
 
     .friend-view__toolbar {
         display: flex;
-        gap: 20px;
+        gap: 16px;
         align-items: center;
-        padding: 8px 2px 0 2px;
+        padding: 8px 10px;
+    }
+
+    .friend-view__page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .friend-view__identity {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .friend-view__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .friend-view__summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--bv-text-muted);
+        font-size: 12px;
+    }
+
+    .friend-view__record-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
     }
 
     .friend-view__tabs {
@@ -1057,6 +1112,7 @@
         overflow: auto;
         min-height: 0;
         height: 100%;
+        padding: 8px;
     }
 
     .friend-view__initial-loading {
@@ -1068,7 +1124,7 @@
     .friend-view__instance-header {
         display: flex;
         align-items: center;
-        padding: 4px 2px;
+        padding: 6px 8px;
         font-weight: 600;
         font-size: 13px;
     }
@@ -1094,6 +1150,19 @@
 
     .friend-view__instance-count {
         font-size: 12px;
+        color: var(--bv-text-muted);
+    }
+
+    .friend-view__group-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        color: var(--bv-text-strong);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
     }
 
     .friend-view__virtual-row--group-header {
@@ -1119,6 +1188,21 @@
         }
         to {
             transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 840px) {
+        .friend-view__toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .friend-view__actions {
+            justify-content: stretch;
+        }
+
+        .friend-view__search {
+            width: auto;
         }
     }
 </style>
