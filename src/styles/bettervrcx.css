@@ -1,0 +1,222 @@
+:root {
+    --bv-bg-base: #050505;
+    --bv-bg-rail: #0a0a0a;
+    --bv-bg-surface: #0d0d0e;
+    --bv-bg-control: #101011;
+    --bv-bg-hover: #1c1c1f;
+    --bv-border: #1c1c1f;
+    --bv-accent: #5c76ff;
+    --bv-accent-soft: #9797b1;
+    --bv-info: #8ca5ff;
+    --bv-success: #2dd48c;
+    --bv-warning: #ffba37;
+    --bv-danger: #ff4b55;
+    --bv-text-strong: #ebebff;
+    --bv-text-muted: #b7b7c3;
+    --bv-text-quiet: rgba(235, 235, 255, 0.58);
+    --bv-offline: #747f8d;
+}
+
+/* Keep the existing theme variable API while new surfaces migrate to --bv-* tokens. */
+html:root,
+html.dark {
+    --background: var(--bv-bg-base);
+    --foreground: var(--bv-text-strong);
+    --card: var(--bv-bg-surface);
+    --card-foreground: var(--bv-text-strong);
+    --profile-card: var(--bv-bg-surface);
+    --popover: var(--bv-bg-surface);
+    --popover-foreground: var(--bv-text-strong);
+    --primary: var(--bv-accent);
+    --primary-foreground: var(--bv-text-strong);
+    --secondary: var(--bv-bg-control);
+    --secondary-foreground: var(--bv-text-strong);
+    --muted: var(--bv-bg-control);
+    --muted-foreground: var(--bv-text-muted);
+    --accent: var(--bv-bg-hover);
+    --accent-foreground: var(--bv-text-strong);
+    --destructive: var(--bv-danger);
+    --destructive-foreground: var(--bv-text-strong);
+    --border: var(--bv-border);
+    --input: var(--bv-border);
+    --ring: var(--bv-accent);
+    --sidebar: var(--bv-bg-rail);
+    --sidebar-foreground: var(--bv-text-strong);
+    --sidebar-primary: var(--bv-accent);
+    --sidebar-primary-foreground: var(--bv-text-strong);
+    --sidebar-accent: var(--bv-bg-hover);
+    --sidebar-accent-foreground: var(--bv-text-strong);
+    --sidebar-border: var(--bv-border);
+    --sidebar-ring: var(--bv-accent);
+
+    /* Status colors remain semantic and independent of account/profile themes. */
+    --status-online: var(--bv-success);
+    --status-joinme: var(--bv-info);
+    --status-busy: var(--bv-danger);
+    --status-askme: var(--bv-warning);
+    --status-offline: var(--bv-offline);
+    --status-offline-alt: var(--bv-offline);
+    --status-offline-card: var(--bv-offline);
+}
+
+.bv-surface,
+.bv-surface-raised {
+    box-sizing: border-box;
+    color: var(--bv-text-strong);
+    border: 1px solid var(--bv-border);
+    border-radius: 12px;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.bv-surface {
+    background-color: var(--bv-bg-surface);
+}
+
+.bv-surface-raised {
+    background-color: var(--bv-bg-control);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 20%);
+}
+
+.bv-eyebrow {
+    color: var(--bv-accent-soft);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.bv-status-dot {
+    --bv-status-color: var(--bv-offline);
+
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border: 1px solid var(--bv-status-color);
+    border-radius: 999px;
+    background-color: var(--bv-status-color);
+    box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--bv-status-color) 20%, transparent);
+}
+
+.bv-status-dot[data-status='online'],
+.bv-status-dot[data-status='success'] {
+    --bv-status-color: var(--bv-success);
+}
+
+.bv-status-dot[data-status='joinme'],
+.bv-status-dot[data-status='info'] {
+    --bv-status-color: var(--bv-info);
+}
+
+.bv-status-dot[data-status='askme'],
+.bv-status-dot[data-status='warning'] {
+    --bv-status-color: var(--bv-warning);
+}
+
+.bv-status-dot[data-status='busy'],
+.bv-status-dot[data-status='danger'] {
+    --bv-status-color: var(--bv-danger);
+}
+
+.bv-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 2px 7px;
+    border: 1px solid var(--bv-border);
+    border-radius: 6px;
+    background-color: var(--bv-bg-control);
+    color: var(--bv-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.bv-badge[data-tone='accent'] {
+    border-color: var(--bv-accent);
+    color: var(--bv-accent-soft);
+}
+
+.bv-badge[data-tone='success'] {
+    border-color: var(--bv-success);
+    color: var(--bv-success);
+}
+
+.bv-badge[data-tone='warning'] {
+    border-color: var(--bv-warning);
+    color: var(--bv-warning);
+}
+
+.bv-badge[data-tone='danger'] {
+    border-color: var(--bv-danger);
+    color: var(--bv-danger);
+}
+
+.bv-focus-ring:focus-visible,
+.bv-focus-ring:focus-within {
+    outline: 2px solid var(--bv-accent);
+    outline-offset: 2px;
+}
+
+.bv-skeleton {
+    min-height: 1rem;
+    border-radius: 6px;
+    background: linear-gradient(
+        90deg,
+        var(--bv-bg-control) 25%,
+        var(--bv-bg-hover) 50%,
+        var(--bv-bg-control) 75%
+    );
+    background-size: 200% 100%;
+    animation: bv-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes bv-skeleton-shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+.bv-empty-state {
+    display: grid;
+    min-height: 160px;
+    place-items: center;
+    padding: 28px;
+    border: 1px dashed var(--bv-border);
+    border-radius: 12px;
+    background-color: var(--bv-bg-surface);
+    color: var(--bv-text-muted);
+    text-align: center;
+}
+
+.bv-danger-zone {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--bv-danger) 55%, var(--bv-border));
+    border-radius: 12px;
+    background-color: color-mix(
+        in srgb,
+        var(--bv-danger) 8%,
+        var(--bv-bg-surface)
+    );
+    color: var(--bv-text-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bv-surface,
+    .bv-surface-raised,
+    .bv-skeleton {
+        animation: none;
+        scroll-behavior: auto;
+        transition-duration: 0.01ms;
+    }
+}

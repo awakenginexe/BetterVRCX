@@ -12,6 +12,7 @@
 @import './noty.css';
 @import './status-icon.css';
 @import './options-container.css';
+@import './bettervrcx.css';
 
 @custom-variant dark (&:is(.dark *));
 
