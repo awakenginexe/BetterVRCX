@@ -98,29 +98,52 @@ html.dark {
     flex: 0 0 auto;
     border: 1px solid var(--bv-status-color);
     border-radius: 999px;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/*
+ * Usage contract: pair status dots with visible status text, or provide an
+ * aria-label that communicates the current status to assistive technology.
+ */
+.bv-status-dot[data-status='online'],
+.bv-status-dot[data-status='success'] {
+    --bv-status-color: var(--bv-success);
+
+    border-radius: 999px;
     background-color: var(--bv-status-color);
     box-shadow: 0 0 0 2px
         color-mix(in srgb, var(--bv-status-color) 20%, transparent);
 }
 
-.bv-status-dot[data-status='online'],
-.bv-status-dot[data-status='success'] {
-    --bv-status-color: var(--bv-success);
-}
-
 .bv-status-dot[data-status='joinme'],
 .bv-status-dot[data-status='info'] {
     --bv-status-color: var(--bv-info);
+
+    border-radius: 1px;
+    background-color: var(--bv-status-color);
+    transform: rotate(45deg);
 }
 
 .bv-status-dot[data-status='askme'],
 .bv-status-dot[data-status='warning'] {
     --bv-status-color: var(--bv-warning);
+
+    border-radius: 0;
+    background: repeating-linear-gradient(
+        135deg,
+        var(--bv-status-color) 0 1px,
+        transparent 1px 3px
+    );
 }
 
 .bv-status-dot[data-status='busy'],
 .bv-status-dot[data-status='danger'] {
     --bv-status-color: var(--bv-danger);
+
+    border-radius: 2px;
+    background-color: var(--bv-status-color);
+    transform: rotate(45deg) scale(0.85);
 }
 
 .bv-badge {
