@@ -1,14 +1,14 @@
 <template>
-    <div class="screenshot-metadata-page x-container flex flex-col overflow-hidden">
-        <div class="flex items-center gap-2 ml-2">
-            <Button variant="ghost" size="sm" class="mr-3" @click="goBack">
+    <div class="screenshot-metadata-page x-container">
+        <header class="screenshot-metadata__header">
+            <Button variant="ghost" size="sm" class="screenshot-metadata__back" @click="goBack">
                 <ArrowLeft />
                 {{ t('nav_tooltip.tools') }}
             </Button>
-            <span class="header">{{ t('dialog.screenshot_metadata.header') }}</span>
-        </div>
+            <h1>{{ t('dialog.screenshot_metadata.header') }}</h1>
+        </header>
 
-        <div class="flex items-center gap-2 my-2 flex-wrap">
+        <div class="screenshot-metadata__toolbar bv-surface">
             <Button size="sm" variant="outline" @click="getAndDisplayScreenshotFromFile">
                 <FolderSearch />
                 {{ t('dialog.screenshot_metadata.browse') }}
@@ -28,8 +28,8 @@
             <div class="flex-1" />
             <InputGroupSearch
                 v-model="screenshotMetadataDialog.search"
+                class="screenshot-metadata__search"
                 :placeholder="t('dialog.screenshot_metadata.search_placeholder')"
-                style="width: 200px"
                 @input="screenshotMetadataSearch" />
             <Select :model-value="screenshotMetadataDialog.searchType" @update:modelValue="handleSearchTypeChange">
                 <SelectTrigger size="sm" style="width: 150px">
@@ -52,9 +52,9 @@
         </div>
 
         <!-- Search Results Table View -->
-        <div v-if="searchViewMode === 'table'" class="flex-1 min-h-0 overflow-auto">
+        <div v-if="searchViewMode === 'table'" class="screenshot-metadata__results bv-surface">
             <table class="w-full border-collapse text-[13px]">
-                <thead class="sticky top-0 z-1 bg-background">
+                <thead class="screenshot-metadata__table-head">
                     <tr>
                         <th
                             class="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground text-left px-3 py-2 border-b whitespace-nowrap select-none cursor-pointer hover:text-foreground"
@@ -108,7 +108,8 @@
                     <tr
                         v-for="(row, idx) in sortedSearchResults"
                         :key="row.filePath"
-                        class="group/row cursor-pointer transition-colors duration-100 hover:bg-accent"
+                        data-testid="screenshot-result"
+                        class="screenshot-metadata__result-row group/row"
                         :class="
                             row.filePath === selectedSearchFilePath ? 'bg-accent border-l-[3px] border-l-primary' : ''
                         "
@@ -150,33 +151,41 @@
         </div>
 
         <!-- Detail View -->
-        <div v-else class="grid flex-1 min-h-0 overflow-hidden gap-4" style="grid-template-columns: 1fr 380px">
-            <div class="flex flex-col items-center min-h-0" @dragover.prevent @dragenter.prevent @drop="handleDrop">
-                <div class="relative flex-1 w-full min-h-0 flex items-center justify-center">
+        <div v-else class="screenshot-metadata__workspace">
+            <section
+                class="screenshot-metadata__preview bv-surface"
+                @dragover.prevent
+                @dragenter.prevent
+                @drop="handleDrop">
+                <div class="screenshot-metadata__stage">
                     <template v-if="screenshotMetadataDialog.metadata.filePath">
                         <img
-                            class="cursor-pointer max-w-full max-h-full object-contain"
+                            class="screenshot-metadata__image"
                             :src="screenshotMetadataDialog.metadata.filePath"
+                            :alt="screenshotMetadataDialog.metadata.fileName || t('dialog.screenshot_metadata.header')"
                             @click="showFullscreenImageDialog(screenshotMetadataDialog.metadata.filePath)" />
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 hover:opacity-100 transition-opacity bg-background/50 rounded-full"
+                            class="screenshot-metadata__stage-nav screenshot-metadata__stage-nav--previous"
                             @click="navigatePrev">
                             <ChevronLeft />
                         </Button>
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 hover:opacity-100 transition-opacity bg-background/50 rounded-full"
+                            class="screenshot-metadata__stage-nav screenshot-metadata__stage-nav--next"
                             @click="navigateNext">
                             <ChevronRight />
                         </Button>
                     </template>
-                    <span v-else class="text-muted-foreground text-sm">{{ t('dialog.screenshot_metadata.drag') }}</span>
+                    <div v-else class="screenshot-metadata__drop-state">
+                        <ImageIcon class="size-7" />
+                        <span>{{ t('dialog.screenshot_metadata.drag') }}</span>
+                    </div>
                 </div>
-                <div class="shrink-0 flex items-center justify-center h-[50px]">
-                    <ButtonGroup class="shadow-lg rounded-lg">
+                <div class="screenshot-metadata__navigation">
+                    <ButtonGroup>
                         <Button variant="outline" size="sm" @click="navigatePrev">
                             <ArrowLeft />
                             <Kbd class="ml-1">{{ isMac ? '⌥' : 'Alt' }}</Kbd>
@@ -189,9 +198,9 @@
                         </Button>
                     </ButtonGroup>
                 </div>
-            </div>
+            </section>
 
-            <div class="overflow-y-auto pr-1">
+            <aside class="screenshot-metadata__inspector bv-surface">
                 <Button
                     v-if="searchResultsData.length"
                     variant="ghost"
@@ -205,9 +214,9 @@
                     <pre class="whitespace-pre-wrap text-xs" v-text="screenshotMetadataDialog.metadata.error"></pre>
                 </template>
                 <template v-else>
-                    <div
+                    <section
                         v-if="screenshotMetadataDialog.metadata.world || screenshotMetadataDialog.metadata.author"
-                        class="pb-4">
+                        class="screenshot-metadata__section">
                         <h4 class="text-[11px] font-medium uppercase tracking-[0.08em] mb-1.5 text-muted-foreground">
                             {{ t('dialog.screenshot_metadata.section_location') }}
                         </h4>
@@ -223,9 +232,11 @@
                                 :userid="screenshotMetadataDialog.metadata.author.id"
                                 :hint="screenshotMetadataDialog.metadata.author.displayName" />
                         </div>
-                    </div>
+                    </section>
 
-                    <div v-if="screenshotMetadataDialog.metadata.players?.length" class="border-t pt-4 pb-4">
+                    <section
+                        v-if="screenshotMetadataDialog.metadata.players?.length"
+                        class="screenshot-metadata__section">
                         <h4 class="text-[11px] font-medium uppercase tracking-[0.08em] mb-1.5 text-muted-foreground">
                             {{ t('dialog.screenshot_metadata.section_players') }} ({{
                                 screenshotMetadataDialog.metadata.players.length
@@ -241,9 +252,9 @@
                                 {{ user.displayName }}
                             </Badge>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="border-t pt-4 pb-4">
+                    <section class="screenshot-metadata__section">
                         <h4 class="text-[11px] font-medium uppercase tracking-[0.08em] mb-1.5 text-muted-foreground">
                             {{ t('dialog.screenshot_metadata.section_file_info') }}
                         </h4>
@@ -270,18 +281,20 @@
                         <span
                             class="text-xs text-muted-foreground/60"
                             v-text="screenshotMetadataDialog.metadata.fileName"></span>
-                    </div>
+                    </section>
 
-                    <div v-if="screenshotMetadataDialog.metadata.note" class="border-t pt-4 pb-4">
+                    <section v-if="screenshotMetadataDialog.metadata.note" class="screenshot-metadata__section">
                         <h4 class="text-[11px] font-medium uppercase tracking-[0.08em] mb-1.5 text-muted-foreground">
                             {{ t('dialog.screenshot_metadata.section_note') }}
                         </h4>
                         <span
                             class="text-sm text-muted-foreground"
                             v-text="screenshotMetadataDialog.metadata.note"></span>
-                    </div>
+                    </section>
 
-                    <div v-if="screenshotMetadataDialog.metadata.filePath" class="border-t pt-4 pb-4">
+                    <section
+                        v-if="screenshotMetadataDialog.metadata.filePath"
+                        class="screenshot-metadata__section screenshot-metadata__section--actions">
                         <h4 class="text-[11px] font-medium uppercase tracking-[0.08em] mb-1.5 text-muted-foreground">
                             {{ t('dialog.screenshot_metadata.section_actions') }}
                         </h4>
@@ -310,9 +323,9 @@
                                 {{ t('dialog.screenshot_metadata.delete_metadata') }}
                             </Button>
                         </div>
-                    </div>
+                    </section>
                 </template>
-            </div>
+            </aside>
         </div>
     </div>
 </template>
@@ -831,3 +844,206 @@
         }
     }
 </script>
+
+<style scoped>
+    .screenshot-metadata-page {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 12px;
+        overflow: hidden;
+        padding: 16px 18px 18px;
+    }
+
+    .screenshot-metadata__header {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .screenshot-metadata__header h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .screenshot-metadata__back {
+        margin-left: -6px;
+        color: var(--bv-text-muted);
+    }
+
+    .screenshot-metadata__toolbar {
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 10px;
+    }
+
+    .screenshot-metadata__search {
+        width: min(240px, 100%);
+    }
+
+    .screenshot-metadata__results {
+        min-height: 0;
+        flex: 1;
+        overflow: auto;
+    }
+
+    .screenshot-metadata__table-head {
+        position: sticky;
+        z-index: 1;
+        top: 0;
+        background: var(--bv-bg-control);
+    }
+
+    .screenshot-metadata__result-row {
+        cursor: pointer;
+        transition: background-color 120ms ease;
+    }
+
+    .screenshot-metadata__result-row:hover {
+        background: var(--bv-bg-hover);
+    }
+
+    .screenshot-metadata__workspace {
+        display: grid;
+        min-height: 0;
+        flex: 1;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 370px);
+        gap: 12px;
+        overflow: hidden;
+    }
+
+    .screenshot-metadata__preview {
+        display: flex;
+        min-width: 0;
+        min-height: 0;
+        flex-direction: column;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--bv-bg-base) 72%, var(--bv-bg-surface));
+    }
+
+    .screenshot-metadata__stage {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .screenshot-metadata__image {
+        max-width: 100%;
+        max-height: 100%;
+        cursor: zoom-in;
+        border-radius: 8px;
+        object-fit: contain;
+    }
+
+    .screenshot-metadata__stage-nav {
+        position: absolute;
+        top: 50%;
+        border: 1px solid var(--bv-border);
+        border-radius: 999px;
+        background: var(--bv-bg-control);
+        opacity: 0.66;
+        transform: translateY(-50%);
+        transition: opacity 160ms ease;
+    }
+
+    .screenshot-metadata__stage-nav:hover,
+    .screenshot-metadata__stage-nav:focus-visible {
+        opacity: 1;
+    }
+
+    .screenshot-metadata__stage-nav--previous {
+        left: 12px;
+    }
+
+    .screenshot-metadata__stage-nav--next {
+        right: 12px;
+    }
+
+    .screenshot-metadata__drop-state {
+        display: flex;
+        max-width: 34ch;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        color: var(--bv-text-muted);
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .screenshot-metadata__navigation {
+        display: flex;
+        min-height: 52px;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        border-top: 1px solid var(--bv-border);
+        background: var(--bv-bg-surface);
+    }
+
+    .screenshot-metadata__inspector {
+        min-height: 0;
+        overflow-y: auto;
+        padding: 14px;
+    }
+
+    .screenshot-metadata__section {
+        padding: 2px 0 14px;
+    }
+
+    .screenshot-metadata__section + .screenshot-metadata__section {
+        padding-top: 14px;
+        border-top: 1px solid var(--bv-border);
+    }
+
+    .screenshot-metadata__section--actions {
+        padding-bottom: 2px;
+    }
+
+    @media (max-width: 860px) {
+        .screenshot-metadata__workspace {
+            overflow-y: auto;
+            grid-template-columns: 1fr;
+        }
+
+        .screenshot-metadata__preview {
+            min-height: 390px;
+        }
+
+        .screenshot-metadata__inspector {
+            overflow: visible;
+        }
+    }
+
+    @media (max-width: 620px) {
+        .screenshot-metadata-page {
+            padding: 12px;
+        }
+
+        .screenshot-metadata__toolbar > .flex-1 {
+            display: none;
+        }
+
+        .screenshot-metadata__search {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .screenshot-metadata__result-row,
+        .screenshot-metadata__stage-nav {
+            transition: none;
+        }
+    }
+</style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-10 py-2">
         <SettingsGroup :title="t('view.settings.general.general.header')">
             <div class="flex flex-col gap-0.5 px-1 py-1">
                 <div class="flex-1">
@@ -79,15 +79,15 @@
             </div>
         </SettingsGroup>
 
-        <SettingsGroup :title="t('view.settings.general.application.header')">
-            <SettingsItem v-if="!isLinux" :label="t('view.settings.general.application.startup')">
+        <SettingsGroup :title="t('view.settings.general.application.header')" tone="platform">
+            <SettingsItem v-if="!isLinux" :label="t('view.settings.general.application.startup')" intent="platform">
                 <Switch
                     :model-value="isStartAtWindowsStartup"
                     :ariaLabel="t('view.settings.general.application.startup')"
                     @update:modelValue="setIsStartAtWindowsStartup" />
             </SettingsItem>
 
-            <SettingsItem v-if="!isLinux" :label="t('view.settings.general.application.minimized')">
+            <SettingsItem v-if="!isLinux" :label="t('view.settings.general.application.minimized')" intent="platform">
                 <Switch
                     :model-value="isStartAsMinimizedState"
                     :ariaLabel="t('view.settings.general.application.minimized')"
@@ -96,14 +96,16 @@
             <SettingsItem
                 v-else
                 :label="t('view.settings.general.application.minimized')"
-                :description="t('view.settings.general.application.startup_linux')">
+                :description="t('view.settings.general.application.startup_linux')"
+                intent="platform"
+                :intent-label="t('view.settings.general.application.startup_linux')">
                 <Switch
                     :model-value="isStartAsMinimizedState"
                     :ariaLabel="t('view.settings.general.application.minimized')"
                     @update:modelValue="setIsStartAsMinimizedState" />
             </SettingsItem>
 
-            <SettingsItem v-if="!isMacOS" :label="t('view.settings.general.application.tray')">
+            <SettingsItem v-if="!isMacOS" :label="t('view.settings.general.application.tray')" intent="platform">
                 <Switch
                     :model-value="isCloseToTray"
                     :ariaLabel="t('view.settings.general.application.tray')"
@@ -113,7 +115,9 @@
             <SettingsItem
                 v-if="!isLinux"
                 :label="t('view.settings.general.application.disable_gpu_acceleration')"
-                :description="t('view.settings.general.application.disable_gpu_acceleration_tooltip')">
+                :description="t('view.settings.general.application.disable_gpu_acceleration_tooltip')"
+                intent="restart"
+                :intent-label="t('view.settings.general.application.disable_gpu_acceleration_tooltip')">
                 <Switch
                     :model-value="disableGpuAcceleration"
                     :ariaLabel="t('view.settings.general.application.disable_gpu_acceleration')"
@@ -123,7 +127,9 @@
             <SettingsItem
                 v-if="!isLinux"
                 :label="t('view.settings.general.application.disable_vr_overlay_gpu_acceleration')"
-                :description="t('view.settings.general.application.disable_gpu_acceleration_tooltip')">
+                :description="t('view.settings.general.application.disable_gpu_acceleration_tooltip')"
+                intent="restart"
+                :intent-label="t('view.settings.general.application.disable_gpu_acceleration_tooltip')">
                 <Switch
                     :model-value="disableVrOverlayGpuAcceleration"
                     @update:modelValue="setDisableVrOverlayGpuAcceleration" />

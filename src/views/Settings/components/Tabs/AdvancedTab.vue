@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-10 py-2">
         <SettingsGroup :title="t('view.settings.advanced.advanced.vrchat_settings.header')">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.relaunch_vrchat.header')"
@@ -38,10 +38,11 @@
             </SettingsItem>
         </SettingsGroup>
 
-        <SettingsGroup :title="t('view.settings.advanced_groups.security.header')">
+        <SettingsGroup :title="t('view.settings.advanced_groups.security.header')" tone="credential">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.primary_password.header')"
-                :description="t('view.settings.advanced.advanced.primary_password.description')">
+                :description="t('view.settings.advanced.advanced.primary_password.description')"
+                intent="credential">
                 <Switch
                     :model-value="enablePrimaryPassword"
                     :disabled="!enablePrimaryPassword"
@@ -89,8 +90,8 @@
         </SettingsGroup>
 
         <template v-if="!isLinux">
-            <SettingsGroup :title="t('view.settings.advanced.advanced.app_launcher.header')">
-                <SettingsItem :label="t('view.settings.advanced.advanced.app_launcher.folder')">
+            <SettingsGroup :title="t('view.settings.advanced.advanced.app_launcher.header')" tone="platform">
+                <SettingsItem :label="t('view.settings.advanced.advanced.app_launcher.folder')" intent="platform">
                     <Button size="sm" variant="outline" @click="openShortcutFolder()">{{
                         t('view.settings.advanced.advanced.app_launcher.folder')
                     }}</Button>
@@ -265,7 +266,7 @@
             </div>
         </SettingsGroup>
 
-        <SettingsGroup :title="t('view.settings.advanced.advanced.database_cleanup.header')">
+        <SettingsGroup :title="t('view.settings.advanced.advanced.database_cleanup.header')" tone="danger">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.database_cleanup.auto_cleanup')"
                 :description="t('view.settings.advanced.advanced.database_cleanup.auto_cleanup_description')">
@@ -295,7 +296,10 @@
                 </Select>
             </SettingsItem>
 
-            <SettingsItem :label="t('view.settings.advanced.advanced.database_cleanup.purge_button')">
+            <SettingsItem
+                :label="t('view.settings.advanced.advanced.database_cleanup.purge_button')"
+                intent="destructive"
+                :intent-label="t('view.settings.advanced.advanced.database_cleanup.purge_confirm_description_2')">
                 <Button size="sm" variant="outline" @click="isPurgeDialogVisible = true">
                     <Trash2 class="h-4 w-4 mr-1" />
                     {{ t('view.settings.advanced.advanced.database_cleanup.purge') }}
@@ -405,7 +409,11 @@
             <SettingsGroup :title="t('view.settings.advanced_groups.nightly.header')">
                 <SettingsItem
                     :label="t('view.settings.advanced.advanced.anonymous_error_reporting.header')"
-                    :description="t('view.settings.advanced.advanced.anonymous_error_reporting.description')">
+                    :description="t('view.settings.advanced.advanced.anonymous_error_reporting.description')"
+                    intent="restart"
+                    :intent-label="
+                        t('view.settings.advanced.advanced.anonymous_error_reporting.enabled_restart_description')
+                    ">
                     <Switch :model-value="sentryErrorReporting" @update:modelValue="setSentryErrorReporting()" />
                 </SettingsItem>
             </SettingsGroup>

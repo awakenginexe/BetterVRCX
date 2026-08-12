@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-10 py-2">
         <!-- Discord Rich Presence -->
         <SettingsGroup :title="t('view.settings.discord_presence.discord_presence.header')">
             <template #description>
@@ -103,7 +103,7 @@
         </SettingsGroup>
 
         <!-- Translation API -->
-        <SettingsGroup :title="t('view.settings.advanced.advanced.translation_api.header')">
+        <SettingsGroup :title="t('view.settings.advanced.advanced.translation_api.header')" tone="credential">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.translation_api.enable')"
                 :description="t('view.settings.advanced.advanced.translation_api.enable_tooltip')">
@@ -113,7 +113,9 @@
                     @update:modelValue="changeTranslationAPI('VRCX_translationAPI')" />
             </SettingsItem>
 
-            <SettingsItem :label="t('view.settings.advanced.advanced.translation_api.translation_api_key')">
+            <SettingsItem
+                :label="t('view.settings.advanced.advanced.translation_api.translation_api_key')"
+                intent="credential">
                 <Button size="sm" variant="outline" @click="showTranslationApiDialog">
                     <Languages class="h-4 w-4 mr-1.5" />
                     {{ t('view.settings.advanced.advanced.translation_api.translation_api_key') }}
@@ -122,7 +124,7 @@
         </SettingsGroup>
 
         <!-- YouTube API -->
-        <SettingsGroup :title="t('view.settings.advanced.advanced.youtube_api.header')">
+        <SettingsGroup :title="t('view.settings.advanced.advanced.youtube_api.header')" tone="credential">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.youtube_api.enable')"
                 :description="t('view.settings.advanced.advanced.youtube_api.enable_tooltip')">
@@ -132,7 +134,7 @@
                     @update:modelValue="changeYouTubeApi('VRCX_youtubeAPI')" />
             </SettingsItem>
 
-            <SettingsItem :label="t('view.settings.advanced.advanced.youtube_api.youtube_api_key')">
+            <SettingsItem :label="t('view.settings.advanced.advanced.youtube_api.youtube_api_key')" intent="credential">
                 <Button size="sm" variant="outline" @click="showYouTubeApiDialog">{{
                     t('view.settings.advanced.advanced.youtube_api.youtube_api_key')
                 }}</Button>

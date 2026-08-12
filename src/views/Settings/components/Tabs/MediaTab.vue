@@ -1,6 +1,6 @@
 <template>
     <!--//- Pictures | Screenshot Helper-->
-    <div class="flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-10 py-2">
         <SettingsGroup :title="t('view.settings.advanced.advanced.screenshot_helper.header')">
             <template #description>
                 {{ t('view.settings.advanced.advanced.screenshot_helper.description') }}
@@ -32,7 +32,10 @@
                     @update:modelValue="setScreenshotHelperCopyToClipboard()" />
             </SettingsItem>
 
-            <SettingsItem :label="t('view.settings.advanced.advanced.delete_all_screenshot_metadata.button')">
+            <SettingsItem
+                :label="t('view.settings.advanced.advanced.delete_all_screenshot_metadata.button')"
+                intent="destructive"
+                :intent-label="t('view.settings.advanced.advanced.delete_all_screenshot_metadata.confirm')">
                 <Button
                     size="sm"
                     variant="outline"

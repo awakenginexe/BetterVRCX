@@ -7,10 +7,20 @@ const showGalleryPage = vi.fn();
 const showVRChatConfig = vi.fn();
 const showLaunchOptions = vi.fn();
 const showRegistryBackupDialog = vi.fn();
+const openDialog = vi.fn();
+const pinToolToNav = vi.fn();
+const unpinToolFromNav = vi.fn();
+const openVrcPhotosFolder = vi.fn();
+const { toastSuccess } = vi.hoisted(() => ({ toastSuccess: vi.fn() }));
 const getString = vi.fn();
 const setString = vi.fn();
 const friends = ref([]);
+const pinnedToolKeys = ref(new Set());
 let routeName = 'not-tools';
+
+globalThis.AppApi = {
+    OpenVrcPhotosFolder: openVrcPhotosFolder
+};
 
 vi.mock('vue-router', async (importOriginal) => {
     const actual = await importOriginal();
@@ -40,7 +50,7 @@ vi.mock('pinia', async (importOriginal) => {
 vi.mock('../../../stores', () => ({
     useFriendStore: () => ({ friends }),
     useGalleryStore: () => ({ showGalleryPage }),
-    useToolsStore: () => ({ openDialog: vi.fn() }),
+    useToolsStore: () => ({ openDialog }),
     useAdvancedSettingsStore: () => ({ showVRChatConfig }),
     useLaunchStore: () => ({ showLaunchOptions }),
     useVrcxStore: () => ({ showRegistryBackupDialog })
@@ -48,11 +58,18 @@ vi.mock('../../../stores', () => ({
 
 vi.mock('../../../composables/useToolNavPinning', () => ({
     useToolNavPinning: () => ({
-        pinToolToNav: vi.fn(),
-        pinnedToolKeys: new Set(),
+        pinToolToNav,
+        pinnedToolKeys,
         refreshPinnedState: vi.fn().mockResolvedValue(undefined),
-        unpinToolFromNav: vi.fn()
+        unpinToolFromNav
     })
+}));
+
+vi.mock('vue-sonner', () => ({
+    toast: {
+        success: toastSuccess,
+        error: vi.fn()
+    }
 }));
 
 vi.mock('../../../services/config.js', () => ({
@@ -91,7 +108,9 @@ describe('Tools.vue', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         routeName = 'not-tools';
+        pinnedToolKeys.value = new Set();
         getString.mockResolvedValue('{}');
+        openVrcPhotosFolder.mockResolvedValue(true);
     });
 
     test('clicking screenshot tool navigates to screenshot metadata', async () => {
@@ -160,5 +179,63 @@ describe('Tools.vue', () => {
             'VRCX_toolsCategoryCollapsed',
             expect.stringContaining('"image":false')
         );
+    });
+
+    test('filters the catalog by localized title and description text', async () => {
+        const wrapper = mount(Tools);
+        await flushPromises();
+
+        await wrapper
+            .get('[data-testid="tools-search"]')
+            .setValue('screenshot_description');
+
+        const visibleTools = wrapper.findAllComponents({ name: 'ToolItem' });
+        expect(visibleTools).toHaveLength(1);
+        expect(visibleTools[0].text()).toContain(
+            'view.tools.pictures.screenshot'
+        );
+        expect(
+            wrapper.get('[data-testid="tools-result-count"]').text()
+        ).toContain('1');
+    });
+
+    test('pins a tool without dispatching its primary action', async () => {
+        const wrapper = mount(Tools);
+        await flushPromises();
+
+        const screenshotItem = findToolItemByTitle(
+            wrapper,
+            'view.tools.pictures.screenshot'
+        );
+        await screenshotItem
+            .get('button[title="nav_menu.custom_nav.pin_to_nav"]')
+            .trigger('click');
+
+        expect(pinToolToNav).toHaveBeenCalledWith('screenshot-metadata');
+        expect(push).not.toHaveBeenCalled();
+    });
+
+    test('dispatches dialog, store, and native actions through the existing tool action contract', async () => {
+        const wrapper = mount(Tools);
+        await flushPromises();
+
+        await findToolItemByTitle(wrapper, 'view.tools.group.calendar').trigger(
+            'click'
+        );
+        expect(openDialog).toHaveBeenCalledWith('groupCalendar');
+
+        await findToolItemByTitle(
+            wrapper,
+            'view.tools.system_tools.vrchat_config'
+        ).trigger('click');
+        expect(showVRChatConfig).toHaveBeenCalledTimes(1);
+
+        await findToolItemByTitle(
+            wrapper,
+            'view.tools.pictures.pictures.vrc_photos'
+        ).trigger('click');
+        await flushPromises();
+        expect(openVrcPhotosFolder).toHaveBeenCalledTimes(1);
+        expect(toastSuccess).toHaveBeenCalledWith('message.file.folder_opened');
     });
 });
