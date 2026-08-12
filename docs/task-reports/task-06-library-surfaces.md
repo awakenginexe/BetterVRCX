@@ -52,3 +52,23 @@ Output: formatter applied successfully to all 13 changed source/test files; the 
 ## Remaining baseline concern
 
 - The broader relevant suite is not clean because the pre-existing Friend and World item test doubles no longer match their child/store dependencies. This fix round did not alter those tests or application behaviors; the targeted Task 6 suite and production build pass.
+
+## Fix round 2: route-specific toolbar labels
+
+- Base commit: `aaa7f79d`; scoped accessibility fix: `6518c5d9` (`fix: localize favorites toolbar labels`).
+- `FavoritesToolbar` now declares an explicit `ariaLabel` prop, uses it for the toolbar role, and falls back to the existing localized world-search label for existing callers. Friends, Worlds, and Avatars each pass their existing route-appropriate localized search label; search placeholders and behavior remain unchanged.
+
+```powershell
+npx vitest run src/views/Favorites/components/__tests__/FavoritesToolbar.test.js
+```
+
+RED output: exit 1; the new explicit-prop assertion received `undefined`, proving that the label previously reached the DOM only through undeclared-attribute fallthrough. GREEN output: exit 0; 1 file / 2 tests passed, covering explicit route-label propagation and localized fallback.
+
+```powershell
+npx vitest run src/views/Favorites/components/__tests__/FavoritesToolbar.test.js src/views/Favorites/components/__tests__/FavoritesContentHeader.test.js src/views/Favorites/components/__tests__/FavoritesMoveDropdown.test.js src/views/Favorites/components/__tests__/InvalidAvatarsProgressToast.test.js src/views/MyAvatars/__tests__/MyAvatars.test.js src/views/Tools/__tests__/Gallery.test.js
+npx oxfmt --check <5 changed source/test files>
+git diff --check
+npm run prod
+```
+
+Output: Task 6 focused suite exit 0 (6 files / 10 tests); oxfmt check passed for all 5 changed source/test files; `git diff --check` passed; production build exit 0 and regenerated the 105-entry third-party license manifest (1 requiring review).
