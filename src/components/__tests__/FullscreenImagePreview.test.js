@@ -49,10 +49,11 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 vi.mock('reka-ui', () => ({
     DialogPortal: { template: '<div><slot /></div>' },
-    DialogOverlay: { template: '<div><slot /></div>' },
+    DialogOverlay: { template: '<div v-bind="$attrs"><slot /></div>' },
     DialogContent: {
         emits: ['click'],
-        template: '<div @click="$emit(\'click\')"><slot /></div>'
+        template:
+            '<div v-bind="$attrs" @click="$emit(\'click\')"><slot /></div>'
     }
 }));
 vi.mock('@/components/ui/button', () => ({
@@ -76,10 +77,40 @@ vi.mock('lucide-vue-next', () => ({
 import FullscreenImagePreview from '../FullscreenImagePreview.vue';
 
 describe('FullscreenImagePreview.vue', () => {
+    it('exposes semantic preview layers and an accessible image label', () => {
+        const wrapper = mount(FullscreenImagePreview);
+
+        expect(
+            wrapper.get('[data-surface="fullscreen-image-preview"]')
+        ).toBeTruthy();
+        expect(
+            wrapper
+                .get('[data-surface="fullscreen-image-toolbar"]')
+                .attributes('role')
+        ).toBe('toolbar');
+        expect(
+            wrapper.get('[data-surface="fullscreen-image-stage"]')
+        ).toBeTruthy();
+        expect(wrapper.get('img').attributes('alt')).toBe('a.png');
+    });
+
     it('closes dialog when close button clicked', async () => {
         const wrapper = mount(FullscreenImagePreview);
 
-        await wrapper.get('button[aria-label="Close"]').trigger('click');
+        await wrapper
+            .get('button[aria-label="dialog.shared_feed_filters.close"]')
+            .trigger('click');
+
+        expect(mocks.dialog.value.visible).toBe(false);
+    });
+
+    it('keeps click-away close on the preview content surface', async () => {
+        mocks.dialog.value.visible = true;
+        const wrapper = mount(FullscreenImagePreview);
+
+        await wrapper
+            .get('[data-surface="fullscreen-image-preview"]')
+            .trigger('click');
 
         expect(mocks.dialog.value.visible).toBe(false);
     });

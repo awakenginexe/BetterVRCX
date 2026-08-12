@@ -37,18 +37,30 @@
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="overflow-hidden p-0 sm:max-w-2xl" :show-close-button="false">
-            <DialogHeader class="sr-only">
-                <DialogTitle>{{ t('side_panel.search_placeholder') }}</DialogTitle>
-                <DialogDescription>{{ t('side_panel.search_placeholder') }}</DialogDescription>
+        <DialogContent
+            class="bv-dialog-shell bv-quick-search-dialog overflow-hidden p-0 sm:max-w-2xl"
+            data-surface="quick-search"
+            :show-close-button="false">
+            <DialogHeader class="bv-quick-search-header" data-slot="quick-search-header">
+                <div class="min-w-0">
+                    <div class="bv-eyebrow">{{ t('side_panel.search_categories') }}</div>
+                    <DialogTitle class="bv-quick-search-title">{{ t('side_panel.search_placeholder') }}</DialogTitle>
+                    <DialogDescription class="bv-quick-search-description">
+                        {{ t('side_panel.search_scope_all') }}
+                    </DialogDescription>
+                </div>
+                <span class="bv-badge shrink-0" aria-hidden="true">Esc</span>
             </DialogHeader>
-            <Command>
+            <Command class="bv-quick-search-command">
                 <!-- Sync filterState.search → store.query -->
                 <QuickSearchSync />
-                <CommandInput :placeholder="t('side_panel.search_placeholder')" />
-                <CommandList class="max-h-[min(400px,50vh)] overflow-y-auto overflow-x-hidden">
+                <CommandInput
+                    class="bv-quick-search-input"
+                    :aria-label="t('side_panel.search_placeholder')"
+                    :placeholder="t('side_panel.search_placeholder')" />
+                <CommandList class="bv-quick-search-list max-h-[min(400px,50vh)] overflow-y-auto overflow-x-hidden">
                     <template v-if="!query || query.length < 2">
-                        <CommandGroup :heading="t('side_panel.search_categories')">
+                        <CommandGroup class="bv-quick-search-group" :heading="t('side_panel.search_categories')">
                             <CommandItem :value="'hint-friends'" disabled class="gap-3 opacity-70">
                                 <Users class="size-4" />
                                 <span class="flex-1">{{ t('side_panel.search_friends') }}</span>
@@ -81,16 +93,24 @@
                     </template>
 
                     <template v-else>
-                        <div v-if="!hasResults" class="py-6 text-center text-sm text-muted-foreground">
+                        <div
+                            v-if="!hasResults"
+                            class="bv-empty-state bv-quick-search-empty mx-3 my-3 min-h-32 py-6 text-center text-sm"
+                            data-empty-state="quick-search"
+                            role="status"
+                            aria-live="polite">
                             {{ t('side_panel.search_no_results') }}
                         </div>
 
-                        <CommandGroup v-if="friendResults.length > 0" :heading="t('side_panel.friends')">
+                        <CommandGroup
+                            v-if="friendResults.length > 0"
+                            class="bv-quick-search-group"
+                            :heading="t('side_panel.friends')">
                             <CommandItem
                                 v-for="item in friendResults"
                                 :key="item.id"
                                 :value="[item.name, item.memo, item.note, item.id].filter(Boolean).join(' ')"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.ref"
@@ -116,12 +136,15 @@
                             </CommandItem>
                         </CommandGroup>
 
-                        <CommandGroup v-if="ownAvatarResults.length > 0" :heading="t('side_panel.search_own_avatars')">
+                        <CommandGroup
+                            v-if="ownAvatarResults.length > 0"
+                            class="bv-quick-search-group"
+                            :heading="t('side_panel.search_own_avatars')">
                             <CommandItem
                                 v-for="item in ownAvatarResults"
                                 :key="item.id"
                                 :value="item.name + ' own ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -135,12 +158,13 @@
 
                         <CommandGroup
                             v-if="favoriteAvatarResults.length > 0"
+                            class="bv-quick-search-group"
                             :heading="t('side_panel.search_fav_avatars')">
                             <CommandItem
                                 v-for="item in favoriteAvatarResults"
                                 :key="item.id"
                                 :value="item.name + ' fav ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -152,12 +176,15 @@
                             </CommandItem>
                         </CommandGroup>
 
-                        <CommandGroup v-if="ownWorldResults.length > 0" :heading="t('side_panel.search_own_worlds')">
+                        <CommandGroup
+                            v-if="ownWorldResults.length > 0"
+                            class="bv-quick-search-group"
+                            :heading="t('side_panel.search_own_worlds')">
                             <CommandItem
                                 v-for="item in ownWorldResults"
                                 :key="item.id"
                                 :value="item.name + ' own ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -171,12 +198,13 @@
 
                         <CommandGroup
                             v-if="favoriteWorldResults.length > 0"
+                            class="bv-quick-search-group"
                             :heading="t('side_panel.search_fav_worlds')">
                             <CommandItem
                                 v-for="item in favoriteWorldResults"
                                 :key="item.id"
                                 :value="item.name + ' fav ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -188,12 +216,15 @@
                             </CommandItem>
                         </CommandGroup>
 
-                        <CommandGroup v-if="ownGroupResults.length > 0" :heading="t('side_panel.search_own_groups')">
+                        <CommandGroup
+                            v-if="ownGroupResults.length > 0"
+                            class="bv-quick-search-group"
+                            :heading="t('side_panel.search_own_groups')">
                             <CommandItem
                                 v-for="item in ownGroupResults"
                                 :key="item.id"
                                 :value="item.name + ' own ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -207,12 +238,13 @@
 
                         <CommandGroup
                             v-if="joinedGroupResults.length > 0"
+                            class="bv-quick-search-group"
                             :heading="t('side_panel.search_joined_groups')">
                             <CommandItem
                                 v-for="item in joinedGroupResults"
                                 :key="item.id"
                                 :value="item.name + ' joined ' + item.id"
-                                class="gap-3"
+                                class="bv-quick-search-item bv-focus-ring gap-3"
                                 @select="handleSelect(item)">
                                 <img
                                     v-if="item.imageUrl"
@@ -231,37 +263,89 @@
 </template>
 
 <style scoped>
-    /* Scale up the entire Command UI */
+    .bv-quick-search-dialog {
+        overflow: hidden;
+        color: var(--bv-text-strong);
+    }
 
-    /* Taller input wrapper */
+    .bv-quick-search-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 20px 14px;
+        border-bottom: 1px solid var(--bv-border);
+        background: var(--bv-bg-surface);
+    }
+
+    .bv-quick-search-title {
+        margin-top: 4px;
+        color: var(--bv-text-strong);
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    .bv-quick-search-description {
+        margin-top: 4px;
+        color: var(--bv-text-quiet);
+        font-size: 11px;
+    }
+
+    .bv-quick-search-command {
+        background: var(--bv-bg-control);
+    }
+
     :deep([data-slot='command-input-wrapper']) {
-        height: 3rem; /* h-12 */
+        height: 3.25rem;
         gap: 0.625rem;
+        border-bottom-color: var(--bv-border);
+        background: var(--bv-bg-control);
     }
 
-    /* Larger input text */
-    :deep([data-slot='command-input']) {
-        font-size: 0.9375rem; /* ~15px */
-        height: 2.75rem;
-    }
-
-    /* Larger search icon in input */
     :deep([data-slot='command-input-wrapper'] > .lucide-search) {
-        width: 1.25rem; /* size-5 */
-        height: 1.25rem;
+        color: var(--bv-accent-soft);
     }
 
-    /* Bigger list items */
+    :deep([data-slot='command-input']) {
+        height: 3rem;
+        color: var(--bv-text-strong);
+        font-size: 15px;
+    }
+
     :deep([data-slot='command-item']) {
-        font-size: 0.9375rem;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        min-height: 42px;
+        border-inline-start: 2px solid transparent;
+        color: var(--bv-text-strong);
+        font-size: 13px;
+        transition:
+            background-color 160ms ease,
+            border-color 160ms ease;
     }
 
-    /* Bigger group headings */
+    :deep([data-slot='command-item'][data-highlighted]) {
+        border-inline-start-color: var(--bv-accent);
+        background: var(--bv-bg-hover);
+    }
+
     :deep([data-slot='command-group-heading']) {
-        font-size: 0.8125rem; /* ~13px */
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding: 12px 12px 6px;
+        color: var(--bv-accent-soft);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .bv-quick-search-empty {
+        min-height: 128px;
+        background: var(--bv-bg-surface);
+        color: var(--bv-text-muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        :deep([data-slot='command-item']) {
+            transition-duration: 0.01ms;
+        }
     }
 </style>

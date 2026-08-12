@@ -2,22 +2,26 @@
     <Dialog v-model:open="open">
         <DialogPortal :to="portalTo">
             <RekaDialogOverlay
-                :class="cn('fixed inset-0 bg-background/80', !disableGpuAcceleration && 'backdrop-blur-sm')" />
+                :class="cn('bv-preview-overlay fixed inset-0', !disableGpuAcceleration && 'backdrop-blur-sm')" />
 
             <RekaDialogContent
-                class="fixed inset-0 p-6 sm:p-10 border-0 bg-transparent shadow-none outline-none"
+                class="bv-preview-content fixed inset-0 border-0 bg-transparent p-6 shadow-none outline-none sm:p-10"
+                data-surface="fullscreen-image-preview"
+                :aria-label="imageAlt"
                 @click="closeDialog"
                 @open-auto-focus.prevent
                 @close-auto-focus.prevent>
-                <div ref="viewerEl" class="relative h-full w-full overflow-hidden select-none">
+                <div ref="viewerEl" class="bv-preview-surface relative h-full w-full overflow-hidden select-none">
                     <!-- toolbar -->
                     <div
                         @click.stop
-                        class="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-md bg-background/70 backdrop-blur px-2 py-1 border">
+                        class="bv-preview-toolbar absolute right-3 top-3 z-10 flex items-center gap-2 rounded-md px-2 py-1"
+                        data-surface="fullscreen-image-toolbar"
+                        role="toolbar">
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             :disabled="!imageUrl"
                             @click="copyImageToClipboard(imageUrl)"
                             :ariaLabel="t('common.actions.copy')">
@@ -27,7 +31,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             :disabled="!imageUrl"
                             @click="downloadAndSaveImage(imageUrl, fullscreenImageDialog.fileName)"
                             :ariaLabel="t('dialog.vrcx_updater.download')">
@@ -39,7 +43,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="zoomOutCenter"
                             :ariaLabel="t('dialog.image_crop.zoom_out')">
                             <ZoomOut class="h-4 w-4" />
@@ -47,7 +51,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="zoomInCenter"
                             :ariaLabel="t('dialog.image_crop.zoom_in')">
                             <ZoomIn class="h-4 w-4" />
@@ -56,7 +60,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="rotateCW"
                             :ariaLabel="t('dialog.image_crop.rotate_right')">
                             <RotateCw class="h-4 w-4" />
@@ -64,7 +68,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="rotateCCW"
                             :ariaLabel="t('dialog.image_crop.rotate_left')">
                             <RotateCcw class="h-4 w-4" />
@@ -73,7 +77,7 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="resetTransform"
                             :ariaLabel="t('dialog.image_crop.reset')">
                             <RefreshCcw class="h-4 w-4" />
@@ -84,14 +88,17 @@
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-8 w-8"
+                            class="bv-preview-control bv-focus-ring h-8 w-8"
                             @click="closeDialog"
                             :ariaLabel="t('dialog.shared_feed_filters.close')">
                             <X class="h-4 w-4" />
                         </Button>
                     </div>
 
-                    <div class="h-full w-full flex items-center justify-center" @wheel="onWheel">
+                    <div
+                        class="bv-preview-stage flex h-full w-full items-center justify-center"
+                        data-surface="fullscreen-image-stage"
+                        @wheel="onWheel">
                         <img
                             @pointerdown="onPointerDown"
                             @pointermove="onPointerMove"
@@ -100,7 +107,8 @@
                             @click.stop
                             v-if="imageUrl"
                             :src="imageUrl"
-                            class="max-h-full max-w-full x-viewer-img"
+                            :alt="imageAlt"
+                            class="bv-preview-image max-h-full max-w-full x-viewer-img"
                             :style="transformStyle"
                             draggable="false" />
                     </div>
@@ -148,6 +156,7 @@
     const startTy = ref(0);
 
     const imageUrl = computed(() => fullscreenImageDialog.value.imageUrl || '');
+    const imageAlt = computed(() => fullscreenImageDialog.value.fileName || t('dialog.gallery_select.header'));
 
     const open = computed({
         get: () => fullscreenImageDialog.value.visible,
@@ -354,12 +363,74 @@
 </script>
 
 <style scoped>
+    .bv-preview-overlay {
+        background: color-mix(in srgb, var(--bv-bg-base) 86%, transparent);
+    }
+
+    .bv-preview-content {
+        padding: clamp(16px, 3vw, 40px);
+    }
+
+    .bv-preview-surface {
+        border: 1px solid var(--bv-border);
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--bv-bg-base) 92%, transparent);
+        box-shadow: 0 24px 64px rgb(0 0 0 / 45%);
+    }
+
+    .bv-preview-toolbar {
+        max-width: calc(100% - 32px);
+        border: 1px solid var(--bv-border);
+        background: color-mix(in srgb, var(--bv-bg-surface) 90%, transparent);
+        box-shadow: 0 10px 24px rgb(0 0 0 / 28%);
+        backdrop-filter: blur(12px);
+    }
+
+    .bv-preview-control {
+        color: var(--bv-text-muted);
+        transition:
+            background-color 160ms ease,
+            color 160ms ease;
+    }
+
+    .bv-preview-control:hover:not(:disabled) {
+        background: var(--bv-bg-hover);
+        color: var(--bv-text-strong);
+    }
+
+    .bv-preview-stage {
+        touch-action: none;
+    }
+
     .x-viewer-img {
         will-change: transform;
         cursor: grab;
         user-select: none;
     }
+
+    .bv-preview-image {
+        border-radius: 12px;
+        box-shadow: 0 14px 36px rgb(0 0 0 / 35%);
+        transition: box-shadow 180ms ease;
+    }
+
     .x-viewer-img:active {
         cursor: grabbing;
+    }
+
+    @media (max-width: 640px) {
+        .bv-preview-toolbar {
+            right: 16px;
+            left: 16px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bv-preview-control,
+        .bv-preview-image {
+            transition-duration: 0.01ms;
+        }
     }
 </style>
