@@ -124,3 +124,41 @@ Result: exit code 0. Vite transformed 4,385 modules, completed the production bu
 ### Commit
 
 `ac01aa0ef62ced81f57d974b973ef3e6bbf278a0` — `fix: make status primitives non-color accessible`
+
+## Review finding fix: online status variant cue
+
+### Files changed
+
+- Modified `src/styles/__tests__/bettervrcxStyles.test.js` to extract the combined online/success rule body and assert its variant-specific `background-color` and `box-shadow` declarations. The existing join-me rotation, ask-me pattern, busy shape, and label guidance checks remain unchanged.
+- Modified this report.
+- Production CSS was not changed.
+
+### RED verification
+
+Command:
+
+```text
+npx vitest run src/styles/__tests__/bettervrcxStyles.test.js
+```
+
+Result: exit code 1. The focused stylesheet suite reported 1 failed test and 5 passed tests. The deliberately narrow online selector assertion failed because the current stylesheet combines the online and success selectors in one rule.
+
+### GREEN verification
+
+Command:
+
+```text
+npx vitest run src/styles/__tests__/bettervrcxStyles.test.js src/shared/constants/__tests__/bettervrcxDesign.test.js
+```
+
+Result: exit code 0; 2 test files passed; 7 tests passed.
+
+### Production build
+
+Command:
+
+```text
+npm run prod
+```
+
+Result: exit code 0. Vite transformed 4,385 modules, completed the production build in 12.65s, and the license step generated a 105-entry manifest with 2 entries requiring review.

@@ -94,6 +94,14 @@ describe('BetterVRCX stylesheet contract', () => {
         expect(stylesheet).toMatch(
             /\.bv-status-dot\[data-status='online'\][^{]*\{[^}]*border-radius:\s*999px/
         );
+        const onlineRule = stylesheet.match(
+            /\.bv-status-dot\[data-status='online'\]\s*,\s*\.bv-status-dot\[data-status='success'\]\s*\{([\s\S]*?)\}/
+        );
+        expect(onlineRule).not.toBeNull();
+        expect(onlineRule[1]).toContain(
+            'background-color: var(--bv-status-color)'
+        );
+        expect(onlineRule[1]).toContain('box-shadow: 0 0 0 2px');
         expect(stylesheet).toMatch(
             /\.bv-status-dot\[data-status='joinme'\][^{]*\{[^}]*transform:\s*rotate\(45deg\)/
         );
