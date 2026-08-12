@@ -8,6 +8,10 @@ vi.mock('../../../../stores', () => ({
     useUserStore: () => ({
         userDialog: ref({
             ref: { id: 'usr_2', $isModerator: false },
+            theme: {
+                iconColor: 'var(--muted-foreground)',
+                buttonColor: 'var(--primary)'
+            },
             isFriend: false,
             isFavorite: false,
             incomingRequest: false,
@@ -33,7 +37,10 @@ vi.mock('../../../../composables/useRecentActions', () => ({
 vi.mock('../../../ui/dropdown-menu', () => ({
     DropdownMenu: { template: '<div><slot /></div>' },
     DropdownMenuTrigger: { template: '<div><slot /></div>' },
-    DropdownMenuContent: { template: '<div><slot /></div>' },
+    DropdownMenuContent: { template: '<div v-bind="$attrs"><slot /></div>' },
+    DropdownMenuSub: { template: '<div><slot /></div>' },
+    DropdownMenuSubContent: { template: '<div v-bind="$attrs"><slot /></div>' },
+    DropdownMenuSubTrigger: { template: '<button><slot /></button>' },
     DropdownMenuSeparator: { template: '<hr />' },
     DropdownMenuShortcut: { template: '<span><slot /></span>' },
     DropdownMenuItem: {
@@ -56,6 +63,7 @@ vi.mock('lucide-vue-next', () => ({
     Check: { template: '<i />' },
     CheckCircle: { template: '<i />' },
     Clock: { template: '<i />' },
+    Copy: { template: '<i />' },
     Flag: { template: '<i />' },
     LineChart: { template: '<i />' },
     Mail: { template: '<i />' },
@@ -63,7 +71,7 @@ vi.mock('lucide-vue-next', () => ({
     MessageSquare: { template: '<i />' },
     Mic: { template: '<i />' },
     MoreHorizontal: { template: '<i />' },
-    MousePointer: { template: '<i />' },
+    Hand: { template: '<i />' },
     Pencil: { template: '<i />' },
     Plus: { template: '<i />' },
     RefreshCw: { template: '<i />' },
@@ -80,6 +88,14 @@ vi.mock('lucide-vue-next', () => ({
 import UserActionDropdown from '../UserActionDropdown.vue';
 
 describe('UserActionDropdown.vue', () => {
+    it('marks the action menu as containing destructive actions', () => {
+        const wrapper = mount(UserActionDropdown, {
+            props: { userDialogCommand: vi.fn() }
+        });
+
+        expect(wrapper.get('.bv-dialog-danger-actions').exists()).toBe(true);
+    });
+
     it('forwards command callback from dropdown item', async () => {
         const userDialogCommand = vi.fn();
         const wrapper = mount(UserActionDropdown, {

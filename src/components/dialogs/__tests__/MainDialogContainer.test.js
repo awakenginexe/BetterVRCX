@@ -105,6 +105,6 @@ describe('MainDialogContainer.vue', () => {
         expect(wrapper.find('[data-testid="user-dialog"]').exists()).toBe(true);
 
         await wrapper.get('[data-testid="btn"]').trigger('click');
-        expect(mocks.handleBreadcrumbClick).toHaveBeenCalled();
+        expect(mocks.handleBreadcrumbClick).toHaveBeenCalledWith(0);
     });
 });

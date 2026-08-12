@@ -49,3 +49,26 @@ Result: 2 passed, 0 failed.
 
 - The pre-existing focused test fixture lacked `useAppearanceSettingsStore`, preventing it from mounting. The fixture now supplies its required false background-display setting so the RED/GREEN result tests the dialog shell rather than failing on an unrelated mock error.
 - Pre-existing untracked redesign documents under `docs/` were left untouched and excluded from the commit.
+
+## Task 3A review-fix section
+
+### RED
+
+Command:
+
+```text
+npx vitest run src/components/dialogs/UserDialog/__tests__/UserActionDropdown.test.js src/components/dialogs/__tests__/MainDialogContainer.test.js
+```
+
+Result: the new UserActionDropdown assertion failed because `.bv-dialog-danger-actions` was absent; the existing command-forwarding and breadcrumb tests passed. The breadcrumb fixture uses two crumbs, so the strengthened back-action assertion expects index `0`.
+
+### GREEN
+
+The user action menu now applies `bv-dialog-danger-actions` to its portaled `DropdownMenuContent`, preserving all commands and menu structure. The focused run passed with 2 test files and 4 tests.
+
+### Verification
+
+- `npx oxfmt --check` on the three changed source/test files: passed.
+- `git diff --check`: passed.
+- `npm run prod`: passed; Vite transformed 4,389 modules and license generation completed with 105 entries.
+- Commit SHA: reported in the final handoff because a Git commit cannot embed its own object ID in tracked content.

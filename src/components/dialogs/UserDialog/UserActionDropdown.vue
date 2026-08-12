@@ -56,7 +56,7 @@
                     </Button>
                 </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent class="bv-dialog-danger-actions">
                 <DropdownMenuItem @click="onCommand('Refresh')">
                     <RefreshCw class="size-4" />
                     {{ t('dialog.user.actions.refresh') }}
