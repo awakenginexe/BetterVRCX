@@ -52,9 +52,11 @@
                                                         class="inline-flex size-6 items-center justify-center text-lg relative">
                                                         <span
                                                             v-if="isNavItemNotified(item)"
-                                                            class="notify-dot-not-collapsed bv-nav-notify-dot"
-                                                            :class="{ '-right-1!': isCollapsed }"
-                                                            aria-hidden="true"></span>
+                                                            class="bv-status-dot bv-nav-notify-dot"
+                                                            data-status="danger"
+                                                            role="img"
+                                                            :aria-label="t('nav_menu.mark_all_read')"
+                                                            :class="{ '-right-1!': isCollapsed }"></span>
                                                     </i>
                                                     <span v-show="!isCollapsed">{{
                                                         item.titleIsCustom ? item.title : t(item.title || '')
@@ -511,16 +513,9 @@
     }
 
     .bv-nav-notify-dot {
-        background: var(--bv-danger);
-    }
-
-    .notify-dot-not-collapsed {
         position: absolute;
         top: 4px;
         right: 0;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
         transform: translateY(-50%);
     }
 

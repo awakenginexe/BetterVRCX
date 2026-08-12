@@ -101,3 +101,32 @@ Results: the shell suite passed 6 files and 14 tests; the focused footer accessi
 ### Remaining concern
 
 - The pre-existing `NavMenuFooter.test.js` assertion expecting `toggle-theme` from the settings button still fails when the entire file is run. The production component has no such click handler; this review fix validates the requested updater status marker with a focused test and does not alter unrelated footer behavior.
+
+## Review fix: top-level navigation notification status
+
+### RED evidence
+
+Command:
+
+```powershell
+npx vitest run src/components/nav-menu/__tests__/NavMenu.test.js -t "notified direct item"
+```
+
+Result: exit code 1. The new notified-direct-item assertion could not find `.bv-status-dot[data-status="danger"]`; the rendered item still used the legacy color-only marker.
+
+### GREEN evidence
+
+Command:
+
+```powershell
+npx vitest run src/components/nav-menu/__tests__/NavMenu.test.js src/components/nav-menu/__tests__/NavMenuFolderItem.test.js src/components/nav-menu/__tests__/NavMenuFooter.test.js -t "danger|notified direct item|active route icon" src/views/Layout/__tests__/MainLayout.test.js src/composables/__tests__/useMainLayoutResizable.test.js src/stores/settings/__tests__/appearance.test.js src/views/Sidebar/__tests__/Sidebar.test.js
+```
+
+Result: exit code 0; 3 test files passed and 4 tests passed. The direct item now uses `.bv-status-dot[data-status="danger"]` with `role="img"`, an accessible label, and the collapsed `-right-1!` position while retaining its existing notification predicate and click behavior.
+
+### Verification
+
+- `npx oxfmt --check src/components/nav-menu/NavMenu.vue src/components/nav-menu/__tests__/NavMenu.test.js`: passed.
+- `git diff --check`: passed.
+- The complete adjacent shell/nav run passed 6 files and 16 tests; the documented unrelated `NavMenuFooter.test.js` `toggle-theme` assertion remains the only failure.
+- Commit SHA: reported in the final handoff because a Git commit cannot embed its own object ID in tracked content.

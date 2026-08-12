@@ -324,6 +324,7 @@ describe('NavMenu.vue', () => {
         mocks.openExternalLink.mockClear();
         mocks.getString.mockClear();
         mocks.setString.mockClear();
+        mocks.notifiedMenus.value = [];
         mocks.loadDashboards.mockClear();
         mocks.getDashboardNavDefinitions.mockClear();
         mocks.isNavCollapsed.value = false;
@@ -375,9 +376,30 @@ describe('NavMenu.vue', () => {
             expect(feed.classes()).toContain('bv-nav-item');
             expect(feed.classes()).toContain('bv-nav-item-active');
             expect(feed.find('.ri-feed-line').exists()).toBe(true);
-            expect(
-                feed.find('span:not(.notify-dot-not-collapsed)').isVisible()
-            ).toBe(false);
+            expect(feed.find('span:not(.bv-status-dot)').isVisible()).toBe(
+                false
+            );
+        });
+
+        await wrapper.get('[data-nav-key="feed"]').trigger('click');
+
+        expect(mocks.routerPush).toHaveBeenCalledWith({ name: 'feed' });
+    });
+
+    it('renders a notified direct item with an accessible danger status marker', async () => {
+        mocks.notifiedMenus.value = ['feed'];
+        mocks.isNavCollapsed.value = true;
+        const wrapper = mountComponent();
+
+        await vi.waitFor(() => {
+            const feed = wrapper.get('[data-nav-key="feed"]');
+            const marker = feed.get('.bv-status-dot[data-status="danger"]');
+
+            expect(marker.attributes()).toMatchObject({
+                role: 'img',
+                'aria-label': 'nav_menu.mark_all_read'
+            });
+            expect(marker.classes()).toContain('-right-1!');
         });
 
         await wrapper.get('[data-nav-key="feed"]').trigger('click');
