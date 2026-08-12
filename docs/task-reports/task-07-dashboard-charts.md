@@ -130,3 +130,25 @@ Result: 8 files passed, 62 tests passed. No scoped baseline failures occurred.
 ### Remaining concern
 
 No chart processor, store, ECharts, Sigma, worker, or database contract changed. As in fix round 1, a manual desktop visual pass remains useful for live chart/graph resizing at a range of standalone and embedded panel widths.
+
+## Fix round 3 — Instance Activity container-query follow-up
+
+- Review base: `a82d15aee4510cf8c401f526d80799fbde44f527`
+- Fix implementation: `da7367ab14bc94d48dafe8155a9b9f0881d9760f` (`fix: use analytics container query in instance activity`)
+
+### Finding addressed
+
+- Replaced the remaining scoped `@media (max-width: 640px)` rule in `InstanceActivity.vue` with `@container analytics-workspace (max-width: 42rem)`. The filter-button width rule now follows the shared named analytics container in standalone and embedded layouts, matching the Task 7 report and the shared analytics styles.
+- This is CSS-only: chart controls, ECharts behavior, data calculation, and all store/worker/database contracts are unchanged. No source-marker test was added for the at-rule; the existing mounted behavior tests remain the regression coverage for the controls.
+
+### Fix-round verification
+
+```text
+npm test -- src/views/Dashboard/__tests__/DashboardWorkspace.test.js src/views/Charts/__tests__/analyticsWorkspace.test.js src/views/Charts/composables/__tests__/useActivityDataFilter.test.js src/views/Charts/composables/__tests__/useActivityStats.test.js src/views/Charts/composables/__tests__/useChartHelpers.test.js src/views/Charts/composables/__tests__/useDateNavigation.test.js src/views/Charts/__tests__/graphLayoutWorker.test.js src/components/dialogs/UserDialog/__tests__/UserDialogMutualFriendsTab.test.js
+```
+
+Result: 8 files passed, 62 tests passed. No scoped baseline failures occurred.
+
+- `npm run prod`: PASS (exit 0). Vite transformed 4,406 modules and completed in 5.25 seconds; the license manifest was generated with 105 entries and one existing review-required entry. Plugin timing diagnostics were non-failing.
+- `npx oxfmt --check src/views/Charts/components/InstanceActivity.vue`: PASS.
+- `git diff --check`: PASS before the implementation commit.
