@@ -91,3 +91,42 @@ Result: 8 files passed, 62 tests passed. No scoped baseline failures occurred.
 ### Remaining concern
 
 The focused resize regression verifies containment and observer ownership without a live ECharts or Sigma canvas. A manual desktop visual/interaction pass remains appropriate for Task 10, especially resizing a dashboard row while an active chart or graph is rendered.
+
+## Fix round 2 — analytics container re-review
+
+- Review base: `dedda101fc30f892730f80a2ae01af15c71435b1`
+- Fix implementation: `12fe1073694818333475cbf56f05f0ec5282d5df` (`fix: make analytics layouts container-aware`)
+
+### Findings addressed
+
+- The shared standalone `.analytics-workspace` root now establishes `container-type: inline-size` and the stable `analytics-workspace` container name. This allows the same analytics controls to respond to an embedded dashboard panel or a standalone chart page.
+- Replaced Hot Worlds' viewport-only `lg:flex-row` ranking layout with the semantic `.analytics-workspace__ranking` grid. It stays stacked in narrow containers and switches to two equal columns at a 42rem analytics container width.
+- Replaced the analytics toolbar/filter and Hot Worlds statistic responsive viewport rules with named analytics container queries. Existing root `height: 100%`/`min-height: 0` sizing and all data retrieval/calculation behavior remain unchanged.
+- Extended the mounted Hot Worlds behavior test to assert the semantic ranking class and removal of the Tailwind viewport breakpoint class while it still verifies date-window retrieval, lazy detail activation, and 180px parent containment.
+
+### Fix-round TDD and verification
+
+RED command:
+
+```text
+npm test -- src/views/Charts/__tests__/analyticsWorkspace.test.js
+```
+
+Expected failure observed: the mounted Hot Worlds ranking did not include `.analytics-workspace__ranking` and still exposed `lg:flex-row`.
+
+GREEN / relevant broader verification:
+
+```text
+npm test -- src/views/Dashboard/__tests__/DashboardWorkspace.test.js src/views/Charts/__tests__/analyticsWorkspace.test.js src/views/Charts/composables/__tests__/useActivityDataFilter.test.js src/views/Charts/composables/__tests__/useActivityStats.test.js src/views/Charts/composables/__tests__/useChartHelpers.test.js src/views/Charts/composables/__tests__/useDateNavigation.test.js src/views/Charts/__tests__/graphLayoutWorker.test.js src/components/dialogs/UserDialog/__tests__/UserDialogMutualFriendsTab.test.js
+```
+
+Result: 8 files passed, 62 tests passed. No scoped baseline failures occurred.
+
+- Registry audit: PASS — all 20 persisted panel keys and 20 component imports remain present.
+- `npm run prod`: PASS (exit 0). Vite transformed 4,406 modules and completed in 5.81 seconds; the license manifest was generated with 105 entries and one existing review-required entry. Plugin timing diagnostics were non-failing.
+- `npx oxfmt --check src/styles/bettervrcx.css src/views/Charts/components/HotWorlds.vue src/views/Charts/__tests__/analyticsWorkspace.test.js`: PASS.
+- `git diff --check`: PASS before the implementation commit.
+
+### Remaining concern
+
+No chart processor, store, ECharts, Sigma, worker, or database contract changed. As in fix round 1, a manual desktop visual pass remains useful for live chart/graph resizing at a range of standalone and embedded panel widths.
