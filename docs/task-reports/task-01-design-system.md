@@ -74,3 +74,53 @@ Result: exit code 0. Vite transformed 4,385 modules, completed the production bu
 
 - `npm test -- --reporter=dot` remains red outside this task scope: 35 failed suites, 159 passed suites; 143 failed tests, 1,966 passed tests, and 3 unhandled errors. Reported failures include an existing missing `groupOrderUtils` module, incomplete test mocks, and unrelated component assertions. The focused design-system suites and production build pass.
 - The formatter check for the complete repository would also inspect the existing `globals.css`; only the newly created files were formatted to avoid unrelated churn.
+
+## Accessibility fix: non-color status primitives
+
+### Files changed
+
+- Modified `src/styles/bettervrcx.css` so offline is an outlined circle, online is a filled circle, join-me/info is a diamond, ask-me/warning is striped, and busy/danger is a rounded diamond. The stylesheet also documents the requirement for visible status text or an `aria-label`.
+- Modified `src/styles/__tests__/bettervrcxStyles.test.js` with regression coverage for the status label/shape contract and for stylesheet values synchronized with `BETTERVRCX_DESIGN_TOKENS`. The value check canonicalizes equivalent CSS decimal notation emitted by the formatter.
+- Modified this report.
+
+### RED verification
+
+Command:
+
+```text
+npx vitest run src/styles/__tests__/bettervrcxStyles.test.js
+```
+
+Result: exit code 1. The new contract test failed because `bettervrcx.css` contained no `aria-label` usage guidance and status variants changed only `--bv-status-color`. The new token-value contract also surfaced the formatter-normalized equivalent `rgba(..., 0.58)` value, which prompted canonical CSS-value comparison rather than a whitespace/serialization-sensitive assertion.
+
+### GREEN verification
+
+Command:
+
+```text
+npx oxfmt --check src/styles/bettervrcx.css src/styles/__tests__/bettervrcxStyles.test.js
+```
+
+Output summary: exit code 0; all matched files use the correct format.
+
+Command:
+
+```text
+npx vitest run src/styles/__tests__/bettervrcxStyles.test.js src/shared/constants/__tests__/bettervrcxDesign.test.js
+```
+
+Output summary: exit code 0; 2 test files passed; 7 tests passed.
+
+### Production build
+
+Command:
+
+```text
+npm run prod
+```
+
+Result: exit code 0. Vite transformed 4,385 modules, completed the production build in 7.75s, and the license step generated a 105-entry manifest with 2 entries requiring review.
+
+### Commit
+
+`ac01aa0ef62ced81f57d974b973ef3e6bbf278a0` — `fix: make status primitives non-color accessible`
