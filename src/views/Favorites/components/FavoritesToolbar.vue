@@ -1,5 +1,5 @@
 <template>
-    <div class="favorites-toolbar" role="toolbar" :aria-label="t('view.favorite.worlds.search')">
+    <div class="favorites-toolbar" role="toolbar" :aria-label="resolvedAriaLabel">
         <div>
             <Select :model-value="sortValue" @update:modelValue="$emit('update:sortValue', $event)">
                 <SelectTrigger size="sm" class="min-w-[200px]">
@@ -113,9 +113,11 @@
     import { Button } from '@/components/ui/button';
     import { InputGroupSearch } from '@/components/ui/input-group';
     import { Slider } from '@/components/ui/slider';
+    import { computed } from 'vue';
     import { useI18n } from 'vue-i18n';
 
-    defineProps({
+    const props = defineProps({
+        ariaLabel: { type: String, default: '' },
         sortValue: { type: String, default: 'name' },
         extraSortOptions: { type: Array, default: () => [] },
         searchQuery: { type: String, default: '' },
@@ -144,4 +146,6 @@
     ]);
 
     const { t } = useI18n();
+
+    const resolvedAriaLabel = computed(() => props.ariaLabel || t('view.favorite.worlds.search'));
 </script>

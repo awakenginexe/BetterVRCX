@@ -3,6 +3,7 @@
         <div class="favorites-workspace__layout flex flex-col h-full min-h-0 pb-0">
             <FavoritesToolbar
                 :sort-value="sortFavorites ? 'date' : 'name'"
+                :aria-label="t('view.favorite.worlds.search')"
                 v-model:search-query="friendFavoriteSearch"
                 :search-placeholder="t('view.favorite.worlds.search')"
                 v-model:toolbar-menu-open="friendToolbarMenuOpen"

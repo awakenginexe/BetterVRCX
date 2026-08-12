@@ -3,6 +3,7 @@
         <div class="favorites-workspace__layout flex flex-col h-full min-h-0 pb-0">
             <FavoritesToolbar
                 :sort-value="worldSortValue"
+                :aria-label="t('view.favorite.worlds.search')"
                 :extra-sort-options="worldExtraSortOptions"
                 v-model:search-query="worldFavoriteSearch"
                 :search-placeholder="worldSearchPlaceholder"
