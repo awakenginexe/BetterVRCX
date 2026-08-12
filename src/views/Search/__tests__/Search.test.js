@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => {
     const { ref } = require('vue');
     return {
         randomUserColours: ref(false),
+        displayVRCPlusIconsAsAvatar: ref(false),
+        currentUser: ref({ id: 'usr_me' }),
         avatarRemoteDatabaseProviderList: ref(['provider-a']),
         avatarRemoteDatabaseProvider: ref('provider-a'),
         isAvatarProviderDialogVisible: ref(false),
@@ -99,7 +101,11 @@ vi.mock('@vueuse/core', async (importOriginal) => {
 
 vi.mock('../../../stores', () => ({
     useAppearanceSettingsStore: () => ({
-        randomUserColours: mocks.randomUserColours
+        randomUserColours: mocks.randomUserColours,
+        displayVRCPlusIconsAsAvatar: mocks.displayVRCPlusIconsAsAvatar
+    }),
+    useUserStore: () => ({
+        currentUser: mocks.currentUser
     }),
     useAvatarProviderStore: () => ({
         avatarRemoteDatabaseProviderList:
@@ -222,7 +228,7 @@ vi.mock('@/components/ui/item', () => ({
     Item: {
         emits: ['click'],
         template:
-            '<article class="item" @click="$emit(\'click\')"><slot /></article>'
+            '<article class="item" v-bind="$attrs" @click="$emit(\'click\')"><slot /></article>'
     },
     ItemGroup: { template: '<div><slot /></div>' },
     ItemHeader: { template: '<div><slot /></div>' },
@@ -334,6 +340,47 @@ describe('Search.vue', () => {
         expect(mocks.clearSearch).toHaveBeenCalledTimes(1);
     });
 
+    it('renders a surfaced route hierarchy with live result context', () => {
+        mocks.searchUserResults.value = [
+            {
+                id: 'usr_1',
+                displayName: 'Alice',
+                bio: 'Hi',
+                $trustLevel: 'Known User',
+                $trustClass: 'text-green',
+                $userColour: '#fff',
+                $languages: []
+            }
+        ];
+
+        const wrapper = mountSearch();
+
+        expect(wrapper.get('.search-view__page-header').classes()).toContain(
+            'bv-surface'
+        );
+        expect(wrapper.get('.search-view__page-header h1').text()).toBe(
+            'nav_tooltip.search'
+        );
+        expect(wrapper.get('.search-view__toolbar').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.search-view__results').classes()).toContain(
+            'bv-surface'
+        );
+        expect(wrapper.get('.search-view__result-count').text()).toContain('1');
+        expect(wrapper.get('.search-view__result-row').classes()).toContain(
+            'bv-focus-ring'
+        );
+    });
+
+    it('marks empty results as an explicit BetterVRCX empty state', () => {
+        const wrapper = mountSearch();
+
+        for (const empty of wrapper.findAll('[data-testid="empty"]')) {
+            expect(empty.classes()).toContain('bv-empty-state');
+        }
+    });
+
     it('runs user search on Enter when active tab is user', async () => {
         const wrapper = mountSearch();
 
@@ -376,6 +423,26 @@ describe('Search.vue', () => {
         const wrapper = mountSearch();
 
         await wrapper.find('.item').trigger('click');
+
+        expect(mocks.showUserDialog).toHaveBeenCalledWith('usr_1');
+    });
+
+    it('opens user dialog from keyboard activation on a result row', async () => {
+        mocks.searchUserResults.value = [
+            {
+                id: 'usr_1',
+                displayName: 'Alice',
+                bio: 'Hi',
+                $trustLevel: 'Known User',
+                $trustClass: 'text-green',
+                $userColour: '#fff',
+                $languages: []
+            }
+        ];
+
+        const wrapper = mountSearch();
+
+        await wrapper.get('.search-view__result-row').trigger('keydown.enter');
 
         expect(mocks.showUserDialog).toHaveBeenCalledWith('usr_1');
     });

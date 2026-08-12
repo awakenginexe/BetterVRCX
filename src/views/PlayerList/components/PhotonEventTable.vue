@@ -1,6 +1,6 @@
 <template>
-    <div class="mt-5">
-        <div class="gap-2 mb-2" style="display: flex; align-items: center; flex-wrap: wrap">
+    <div class="photon-events">
+        <div class="photon-events__toolbar bv-surface-raised">
             <Select
                 :model-value="photonEventTableTypeFilter"
                 multiple
@@ -10,7 +10,7 @@
                         photonEventTableFilterChange();
                     }
                 ">
-                <SelectTrigger style="width: 220px">
+                <SelectTrigger class="bv-focus-ring" style="width: 220px">
                     <SelectValue :placeholder="t('view.player_list.photon.filter_placeholder')" />
                 </SelectTrigger>
                 <SelectContent>
@@ -23,23 +23,33 @@
                 v-model="photonEventTableFilter"
                 :placeholder="t('view.player_list.photon.search_placeholder')"
                 clearable
+                class="bv-focus-ring"
                 style="width: 150px"
                 @input="photonEventTableFilterChange" />
-            <Button variant="outline" @click="emitShowChatboxBlacklist">{{
+            <Button class="bv-focus-ring" variant="outline" @click="emitShowChatboxBlacklist">{{
                 t('view.player_list.photon.chatbox_blacklist')
             }}</Button>
             <TooltipWrapper side="bottom" :content="t('view.player_list.photon.status_tooltip')">
-                <div class="inline-flex items-center text-sm">
-                    <span v-if="ipcEnabled && !photonEventIcon">🟢</span>
-                    <span v-else-if="ipcEnabled">⚪</span>
-                    <span v-else>🔴</span>
+                <div
+                    class="photon-events__status"
+                    role="status"
+                    :aria-label="t('view.player_list.photon.status_tooltip')">
+                    <span
+                        class="photon-events__status-dot"
+                        :class="{
+                            'photon-events__status-dot--live': ipcEnabled && !photonEventIcon,
+                            'photon-events__status-dot--idle': ipcEnabled && photonEventIcon,
+                            'photon-events__status-dot--offline': !ipcEnabled
+                        }"
+                        aria-hidden="true"></span>
+                    <span>{{ t('view.player_list.photon.status_tooltip') }}</span>
                 </div>
             </TooltipWrapper>
         </div>
-        <TabsUnderline default-value="current" :items="photonTabs" :unmount-on-hide="false">
+        <TabsUnderline class="photon-events__tabs" default-value="current" :items="photonTabs" :unmount-on-hide="false">
             <template #current>
                 <DataTableLayout
-                    class="min-w-0 w-full mb-2"
+                    class="photon-events__table bv-surface-raised min-w-0 w-full mb-2"
                     :table="currentTable"
                     :loading="false"
                     :table-style="tableStyle"
@@ -49,7 +59,7 @@
             </template>
             <template #previous>
                 <DataTableLayout
-                    class="min-w-0 w-full"
+                    class="photon-events__table bv-surface-raised min-w-0 w-full"
                     :table="previousTable"
                     :loading="false"
                     :table-style="tableStyle"
@@ -220,3 +230,52 @@
         emit('show-chatbox-blacklist');
     }
 </script>
+
+<style scoped>
+    .photon-events {
+        display: grid;
+        gap: 10px;
+    }
+
+    .photon-events__toolbar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .photon-events__status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--bv-text-muted);
+        font-size: 11px;
+    }
+
+    .photon-events__status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--bv-offline);
+    }
+
+    .photon-events__status-dot--live {
+        background: var(--bv-success);
+    }
+
+    .photon-events__status-dot--idle {
+        border: 1px solid var(--bv-text-muted);
+        background: transparent;
+    }
+
+    .photon-events__status-dot--offline {
+        background: var(--bv-danger);
+    }
+
+    .photon-events__table {
+        overflow: hidden;
+        border-radius: 10px;
+    }
+</style>

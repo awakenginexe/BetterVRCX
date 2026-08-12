@@ -92,6 +92,10 @@ vi.mock('../../../coordinators/userCoordinator', () => ({
     lookupUser: (...args) => mocks.lookupUser(...args)
 }));
 
+vi.mock('../../../coordinators/worldCoordinator', () => ({
+    showWorldDialog: (...args) => mocks.showWorldDialog(...args)
+}));
+
 vi.mock('../../../lib/table/useVrcxVueTable', () => ({
     useVrcxVueTable: () => ({
         table: {
@@ -226,6 +230,92 @@ describe('PlayerList.vue', () => {
         expect(mocks.getCurrentInstanceUserList).toHaveBeenCalledTimes(1);
         expect(mocks.tableSetOptions).toHaveBeenCalledTimes(1);
         expect(mocks.photonColumnToggleVisibility).toHaveBeenCalledWith(false);
+    });
+
+    test('renders the current instance as a summary before diagnostic surfaces', () => {
+        mocks.currentInstanceWorld.value = {
+            ...mocks.currentInstanceWorld.value,
+            ref: {
+                ...mocks.currentInstanceWorld.value.ref,
+                id: 'wrld_1',
+                name: 'World Alpha',
+                authorId: 'usr_author',
+                authorName: 'World Author',
+                imageUrl: 'https://example.com/world.png',
+                thumbnailImageUrl: 'https://example.com/world-thumb.png',
+                recommendedCapacity: 16,
+                capacity: 32,
+                created_at: '2026-01-01'
+            }
+        };
+        mocks.currentInstanceUsersData.value = [
+            { ref: { id: 'usr_1' } },
+            { ref: { id: 'usr_2' } }
+        ];
+        mocks.photonLoggingEnabled.value = true;
+
+        const wrapper = mount(PlayerList, {
+            global: {
+                stubs: {
+                    TooltipWrapper: { template: '<div><slot /></div>' },
+                    LocationWorld: { template: '<div />' }
+                }
+            }
+        });
+
+        expect(wrapper.get('.player-list__page-header').classes()).toContain(
+            'bv-surface'
+        );
+        expect(wrapper.get('.player-list__page-header h1').text()).toBe(
+            'nav_tooltip.player_list'
+        );
+        expect(wrapper.get('.player-list__instance').classes()).toContain(
+            'bv-surface-raised'
+        );
+        expect(wrapper.get('.player-list__instance').text()).toContain(
+            'World Alpha'
+        );
+        expect(wrapper.get('.player-list__player-count').text()).toContain('2');
+        expect(wrapper.get('.player-list__photon').classes()).toContain(
+            'bv-surface'
+        );
+        expect(wrapper.get('.player-list__players').classes()).toContain(
+            'bv-surface'
+        );
+    });
+
+    test('keeps world identity click-through and fullscreen preview actions', async () => {
+        mocks.currentInstanceWorld.value = {
+            ...mocks.currentInstanceWorld.value,
+            ref: {
+                ...mocks.currentInstanceWorld.value.ref,
+                id: 'wrld_1',
+                name: 'World Alpha',
+                authorId: 'usr_author',
+                authorName: 'World Author',
+                imageUrl: 'https://example.com/world.png',
+                thumbnailImageUrl: 'https://example.com/world-thumb.png'
+            }
+        };
+
+        const wrapper = mount(PlayerList, {
+            global: {
+                stubs: {
+                    TooltipWrapper: { template: '<div><slot /></div>' },
+                    LocationWorld: { template: '<div />' }
+                }
+            }
+        });
+
+        await wrapper.get('[data-testid="world-preview"]').trigger('click');
+        await wrapper.get('[data-testid="world-name"]').trigger('click');
+        await wrapper.get('[data-testid="world-author"]').trigger('click');
+
+        expect(mocks.showFullscreenImageDialog).toHaveBeenCalledWith(
+            'https://example.com/world.png'
+        );
+        expect(mocks.showWorldDialog).toHaveBeenCalledWith('wrld_1');
+        expect(mocks.showUserDialog).toHaveBeenCalledWith('usr_author');
     });
 
     test('row click opens user dialog when id exists, otherwise lookups user', async () => {

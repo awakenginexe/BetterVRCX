@@ -1,37 +1,43 @@
 <template>
-    <div class="x-container x-container--auto-height" ref="playerListRef">
-        <div class="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden">
-            <div
+    <div ref="playerListRef" class="player-list x-container x-container--auto-height">
+        <div class="player-list__scroll">
+            <header class="player-list__page-header bv-surface">
+                <div class="player-list__heading">
+                    <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                    <h1>{{ t('nav_tooltip.player_list') }}</h1>
+                </div>
+                <div class="player-list__live-context">
+                    <span class="player-list__live-marker" aria-hidden="true"></span>
+                    <span class="player-list__player-count font-mono">{{ playerListTotalItems }}</span>
+                </div>
+            </header>
+
+            <section
                 v-if="currentInstanceWorld.ref.id"
                 ref="playerListHeaderRef"
-                style="display: flex; min-height: 120px"
-                class="mb-7">
-                <img
-                    v-if="!worldImageError"
-                    :src="currentInstanceWorld.ref.thumbnailImageUrl"
-                    class="cursor-pointer"
-                    style="flex: none; width: 160px; height: 120px; border-radius: var(--radius-md)"
-                    @click="showFullscreenImageDialog(currentInstanceWorld.ref.imageUrl)"
-                    @error="worldImageError = true"
-                    loading="lazy" />
-                <div
-                    v-else
-                    class="flex items-center justify-center bg-muted"
-                    style="flex: none; width: 160px; height: 120px; border-radius: var(--radius-md)">
-                    <Image class="size-8 text-muted-foreground" />
-                </div>
-                <div class="ml-2" style="display: flex; flex-direction: column; min-width: 320px; width: 100%">
-                    <div class="flex items-center">
-                        <span
-                            class="cursor-pointer"
-                            style="
-                                font-weight: bold;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                display: -webkit-box;
-                                -webkit-box-orient: vertical;
-                                line-clamp: 1;
-                            "
+                class="player-list__instance bv-surface-raised">
+                <button
+                    type="button"
+                    class="player-list__world-preview bv-focus-ring"
+                    :aria-label="currentInstanceWorld.ref.name"
+                    data-testid="world-preview"
+                    @click="showFullscreenImageDialog(currentInstanceWorld.ref.imageUrl)">
+                    <img
+                        v-if="!worldImageError"
+                        :src="currentInstanceWorld.ref.thumbnailImageUrl"
+                        :alt="currentInstanceWorld.ref.name"
+                        @error="worldImageError = true"
+                        loading="lazy" />
+                    <span v-else class="player-list__world-placeholder">
+                        <Image class="size-8 text-muted-foreground" />
+                    </span>
+                </button>
+                <div class="player-list__identity">
+                    <div class="flex items-center min-w-0">
+                        <button
+                            type="button"
+                            class="player-list__world-name bv-focus-ring"
+                            data-testid="world-name"
                             @click="showWorldDialog(currentInstanceWorld.ref.id)">
                             <Home
                                 v-if="
@@ -40,13 +46,15 @@
                                 "
                                 class="inline-block" />
                             {{ currentInstanceWorld.ref.name }}
-                        </span>
+                        </button>
                     </div>
                     <div>
-                        <span
-                            class="cursor-pointer x-grey font-mono"
+                        <button
+                            type="button"
+                            class="player-list__author bv-focus-ring x-grey font-mono"
+                            data-testid="world-author"
                             @click="showUserDialog(currentInstanceWorld.ref.authorId)"
-                            v-text="currentInstanceWorld.ref.authorName"></span>
+                            v-text="currentInstanceWorld.ref.authorName"></button>
                     </div>
                     <div class="mt-1.5">
                         <Badge class="mr-1.5" v-if="currentInstanceWorld.ref.$isLabs" variant="outline">
@@ -124,8 +132,8 @@
                             v-text="currentInstanceWorld.ref.description"></span>
                     </div>
                 </div>
-                <div class="ml-5" style="display: flex; flex-direction: column">
-                    <div class="box-border flex items-center p-1.5 text-[13px] cursor-default">
+                <aside class="player-list__metrics">
+                    <div class="player-list__metric">
                         <div class="flex-1 overflow-hidden">
                             <span class="block truncate font-medium leading-[18px]">{{
                                 t('dialog.world.info.capacity')
@@ -137,7 +145,7 @@
                             >
                         </div>
                     </div>
-                    <div class="box-border flex items-center p-1.5 text-[13px] cursor-default">
+                    <div class="player-list__metric">
                         <div class="flex-1 overflow-hidden">
                             <span class="block truncate font-medium leading-[18px]">{{
                                 t('dialog.world.info.last_updated')
@@ -150,7 +158,7 @@
                             }}</span>
                         </div>
                     </div>
-                    <div class="box-border flex items-center p-1.5 text-[13px] cursor-default">
+                    <div class="player-list__metric">
                         <div class="flex-1 overflow-hidden">
                             <span class="block truncate font-medium leading-[18px]">{{
                                 t('dialog.world.info.created_at')
@@ -160,14 +168,14 @@
                             }}</span>
                         </div>
                     </div>
-                </div>
-            </div>
+                </aside>
+            </section>
 
-            <div class="mb-2" v-if="photonLoggingEnabled" ref="playerListPhotonRef">
+            <section v-if="photonLoggingEnabled" ref="playerListPhotonRef" class="player-list__photon bv-surface">
                 <PhotonEventTable @show-chatbox-blacklist="showChatboxBlacklistDialog" />
-            </div>
+            </section>
 
-            <div class="current-instance-table flex min-h-0 min-w-0 flex-1">
+            <section class="player-list__players bv-surface">
                 <DataTableLayout
                     class="[&_th]:px-2.5! [&_th]:py-0.75! [&_td]:px-2.5! [&_td]:py-0.75! [&_tr]:h-7!"
                     :table="playerListTable"
@@ -175,7 +183,7 @@
                     :loading="false"
                     :show-pagination="false"
                     :on-row-click="handlePlayerListRowClick" />
-            </div>
+            </section>
         </div>
         <ChatboxBlacklistDialog
             :chatbox-blacklist-dialog="chatboxBlacklistDialog"
@@ -356,3 +364,181 @@
         getCurrentInstanceUserList();
     });
 </script>
+
+<style scoped>
+    .player-list__scroll {
+        display: flex;
+        min-height: 0;
+        height: 100%;
+        flex-direction: column;
+        gap: 14px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 4px;
+    }
+
+    .player-list__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 18px;
+        border-radius: 14px;
+    }
+
+    .player-list__heading {
+        min-width: 0;
+    }
+
+    .player-list__heading h1 {
+        margin: 2px 0 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.15;
+    }
+
+    .player-list__live-context {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: 8px;
+        min-height: 32px;
+        padding: 0 11px;
+        border: 1px solid color-mix(in srgb, var(--bv-success) 35%, var(--bv-border));
+        border-radius: 8px;
+        color: var(--bv-text-strong);
+        background: color-mix(in srgb, var(--bv-success) 8%, var(--bv-bg-control));
+    }
+
+    .player-list__live-marker {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--bv-success);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bv-success) 18%, transparent);
+    }
+
+    .player-list__player-count {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .player-list__instance {
+        display: grid;
+        grid-template-columns: 176px minmax(280px, 1fr) minmax(170px, auto);
+        flex: none;
+        gap: 16px;
+        min-height: 140px;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .player-list__world-preview {
+        width: 176px;
+        height: 132px;
+        overflow: hidden;
+        padding: 0;
+        border: 1px solid var(--bv-border);
+        border-radius: 12px;
+        background: var(--bv-bg-control);
+        cursor: pointer;
+    }
+
+    .player-list__world-preview img,
+    .player-list__world-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        object-fit: cover;
+    }
+
+    .player-list__identity {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+    }
+
+    .player-list__world-name,
+    .player-list__author {
+        max-width: 100%;
+        overflow: hidden;
+        padding: 1px 3px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .player-list__world-name {
+        color: var(--bv-text-strong);
+        font-size: 17px;
+        font-weight: 750;
+    }
+
+    .player-list__author {
+        color: var(--bv-text-muted);
+        font-size: 11px;
+    }
+
+    .player-list__metrics {
+        display: grid;
+        align-content: start;
+        gap: 6px;
+        padding-left: 14px;
+        border-left: 1px solid var(--bv-border);
+    }
+
+    .player-list__metric {
+        box-sizing: border-box;
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        padding: 6px;
+        color: var(--bv-text-muted);
+        font-size: 13px;
+        cursor: default;
+    }
+
+    .player-list__photon,
+    .player-list__players {
+        min-width: 0;
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .player-list__photon {
+        flex: none;
+    }
+
+    .player-list__players {
+        display: flex;
+        min-height: 240px;
+        flex: 1;
+    }
+
+    @media (max-width: 900px) {
+        .player-list__instance {
+            grid-template-columns: 144px minmax(0, 1fr);
+        }
+
+        .player-list__world-preview {
+            width: 144px;
+            height: 108px;
+        }
+
+        .player-list__metrics {
+            grid-column: 1 / -1;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            padding: 10px 0 0;
+            border-top: 1px solid var(--bv-border);
+            border-left: 0;
+        }
+    }
+</style>

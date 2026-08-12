@@ -1,28 +1,34 @@
 <template>
-    <div class="x-container flex flex-col overflow-hidden">
-        <Tabs
-            v-model="activeSearchTab"
-            :unmount-on-hide="false"
-            aria-label="Search tabs"
-            class="flex flex-col min-h-0 flex-1">
-            <div class="mt-0 mx-0 mb-2 flex items-center gap-5">
-                <TabsList>
-                    <TabsTrigger value="user">{{ t('view.search.user.header') }}</TabsTrigger>
-                    <TabsTrigger value="world">{{ t('view.search.world.header') }}</TabsTrigger>
-                    <TabsTrigger value="avatar">{{ t('view.search.avatar.header') }}</TabsTrigger>
-                    <TabsTrigger value="group">{{ t('view.search.group.header') }}</TabsTrigger>
+    <div class="search-view x-container">
+        <header class="search-view__page-header bv-surface">
+            <div>
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.search') }}</h1>
+            </div>
+            <div class="search-view__context" aria-live="polite">
+                <span>{{ activeSearchLabel }}</span>
+                <strong class="search-view__result-count font-mono">{{ activeResultCount }}</strong>
+            </div>
+        </header>
+        <Tabs v-model="activeSearchTab" :unmount-on-hide="false" aria-label="Search tabs" class="search-view__tabs">
+            <div class="search-view__toolbar bv-surface-raised">
+                <TabsList class="search-view__tab-list">
+                    <TabsTrigger class="bv-focus-ring" value="user">{{ t('view.search.user.header') }}</TabsTrigger>
+                    <TabsTrigger class="bv-focus-ring" value="world">{{ t('view.search.world.header') }}</TabsTrigger>
+                    <TabsTrigger class="bv-focus-ring" value="avatar">{{ t('view.search.avatar.header') }}</TabsTrigger>
+                    <TabsTrigger class="bv-focus-ring" value="group">{{ t('view.search.group.header') }}</TabsTrigger>
                 </TabsList>
-                <div class="flex min-w-0 flex-1 items-center">
+                <div class="search-view__query">
                     <InputGroupField
                         :model-value="searchText"
                         :placeholder="searchPlaceholder"
-                        style="flex: 1"
+                        class="bv-focus-ring"
                         clearable
                         @input="updateSearchText"
                         @keyup.enter="search" />
                     <TooltipWrapper side="bottom" :content="t('view.search.clear_results_tooltip')">
                         <Button
-                            class="rounded-full ml-2"
+                            class="rounded-full ml-2 bv-focus-ring"
                             size="icon"
                             variant="ghost"
                             :ariaLabel="t('view.search.clear_results_tooltip')"
@@ -32,9 +38,9 @@
                     </TooltipWrapper>
                 </div>
             </div>
-            <TabsContent value="user" class="flex flex-col min-h-0 flex-1">
-                <div class="flex flex-col min-h-0" style="flex: 9">
-                    <div class="shrink-0 mb-3 flex justify-end">
+            <TabsContent value="user" class="search-view__panel">
+                <div class="search-view__panel-body">
+                    <div class="search-view__filters">
                         <label class="inline-flex items-center gap-2 ml-2">
                             <Checkbox v-model="searchUserByBio" />
                             <span>{{ t('view.search.user.search_by_bio') }}</span>
@@ -44,16 +50,21 @@
                             <span>{{ t('view.search.user.sort_by_last_logged_in') }}</span>
                         </label>
                     </div>
-                    <div class="flex-1 overflow-y-auto min-h-0">
-                        <div v-if="isSearchUserLoading" class="flex items-center justify-center h-full">
+                    <div class="search-view__results bv-surface">
+                        <div v-if="isSearchUserLoading" class="search-view__loading" role="status" aria-live="polite">
                             <Spinner class="text-2xl" />
+                            <span>{{ t('nav_tooltip.search') }}</span>
                         </div>
                         <template v-else-if="searchUserResults.length > 0">
                             <Item
                                 v-for="user in searchUserResults"
                                 :key="user.id"
-                                class="cursor-pointer hover:bg-muted x-hover-list rounded-none"
-                                @click="showUserDialog(user.id)">
+                                class="search-view__result-row bv-surface-raised bv-focus-ring"
+                                role="button"
+                                tabindex="0"
+                                @click="showUserDialog(user.id)"
+                                @keydown.enter="showUserDialog(user.id)"
+                                @keydown.space.prevent="showUserDialog(user.id)">
                                 <ItemMedia variant="image">
                                     <Avatar>
                                         <AvatarImage :src="userImage(user, true)" loading="lazy" />
@@ -90,7 +101,7 @@
                                 </ItemContent>
                             </Item>
                         </template>
-                        <DataTableEmpty v-else type="nodata" />
+                        <DataTableEmpty v-else class="search-view__empty bv-empty-state" type="nodata" />
                     </div>
                 </div>
                 <SearchPagination
@@ -100,18 +111,17 @@
                     @prev="paginationConfig.onPrev"
                     @next="paginationConfig.onNext" />
             </TabsContent>
-            <TabsContent value="world" class="flex flex-col min-h-0 flex-1">
-                <div class="flex flex-col min-h-0" style="flex: 9">
-                    <div class="inline-flex justify-end mb-4 w-full shrink-0 gap-2">
+            <TabsContent value="world" class="search-view__panel">
+                <div class="search-view__panel-body">
+                    <div class="search-view__filters">
                         <label class="inline-flex items-center gap-2">
                             <Checkbox v-model="searchWorldLabs" />
                             <span>{{ t('view.search.world.community_lab') }}</span>
                         </label>
                         <Select
                             :model-value="searchWorldCategoryIndex"
-                            @update:modelValue="handleSearchWorldCategorySelect"
-                            style="margin-bottom: 16px">
-                            <SelectTrigger size="sm">
+                            @update:modelValue="handleSearchWorldCategorySelect">
+                            <SelectTrigger class="bv-focus-ring" size="sm">
                                 <SelectValue :placeholder="t('view.search.world.category')" />
                             </SelectTrigger>
                             <SelectContent>
@@ -126,9 +136,10 @@
                             </SelectContent>
                         </Select>
                     </div>
-                    <div class="flex-1 overflow-y-auto min-h-0">
-                        <div v-if="isSearchWorldLoading" class="flex items-center justify-center h-full">
+                    <div class="search-view__results bv-surface">
+                        <div v-if="isSearchWorldLoading" class="search-view__loading" role="status" aria-live="polite">
                             <Spinner class="text-2xl" />
+                            <span>{{ t('nav_tooltip.search') }}</span>
                         </div>
                         <template v-else-if="searchWorldResults.length > 0">
                             <ItemGroup
@@ -139,15 +150,21 @@
                                     :key="world.id"
                                     variant="outline"
                                     size="sm"
-                                    class="cursor-pointer p-3"
+                                    class="search-view__result-card bv-surface-raised"
                                     as-child>
-                                    <div class="overflow-hidden" @click="showWorldDialog(world.id)">
+                                    <div
+                                        class="search-view__result-card-action bv-focus-ring"
+                                        role="button"
+                                        tabindex="0"
+                                        @click="showWorldDialog(world.id)"
+                                        @keydown.enter="showWorldDialog(world.id)"
+                                        @keydown.space.prevent="showWorldDialog(world.id)">
                                         <ItemHeader>
                                             <img
                                                 :src="world.thumbnailImageUrl"
                                                 :alt="world.name"
                                                 loading="lazy"
-                                                class="aspect-[16/10] w-full rounded-lg object-cover" />
+                                                class="aspect-[4/3] w-full rounded-lg object-cover" />
                                         </ItemHeader>
                                         <ItemContent class="min-w-0">
                                             <TooltipWrapper side="top" :content="world.name">
@@ -164,7 +181,7 @@
                                 </Item>
                             </ItemGroup>
                         </template>
-                        <DataTableEmpty v-else type="nodata" />
+                        <DataTableEmpty v-else class="search-view__empty bv-empty-state" type="nodata" />
                     </div>
                 </div>
                 <SearchPagination
@@ -174,14 +191,14 @@
                     @prev="paginationConfig.onPrev"
                     @next="paginationConfig.onNext" />
             </TabsContent>
-            <TabsContent value="avatar" class="flex flex-col min-h-0 flex-1">
-                <div class="flex flex-col min-h-0" style="flex: 9">
-                    <div class="shrink-0 mb-3 flex items-center justify-end gap-2">
+            <TabsContent value="avatar" class="search-view__panel">
+                <div class="search-view__panel-body">
+                    <div class="search-view__filters">
                         <Select
                             v-if="avatarRemoteDatabaseProviderList.length > 0"
                             :model-value="avatarRemoteDatabaseProvider"
                             @update:modelValue="setAvatarProvider">
-                            <SelectTrigger size="sm">
+                            <SelectTrigger class="bv-focus-ring" size="sm">
                                 <SelectValue :placeholder="t('view.search.avatar.search_provider')" />
                             </SelectTrigger>
                             <SelectContent>
@@ -198,13 +215,19 @@
                         <span v-else class="text-sm text-muted-foreground">
                             {{ t('view.search.avatar.no_provider') }}
                         </span>
-                        <Button size="sm" variant="outline" @click="isAvatarProviderDialogVisible = true">
+                        <Button
+                            class="bv-focus-ring"
+                            size="sm"
+                            variant="outline"
+                            :aria-label="t('view.search.avatar.search_provider')"
+                            @click="isAvatarProviderDialogVisible = true">
                             <Settings class="size-4" />
                         </Button>
                     </div>
-                    <div class="flex-1 overflow-y-auto min-h-0 mt-2">
-                        <div v-if="isSearchAvatarLoading" class="flex items-center justify-center h-full">
+                    <div class="search-view__results bv-surface">
+                        <div v-if="isSearchAvatarLoading" class="search-view__loading" role="status" aria-live="polite">
                             <Spinner class="text-2xl" />
+                            <span>{{ t('nav_tooltip.search') }}</span>
                         </div>
                         <template v-else-if="searchAvatarPage.length > 0">
                             <ItemGroup
@@ -215,22 +238,28 @@
                                     :key="avatar.id"
                                     variant="outline"
                                     size="sm"
-                                    class="cursor-pointer p-3"
+                                    class="search-view__result-card bv-surface-raised"
                                     as-child>
-                                    <div class="overflow-hidden" @click="showAvatarDialog(avatar.id)">
+                                    <div
+                                        class="search-view__result-card-action bv-focus-ring"
+                                        role="button"
+                                        tabindex="0"
+                                        @click="showAvatarDialog(avatar.id)"
+                                        @keydown.enter="showAvatarDialog(avatar.id)"
+                                        @keydown.space.prevent="showAvatarDialog(avatar.id)">
                                         <ItemHeader>
                                             <img
                                                 v-if="avatar.thumbnailImageUrl"
                                                 :src="avatar.thumbnailImageUrl"
                                                 :alt="avatar.name"
                                                 loading="lazy"
-                                                class="aspect-[16/10] w-full rounded-lg object-cover" />
+                                                class="aspect-[4/3] w-full rounded-lg object-cover" />
                                             <img
                                                 v-else-if="avatar.imageUrl"
                                                 :src="avatar.imageUrl"
                                                 :alt="avatar.name"
                                                 loading="lazy"
-                                                class="aspect-[16/10] w-full rounded-sm object-cover" />
+                                                class="aspect-[4/3] w-full rounded-lg object-cover" />
                                         </ItemHeader>
                                         <ItemContent class="min-w-0">
                                             <TooltipWrapper side="top" :content="avatar.name">
@@ -244,7 +273,7 @@
                                 </Item>
                             </ItemGroup>
                         </template>
-                        <DataTableEmpty v-else type="nodata" />
+                        <DataTableEmpty v-else class="search-view__empty bv-empty-state" type="nodata" />
                     </div>
                 </div>
                 <SearchPagination
@@ -254,17 +283,22 @@
                     @prev="paginationConfig.onPrev"
                     @next="paginationConfig.onNext" />
             </TabsContent>
-            <TabsContent value="group" class="flex flex-col min-h-0 flex-1">
-                <div class="flex-1 overflow-y-auto min-h-0" style="flex: 9">
-                    <div v-if="isSearchGroupLoading" class="flex items-center justify-center h-full">
+            <TabsContent value="group" class="search-view__panel">
+                <div class="search-view__results bv-surface">
+                    <div v-if="isSearchGroupLoading" class="search-view__loading" role="status" aria-live="polite">
                         <Spinner class="text-2xl" />
+                        <span>{{ t('nav_tooltip.search') }}</span>
                     </div>
                     <template v-else-if="searchGroupResults.length > 0">
                         <Item
                             v-for="group in searchGroupResults"
                             :key="group.id"
-                            class="cursor-pointer hover:bg-muted x-hover-list rounded-none"
-                            @click="showGroupDialog(group.id)">
+                            class="search-view__result-row bv-surface-raised bv-focus-ring"
+                            role="button"
+                            tabindex="0"
+                            @click="showGroupDialog(group.id)"
+                            @keydown.enter="showGroupDialog(group.id)"
+                            @keydown.space.prevent="showGroupDialog(group.id)">
                             <ItemMedia variant="image">
                                 <Avatar class="rounded-sm">
                                     <AvatarImage :src="getSmallThumbnailUrl(group.iconUrl)" loading="lazy" />
@@ -287,7 +321,7 @@
                             </ItemContent>
                         </Item>
                     </template>
-                    <DataTableEmpty v-else type="nodata" />
+                    <DataTableEmpty v-else class="search-view__empty bv-empty-state" type="nodata" />
                 </div>
                 <SearchPagination
                     :show="paginationConfig.show"
@@ -421,6 +455,31 @@
         clearGroupSearch
     } = useSearchGroup();
 
+    const activeSearchLabel = computed(() => {
+        const labels = {
+            user: 'view.search.user.header',
+            world: 'view.search.world.header',
+            avatar: 'view.search.avatar.header',
+            group: 'view.search.group.header'
+        };
+        return t(labels[activeSearchTab.value]);
+    });
+
+    const activeResultCount = computed(() => {
+        switch (activeSearchTab.value) {
+            case 'user':
+                return searchUserResults.value.length;
+            case 'world':
+                return searchWorldResults.value.length;
+            case 'avatar':
+                return searchAvatarPage.value.length;
+            case 'group':
+                return searchGroupResults.value.length;
+            default:
+                return 0;
+        }
+    });
+
     const paginationConfig = computed(() => {
         switch (activeSearchTab.value) {
             case 'user':
@@ -509,3 +568,204 @@
         }
     }
 </script>
+
+<style scoped>
+    .search-view {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 12px;
+        overflow: hidden;
+    }
+
+    .search-view__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 18px;
+        border-radius: 14px;
+    }
+
+    .search-view__page-header h1 {
+        margin: 2px 0 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.15;
+    }
+
+    .search-view__context {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: 8px;
+        min-height: 32px;
+        padding: 0 11px;
+        border: 1px solid color-mix(in srgb, var(--bv-accent) 35%, var(--bv-border));
+        border-radius: 8px;
+        color: var(--bv-text-muted);
+        background: color-mix(in srgb, var(--bv-accent) 8%, var(--bv-bg-control));
+        font-size: 11px;
+    }
+
+    .search-view__result-count {
+        min-width: 20px;
+        color: var(--bv-text-strong);
+        text-align: right;
+    }
+
+    .search-view__tabs {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-view__toolbar {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 18px;
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    .search-view__tab-list {
+        flex: none;
+    }
+
+    .search-view__query {
+        display: flex;
+        min-width: 220px;
+        flex: 1;
+        align-items: center;
+    }
+
+    .search-view__query > :first-child {
+        flex: 1;
+    }
+
+    .search-view__panel {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+    }
+
+    .search-view__panel-body {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .search-view__filters {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        min-height: 34px;
+        color: var(--bv-text-muted);
+        font-size: 12px;
+    }
+
+    .search-view__results {
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .search-view__loading {
+        display: flex;
+        min-height: 180px;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--bv-text-muted);
+        font-size: 11px;
+    }
+
+    .search-view__empty {
+        min-height: 180px;
+    }
+
+    .search-view__result-row {
+        margin-bottom: 6px;
+        padding: 9px 11px;
+        border: 1px solid var(--bv-border);
+        border-radius: 9px;
+        cursor: pointer;
+        transition:
+            border-color 140ms ease,
+            background-color 140ms ease;
+    }
+
+    .search-view__result-row:hover {
+        border-color: color-mix(in srgb, var(--bv-accent) 32%, var(--bv-border));
+        background: var(--bv-bg-hover);
+    }
+
+    .search-view__result-card {
+        overflow: hidden;
+        padding: 0;
+        border: 1px solid var(--bv-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition:
+            transform 150ms ease,
+            border-color 150ms ease,
+            box-shadow 150ms ease;
+    }
+
+    .search-view__result-card:hover {
+        transform: translateY(-2px);
+        border-color: color-mix(in srgb, var(--bv-accent) 38%, var(--bv-border));
+        box-shadow: 0 10px 24px rgb(0 0 0 / 20%);
+    }
+
+    .search-view__result-card-action {
+        height: 100%;
+        overflow: hidden;
+        padding: 10px;
+        border-radius: inherit;
+        outline: none;
+    }
+
+    @media (max-width: 860px) {
+        .search-view__toolbar {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-view__tab-list {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .search-view__query {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .search-view__result-row,
+        .search-view__result-card {
+            transition-duration: 0.01ms;
+        }
+
+        .search-view__result-card:hover {
+            transform: none;
+        }
+    }
+</style>
