@@ -1,5 +1,5 @@
 <template>
-    <div id="chart" class="analytics-workspace x-container">
+    <div ref="mutualGraphWorkspaceRef" id="chart" class="analytics-workspace x-container">
         <div
             class="analytics-workspace__content mt-0 flex min-h-0 flex-1 flex-col items-center pt-3"
             ref="mutualGraphRef">
@@ -14,6 +14,7 @@
                                 data-testid="mutual-friends-cancel"
                                 variant="destructive"
                                 :disabled="status.cancelRequested"
+                                :ariaLabel="t('view.charts.mutual_friend.actions.stop_fetching')"
                                 @click="cancelFetch">
                                 <Spinner />
                                 {{ t('view.charts.mutual_friend.actions.stop') }}
@@ -68,7 +69,11 @@
                         <SheetTrigger as-child>
                             <div>
                                 <TooltipWrapper :content="t('view.charts.mutual_friend.settings.title')" side="top">
-                                    <Button class="rounded-full" size="icon" variant="ghost">
+                                    <Button
+                                        class="rounded-full"
+                                        size="icon"
+                                        variant="ghost"
+                                        :ariaLabel="t('view.charts.mutual_friend.settings.title')">
                                         <Settings />
                                     </Button>
                                 </TooltipWrapper>
@@ -370,6 +375,7 @@
         ]
     });
 
+    const mutualGraphWorkspaceRef = ref(null);
     const graphContainerRef = ref(null);
     const mutualGraphRef = ref(null);
 
@@ -629,9 +635,7 @@
 
     function setMutualGraphHeight() {
         if (mutualGraphRef.value) {
-            const parentHeight = mutualGraphRef.value.parentElement?.clientHeight || 0;
-            const availableHeight = Math.max(420, parentHeight || window.innerHeight - 100);
-            mutualGraphRef.value.style.height = `${availableHeight}px`;
+            mutualGraphRef.value.style.height = '100%';
             mutualGraphRef.value.style.overflowY = 'auto';
         }
     }
@@ -645,8 +649,11 @@
                 if (sigmaInstance?.refresh) sigmaInstance.refresh();
             });
             resizeObserver.observe(graphContainerRef.value);
-            mutualGraphResizeObserver = new ResizeObserver(() => setMutualGraphHeight());
-            mutualGraphResizeObserver.observe(mutualGraphRef.value);
+            mutualGraphResizeObserver = new ResizeObserver(() => {
+                setMutualGraphHeight();
+                if (sigmaInstance?.refresh) sigmaInstance.refresh();
+            });
+            mutualGraphResizeObserver.observe(mutualGraphWorkspaceRef.value);
             setMutualGraphHeight();
 
             if (currentGraph) renderGraph(currentGraph);

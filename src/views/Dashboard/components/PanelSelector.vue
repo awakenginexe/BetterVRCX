@@ -25,7 +25,12 @@
                             "
                             @click="handleSelectWidget(option)">
                             <i :class="option.icon" class="text-base"></i>
-                            <span>{{ t(option.labelKey) }}</span>
+                            <span :data-panel-kind="option.key" class="min-w-0">
+                                <span class="block truncate">{{ t(option.labelKey) }}</span>
+                                <span class="block text-[11px] text-muted-foreground">{{
+                                    t('dashboard.selector.widgets')
+                                }}</span>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -49,7 +54,12 @@
                             "
                             @click="emit('select', option.key)">
                             <i :class="option.icon" class="text-base"></i>
-                            <span>{{ t(option.labelKey) }}</span>
+                            <span :data-panel-kind="option.key" class="min-w-0">
+                                <span class="block truncate">{{ t(option.labelKey) }}</span>
+                                <span class="block text-[11px] text-muted-foreground">{{
+                                    t('dashboard.selector.pages')
+                                }}</span>
+                            </span>
                         </button>
                     </div>
                 </div>

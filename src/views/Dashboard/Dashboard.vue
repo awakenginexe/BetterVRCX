@@ -38,37 +38,57 @@
 
                 <div
                     class="dashboard-builder__add-row mt-auto flex min-h-[112px] flex-1 items-center justify-center text-muted-foreground"
-                    :class="showAddRowOptions ? 'items-start p-4' : 'cursor-pointer'"
-                    @click="handleAddRowAreaClick">
-                    <div v-if="showAddRowOptions" class="flex flex-wrap items-center gap-3">
+                    :class="showAddRowOptions ? 'items-start p-4' : ''">
+                    <Button
+                        data-testid="dashboard-builder-add-row"
+                        type="button"
+                        variant="ghost"
+                        size="icon-lg"
+                        :ariaLabel="t('dashboard.actions.add_row')"
+                        :aria-expanded="showAddRowOptions"
+                        aria-controls="dashboard-builder-layouts"
+                        @click="handleAddRowAreaClick">
+                        <Plus class="size-6" />
+                    </Button>
+                    <div
+                        v-if="showAddRowOptions"
+                        id="dashboard-builder-layouts"
+                        role="group"
+                        :aria-label="t('dashboard.actions.add_row')"
+                        class="flex flex-wrap items-center gap-3">
                         <span class="bv-eyebrow w-full">{{ t('dashboard.actions.add_row') }}</span>
                         <button
+                            data-layout="full"
                             type="button"
                             class="dashboard-builder__layout-option bv-focus-ring"
+                            :aria-label="t('dashboard.actions.add_full_row')"
                             :title="t('dashboard.actions.add_full_row')"
-                            @click.stop="handleAddRow(1)">
+                            @click="handleAddRow(1)">
                             <div class="h-6 w-12 rounded bg-muted-foreground/20" />
                         </button>
                         <button
+                            data-layout="horizontal"
                             type="button"
                             class="dashboard-builder__layout-option bv-focus-ring"
+                            :aria-label="t('dashboard.actions.add_split_row')"
                             :title="t('dashboard.actions.add_split_row')"
-                            @click.stop="handleAddRow(2)">
+                            @click="handleAddRow(2)">
                             <div class="h-6 w-5 rounded bg-muted-foreground/20" />
                             <div class="h-6 w-5 rounded bg-muted-foreground/20" />
                         </button>
                         <button
+                            data-layout="vertical"
                             type="button"
                             class="dashboard-builder__layout-option bv-focus-ring"
+                            :aria-label="t('dashboard.actions.add_vertical_row')"
                             :title="t('dashboard.actions.add_vertical_row')"
-                            @click.stop="handleAddRow(2, 'vertical')">
+                            @click="handleAddRow(2, 'vertical')">
                             <div class="flex flex-col gap-0.5">
                                 <div class="h-2.5 w-10 rounded bg-muted-foreground/20" />
                                 <div class="h-2.5 w-10 rounded bg-muted-foreground/20" />
                             </div>
                         </button>
                     </div>
-                    <Plus v-else class="size-6 opacity-50" />
                 </div>
             </section>
 

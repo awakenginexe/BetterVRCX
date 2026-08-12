@@ -280,11 +280,24 @@ html.dark {
         color-mix(in srgb, var(--bv-danger) 60%, transparent);
 }
 
-.analytics-workspace {
+.analytics-workspace,
+.analytics-workspace.x-container {
     display: flex;
+    height: 100%;
     min-height: 0;
     flex-direction: column;
     gap: 12px;
+    margin: 0;
+    overflow: hidden;
+}
+
+.analytics-workspace__content {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .analytics-workspace__toolbar {
@@ -321,6 +334,18 @@ html.dark {
     .analytics-workspace__filters {
         align-items: stretch;
         justify-content: flex-start;
+    }
+}
+
+@container (max-width: 42rem) {
+    .analytics-workspace__toolbar,
+    .analytics-workspace__filters {
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .analytics-workspace__toolbar [data-slot='button'] {
+        max-width: 100%;
     }
 }
 

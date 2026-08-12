@@ -1,5 +1,5 @@
 <template>
-    <div id="chart" class="analytics-workspace x-container">
+    <div ref="instanceActivityWorkspaceRef" id="chart" class="analytics-workspace x-container">
         <div ref="instanceActivityRef" class="analytics-workspace__content pt-3">
             <BackToTop :target="instanceActivityRef" :right="30" :bottom="30" :teleport="false" />
             <div data-testid="instance-activity-toolbar" class="analytics-workspace__toolbar options-container mt-0">
@@ -7,7 +7,9 @@
                     <span class="shrink-0">{{ t('view.charts.instance_activity.header') }}</span>
                     <HoverCard>
                         <HoverCardTrigger as-child>
-                            <Info class="ml-1 text-xs opacity-70" />
+                            <Button variant="ghost" size="icon-sm" :ariaLabel="t('common.actions.view_details')">
+                                <Info class="text-xs opacity-70" />
+                            </Button>
                         </HoverCardTrigger>
                         <HoverCardContent side="bottom" align="start" class="w-75">
                             <div>
@@ -27,7 +29,12 @@
 
                 <div data-testid="instance-activity-date-controls" class="analytics-workspace__filters">
                     <TooltipWrapper :content="t('view.charts.instance_activity.refresh')" side="top">
-                        <Button class="rounded-full mr-1.5" size="icon" variant="ghost" @click="reloadData">
+                        <Button
+                            class="rounded-full mr-1.5"
+                            size="icon"
+                            variant="ghost"
+                            :ariaLabel="t('view.charts.instance_activity.refresh')"
+                            @click="reloadData">
                             <RefreshCcw />
                         </Button>
                     </TooltipWrapper>
@@ -38,7 +45,11 @@
                                 <TooltipWrapper
                                     :content="t('view.charts.instance_activity.settings.header')"
                                     side="top">
-                                    <Button class="rounded-full mr-1.5" size="icon" variant="ghost">
+                                    <Button
+                                        class="rounded-full mr-1.5"
+                                        size="icon"
+                                        variant="ghost"
+                                        :ariaLabel="t('view.charts.instance_activity.settings.header')">
                                         <Settings />
                                     </Button>
                                 </TooltipWrapper>
@@ -99,6 +110,7 @@
                                 variant="ghost"
                                 size="icon-sm"
                                 :disabled="isPrevDayBtnDisabled"
+                                :ariaLabel="t('view.charts.instance_activity.previous_day')"
                                 @click="changeSelectedDateFromBtn(false)">
                                 <ArrowLeft />
                             </Button>
@@ -108,6 +120,7 @@
                                 variant="ghost"
                                 size="icon-sm"
                                 :disabled="isNextDayBtnDisabled"
+                                :ariaLabel="t('view.charts.instance_activity.next_day')"
                                 @click="changeSelectedDateFromBtn(true)">
                                 <ArrowRight />
                             </Button>
@@ -221,10 +234,12 @@
     const { t } = useI18n();
     const { isDarkMode, dtHour12, weekStartsOn } = storeToRefs(appearanceSettingsStore);
 
+    const instanceActivityWorkspaceRef = ref(null);
     const instanceActivityRef = ref(null);
 
     const instanceActivityResizeObserver = new ResizeObserver(() => {
         setInstanceActivityHeight();
+        echartsInstance?.resize({ animation: { duration: 0 } });
     });
 
     /**
@@ -232,23 +247,21 @@
      */
     function setInstanceActivityHeight() {
         if (instanceActivityRef.value) {
-            const parentHeight = instanceActivityRef.value.parentElement?.clientHeight || 0;
-            const availableHeight = Math.max(360, parentHeight || window.innerHeight - 110);
-            instanceActivityRef.value.style.height = `${availableHeight}px`;
+            instanceActivityRef.value.style.height = '100%';
             instanceActivityRef.value.style.overflowY = 'auto';
         }
     }
 
     onMounted(() => {
-        if (instanceActivityRef.value) {
-            instanceActivityResizeObserver.observe(instanceActivityRef.value);
+        if (instanceActivityWorkspaceRef.value) {
+            instanceActivityResizeObserver.observe(instanceActivityWorkspaceRef.value);
         }
         setInstanceActivityHeight();
     });
 
     onBeforeUnmount(() => {
-        if (instanceActivityRef.value) {
-            instanceActivityResizeObserver.unobserve(instanceActivityRef.value);
+        if (instanceActivityWorkspaceRef.value) {
+            instanceActivityResizeObserver.unobserve(instanceActivityWorkspaceRef.value);
         }
     });
 

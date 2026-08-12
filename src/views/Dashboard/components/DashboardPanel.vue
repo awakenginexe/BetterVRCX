@@ -6,6 +6,7 @@
                 variant="ghost"
                 size="icon-sm"
                 class="absolute right-1 top-1 z-20"
+                :ariaLabel="t('common.actions.remove')"
                 @click="emit('remove')">
                 <X class="size-4" />
             </Button>
@@ -33,7 +34,14 @@
         </template>
 
         <template v-else-if="panelKey && panelComponent">
-            <div class="dashboard-panel h-full w-full overflow-y-auto">
+            <div class="dashboard-panel flex h-full w-full min-h-0 flex-col">
+                <header class="dashboard-panel__header">
+                    <span class="flex min-w-0 items-center gap-1.5">
+                        <i v-if="panelIcon" :class="panelIcon" aria-hidden="true" />
+                        <span class="truncate">{{ panelLabel }}</span>
+                    </span>
+                    <span class="bv-badge">{{ panelKindLabel }}</span>
+                </header>
                 <component :is="panelComponent" v-bind="widgetProps" />
             </div>
         </template>
@@ -127,6 +135,9 @@
     });
 
     const panelIcon = computed(() => panelOption.value?.icon || '');
+    const panelKindLabel = computed(() =>
+        t(isWidget.value ? 'dashboard.selector.widgets' : 'dashboard.selector.pages')
+    );
 
     function emitConfigUpdate(newConfig) {
         emit('select', { key: panelKey.value, config: newConfig });
@@ -147,7 +158,27 @@
 </script>
 
 <style scoped>
+    .dashboard-panel-shell {
+        container-type: inline-size;
+    }
+
+    .dashboard-panel__header {
+        display: flex;
+        min-height: 2rem;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.375rem 0.625rem;
+        border-bottom: 1px solid var(--bv-border);
+        background: color-mix(in srgb, var(--bv-bg-control) 86%, transparent);
+        color: var(--bv-text-muted);
+        font-size: 0.75rem;
+        font-weight: 650;
+    }
+
     .dashboard-panel :deep(.x-container) {
+        flex: 1;
+        min-height: 0;
         height: 100%;
         margin: 0;
         border: none;

@@ -1,5 +1,5 @@
 <template>
-    <div id="chart" class="analytics-workspace x-container">
+    <div ref="hotWorldsWorkspaceRef" id="chart" class="analytics-workspace x-container">
         <div ref="hotWorldsRef" class="analytics-workspace__content pt-3">
             <BackToTop :target="hotWorldsRef" :right="30" :bottom="30" :teleport="false" />
             <div class="analytics-workspace__toolbar options-container mt-0">
@@ -7,7 +7,9 @@
                     <span class="shrink-0">{{ t('view.charts.hot_worlds.header') }}</span>
                     <HoverCard>
                         <HoverCardTrigger as-child>
-                            <Info class="ml-1 text-xs opacity-70" />
+                            <Button variant="ghost" size="icon-sm" :ariaLabel="t('common.actions.view_details')">
+                                <Info class="text-xs opacity-70" />
+                            </Button>
                         </HoverCardTrigger>
                         <HoverCardContent side="bottom" align="start" class="w-75">
                             <div class="text-xs">
@@ -211,6 +213,7 @@
 
     import BackToTop from '@/components/BackToTop.vue';
 
+    import { Button } from '@/components/ui/button';
     import { DataTableEmpty } from '@/components/ui/data-table';
     import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
     import { Separator } from '@/components/ui/separator';
@@ -225,6 +228,7 @@
     const { t } = useI18n();
     const { isDarkMode } = storeToRefs(useAppearanceSettingsStore());
 
+    const hotWorldsWorkspaceRef = ref(null);
     const hotWorldsRef = ref(null);
     const isLoading = ref(true);
     const isLoadingDetail = ref(false);
@@ -271,9 +275,7 @@
 
     function setContainerHeight() {
         if (hotWorldsRef.value) {
-            const parentHeight = hotWorldsRef.value.parentElement?.clientHeight || 0;
-            const availableHeight = Math.max(360, parentHeight || window.innerHeight - 110);
-            hotWorldsRef.value.style.height = `${availableHeight}px`;
+            hotWorldsRef.value.style.height = '100%';
             hotWorldsRef.value.style.overflowY = 'auto';
         }
     }
@@ -330,16 +332,16 @@
     }
 
     onMounted(() => {
-        if (hotWorldsRef.value) {
-            containerResizeObserver.observe(hotWorldsRef.value);
+        if (hotWorldsWorkspaceRef.value) {
+            containerResizeObserver.observe(hotWorldsWorkspaceRef.value);
         }
         setContainerHeight();
         loadData();
     });
 
     onBeforeUnmount(() => {
-        if (hotWorldsRef.value) {
-            containerResizeObserver.unobserve(hotWorldsRef.value);
+        if (hotWorldsWorkspaceRef.value) {
+            containerResizeObserver.unobserve(hotWorldsWorkspaceRef.value);
         }
     });
 </script>
