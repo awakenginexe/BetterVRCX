@@ -43,3 +43,11 @@ Result: 3 test files passed, 42 tests passed.
 ## Baseline concerns
 
 Repository-wide lint, typecheck, format-check, and full test failures remain the pre-existing baseline recorded in `docs/BASELINE_VERIFICATION.md`; this task was verified with focused tests, changed-file formatting, diff checks, and the production build.
+
+## Reviewer follow-up: live feed row identity
+
+- Finding: duplicate no-ID live entries could produce the same TanStack/Vue row key because the render-time fallback used only shared content fields.
+- Fix: `addFeedEntry` now assigns each accepted no-ID live entry a monotonic `_feedEntryId` at ingestion and stores a clone, so repeated identical payloads remain distinct entries. `getFeedRowId` includes that discriminator only when present; existing `id`, `rowId`, and no-discriminator fallback formats remain unchanged, and render-time `Date.now()` is not used.
+- TDD RED: the new Feed and feed-store tests failed before the fix because the discriminator was ignored and both ingested entries were `undefined`.
+- TDD GREEN: `npx vitest run src/views/Feed/__tests__/Feed.test.js src/stores/__tests__/feed.test.js` passed with 2 files and 9 tests; the expanded Task 4A-focused run passed with 4 files and 44 tests.
+- Verification: `npx oxfmt` passed on the four scoped source/test files; `git diff --check` passed; `npm run prod` passed, transforming 4,389 modules and generating the 105-entry license manifest.

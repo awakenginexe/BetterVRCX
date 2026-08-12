@@ -13,6 +13,7 @@ export const useFeedStore = defineStore('Feed', () => {
     const vrcxStore = useVrcxStore();
 
     const feedTableData = shallowRef([]);
+    let nextLiveFeedEntryId = 0;
     const feedTable = ref({
         search: '',
         dateFrom: '',
@@ -199,7 +200,11 @@ export const useFeedStore = defineStore('Feed', () => {
         ) {
             return;
         }
-        feedTableData.value = [feed, ...feedTableData.value];
+        const entry =
+            feed?.id == null && feed?.rowId == null
+                ? { ...feed, _feedEntryId: ++nextLiveFeedEntryId }
+                : feed;
+        feedTableData.value = [entry, ...feedTableData.value];
         sweepFeed();
     }
 

@@ -274,4 +274,26 @@ describe('Feed.vue', () => {
             'Online:2026-03-01T00:00:00.000Z:usr_123:wrld_abc:hello'
         );
     });
+
+    test('assigns distinct row ids to duplicate live entries', () => {
+        const wrapper = mount(Feed);
+        const liveEntry = {
+            type: 'Online',
+            created_at: '2026-03-01T00:00:00.000Z',
+            userId: 'usr_123',
+            location: 'wrld_abc',
+            message: 'hello'
+        };
+
+        const firstKey = wrapper.vm.getFeedRowId({
+            ...liveEntry,
+            _feedEntryId: 1
+        });
+        const secondKey = wrapper.vm.getFeedRowId({
+            ...liveEntry,
+            _feedEntryId: 2
+        });
+
+        expect(firstKey).not.toBe(secondKey);
+    });
 });

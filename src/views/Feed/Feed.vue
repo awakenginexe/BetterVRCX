@@ -184,8 +184,10 @@
         const userId = row?.userId ?? row?.senderUserId ?? '';
         const location = row?.location ?? row?.details?.location ?? '';
         const message = row?.message ?? '';
+        const liveEntryId = row?._feedEntryId;
+        const baseId = `${type}:${createdAt}:${userId}:${location}:${message}`;
 
-        return `${type}:${createdAt}:${userId}:${location}:${message}`;
+        return liveEntryId == null ? baseId : `${baseId}:live:${liveEntryId}`;
     }
 
     const { table, pagination } = useVrcxVueTable({
