@@ -1,5 +1,8 @@
 <template>
-    <DropdownMenu class="ml-1.5" v-model:open="moveDropdownOpen">
+    <DropdownMenu
+        class="ml-1.5"
+        :data-favorites-move-origin="isLocalFavorite ? 'local' : 'remote'"
+        v-model:open="moveDropdownOpen">
         <DropdownMenuTrigger as-child>
             <Button class="rounded-full w-6 h-6 text-xs" size="icon-sm" variant="ghost"
                 ><ArrowLeft class="h-4 w-4"
@@ -15,6 +18,8 @@
                 v-for="groupAPI in favoriteGroupList"
                 :key="groupAPI.name"
                 v-if="isLocalFavorite || groupAPI?.name !== currentGroup?.name"
+                :data-favorites-destination="groupAPI.name"
+                :data-capacity-state="groupAPI.count >= groupAPI.capacity ? 'full' : 'available'"
                 style="display: block"
                 :disabled="groupAPI.count >= groupAPI.capacity"
                 @click="handleDropdownItemClick(groupAPI)">

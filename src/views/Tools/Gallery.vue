@@ -1,13 +1,18 @@
 <template>
-    <div class="gallery-page x-container">
-        <div class="flex items-center gap-2 ml-2">
+    <div class="gallery-page x-container flex h-full min-h-0 flex-col gap-4" data-media-workspace="gallery">
+        <div class="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/25 px-2.5 py-2">
             <Button variant="ghost" size="sm" class="mr-3" @click="goBack">
                 <ArrowLeft />
                 {{ t('nav_tooltip.tools') }}
             </Button>
             <span class="header">{{ t('dialog.gallery_icons.header') }}</span>
         </div>
-        <TabsUnderline default-value="gallery" :items="galleryTabs" :unmount-on-hide="false">
+        <TabsUnderline
+            default-value="gallery"
+            :items="galleryTabs"
+            :unmount-on-hide="false"
+            :aria-label="t('dialog.gallery_icons.header')"
+            fill>
             <template #label-gallery>
                 <span>
                     {{ t('dialog.gallery_icons.gallery') }}

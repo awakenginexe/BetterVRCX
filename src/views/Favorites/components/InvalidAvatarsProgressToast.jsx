@@ -11,7 +11,7 @@ export default {
     setup(props) {
         return () => (
             <div class="flex flex-col gap-2 pr-1">
-                <div class="text-sm font-medium">
+                <div class="text-sm font-medium" role="status" aria-live="polite" aria-atomic="true">
                     {props.t('view.favorite.avatars.checking_progress', {
                         current: props.progress.current,
                         total: props.progress.total

@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
     selectAvatarWithoutConfirmation: vi.fn(),
     showAvatarDialog: vi.fn(),
     getAllAvatarTags: vi.fn(),
-    getAvatarTimeSpent: vi.fn(),
+    getAllAvatarTimeSpent: vi.fn(),
     virtualMeasure: vi.fn()
 }));
 
@@ -107,7 +107,7 @@ vi.mock('../../../api', () => ({
 vi.mock('../../../services/database', () => ({
     database: {
         getAllAvatarTags: (...args) => mocks.getAllAvatarTags(...args),
-        getAvatarTimeSpent: (...args) => mocks.getAvatarTimeSpent(...args),
+        getAllAvatarTimeSpent: (...args) => mocks.getAllAvatarTimeSpent(...args),
         addAvatarTag: vi.fn(),
         removeAvatarTag: vi.fn(),
         updateAvatarTagColor: vi.fn()
@@ -295,7 +295,7 @@ describe('MyAvatars.vue', () => {
         mocks.getAllAvatarTags.mockResolvedValue(
             new Map([['avtr_1', [{ tag: 'fun', color: null }]]])
         );
-        mocks.getAvatarTimeSpent.mockResolvedValue({ timeSpent: 1000 });
+        mocks.getAllAvatarTimeSpent.mockResolvedValue(new Map());
         mocks.processBulk.mockImplementation(async ({ handle, done }) => {
             handle({
                 json: [
@@ -327,6 +327,7 @@ describe('MyAvatars.vue', () => {
         expect(wrapper.find('[data-testid="table-layout"]').exists()).toBe(
             true
         );
+        expect(wrapper.get('[data-avatar-workspace]').attributes('data-avatar-workspace')).toBe('table');
     });
 
     test('persists view mode when toggled', async () => {

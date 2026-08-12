@@ -1,6 +1,9 @@
 <template>
-    <div class="x-container grid h-full min-h-0 grid-rows-[auto_1fr] gap-4 overflow-hidden" ref="containerRef">
-        <div class="flex items-center gap-2 px-0.5 pt-1.5">
+    <div
+        class="x-container grid h-full min-h-0 grid-rows-[auto_1fr] gap-4 overflow-hidden"
+        :data-avatar-workspace="viewMode"
+        ref="containerRef">
+        <div class="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/25 px-2.5 py-2">
             <ToggleGroup
                 type="single"
                 :model-value="viewMode"
