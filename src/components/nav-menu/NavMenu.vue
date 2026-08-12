@@ -1,5 +1,17 @@
 <template>
-    <Sidebar side="left" variant="sidebar" collapsible="icon">
+    <Sidebar
+        side="left"
+        variant="sidebar"
+        collapsible="icon"
+        class="bv-left-navigation"
+        aria-label="BetterVRCX navigation">
+        <SidebarHeader class="bv-nav-brand px-2 py-3">
+            <div class="flex items-center gap-3 px-2">
+                <span class="bv-nav-brand-mark" aria-hidden="true">B</span>
+                <span v-show="!isCollapsed" class="bv-nav-brand-label">BetterVRCX</span>
+            </div>
+        </SidebarHeader>
+
         <SidebarHeader v-if="showNewDashboardButton" class="px-2 py-2">
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -29,13 +41,18 @@
                                                 <SidebarMenuButton
                                                     :is-active="activeMenuIndex === item.index"
                                                     :tooltip="getItemTooltip(item)"
+                                                    :data-nav-key="item.index"
+                                                    :class="[
+                                                        'bv-nav-item bv-focus-ring',
+                                                        { 'bv-nav-item-active': activeMenuIndex === item.index }
+                                                    ]"
                                                     @click="handleMenuItemClick(item)">
                                                     <i
                                                         :class="item.icon"
                                                         class="inline-flex size-6 items-center justify-center text-lg relative">
                                                         <span
                                                             v-if="isNavItemNotified(item)"
-                                                            class="notify-dot-not-collapsed bg-red-500"
+                                                            class="notify-dot-not-collapsed bv-nav-notify-dot"
                                                             :class="{ '-right-1!': isCollapsed }"
                                                             aria-hidden="true"></span>
                                                     </i>
@@ -452,6 +469,51 @@
 </script>
 
 <style scoped>
+    .bv-nav-brand {
+        border-bottom: 1px solid var(--bv-border);
+    }
+
+    .bv-nav-brand-mark {
+        display: inline-grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border: 1px solid var(--bv-accent);
+        border-radius: 8px;
+        background: var(--bv-bg-control);
+        color: var(--bv-text-strong);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .bv-nav-brand-label {
+        color: var(--bv-text-strong);
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+    }
+
+    :deep(.bv-nav-item) {
+        min-height: 34px;
+        border-radius: 8px;
+        color: var(--bv-text-muted);
+    }
+
+    :deep(.bv-nav-item:hover) {
+        background: var(--bv-bg-hover);
+        color: var(--bv-text-strong);
+    }
+
+    :deep(.bv-nav-item-active) {
+        background: color-mix(in srgb, var(--bv-accent) 18%, var(--bv-bg-control));
+        color: var(--bv-text-strong);
+        font-weight: 700;
+    }
+
+    .bv-nav-notify-dot {
+        background: var(--bv-danger);
+    }
+
     .notify-dot-not-collapsed {
         position: absolute;
         top: 4px;

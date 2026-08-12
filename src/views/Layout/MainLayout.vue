@@ -1,21 +1,23 @@
 <template>
     <template v-if="watchState.isLoggedIn">
-        <div class="flex flex-col flex-1 h-full min-h-0 min-w-0 overflow-hidden">
+        <div class="bv-main-shell flex flex-col flex-1 h-full min-h-0 min-w-0 overflow-hidden">
             <SidebarProvider
                 :open="sidebarOpen"
                 :width="navWidth"
-                :width-icon="48"
-                class="relative flex-1 h-full min-w-0 min-h-0"
+                :width-icon="60"
+                class="bv-left-rail relative flex-1 h-full min-w-0 min-h-0"
+                data-shell-region="left-rail"
                 @update:open="handleSidebarOpenChange">
                 <NavMenu />
 
                 <div
                     v-show="sidebarOpen"
-                    class="absolute top-0 bottom-0 z-30 w-1 cursor-ew-resize select-none"
+                    class="bv-nav-resize-handle absolute top-0 bottom-0 z-30 w-1 cursor-ew-resize select-none"
                     :style="{ left: 'var(--sidebar-width)' }"
+                    aria-label="Resize navigation"
                     @pointerdown.prevent="startNavResize" />
 
-                <SidebarInset class="min-w-0 bg-sidebar">
+                <SidebarInset class="bv-center-frame min-w-0">
                     <ResizablePanelGroup
                         direction="horizontal"
                         auto-save-id="vrcx-main-layout-right-sidebar"
@@ -26,11 +28,13 @@
                         @layout="handleLayout">
                         <template #default="{ layout }">
                             <ResizablePanel :default-size="mainDefaultSize" :order="1">
-                                <RouterView v-slot="{ Component }">
-                                    <KeepAlive exclude="ChartsInstance, ChartsMutual">
-                                        <component :is="Component" />
-                                    </KeepAlive>
-                                </RouterView>
+                                <div class="bv-route-content" data-shell-region="content">
+                                    <RouterView v-slot="{ Component }">
+                                        <KeepAlive exclude="ChartsInstance, ChartsMutual">
+                                            <component :is="Component" />
+                                        </KeepAlive>
+                                    </RouterView>
+                                </div>
                             </ResizablePanel>
 
                             <ResizableHandle
@@ -46,6 +50,7 @@
                                 :collapsed-size="0"
                                 collapsible
                                 :order="2"
+                                class="bv-right-rail-panel"
                                 :style="{ maxWidth: `${asideMaxPx}px` }">
                                 <Sidebar></Sidebar>
                             </ResizablePanel>
@@ -206,3 +211,49 @@
         { immediate: true }
     );
 </script>
+
+<style scoped>
+    .bv-main-shell {
+        background: var(--bv-bg-base);
+    }
+
+    .bv-left-rail :deep([data-sidebar='sidebar']) {
+        border-right: 1px solid var(--bv-border);
+        background: var(--bv-bg-rail);
+    }
+
+    .bv-nav-resize-handle:hover,
+    .bv-nav-resize-handle:focus-visible {
+        background: var(--bv-accent);
+    }
+
+    .bv-center-frame {
+        background: var(--bv-bg-base);
+    }
+
+    .bv-route-content {
+        display: flex;
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+        padding-inline: 24px;
+    }
+
+    .bv-route-content > :deep(*) {
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+    }
+
+    .bv-right-rail-panel {
+        min-width: 60px;
+        border-left: 1px solid var(--bv-border);
+        background: var(--bv-bg-rail);
+    }
+
+    @media (min-width: 1280px) {
+        .bv-route-content {
+            padding-inline: 28px;
+        }
+    }
+</style>

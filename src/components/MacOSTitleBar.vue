@@ -3,7 +3,7 @@
         <div class="title-bar-content">
             <div class="traffic-lights-spacer"></div>
             <div class="title-bar-center">
-                <span class="app-title">VRCX</span>
+                <span class="app-title">BetterVRCX</span>
             </div>
             <div class="title-bar-right"></div>
         </div>
@@ -38,7 +38,8 @@
         user-select: none;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid transparent;
+        border-bottom: 1px solid var(--bv-border);
+        background: color-mix(in srgb, var(--bv-bg-rail) 88%, transparent);
         transition: all 0.2s ease;
     }
 
@@ -66,6 +67,7 @@
     }
 
     .app-title {
+        color: var(--bv-text-strong);
         font-size: 13px;
         font-weight: 600;
         line-height: 1;
@@ -77,35 +79,13 @@
         flex-shrink: 0;
     }
 
-    /* Light theme styles */
-    :global(html:not(.dark)) .macos-title-bar {
-        border-bottom-color: rgba(0, 0, 0, 0.06);
-    }
-
-    :global(html:not(.dark)) .macos-title-bar .app-title {
-        color: rgba(29, 29, 31, 0.9);
-    }
-
-    /* Dark theme styles */
-    :global(html.dark) .macos-title-bar {
-        border-bottom-color: rgba(255, 255, 255, 0.06);
-    }
-
-    :global(html.dark) .macos-title-bar .app-title {
-        color: rgba(245, 245, 247, 0.9);
-    }
-
     /* Hover effects */
     .macos-title-bar:hover {
         backdrop-filter: blur(30px);
         -webkit-backdrop-filter: blur(30px);
     }
 
-    :global(html:not(.dark)) .macos-title-bar:hover {
-        background-color: rgba(248, 248, 248, 0.95);
-    }
-
-    :global(html.dark) .macos-title-bar:hover {
-        background-color: rgba(30, 30, 30, 0.95);
+    .macos-title-bar:hover {
+        background: color-mix(in srgb, var(--bv-bg-control) 94%, transparent);
     }
 </style>

@@ -4,9 +4,16 @@
 
         <div
             id="x-app"
-            class="flex w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
+            class="bv-app-shell flex flex-col w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
             :class="{ 'pt-7': isMacOS }">
-            <RouterView></RouterView>
+            <header v-if="!isMacOS" class="bv-desktop-taskbar" data-shell-region="taskbar">
+                <span class="bv-eyebrow">Desktop companion</span>
+                <span class="bv-product-label">BetterVRCX</span>
+            </header>
+
+            <main class="bv-route-frame">
+                <RouterView></RouterView>
+            </main>
             <Toaster position="top-center" :theme="theme"></Toaster>
 
             <AlertDialogModal></AlertDialogModal>
@@ -78,3 +85,42 @@
         runCheckVRChatDebugLoggingFlow();
     });
 </script>
+
+<style scoped>
+    .bv-app-shell {
+        background: var(--bv-bg-base);
+        color: var(--bv-text-strong);
+    }
+
+    .bv-desktop-taskbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 42px;
+        flex: 0 0 42px;
+        padding: 0 18px;
+        border-bottom: 1px solid var(--bv-border);
+        background: var(--bv-bg-rail);
+        -webkit-app-region: drag;
+    }
+
+    .bv-product-label {
+        color: var(--bv-text-strong);
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+    }
+
+    .bv-route-frame {
+        display: flex;
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+    }
+
+    .bv-route-frame > :deep(*) {
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+    }
+</style>

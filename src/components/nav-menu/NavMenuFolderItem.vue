@@ -10,6 +10,14 @@
                         <DropdownMenuTrigger as-child>
                             <SidebarMenuButton
                                 :is-active="item.children?.some((e) => e.index === activeMenuIndex)"
+                                :class="[
+                                    'bv-nav-item bv-focus-ring',
+                                    {
+                                        'bv-nav-item-active': item.children?.some(
+                                            (entry) => entry.index === activeMenuIndex
+                                        )
+                                    }
+                                ]"
                                 :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
                                 <i
                                     :class="item.icon"
@@ -52,6 +60,14 @@
                             <CollapsibleTrigger as-child>
                                 <SidebarMenuButton
                                     :is-active="item.children?.some((e) => e.index === activeMenuIndex)"
+                                    :class="[
+                                        'bv-nav-item bv-focus-ring',
+                                        {
+                                            'bv-nav-item-active': item.children?.some(
+                                                (entry) => entry.index === activeMenuIndex
+                                            )
+                                        }
+                                    ]"
                                     :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
                                     <i
                                         :class="item.icon"

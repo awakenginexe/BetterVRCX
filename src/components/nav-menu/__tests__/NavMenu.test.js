@@ -153,6 +153,12 @@ vi.mock('../../../stores', () => ({
     })
 }));
 
+vi.mock('../../../stores/settings/notifications', () => ({
+    useNotificationsSettingsStore: () => ({
+        notificationLayout: 'sidebar'
+    })
+}));
+
 vi.mock('../../../services/config', () => ({
     default: {
         getString: (...args) => mocks.getString(...args),
@@ -320,6 +326,7 @@ describe('NavMenu.vue', () => {
         mocks.setString.mockClear();
         mocks.loadDashboards.mockClear();
         mocks.getDashboardNavDefinitions.mockClear();
+        mocks.isNavCollapsed.value = false;
         mocks.currentRoute.value = { name: 'unknown', meta: {} };
     });
 
@@ -356,5 +363,25 @@ describe('NavMenu.vue', () => {
         await target.trigger('click');
 
         expect(mocks.directAccessPaste).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the active route icon actionable when the navigation is collapsed', async () => {
+        mocks.isNavCollapsed.value = true;
+        mocks.currentRoute.value = { name: 'feed', meta: {} };
+        const wrapper = mountComponent();
+
+        await vi.waitFor(() => {
+            const feed = wrapper.get('[data-nav-key="feed"]');
+            expect(feed.classes()).toContain('bv-nav-item');
+            expect(feed.classes()).toContain('bv-nav-item-active');
+            expect(feed.find('.ri-feed-line').exists()).toBe(true);
+            expect(
+                feed.find('span:not(.notify-dot-not-collapsed)').isVisible()
+            ).toBe(false);
+        });
+
+        await wrapper.get('[data-nav-key="feed"]').trigger('click');
+
+        expect(mocks.routerPush).toHaveBeenCalledWith({ name: 'feed' });
     });
 });

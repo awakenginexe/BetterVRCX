@@ -1,6 +1,6 @@
 <template>
     <div
-        class="shrink-0 h-[22px] flex items-center bg-sidebar border-t border-border text-xs select-none overflow-hidden"
+        class="bv-status-frame shrink-0 h-[24px] flex items-center border-t text-xs select-none overflow-hidden"
         style="font-family: var(--font-mono-cjk)"
         @contextmenu.prevent>
         <ContextMenu>
@@ -783,3 +783,11 @@
         generalSettingsStore.promptProxySettings();
     }
 </script>
+
+<style scoped>
+    .bv-status-frame {
+        border-color: var(--bv-border);
+        background: var(--bv-bg-rail);
+        color: var(--bv-text-muted);
+    }
+</style>

@@ -1,10 +1,10 @@
 <template>
-    <SidebarFooter class="px-2 py-3">
+    <SidebarFooter class="bv-nav-footer px-2 py-3">
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                        <SidebarMenuButton :tooltip="t('nav_tooltip.help_support')">
+                        <SidebarMenuButton class="bv-nav-item bv-focus-ring" :tooltip="t('nav_tooltip.help_support')">
                             <i class="ri-question-line inline-flex size-6 items-center justify-center text-lg" />
                             <span v-show="!isCollapsed">{{ t('nav_tooltip.help_support') }}</span>
                         </SidebarMenuButton>
@@ -33,7 +33,10 @@
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                        <SidebarMenuButton :tooltip="t('nav_tooltip.manage')" :is-active="isSettingsRoute">
+                        <SidebarMenuButton
+                            class="bv-nav-item bv-focus-ring"
+                            :tooltip="t('nav_tooltip.manage')"
+                            :is-active="isSettingsRoute">
                             <span class="relative inline-flex size-6 items-center justify-center">
                                 <i class="ri-settings-3-line text-lg" />
                                 <span
@@ -48,14 +51,14 @@
                             <img
                                 class="h-6 w-6 cursor-pointer"
                                 :src="vrcxLogo"
-                                alt="VRCX"
+                                alt="BetterVRCX"
                                 @click="emit('open-github')" />
                             <div class="flex min-w-0 flex-col">
                                 <button
                                     type="button"
                                     class="text-left text-sm font-medium truncate flex items-center gap-1 cursor-pointer"
                                     @click="emit('open-github')">
-                                    VRCX
+                                    BetterVRCX
                                     <Heart class="text-primary fill-current stroke-none" />
                                 </button>
                                 <span class="text-xs text-muted-foreground">{{ version }}</span>
@@ -155,6 +158,7 @@
 
             <SidebarMenuItem>
                 <SidebarMenuButton
+                    class="bv-nav-item bv-focus-ring"
                     :tooltip="isCollapsed ? t('nav_tooltip.expand_menu') : t('nav_tooltip.collapse_menu')"
                     @click="emit('toggle-nav-collapse')">
                     <i class="ri-side-bar-line inline-flex size-6 items-center justify-center text-[19px]" />
@@ -272,3 +276,9 @@
         { immediate: true }
     );
 </script>
+
+<style scoped>
+    .bv-nav-footer {
+        border-top: 1px solid var(--bv-border);
+    }
+</style>

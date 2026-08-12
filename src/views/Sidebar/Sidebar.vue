@@ -1,10 +1,10 @@
 <template>
-    <div class="x-aside-container">
+    <div class="x-aside-container bv-right-sidebar" data-shell-region="right-rail">
         <div style="display: flex; align-items: baseline">
             <div class="search-container p-2 pl-0" style="flex: 1">
                 <button
                     type="button"
-                    class="border-input dark:bg-input/30 flex h-9 w-full items-center gap-2 rounded-md border bg-transparent px-3 shadow-xs transition-[color,box-shadow] hover:border-ring cursor-pointer overflow-hidden"
+                    class="bv-surface bv-focus-ring flex h-9 w-full items-center gap-2 px-3 cursor-pointer overflow-hidden"
                     @click="openQuickSearch">
                     <Search class="size-4 shrink-0 opacity-50" />
                     <span class="search-text flex-1 min-w-0 text-left text-sm text-muted-foreground truncate">{{
@@ -38,7 +38,10 @@
                                     :ariaLabel="t('side_panel.notification_center.title')"
                                     @click="isNotificationCenterOpen = !isNotificationCenterOpen">
                                     <Bell />
-                                    <span class="absolute top-1 right-1.25 size-1.5 rounded-full bg-red-500" />
+                                    <span
+                                        class="bv-status-dot absolute top-1 right-1.25"
+                                        data-status="danger"
+                                        aria-hidden="true" />
                                 </Button>
                             </TooltipWrapper>
                         </ContextMenuTrigger>
@@ -481,6 +484,11 @@
         padding-left: 8px;
     }
 
+    .bv-right-sidebar {
+        container-type: inline-size;
+        background: var(--bv-bg-rail);
+    }
+
     .sidebar-tab-count {
         font-size: 12px;
         margin-left: 8px;
@@ -497,7 +505,15 @@
     }
 
     @container (max-width: 80px) {
+        .x-aside-container {
+            padding-inline: 6px;
+        }
+
         .search-kbd {
+            display: none;
+        }
+
+        .sidebar-tab-count {
             display: none;
         }
     }
