@@ -762,7 +762,7 @@
         min-width: 0;
     }
 
-    @media (max-width: 640px) {
+    @container analytics-workspace (max-width: 42rem) {
         .analytics-workspace__filters :deep([data-slot='button']) {
             max-width: 100%;
         }
