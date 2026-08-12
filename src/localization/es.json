@@ -182,6 +182,8 @@
             "filter_placeholder": "Filtrar",
             "search_placeholder": "Buscar",
             "refresh_tooltip": "Actualizar",
+            "visible": "Visibles",
+            "unread": "No leídas",
             "filters": {
                 "requestInvite": "Solicitar Invitación",
                 "invite": "Invitación",

@@ -438,6 +438,8 @@
             "filter_placeholder": "Szűrés",
             "search_placeholder": "Keresés",
             "refresh_tooltip": "Frissítés",
+            "visible": "Látható",
+            "unread": "Olvasatlan",
             "actions": {
                 "accept": "Elfogadás",
                 "invite": "Meghívás",

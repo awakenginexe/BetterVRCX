@@ -14,7 +14,8 @@ const mocks = vi.hoisted(() => ({
     refreshInviteMessageTableData: vi.fn(),
     clearInviteImageUpload: vi.fn(),
     showFullscreenImageDialog: vi.fn(),
-    configSetString: vi.fn()
+    configSetString: vi.fn(),
+    translate: vi.fn()
 }));
 
 vi.mock('pinia', async (importOriginal) => {
@@ -27,7 +28,7 @@ vi.mock('pinia', async (importOriginal) => {
 
 vi.mock('vue-i18n', () => ({
     useI18n: () => ({
-        t: (key) => key,
+        t: (...args) => mocks.translate(...args),
         locale: ref('en')
     })
 }));
@@ -196,6 +197,13 @@ describe('Notification.vue', () => {
         mocks.clearInviteImageUpload.mockReset();
         mocks.showFullscreenImageDialog.mockReset();
         mocks.configSetString.mockReset();
+        mocks.translate.mockImplementation((key) => {
+            const translations = {
+                'view.notification.visible': 'Visible',
+                'view.notification.unread': 'Unread'
+            };
+            return translations[key] ?? key;
+        });
     });
 
     test('renders an action-oriented activity frame with visible and unread context', () => {
@@ -210,8 +218,20 @@ describe('Notification.vue', () => {
         const header = wrapper.get('.notification__page-header');
         expect(header.classes()).toContain('bv-surface');
         expect(header.get('h1').text()).toBe('nav_tooltip.notification');
-        expect(wrapper.get('.notification__visible-count').text()).toBe('2');
-        expect(wrapper.get('.notification__unread-count').text()).toBe('1');
+        expect(wrapper.get('.notification__visible-label').text()).toBe(
+            'Visible'
+        );
+        expect(wrapper.get('.notification__unread-label').text()).toBe(
+            'Unread'
+        );
+        expect(wrapper.get('.notification__visible-value').text()).toBe('2');
+        expect(wrapper.get('.notification__unread-value').text()).toBe('1');
+        expect(mocks.translate).toHaveBeenCalledWith(
+            'view.notification.visible'
+        );
+        expect(mocks.translate).toHaveBeenCalledWith(
+            'view.notification.unread'
+        );
         expect(
             wrapper.get('.notification__control-surface').classes()
         ).toContain('bv-surface-raised');
@@ -221,6 +241,16 @@ describe('Notification.vue', () => {
         expect(wrapper.get('.notification__empty-state').classes()).toContain(
             'bv-empty-state'
         );
+    });
+
+    test('does not render the notification empty state while notifications load', () => {
+        mocks.isNotificationsLoading.value = true;
+
+        const wrapper = mountNotification();
+
+        expect(
+            wrapper.find('[data-testid="notification-empty"]').exists()
+        ).toBe(false);
     });
 
     test('keeps notification filtering, persistence, refresh, and invite action wiring intact', async () => {

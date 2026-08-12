@@ -450,6 +450,8 @@
             "filter_placeholder": "篩選通知",
             "search_placeholder": "搜尋通知",
             "refresh_tooltip": "重新整理",
+            "visible": "顯示",
+            "unread": "未讀",
             "actions": {
                 "accept": "接受",
                 "invite": "邀請",

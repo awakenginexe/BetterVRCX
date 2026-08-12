@@ -450,6 +450,8 @@
             "filter_placeholder": "フィルター",
             "search_placeholder": "検索...",
             "refresh_tooltip": "更新",
+            "visible": "表示",
+            "unread": "未読",
             "actions": {
                 "accept": "受け入れる",
                 "invite": "招待する",

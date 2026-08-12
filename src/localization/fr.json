@@ -245,6 +245,8 @@
             "filter_placeholder": "Filtrer",
             "search_placeholder": "Rechercher",
             "refresh_tooltip": "Actualiser",
+            "visible": "Visibles",
+            "unread": "Non lues",
             "actions": {
                 "accept": "Accepter",
                 "invite": "Inviter",

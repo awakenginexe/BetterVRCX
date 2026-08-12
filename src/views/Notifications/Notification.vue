@@ -9,14 +9,16 @@
                 <span
                     class="notification__visible-count bv-badge"
                     data-tone="accent"
-                    :aria-label="`${t('nav_tooltip.notification')}: ${notificationDisplayData.length}`">
-                    {{ notificationDisplayData.length }}
+                    :aria-label="`${t('view.notification.visible')}: ${notificationDisplayData.length}`">
+                    <span class="notification__visible-label">{{ t('view.notification.visible') }}</span>
+                    <span class="notification__visible-value">{{ notificationDisplayData.length }}</span>
                 </span>
                 <span
                     class="notification__unread-count bv-badge"
                     data-tone="warning"
-                    :aria-label="`${t('side_panel.notification_center.title')}: ${unseenNotifications.length}`">
-                    {{ unseenNotifications.length }}
+                    :aria-label="`${t('view.notification.unread')}: ${unseenNotifications.length}`">
+                    <span class="notification__unread-label">{{ t('view.notification.unread') }}</span>
+                    <span class="notification__unread-value">{{ unseenNotifications.length }}</span>
                 </span>
             </div>
         </header>
@@ -102,7 +104,10 @@
                     </div>
                 </template>
                 <template #empty>
-                    <DataTableEmpty class="notification__empty-state bv-empty-state" :type="notificationEmptyType" />
+                    <DataTableEmpty
+                        v-if="!isNotificationsLoading"
+                        class="notification__empty-state bv-empty-state"
+                        :type="notificationEmptyType" />
                 </template>
             </DataTableLayout>
         </section>
@@ -394,8 +399,22 @@
 
     .notification__visible-count,
     .notification__unread-count {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
         color: var(--bv-text-strong);
         font-variant-numeric: tabular-nums;
+    }
+
+    .notification__visible-label,
+    .notification__unread-label {
+        color: var(--bv-text-muted);
+        font-weight: 600;
+    }
+
+    .notification__visible-value,
+    .notification__unread-value {
+        font-weight: 750;
     }
 
     .notification__table-surface {

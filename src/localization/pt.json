@@ -413,6 +413,8 @@
             "filter_placeholder": "Filtrar",
             "search_placeholder": "Pesquisar",
             "refresh_tooltip": "Atualizar",
+            "visible": "Visíveis",
+            "unread": "Não lidas",
             "actions": {
                 "accept": "Aceitar",
                 "invite": "Convidar",

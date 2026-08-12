@@ -140,7 +140,9 @@
         "notification": {
             "filter_placeholder": "Filtrovat",
             "search_placeholder": "Vyhledat",
-            "refresh_tooltip": "Obnovit"
+            "refresh_tooltip": "Obnovit",
+            "visible": "Zobrazené",
+            "unread": "Nepřečtené"
         },
         "friend_list": {
             "bulk_unfriend": "Hromadné odebrání přátel",

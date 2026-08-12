@@ -51,3 +51,53 @@ The same focused command passed after the scoped implementation: 1 test file pas
 
 - The repository had unrelated staged Task 5A changes and pre-existing untracked redesign/spec/planning documents before this task. They were left untouched and excluded from the Task 5B commit.
 - The first RED attempt exposed only a test-harness issue because the Pinia mock omitted `defineStore`; the focused mock was corrected to preserve real Pinia exports before recording the intended RED result. No production behavior was changed for that repair.
+
+## Fix round 1
+
+### Review findings disposition
+
+- Empty state during loading: fixed. The Notifications route supplies an explicit `DataTableLayout` empty slot, so it bypassed the layout's default `!loading` guard. The custom `DataTableEmpty` now uses the same `!isNotificationsLoading` condition, preserving the loading overlay without a concurrent no-data/no-matches state.
+- Visible and unread counts: fixed. Both badges now render visible localized labels and retain their counts. The route uses `view.notification.visible` and `view.notification.unread`, with values added to every shipped locale file (`cs`, `en`, `es`, `fr`, `hu`, `ja`, `ko`, `pl`, `pt`, `ru`, `th`, `vi`, `zh-CN`, and `zh-TW`); the existing locale loader continues to fall back to `en.json` for unavailable locale files.
+
+### TDD evidence
+
+#### RED
+
+```text
+npx vitest run src/views/Notifications/__tests__/Notifications.test.js
+
+Test Files  1 failed (1)
+Tests  2 failed | 9 passed (11)
+```
+
+The new label test failed because the header had only numeric badges and no visible label elements. The new loading test failed because the explicit empty slot still rendered `DataTableEmpty` while `isNotificationsLoading` was true.
+
+#### GREEN
+
+```text
+npx vitest run src/views/Notifications/__tests__/Notifications.test.js
+
+Test Files  1 passed (1)
+Tests  11 passed (11)
+```
+
+The focused suite was rerun after formatting with the same 11/11 result.
+
+### Focused verification
+
+```text
+npx vitest run src/views/GameLog/__tests__/GameLog.test.js src/views/GameLog/__tests__/GameLogSessions.test.js src/views/GameLog/__tests__/buildGameLogSessions.test.js src/views/FriendLog/__tests__/FriendLog.test.js src/views/FriendList/__tests__/FriendList.test.js src/views/Moderation/__tests__/Moderation.test.js src/views/Moderation/__tests__/columns.test.js
+
+Test Files  7 passed (7)
+Tests  36 passed (36)
+```
+
+- A JSON coverage check confirmed both new keys exist under `view.notification` in all 14 shipped locale files and are absent from the adjacent `view.moderation` sections.
+- `npx oxfmt --check` passed on all 16 changed source, test, and localization files after formatting.
+- `git diff --check` passed.
+- `npm run prod` passed: Vite transformed 4,400 modules and the license manifest contained 105 entries, 1 requiring review.
+
+### Baseline concerns
+
+- The pre-existing untracked files under `docs/` and `docs/implementation-plans/` remain untouched and are excluded from this fix commit.
+- The production build reports 1 third-party license entry requiring review; this is build output, not a notification-route regression.

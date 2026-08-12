@@ -144,7 +144,9 @@
         "notification": {
             "filter_placeholder": "필터",
             "search_placeholder": "검색",
-            "refresh_tooltip": "새로고침"
+            "refresh_tooltip": "새로고침",
+            "visible": "표시됨",
+            "unread": "읽지 않음"
         },
         "friend_list": {
             "bulk_unfriend": "친구 끊기 모드",

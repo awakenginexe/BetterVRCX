@@ -182,6 +182,8 @@
             "filter_placeholder": "Фильтр",
             "search_placeholder": "Поиск",
             "refresh_tooltip": "Обновить",
+            "visible": "Отображаемые",
+            "unread": "Непрочитанные",
             "filters": {
                 "requestInvite": "Запрос на приглашение",
                 "invite": "Приглашение",

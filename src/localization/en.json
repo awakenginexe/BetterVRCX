@@ -450,6 +450,8 @@
             "filter_placeholder": "Filter",
             "search_placeholder": "Search",
             "refresh_tooltip": "Refresh",
+            "visible": "Visible",
+            "unread": "Unread",
             "actions": {
                 "accept": "Accept",
                 "invite": "Invite",

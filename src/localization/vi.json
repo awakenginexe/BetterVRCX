@@ -133,7 +133,9 @@
         "notification": {
             "filter_placeholder": "Lọc",
             "search_placeholder": "Tìm kiếm",
-            "refresh_tooltip": "Làm mới"
+            "refresh_tooltip": "Làm mới",
+            "visible": "Hiển thị",
+            "unread": "Chưa đọc"
         },
         "friend_list": {
             "bulk_unfriend": "Chế độ xóa bạn bè hàng loạt",

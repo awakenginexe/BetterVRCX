@@ -231,6 +231,8 @@
             "filter_placeholder": "Filtruj",
             "search_placeholder": "Szukaj",
             "refresh_tooltip": "Odśwież",
+            "visible": "Widoczne",
+            "unread": "Nieprzeczytane",
             "filters": {
                 "requestInvite": "Prośba o zaproszenie",
                 "invite": "Zaproszenie",

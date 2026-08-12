@@ -285,6 +285,8 @@
             "filter_placeholder": "ฟิลเตอร์",
             "search_placeholder": "ค้นหา",
             "refresh_tooltip": "รีเฟรช",
+            "visible": "แสดงอยู่",
+            "unread": "ยังไม่ได้อ่าน",
             "filters": {
                 "requestInvite": "ขอคำเชิญ",
                 "invite": "เชิญ+",
