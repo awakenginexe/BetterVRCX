@@ -1,6 +1,12 @@
 <template>
-    <div class="relative h-full min-h-[180px]">
-        <div v-if="isEditing" class="flex h-full gap-2" :class="isVertical ? 'flex-col' : 'flex-row'">
+    <div
+        data-testid="dashboard-row"
+        :data-direction="row.direction"
+        class="dashboard-row relative h-full min-h-[180px]">
+        <div
+            v-if="isEditing"
+            class="dashboard-row__builder flex h-full gap-2"
+            :class="isVertical ? 'flex-col' : 'flex-row'">
             <DashboardPanel
                 v-for="(panelItem, panelIndex) in row.panels"
                 :key="panelIndex"
@@ -16,7 +22,7 @@
             v-else-if="row.panels.length === 2"
             :direction="isVertical ? 'vertical' : 'horizontal'"
             :auto-save-id="`dashboard-${dashboardId}-row-${rowIndex}`"
-            class="h-full min-h-[180px]">
+            class="dashboard-row__split h-full min-h-[180px]">
             <ResizablePanel :default-size="50" :min-size="20">
                 <DashboardPanel
                     :panel-data="row.panels[0]"

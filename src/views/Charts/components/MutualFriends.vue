@@ -1,16 +1,20 @@
 <template>
-    <div id="chart" class="x-container">
+    <div id="chart" class="analytics-workspace x-container">
         <div
-            class="mt-0 flex min-h-[calc(100vh-140px)] flex-col items-center justify-betweenpt-12"
+            class="analytics-workspace__content mt-0 flex min-h-0 flex-1 flex-col items-center pt-3"
             ref="mutualGraphRef">
-            <div class="flex items-center w-full">
-                <div class="options-container flex items-center gap-3 bg-transparent pb-3 shadow-none">
+            <div class="analytics-workspace__toolbar w-full">
+                <div class="analytics-workspace__title">
                     <div>
                         <TooltipWrapper
                             v-if="isFetching"
                             :content="t('view.charts.mutual_friend.actions.stop_fetching')"
                             side="top">
-                            <Button variant="destructive" :disabled="status.cancelRequested" @click="cancelFetch">
+                            <Button
+                                data-testid="mutual-friends-cancel"
+                                variant="destructive"
+                                :disabled="status.cancelRequested"
+                                @click="cancelFetch">
                                 <Spinner />
                                 {{ t('view.charts.mutual_friend.actions.stop') }}
                             </Button>
@@ -226,7 +230,8 @@
 
                     <div
                         v-if="isFetching"
-                        class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] items-center rounded-md bg-transparent p-3 w-70">
+                        aria-live="polite"
+                        class="analytics-workspace__progress grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] items-center p-3 w-70">
                         <div class="flex justify-between text-sm mb-1">
                             <span class="mr-1">{{ t('view.charts.mutual_friend.progress.friends_processed') }}</span>
                             <strong>{{ fetchState.processedFriends }} / {{ totalFriends }}</strong>
@@ -241,7 +246,7 @@
                     <div
                         v-show="!(hasFetched && !isFetching && !graphReady)"
                         ref="graphContainerRef"
-                        class="mt-3 h-[calc(100vh-260px)] min-h-[520px] w-full flex-1 rounded-lg bg-transparent"
+                        class="analytics-workspace__graph mt-3 min-h-[360px] w-full flex-1 rounded-lg bg-transparent"
                         :style="{ backgroundColor: canvasBackground }"></div>
                 </ContextMenuTrigger>
                 <ContextMenuContent v-if="contextMenuNodeId" class="min-w-40">
@@ -624,7 +629,8 @@
 
     function setMutualGraphHeight() {
         if (mutualGraphRef.value) {
-            const availableHeight = window.innerHeight - 100;
+            const parentHeight = mutualGraphRef.value.parentElement?.clientHeight || 0;
+            const availableHeight = Math.max(420, parentHeight || window.innerHeight - 100);
             mutualGraphRef.value.style.height = `${availableHeight}px`;
             mutualGraphRef.value.style.overflowY = 'auto';
         }
@@ -1345,3 +1351,20 @@
         }
     }
 </script>
+
+<style scoped>
+    .analytics-workspace__content {
+        min-height: 0;
+    }
+
+    .analytics-workspace__progress {
+        border: 1px solid var(--bv-border);
+        border-radius: 10px;
+        background: var(--bv-bg-surface);
+    }
+
+    .analytics-workspace__graph {
+        border: 1px solid var(--bv-border);
+        background: var(--bv-bg-surface);
+    }
+</style>

@@ -5,7 +5,7 @@
                 <DialogTitle>{{ t('dashboard.selector.title') }}</DialogTitle>
             </DialogHeader>
 
-            <div class="max-h-[50vh] overflow-y-auto">
+            <div data-testid="dashboard-panel-selector" class="max-h-[50vh] overflow-y-auto">
                 <!-- Widget section -->
                 <div class="mb-3">
                     <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
@@ -15,6 +15,7 @@
                         <button
                             v-for="option in widgetOptions"
                             :key="option.key"
+                            :data-panel-key="option.key"
                             type="button"
                             class="flex items-center gap-2 rounded-md border p-2 text-left text-sm hover:bg-accent cursor-pointer"
                             :class="
@@ -38,6 +39,7 @@
                         <button
                             v-for="option in panelOptions"
                             :key="option.key"
+                            :data-panel-key="option.key"
                             type="button"
                             class="flex items-center gap-2 rounded-md border p-2 text-left text-sm hover:bg-accent cursor-pointer"
                             :class="

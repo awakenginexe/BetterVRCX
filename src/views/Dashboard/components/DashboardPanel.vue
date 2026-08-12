@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex min-h-0 flex-1 overflow-hidden rounded-md border bg-card">
+    <div class="dashboard-panel-shell relative flex min-h-0 flex-1 overflow-hidden rounded-lg border bg-card">
         <template v-if="isEditing">
             <Button
                 v-if="showRemove"

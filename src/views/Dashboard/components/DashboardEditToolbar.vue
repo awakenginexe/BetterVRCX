@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
+    <div class="dashboard-builder-toolbar bv-surface-raised flex flex-wrap items-center gap-2 px-3 py-2">
         <Input
             :model-value="name"
             :placeholder="t('dashboard.toolbar.name_placeholder')"

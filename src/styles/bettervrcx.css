@@ -280,6 +280,50 @@ html.dark {
         color-mix(in srgb, var(--bv-danger) 60%, transparent);
 }
 
+.analytics-workspace {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.analytics-workspace__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--bv-border);
+    border-radius: 12px;
+    background: var(--bv-bg-control);
+}
+
+.analytics-workspace__title {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    font-weight: 650;
+}
+
+.analytics-workspace__filters {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+@media (max-width: 640px) {
+    .analytics-workspace__toolbar,
+    .analytics-workspace__filters {
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .bv-surface,
     .bv-surface-raised,

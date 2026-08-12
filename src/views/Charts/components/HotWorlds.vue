@@ -1,9 +1,9 @@
 <template>
-    <div id="chart" class="x-container">
-        <div ref="hotWorldsRef" class="pt-4">
+    <div id="chart" class="analytics-workspace x-container">
+        <div ref="hotWorldsRef" class="analytics-workspace__content pt-3">
             <BackToTop :target="hotWorldsRef" :right="30" :bottom="30" :teleport="false" />
-            <div class="options-container mt-0 flex items-center justify-between">
-                <div class="flex items-center gap-2 mb-4">
+            <div class="analytics-workspace__toolbar options-container mt-0">
+                <div class="analytics-workspace__title">
                     <span class="shrink-0">{{ t('view.charts.hot_worlds.header') }}</span>
                     <HoverCard>
                         <HoverCardTrigger as-child>
@@ -17,7 +17,7 @@
                     </HoverCard>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="analytics-workspace__filters">
                     <ToggleGroup
                         variant="outline"
                         type="single"
@@ -45,7 +45,7 @@
             </div>
 
             <template v-else>
-                <div class="mx-auto mt-3 flex max-w-[1100px] items-center gap-3">
+                <div class="analytics-workspace__stats mx-auto mt-3 flex max-w-[1100px] flex-wrap items-center gap-3">
                     <div class="flex items-center gap-2 rounded-lg border px-3 py-2">
                         <MapPin class="size-3.5 text-muted-foreground" />
                         <span class="text-sm font-medium">{{ totalVisits.toLocaleString() }}</span>
@@ -72,12 +72,15 @@
                     }}</span>
                 </div>
 
-                <div class="mx-auto mt-3 flex max-w-[1100px] gap-x-6">
+                <div
+                    data-testid="hot-worlds-ranking"
+                    class="mx-auto mt-3 flex max-w-[1100px] flex-col gap-2 lg:flex-row lg:gap-x-6">
                     <div v-for="(column, colIdx) in columns" :key="colIdx" class="min-w-0 flex-1">
                         <button
                             v-for="world in column"
                             :key="world.worldId"
                             type="button"
+                            data-testid="hot-worlds-open-detail"
                             class="group flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent cursor-pointer"
                             :class="world._rank === 1 ? 'bg-primary/[0.04]' : ''"
                             @click="openDetail(world)">
@@ -268,7 +271,8 @@
 
     function setContainerHeight() {
         if (hotWorldsRef.value) {
-            const availableHeight = window.innerHeight - 110;
+            const parentHeight = hotWorldsRef.value.parentElement?.clientHeight || 0;
+            const availableHeight = Math.max(360, parentHeight || window.innerHeight - 110);
             hotWorldsRef.value.style.height = `${availableHeight}px`;
             hotWorldsRef.value.style.overflowY = 'auto';
         }
@@ -339,3 +343,19 @@
         }
     });
 </script>
+
+<style scoped>
+    .analytics-workspace__content {
+        min-height: 0;
+    }
+
+    .analytics-workspace__stats > div {
+        background: var(--bv-bg-control);
+    }
+
+    @media (max-width: 640px) {
+        .analytics-workspace__stats > div {
+            flex: 1 1 auto;
+        }
+    }
+</style>

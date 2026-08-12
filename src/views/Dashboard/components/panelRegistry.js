@@ -49,3 +49,8 @@ export const panelComponentMap = {
         () => import('../widgets/InstanceWidget.vue')
     )
 };
+
+// The dashboard must continue to resolve every route and widget key stored in
+// persisted layouts. Keep this derived export close to the registry for audit
+// and test tooling without changing component loading behavior.
+export const panelRegistryKeys = Object.freeze(Object.keys(panelComponentMap));

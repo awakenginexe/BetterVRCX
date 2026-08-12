@@ -1,9 +1,9 @@
 <template>
-    <div id="chart" class="x-container">
-        <div ref="instanceActivityRef" class="pt-12">
+    <div id="chart" class="analytics-workspace x-container">
+        <div ref="instanceActivityRef" class="analytics-workspace__content pt-3">
             <BackToTop :target="instanceActivityRef" :right="30" :bottom="30" :teleport="false" />
-            <div class="options-container flex items-center justify-between mt-0">
-                <div class="flex items-center justify-between">
+            <div data-testid="instance-activity-toolbar" class="analytics-workspace__toolbar options-container mt-0">
+                <div class="analytics-workspace__title">
                     <span class="shrink-0">{{ t('view.charts.instance_activity.header') }}</span>
                     <HoverCard>
                         <HoverCardTrigger as-child>
@@ -25,7 +25,7 @@
                     </HoverCard>
                 </div>
 
-                <div class="flex items-center">
+                <div data-testid="instance-activity-date-controls" class="analytics-workspace__filters">
                     <TooltipWrapper :content="t('view.charts.instance_activity.refresh')" side="top">
                         <Button class="rounded-full mr-1.5" size="icon" variant="ghost" @click="reloadData">
                             <RefreshCcw />
@@ -138,8 +138,8 @@
                     </Popover>
                 </div>
             </div>
-            <div class="flex justify-center text-center">
-                <div class="text-center">
+            <div class="analytics-workspace__summary flex justify-center text-center">
+                <div class="bv-surface-raised min-w-40 px-5 py-3 text-center">
                     <div class="text-sm text-muted-foreground">
                         {{ t('view.charts.instance_activity.online_time') }}
                     </div>
@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <div ref="activityChartRef" style="width: 100%"></div>
+            <div ref="activityChartRef" class="analytics-workspace__chart" style="width: 100%"></div>
             <div v-if="!isLoading && activityData.length === 0" class="flex items-center justify-center mt-[100px]">
                 <DataTableEmpty type="nodata" />
             </div>
@@ -157,7 +157,7 @@
             <transition name="el-fade-in-linear">
                 <div
                     v-show="isDetailVisible && !isLoading && activityData.length !== 0"
-                    class="px-[400px] transition-[top] duration-300 ease-in-out">
+                    class="mx-auto max-w-[1000px] px-3 transition-[top] duration-300 ease-in-out">
                     <div class="flex items-center">
                         <Separator class="flex-1" />
                         <span class="px-2 text-muted-foreground">·</span>
@@ -232,7 +232,8 @@
      */
     function setInstanceActivityHeight() {
         if (instanceActivityRef.value) {
-            const availableHeight = window.innerHeight - 110;
+            const parentHeight = instanceActivityRef.value.parentElement?.clientHeight || 0;
+            const availableHeight = Math.max(360, parentHeight || window.innerHeight - 110);
             instanceActivityRef.value.style.height = `${availableHeight}px`;
             instanceActivityRef.value.style.overflowY = 'auto';
         }
@@ -734,3 +735,23 @@
         });
     }
 </script>
+
+<style scoped>
+    .analytics-workspace__content {
+        min-height: 0;
+    }
+
+    .analytics-workspace__summary {
+        margin: 0.5rem 0 0.75rem;
+    }
+
+    .analytics-workspace__chart {
+        min-width: 0;
+    }
+
+    @media (max-width: 640px) {
+        .analytics-workspace__filters :deep([data-slot='button']) {
+            max-width: 100%;
+        }
+    }
+</style>

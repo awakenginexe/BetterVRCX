@@ -1,5 +1,5 @@
 <template>
-    <div class="x-container flex h-full min-h-0 flex-col gap-3 py-3">
+    <div class="dashboard-workspace x-container flex h-full min-h-0 flex-col gap-3 py-3">
         <DashboardEditToolbar
             v-if="isEditing"
             v-model:name="editName"
@@ -7,7 +7,7 @@
             @cancel="handleCancelEdit"
             @delete="handleDelete" />
 
-        <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+        <div class="dashboard-workspace__canvas flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
             <template v-if="displayRows.length && !isEditing">
                 <ResizablePanelGroup direction="vertical" :auto-save-id="`dashboard-${id}`" class="flex-1 min-h-0">
                     <template v-for="(row, rowIndex) in displayRows" :key="rowIndex">
@@ -23,33 +23,35 @@
                 </ResizablePanelGroup>
             </template>
 
-            <template v-else-if="isEditing">
-                <DashboardRow
-                    v-for="(row, rowIndex) in displayRows"
-                    :key="rowIndex"
-                    :row="row"
-                    :row-index="rowIndex"
-                    :dashboard-id="id"
-                    :is-editing="true"
-                    @update-panel="handleUpdatePanel"
-                    @remove-panel="handleRemovePanel" />
+            <section v-else-if="isEditing" data-testid="dashboard-builder" class="dashboard-builder">
+                <div class="dashboard-builder__rows">
+                    <DashboardRow
+                        v-for="(row, rowIndex) in displayRows"
+                        :key="rowIndex"
+                        :row="row"
+                        :row-index="rowIndex"
+                        :dashboard-id="id"
+                        :is-editing="true"
+                        @update-panel="handleUpdatePanel"
+                        @remove-panel="handleRemovePanel" />
+                </div>
 
                 <div
-                    class="mt-auto flex min-h-[80px] flex-1 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    class="dashboard-builder__add-row mt-auto flex min-h-[112px] flex-1 items-center justify-center text-muted-foreground"
                     :class="showAddRowOptions ? 'items-start p-4' : 'cursor-pointer'"
                     @click="handleAddRowAreaClick">
                     <div v-if="showAddRowOptions" class="flex flex-wrap items-center gap-3">
-                        <span class="text-xs text-muted-foreground">{{ t('dashboard.actions.add_row') }}:</span>
+                        <span class="bv-eyebrow w-full">{{ t('dashboard.actions.add_row') }}</span>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="dashboard-builder__layout-option bv-focus-ring"
                             :title="t('dashboard.actions.add_full_row')"
                             @click.stop="handleAddRow(1)">
                             <div class="h-6 w-12 rounded bg-muted-foreground/20" />
                         </button>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="dashboard-builder__layout-option bv-focus-ring"
                             :title="t('dashboard.actions.add_split_row')"
                             @click.stop="handleAddRow(2)">
                             <div class="h-6 w-5 rounded bg-muted-foreground/20" />
@@ -57,7 +59,7 @@
                         </button>
                         <button
                             type="button"
-                            class="flex h-10 w-16 items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                            class="dashboard-builder__layout-option bv-focus-ring"
                             :title="t('dashboard.actions.add_vertical_row')"
                             @click.stop="handleAddRow(2, 'vertical')">
                             <div class="flex flex-col gap-0.5">
@@ -68,7 +70,7 @@
                     </div>
                     <Plus v-else class="size-6 opacity-50" />
                 </div>
-            </template>
+            </section>
 
             <div
                 v-else
@@ -222,3 +224,60 @@
         router.replace({ name: 'feed' });
     };
 </script>
+
+<style scoped>
+    .dashboard-workspace__canvas {
+        container-type: inline-size;
+    }
+
+    .dashboard-builder {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .dashboard-builder__rows {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .dashboard-builder__add-row {
+        border: 1px dashed color-mix(in srgb, var(--bv-accent) 38%, var(--bv-border));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--bv-bg-control) 65%, transparent);
+        transition:
+            border-color 180ms ease,
+            background-color 180ms ease;
+    }
+
+    .dashboard-builder__add-row:hover {
+        border-color: var(--bv-accent);
+        background: color-mix(in srgb, var(--bv-accent) 7%, var(--bv-bg-control));
+    }
+
+    .dashboard-builder__layout-option {
+        display: flex;
+        height: 2.75rem;
+        width: 4.5rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        border: 1px solid var(--bv-border);
+        border-radius: 8px;
+        background: var(--bv-bg-surface);
+        cursor: pointer;
+    }
+
+    .dashboard-builder__layout-option:hover {
+        border-color: var(--bv-accent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .dashboard-builder__add-row {
+            transition: none;
+        }
+    }
+</style>
