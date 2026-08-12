@@ -45,7 +45,10 @@ vi.mock('vue-sonner', () => ({
     }
 }));
 vi.mock('@/components/ui/dialog', () => ({
-    Dialog: { template: '<div><slot /></div>' }
+    Dialog: { template: '<div><slot /></div>' },
+    DialogTitle: {
+        template: '<h2 data-slot="dialog-title" v-bind="$attrs"><slot /></h2>'
+    }
 }));
 vi.mock('reka-ui', () => ({
     DialogPortal: { template: '<div><slot /></div>' },
@@ -83,11 +86,20 @@ describe('FullscreenImagePreview.vue', () => {
         expect(
             wrapper.get('[data-surface="fullscreen-image-preview"]')
         ).toBeTruthy();
+        expect(wrapper.get('[data-slot="dialog-title"]').text()).toBe('a.png');
+        expect(wrapper.get('[data-slot="dialog-title"]').classes()).toContain(
+            'sr-only'
+        );
         expect(
             wrapper
                 .get('[data-surface="fullscreen-image-toolbar"]')
                 .attributes('role')
         ).toBe('toolbar');
+        expect(
+            wrapper
+                .get('[data-surface="fullscreen-image-toolbar"]')
+                .attributes('aria-label')
+        ).toBe('dialog.gallery_select.header');
         expect(
             wrapper.get('[data-surface="fullscreen-image-stage"]')
         ).toBeTruthy();

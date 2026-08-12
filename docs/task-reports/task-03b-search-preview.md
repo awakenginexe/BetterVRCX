@@ -41,3 +41,14 @@ Result: 2 test files passed, 6 tests passed.
 ## Baseline concerns
 
 The repository-wide lint, typecheck, format-check, and full test failures remain the pre-existing baseline recorded in `docs/BASELINE_VERIFICATION.md`; this task was verified with focused tests and the production build.
+
+## Review-fix evidence
+
+- Review-fix base commit: `5f63cd69`.
+- Root cause fixed: fullscreen preview now renders the shared `DialogTitle` as a visually hidden real title inside `RekaDialogContent`, using the existing computed `imageAlt`; the toolbar now has the localized `dialog.gallery_select.header` accessible name.
+- TDD red: after adding focused assertions for the title text/visibility and toolbar accessible name, `npx vitest run src/components/__tests__/FullscreenImagePreview.test.js` failed with 1 failed and 2 passed because the title was absent.
+- TDD green: `npx vitest run src/components/__tests__/QuickSearchDialog.test.js src/components/__tests__/FullscreenImagePreview.test.js` passed with 2 test files and 6 tests.
+- `npx oxfmt src/components/FullscreenImagePreview.vue src/components/__tests__/FullscreenImagePreview.test.js`: passed.
+- `git diff --check`: passed.
+- `npm run prod`: passed; Vite transformed 4,389 modules and generated the 105-entry license manifest.
+- Click-away close and all existing image, transform, keyboard, copy, and download behavior remain unchanged.

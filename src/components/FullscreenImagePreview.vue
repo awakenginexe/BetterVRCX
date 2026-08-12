@@ -11,13 +11,15 @@
                 @click="closeDialog"
                 @open-auto-focus.prevent
                 @close-auto-focus.prevent>
+                <DialogTitle class="sr-only">{{ imageAlt }}</DialogTitle>
                 <div ref="viewerEl" class="bv-preview-surface relative h-full w-full overflow-hidden select-none">
                     <!-- toolbar -->
                     <div
                         @click.stop
                         class="bv-preview-toolbar absolute right-3 top-3 z-10 flex items-center gap-2 rounded-md px-2 py-1"
                         data-surface="fullscreen-image-toolbar"
-                        role="toolbar">
+                        role="toolbar"
+                        :aria-label="t('dialog.gallery_select.header')">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -124,7 +126,7 @@
     import { computed, onBeforeUnmount, ref, watch } from 'vue';
     import { DialogContent as RekaDialogContent, DialogOverlay as RekaDialogOverlay, DialogPortal } from 'reka-ui';
     import { Button } from '@/components/ui/button';
-    import { Dialog } from '@/components/ui/dialog';
+    import { Dialog, DialogTitle } from '@/components/ui/dialog';
     import { acquireModalPortalLayer } from '@/lib/modalPortalLayers';
     import { cn } from '@/lib/utils';
     import { storeToRefs } from 'pinia';
