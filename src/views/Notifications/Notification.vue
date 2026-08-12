@@ -1,84 +1,111 @@
 <template>
-    <div class="x-container x-container--auto-height" ref="notificationsRef">
-        <DataTableLayout
-            :table="table"
-            :loading="isNotificationsLoading"
-            auto-height
-            :page-sizes="pageSizes"
-            :total-items="totalItems"
-            :on-page-size-change="handlePageSizeChange">
-            <template #toolbar>
-                <div class="mb-2 flex justify-between items-center gap-2">
-                    <Select
-                        multiple
-                        :model-value="
-                            Array.isArray(notificationTable.filters?.[0]?.value)
-                                ? notificationTable.filters[0].value
-                                : []
-                        "
-                        @update:modelValue="handleNotificationFilterChange">
-                        <SelectTrigger class="max-w-1/2 min-w-50">
-                            <SelectValue :placeholder="t('view.notification.filter_placeholder')" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem
-                                    v-for="type in [
-                                        'requestInvite',
-                                        'invite',
-                                        'requestInviteResponse',
-                                        'inviteResponse',
-                                        'friendRequest',
-                                        'ignoredFriendRequest',
-                                        'message',
-                                        'boop',
-                                        'event.announcement',
-                                        'groupChange',
-                                        'group.announcement',
-                                        'group.informative',
-                                        'group.invite',
-                                        'group.joinRequest',
-                                        'group.transfer',
-                                        'group.queueReady',
-                                        'group.event.created',
-                                        'group.event.starting',
-                                        'moderation.warning.group',
-                                        'moderation.report.closed',
-                                        'moderation.contentrestriction',
-                                        'instance.closed',
-                                        'economy.alert',
-                                        'twitchdrop.fulfilled'
-                                    ]"
-                                    :key="type"
-                                    :value="type">
-                                    {{ t('view.notification.filters.' + type) }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <div class="flex flex-row justify-end">
-                        <InputGroupField
-                            v-model="notificationTable.filters[1].value"
-                            :placeholder="t('view.notification.search_placeholder')"
-                            clearable
-                            class="flex-[0.4] my-0 mx-2 min-w-50" />
-                        <TooltipWrapper side="bottom" :content="t('view.notification.refresh_tooltip')">
-                            <Button
-                                class="rounded-full"
-                                variant="ghost"
-                                size="icon-sm"
-                                :disabled="isNotificationsLoading"
-                                style="flex: none"
-                                :ariaLabel="t('view.notification.refresh_tooltip')"
-                                @click="refreshNotifications()">
-                                <Spinner v-if="isNotificationsLoading" />
-                                <RefreshCw v-else />
-                            </Button>
-                        </TooltipWrapper>
+    <div class="notification x-container x-container--auto-height" ref="notificationsRef">
+        <header class="notification__page-header bv-surface">
+            <div class="notification__identity">
+                <span class="bv-eyebrow">{{ t('nav_tooltip.social') }}</span>
+                <h1>{{ t('nav_tooltip.notification') }}</h1>
+            </div>
+            <div class="notification__summary" aria-live="polite">
+                <span
+                    class="notification__visible-count bv-badge"
+                    data-tone="accent"
+                    :aria-label="`${t('nav_tooltip.notification')}: ${notificationDisplayData.length}`">
+                    {{ notificationDisplayData.length }}
+                </span>
+                <span
+                    class="notification__unread-count bv-badge"
+                    data-tone="warning"
+                    :aria-label="`${t('side_panel.notification_center.title')}: ${unseenNotifications.length}`">
+                    {{ unseenNotifications.length }}
+                </span>
+            </div>
+        </header>
+
+        <section class="notification__table-surface bv-surface" :aria-label="t('nav_tooltip.notification')">
+            <DataTableLayout
+                class="notification__table bv-surface-raised"
+                :table="table"
+                :loading="isNotificationsLoading"
+                auto-height
+                :page-sizes="pageSizes"
+                :total-items="totalItems"
+                :on-page-size-change="handlePageSizeChange">
+                <template #toolbar>
+                    <div class="notification__control-surface bv-surface-raised">
+                        <Select
+                            multiple
+                            :model-value="
+                                Array.isArray(notificationTable.filters?.[0]?.value)
+                                    ? notificationTable.filters[0].value
+                                    : []
+                            "
+                            @update:modelValue="handleNotificationFilterChange">
+                            <SelectTrigger class="notification__type-filter bv-focus-ring">
+                                <SelectValue :placeholder="t('view.notification.filter_placeholder')" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem
+                                        v-for="type in [
+                                            'requestInvite',
+                                            'invite',
+                                            'requestInviteResponse',
+                                            'inviteResponse',
+                                            'friendRequest',
+                                            'ignoredFriendRequest',
+                                            'message',
+                                            'boop',
+                                            'event.announcement',
+                                            'groupChange',
+                                            'group.announcement',
+                                            'group.informative',
+                                            'group.invite',
+                                            'group.joinRequest',
+                                            'group.transfer',
+                                            'group.queueReady',
+                                            'group.event.created',
+                                            'group.event.starting',
+                                            'moderation.warning.group',
+                                            'moderation.report.closed',
+                                            'moderation.contentrestriction',
+                                            'instance.closed',
+                                            'economy.alert',
+                                            'twitchdrop.fulfilled'
+                                        ]"
+                                        :key="type"
+                                        :value="type">
+                                        {{ t('view.notification.filters.' + type) }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <div class="notification__search-actions">
+                            <InputGroupField
+                                v-model="notificationTable.filters[1].value"
+                                :placeholder="t('view.notification.search_placeholder')"
+                                clearable
+                                class="notification__search bv-focus-ring" />
+                            <TooltipWrapper side="bottom" :content="t('view.notification.refresh_tooltip')">
+                                <Button
+                                    class="notification__refresh bv-focus-ring rounded-full"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    :disabled="isNotificationsLoading"
+                                    style="flex: none"
+                                    :ariaLabel="t('view.notification.refresh_tooltip')"
+                                    @click="refreshNotifications()">
+                                    <Spinner v-if="isNotificationsLoading" />
+                                    <RefreshCw v-else />
+                                </Button>
+                            </TooltipWrapper>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </DataTableLayout>
+                </template>
+                <template #empty>
+                    <DataTableEmpty class="notification__empty-state bv-empty-state" :type="notificationEmptyType" />
+                </template>
+            </DataTableLayout>
+        </section>
         <SendInviteResponseDialog
             v-model:send-invite-response-dialog="sendInviteResponseDialog"
             v-model:sendInviteResponseDialogVisible="sendInviteResponseDialogVisible" />
@@ -107,7 +134,7 @@
         useNotificationStore,
         useVrcxStore
     } from '../../stores';
-    import { DataTableLayout } from '../../components/ui/data-table';
+    import { DataTableEmpty, DataTableLayout } from '../../components/ui/data-table';
     import { convertFileUrlToImageUrl } from '../../shared/utils';
     import { createColumns } from './columns.jsx';
     import { useVrcxVueTable } from '../../lib/table/useVrcxVueTable';
@@ -118,7 +145,7 @@
 
     const { refreshInviteMessageTableData } = useInviteStore();
     const { clearInviteImageUpload } = useGalleryStore();
-    const { notificationTable, isNotificationsLoading } = storeToRefs(useNotificationStore());
+    const { notificationTable, isNotificationsLoading, unseenNotifications } = storeToRefs(useNotificationStore());
     const {
         refreshNotifications,
         acceptFriendRequestNotification,
@@ -209,6 +236,11 @@
             }
             return true;
         });
+    });
+
+    const notificationEmptyType = computed(() => {
+        const rawData = asRawArray(notificationTable.value.data);
+        return rawData.length > 0 && notificationDisplayData.value.length === 0 ? 'nomatch' : 'nodata';
     });
 
     const columns = createColumns({
@@ -321,3 +353,115 @@
         sendInviteRequestResponseDialogVisible.value = true;
     }
 </script>
+
+<style scoped>
+    .notification {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .notification__page-header {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+    }
+
+    .notification__identity {
+        display: grid;
+        min-width: 0;
+        gap: 4px;
+    }
+
+    .notification__identity h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+
+    .notification__summary {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notification__visible-count,
+    .notification__unread-count {
+        color: var(--bv-text-strong);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .notification__table-surface {
+        flex: 1;
+        min-height: 0;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .notification__table {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .notification__control-surface {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 10px;
+        padding: 8px;
+    }
+
+    .notification__type-filter {
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .notification__search-actions {
+        display: flex;
+        min-width: 0;
+        flex: 0 1 340px;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notification__search {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .notification__empty-state {
+        min-height: 160px;
+    }
+
+    .notification__table :deep(tbody button:focus-visible),
+    .notification__table :deep(a:focus-visible) {
+        outline: 2px solid var(--bv-accent);
+        outline-offset: 2px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 760px) {
+        .notification__page-header,
+        .notification__control-surface {
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .notification__type-filter,
+        .notification__search-actions {
+            flex: 1 1 100%;
+            min-width: 0;
+        }
+
+        .notification__summary {
+            width: 100%;
+        }
+    }
+</style>

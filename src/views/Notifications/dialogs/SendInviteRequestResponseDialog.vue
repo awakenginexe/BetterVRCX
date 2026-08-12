@@ -2,12 +2,16 @@
     <Dialog
         :open="sendInviteRequestResponseDialogVisible"
         @update:open="(open) => (open ? null : cancelSendInviteRequestResponse())">
-        <DialogContent class="x-dialog sm:max-w-200">
+        <DialogContent class="x-dialog bv-dialog-shell sm:max-w-200">
             <DialogHeader>
                 <DialogTitle>{{ t('dialog.invite_request_response_message.header') }}</DialogTitle>
             </DialogHeader>
             <template v-if="isLocalUserVrcPlusSupporter">
-                <input class="inviteImageUploadButton" type="file" accept="image/*" @change="inviteImageUpload" />
+                <input
+                    class="inviteImageUploadButton bv-focus-ring"
+                    type="file"
+                    accept="image/*"
+                    @change="inviteImageUpload" />
             </template>
 
             <DataTableLayout
@@ -15,13 +19,14 @@
                 :table="inviteRequestResponseTable"
                 :loading="false"
                 :show-pagination="false"
-                :on-row-click="handleInviteRequestResponseRowClick" />
+                :on-row-click="handleInviteRequestResponseRowClick"
+                class="invite-response__table bv-surface-raised" />
 
-            <DialogFooter>
-                <Button variant="secondary" class="mr-2" @click="cancelSendInviteRequestResponse">
+            <DialogFooter class="bv-dialog-actions">
+                <Button variant="secondary" class="bv-focus-ring mr-2" @click="cancelSendInviteRequestResponse">
                     {{ t('dialog.invite_request_response_message.cancel') }}
                 </Button>
-                <Button @click="refreshInviteMessageTableData('requestResponse')">
+                <Button class="bv-focus-ring" @click="refreshInviteMessageTableData('requestResponse')">
                     {{ t('dialog.invite_request_response_message.refresh') }}
                 </Button>
             </DialogFooter>

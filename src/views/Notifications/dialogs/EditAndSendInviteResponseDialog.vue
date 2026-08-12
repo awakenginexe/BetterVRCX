@@ -2,7 +2,7 @@
     <Dialog
         :open="editAndSendInviteResponseDialog.visible"
         @update:open="(open) => (open ? null : cancelEditAndSendInviteResponse())">
-        <DialogContent>
+        <DialogContent class="bv-dialog-shell">
             <DialogHeader>
                 <DialogTitle>{{ t('dialog.edit_send_invite_response_message.header') }}</DialogTitle>
             </DialogHeader>
@@ -13,14 +13,15 @@
                 v-model="editAndSendInviteResponseDialog.newMessage"
                 :maxlength="64"
                 :rows="2"
-                class="mt-2.5"
+                class="bv-focus-ring mt-2.5"
                 placeholder=""
                 show-count />
-            <DialogFooter>
-                <Button variant="secondary" class="mr-2" @click="cancelEditAndSendInviteResponse">{{
+            <DialogFooter class="bv-dialog-actions">
+                <Button variant="secondary" class="bv-focus-ring mr-2" @click="cancelEditAndSendInviteResponse">{{
                     t('dialog.edit_send_invite_response_message.cancel')
                 }}</Button>
                 <Button
+                    class="bv-focus-ring"
                     @click="saveEditAndSendInviteResponse"
                     :disabled="!editAndSendInviteResponseDialog.newMessage"
                     >{{ t('dialog.edit_send_invite_response_message.send') }}</Button

@@ -2,7 +2,7 @@
     <Dialog
         :open="sendInviteResponseConfirmDialog.visible"
         @update:open="(open) => (open ? null : cancelInviteResponseConfirm())">
-        <DialogContent>
+        <DialogContent class="bv-dialog-shell bv-danger-zone">
             <DialogHeader>
                 <DialogTitle>{{ t('dialog.invite_response_message.header') }}</DialogTitle>
             </DialogHeader>
@@ -10,11 +10,13 @@
                 <span>{{ t('dialog.invite_response_message.confirmation') }}</span>
             </div>
 
-            <DialogFooter>
-                <Button variant="secondary" class="mr-2" @click="cancelInviteResponseConfirm">{{
+            <DialogFooter class="bv-dialog-actions bv-dialog-danger-actions">
+                <Button variant="secondary" class="bv-focus-ring mr-2" @click="cancelInviteResponseConfirm">{{
                     t('dialog.invite_response_message.cancel')
                 }}</Button>
-                <Button @click="sendInviteResponseConfirm">{{ t('dialog.invite_response_message.confirm') }}</Button>
+                <Button class="bv-focus-ring" @click="sendInviteResponseConfirm">
+                    {{ t('dialog.invite_response_message.confirm') }}
+                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
