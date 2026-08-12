@@ -1,17 +1,18 @@
 <template>
-    <div class="gallery-page x-container flex h-full min-h-0 flex-col gap-4" data-media-workspace="gallery">
-        <div class="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/25 px-2.5 py-2">
+    <div class="gallery-page x-container flex h-full min-h-0 flex-col gap-4">
+        <header class="gallery-page__header">
             <Button variant="ghost" size="sm" class="mr-3" @click="goBack">
                 <ArrowLeft />
                 {{ t('nav_tooltip.tools') }}
             </Button>
             <span class="header">{{ t('dialog.gallery_icons.header') }}</span>
-        </div>
+        </header>
         <TabsUnderline
             default-value="gallery"
             :items="galleryTabs"
             :unmount-on-hide="false"
             :aria-label="t('dialog.gallery_icons.header')"
+            class="gallery-page__tabs"
             fill>
             <template #label-gallery>
                 <span>
@@ -54,7 +55,7 @@
                 </span>
             </template>
             <template #gallery>
-                <div @dragover.prevent @drop.prevent="handleDropGallery">
+                <div class="gallery-media-panel" @dragover.prevent @drop.prevent="handleDropGallery">
                     <input
                         id="GalleryUploadButton"
                         type="file"
@@ -84,7 +85,7 @@
                         </Button>
                     </ButtonGroup>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))">
                         <Item
                             v-for="image in galleryTable"
@@ -134,7 +135,7 @@
             </template>
 
             <template #icons>
-                <div @dragover.prevent @drop.prevent="handleDropIcon">
+                <div class="gallery-media-panel" @dragover.prevent @drop.prevent="handleDropIcon">
                     <input
                         id="VRCPlusIconUploadButton"
                         type="file"
@@ -164,7 +165,7 @@
                         </Button>
                     </ButtonGroup>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))">
                         <Item
                             v-for="image in VRCPlusIconsTable"
@@ -214,7 +215,7 @@
             </template>
 
             <template #emojis>
-                <div @dragover.prevent @drop.prevent="handleDropEmoji">
+                <div class="gallery-media-panel" @dragover.prevent @drop.prevent="handleDropEmoji">
                     <input
                         id="EmojiUploadButton"
                         type="file"
@@ -306,7 +307,7 @@
                         }}</span>
                     </div>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))">
                         <Item
                             v-for="image in emojiTable"
@@ -360,7 +361,7 @@
             </template>
 
             <template #stickers>
-                <div @dragover.prevent @drop.prevent="handleDropSticker">
+                <div class="gallery-media-panel" @dragover.prevent @drop.prevent="handleDropSticker">
                     <input
                         id="StickerUploadButton"
                         type="file"
@@ -382,7 +383,7 @@
                         </Button>
                     </ButtonGroup>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))">
                         <Item
                             v-for="image in stickerTable"
@@ -424,7 +425,7 @@
             </template>
 
             <template #prints>
-                <div @dragover.prevent @drop.prevent="handleDropPrint">
+                <div class="gallery-media-panel" @dragover.prevent @drop.prevent="handleDropPrint">
                     <input
                         id="PrintUploadButton"
                         type="file"
@@ -459,7 +460,7 @@
                         </label>
                     </div>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
                         <Item
                             v-for="image in printTable"
@@ -515,7 +516,7 @@
             </template>
 
             <template #inventory>
-                <div>
+                <div class="gallery-media-panel">
                     <div class="flex items-center gap-2 flex-wrap">
                         <ButtonGroup>
                             <Button variant="outline" size="sm" @click="getInventory">
@@ -542,7 +543,7 @@
                         </Select>
                     </div>
                     <ItemGroup
-                        class="grid gap-3 mt-3"
+                        class="gallery-media-grid grid gap-3 mt-3"
                         style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))">
                         <Item
                             v-for="item in filteredInventoryTable"
@@ -1311,3 +1312,68 @@
             .catch(() => {});
     }
 </script>
+
+<style scoped>
+    .gallery-page__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 3.5rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--muted) 44%, transparent);
+    }
+
+    .gallery-page__header .header {
+        min-width: 0;
+        font-size: 1rem;
+        font-weight: 650;
+    }
+
+    .gallery-page__tabs {
+        min-height: 0;
+    }
+
+    .gallery-media-panel {
+        min-height: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--card) 94%, var(--muted));
+    }
+
+    .gallery-media-grid :deep([data-slot='item']) {
+        overflow: hidden;
+        border-color: color-mix(in srgb, var(--border) 84%, transparent);
+        background: var(--background);
+        transition:
+            border-color 180ms ease,
+            transform 180ms ease;
+    }
+
+    .gallery-media-grid :deep([data-slot='item']:hover) {
+        border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
+        transform: translateY(-1px);
+    }
+
+    .gallery-media-grid :deep(img) {
+        transition: transform 180ms ease;
+    }
+
+    .gallery-media-grid :deep([data-slot='item']:hover img) {
+        transform: scale(1.02);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .gallery-media-grid :deep([data-slot='item']),
+        .gallery-media-grid :deep(img) {
+            transition: none;
+        }
+
+        .gallery-media-grid :deep([data-slot='item']:hover),
+        .gallery-media-grid :deep([data-slot='item']:hover img) {
+            transform: none;
+        }
+    }
+</style>

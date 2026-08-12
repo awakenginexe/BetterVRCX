@@ -1,6 +1,6 @@
 <template>
-    <div class="x-container favorites-workspace" data-favorites-workspace="friends">
-        <div class="flex flex-col h-full min-h-0 pb-0">
+    <div class="x-container favorites-workspace">
+        <div class="favorites-workspace__layout flex flex-col h-full min-h-0 pb-0">
             <FavoritesToolbar
                 :sort-value="sortFavorites ? 'date' : 'name'"
                 v-model:search-query="friendFavoriteSearch"
@@ -29,8 +29,8 @@
                     :collapsed-size="0"
                     collapsible
                     :order="1">
-                    <div class="h-full pr-2 overflow-auto flex flex-col gap-4" data-favorites-group-rail>
-                        <div class="flex flex-col gap-2" data-favorites-group-source="remote">
+                    <div class="favorites-group-rail h-full pr-2 overflow-auto flex flex-col gap-4">
+                        <div class="favorites-group-section favorites-group-section--remote flex flex-col gap-2">
                             <div class="flex items-center justify-between font-semibold text-sm mb-[9px]">
                                 <span>{{ t('view.favorite.worlds.vrchat_favorites') }}</span>
                                 <TooltipWrapper side="bottom" :content="t('view.favorite.refresh_favorites_tooltip')">
@@ -125,7 +125,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2" data-favorites-group-source="local">
+                        <div class="favorites-group-section favorites-group-section--local flex flex-col gap-2">
                             <div class="flex items-center justify-between font-semibold text-sm mb-[9px]">
                                 <span>{{ t('view.favorite.worlds.local_favorites') }}</span>
                                 <Button
@@ -208,7 +208,7 @@
                 </ResizablePanel>
                 <ResizableHandle @dragging="splitterSetDragging" />
                 <ResizablePanel :order="2">
-                    <div class="flex flex-col h-full min-h-0 pl-[26px]" data-favorites-content-pane>
+                    <div class="favorites-content-pane flex flex-col h-full min-h-0 pl-[26px]">
                         <FavoritesContentHeader
                             v-model:edit-mode="friendEditMode"
                             :edit-mode-disabled="isSearchActive || (!activeRemoteGroup && !activeLocalGroupName)"

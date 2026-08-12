@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-between gap-3 mb-3 rounded-lg bg-muted/35 px-3 py-2">
+    <header class="favorites-content-header">
         <div class="flex flex-col gap-0.5 text-base font-semibold pl-0.5 [&_small]:text-xs [&_small]:font-normal">
             <slot name="title" />
         </div>
@@ -11,12 +11,14 @@
                 :ariaLabel="t('view.favorite.edit_mode')"
                 @update:modelValue="$emit('update:editMode', $event)" />
         </div>
-    </div>
-    <div class="flex items-center justify-end">
+    </header>
+    <div class="favorites-content-actions">
         <div
             v-if="editModeVisible"
-            :data-favorites-selection="hasSelection ? 'active' : 'empty'"
-            class="flex flex-wrap items-center gap-2 mb-3 rounded-md border border-border/70 bg-background/70 px-2 py-1.5">
+            class="favorites-selection-actions"
+            :class="{ 'favorites-selection-actions--active': hasSelection }"
+            role="toolbar"
+            :aria-label="t('view.favorite.edit_mode')">
             <Button size="sm" variant="outline" @click="$emit('toggle-select-all')">
                 {{ isAllSelected ? t('view.favorite.deselect_all') : t('view.favorite.select_all') }}
             </Button>

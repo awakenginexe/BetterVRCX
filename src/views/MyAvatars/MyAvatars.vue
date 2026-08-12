@@ -1,9 +1,8 @@
 <template>
     <div
-        class="x-container grid h-full min-h-0 grid-rows-[auto_1fr] gap-4 overflow-hidden"
-        :data-avatar-workspace="viewMode"
+        class="x-container my-avatars-workspace grid h-full min-h-0 grid-rows-[auto_1fr] gap-4 overflow-hidden"
         ref="containerRef">
-        <div class="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/25 px-2.5 py-2">
+        <div class="my-avatars-toolbar flex items-center gap-2" role="toolbar" :aria-label="t('nav.my_avatars')">
             <ToggleGroup
                 type="single"
                 :model-value="viewMode"
@@ -896,6 +895,27 @@
 </script>
 
 <style scoped>
+    .my-avatars-toolbar {
+        min-width: 0;
+        padding: 0.625rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--muted) 44%, transparent);
+    }
+
+    .my-avatars-workspace :deep(.avatar-card) {
+        border-color: color-mix(in srgb, var(--border) 84%, transparent);
+        background: color-mix(in srgb, var(--card) 94%, var(--muted));
+        transition:
+            border-color 180ms ease,
+            transform 180ms ease;
+    }
+
+    .my-avatars-workspace :deep(.avatar-card:hover) {
+        border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
+        transform: translateY(-1px);
+    }
+
     :deep(.avatar-table-thumbnail) {
         filter: saturate(0.8) contrast(0.8);
         transition: filter 0.2s ease;
@@ -903,5 +923,15 @@
 
     :deep(tr:hover .avatar-table-thumbnail) {
         filter: saturate(1) contrast(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .my-avatars-workspace :deep(.avatar-card) {
+            transition: none;
+        }
+
+        .my-avatars-workspace :deep(.avatar-card:hover) {
+            transform: none;
+        }
     }
 </style>

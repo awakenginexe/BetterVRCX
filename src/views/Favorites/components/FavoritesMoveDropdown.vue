@@ -1,30 +1,24 @@
 <template>
-    <DropdownMenu
-        class="ml-1.5"
-        :data-favorites-move-origin="isLocalFavorite ? 'local' : 'remote'"
-        v-model:open="moveDropdownOpen">
+    <DropdownMenu class="favorites-move-dropdown" v-model:open="moveDropdownOpen">
         <DropdownMenuTrigger as-child>
             <Button class="rounded-full w-6 h-6 text-xs" size="icon-sm" variant="ghost"
                 ><ArrowLeft class="h-4 w-4"
             /></Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent class="p-2">
-            <span style="font-weight: bold; display: block; text-align: center">
-                {{ t(tooltipContent) }}
-            </span>
+        <DropdownMenuContent class="favorites-move-menu" :aria-label="t(tooltipKey)">
+            <span class="favorites-move-menu__heading">{{ t(tooltipKey) }}</span>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-                class="my-2 mx-0"
-                v-for="groupAPI in favoriteGroupList"
-                :key="groupAPI.name"
-                v-if="isLocalFavorite || groupAPI?.name !== currentGroup?.name"
-                :data-favorites-destination="groupAPI.name"
-                :data-capacity-state="groupAPI.count >= groupAPI.capacity ? 'full' : 'available'"
-                style="display: block"
-                :disabled="groupAPI.count >= groupAPI.capacity"
-                @click="handleDropdownItemClick(groupAPI)">
-                {{ groupAPI.displayName }} ({{ groupAPI.count }} / {{ groupAPI.capacity }})
-            </DropdownMenuItem>
+            <template v-for="groupAPI in favoriteGroupList" :key="groupAPI.name">
+                <DropdownMenuItem
+                    v-if="isLocalFavorite || groupAPI.name !== currentGroup?.name"
+                    class="favorites-move-menu__destination"
+                    :class="{ 'favorites-move-menu__destination--full': groupAPI.count >= groupAPI.capacity }"
+                    :disabled="groupAPI.count >= groupAPI.capacity"
+                    @click="handleDropdownItemClick(groupAPI)">
+                    <span>{{ groupAPI.displayName }}</span>
+                    <span class="favorites-move-menu__capacity">{{ groupAPI.count }} / {{ groupAPI.capacity }}</span>
+                </DropdownMenuItem>
+            </template>
         </DropdownMenuContent>
     </DropdownMenu>
 </template>
@@ -70,8 +64,8 @@
         }
     });
 
-    const tooltipContent = computed(() =>
-        props.isLocalFavorite ? t('view.favorite.copy_tooltip') : t('view.favorite.move_tooltip')
+    const tooltipKey = computed(() =>
+        props.isLocalFavorite ? 'view.favorite.copy_tooltip' : 'view.favorite.move_tooltip'
     );
     const favoriteGroupList = computed(() => {
         const rawGroup = props.favoriteGroup;
@@ -102,13 +96,12 @@
      * @param ref
      * @param group
      */
-    function moveFavorite(ref, group) {
-        favoriteRequest.deleteFavorite({ objectId: ref.id }).then(() => {
-            favoriteRequest.addFavorite({
-                type: group.type,
-                favoriteId: ref.id,
-                tags: group.name
-            });
+    async function moveFavorite(ref, group) {
+        await favoriteRequest.deleteFavorite({ objectId: ref.id });
+        return favoriteRequest.addFavorite({
+            type: group.type,
+            favoriteId: ref.id,
+            tags: group.name
         });
     }
 
@@ -146,3 +139,40 @@
             });
     }
 </script>
+
+<style scoped>
+    .favorites-move-dropdown {
+        margin-left: 0.375rem;
+    }
+
+    .favorites-move-menu {
+        min-width: 15rem;
+        padding: 0.5rem;
+    }
+
+    .favorites-move-menu__heading {
+        display: block;
+        padding: 0.25rem 0.5rem 0.5rem;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+        font-weight: 650;
+    }
+
+    .favorites-move-menu__destination {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 0.125rem 0;
+    }
+
+    .favorites-move-menu__capacity {
+        color: var(--muted-foreground);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .favorites-move-menu__destination--full .favorites-move-menu__capacity {
+        color: var(--destructive);
+    }
+</style>

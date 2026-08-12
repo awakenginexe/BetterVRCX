@@ -9,7 +9,8 @@ vi.mock('@/components/ui/button', () => ({
     Button: {
         props: ['disabled'],
         emits: ['click'],
-        template: '<button :disabled="disabled" @click="$emit(\'click\')"><slot /></button>'
+        template:
+            '<button :disabled="disabled" @click="$emit(\'click\')"><slot /></button>'
     }
 }));
 
@@ -20,7 +21,7 @@ vi.mock('@/components/ui/switch', () => ({
 import FavoritesContentHeader from '../FavoritesContentHeader.vue';
 
 describe('FavoritesContentHeader', () => {
-    it('marks active edit selections and routes the bulk unfavorite action', async () => {
+    it('exposes edit actions as a labelled toolbar and routes bulk unfavorite', async () => {
         const wrapper = mount(FavoritesContentHeader, {
             props: {
                 editMode: true,
@@ -32,11 +33,15 @@ describe('FavoritesContentHeader', () => {
             }
         });
 
-        expect(wrapper.get('[data-favorites-selection]').attributes('data-favorites-selection')).toBe('active');
+        expect(wrapper.get('[role="toolbar"]').attributes('aria-label')).toBe(
+            'view.favorite.edit_mode'
+        );
 
         const bulkAction = wrapper
             .findAll('button')
-            .find((button) => button.text() === 'view.favorite.bulk_unfavorite');
+            .find(
+                (button) => button.text() === 'view.favorite.bulk_unfavorite'
+            );
         await bulkAction.trigger('click');
 
         expect(wrapper.emitted('bulk-unfavorite')).toEqual([[]]);

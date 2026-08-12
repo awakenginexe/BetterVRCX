@@ -1,7 +1,5 @@
 <template>
-    <div
-        data-favorites-toolbar
-        class="flex items-center justify-between gap-3 mb-3 flex-wrap rounded-lg border border-border/70 bg-muted/25 p-2.5">
+    <div class="favorites-toolbar" role="toolbar" :aria-label="t('view.favorite.worlds.search')">
         <div>
             <Select :model-value="sortValue" @update:modelValue="$emit('update:sortValue', $event)">
                 <SelectTrigger size="sm" class="min-w-[200px]">
@@ -33,7 +31,7 @@
                 </SelectContent>
             </Select>
         </div>
-        <div class="flex items-center gap-2 flex-1 min-w-70">
+        <div class="favorites-toolbar__search">
             <InputGroupSearch
                 :model-value="searchQuery"
                 class="flex-1"

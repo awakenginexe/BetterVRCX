@@ -107,7 +107,8 @@ vi.mock('../../../api', () => ({
 vi.mock('../../../services/database', () => ({
     database: {
         getAllAvatarTags: (...args) => mocks.getAllAvatarTags(...args),
-        getAllAvatarTimeSpent: (...args) => mocks.getAllAvatarTimeSpent(...args),
+        getAllAvatarTimeSpent: (...args) =>
+            mocks.getAllAvatarTimeSpent(...args),
         addAvatarTag: vi.fn(),
         removeAvatarTag: vi.fn(),
         updateAvatarTagColor: vi.fn()
@@ -327,7 +328,9 @@ describe('MyAvatars.vue', () => {
         expect(wrapper.find('[data-testid="table-layout"]').exists()).toBe(
             true
         );
-        expect(wrapper.get('[data-avatar-workspace]').attributes('data-avatar-workspace')).toBe('table');
+        expect(wrapper.get('[role="toolbar"]').attributes('aria-label')).toBe(
+            'nav.my_avatars'
+        );
     });
 
     test('persists view mode when toggled', async () => {
@@ -335,16 +338,25 @@ describe('MyAvatars.vue', () => {
         await flushAll();
 
         await wrapper.get('[data-testid="set-table"]').trigger('click');
+        await flushAll();
 
         expect(mocks.configSetString).toHaveBeenCalledWith(
             'VRCX_MyAvatarsViewMode',
             'table'
+        );
+        expect(wrapper.find('[data-testid="table-layout"]').exists()).toBe(
+            true
+        );
+        expect(wrapper.find('[data-testid="avatar-card"]').exists()).toBe(
+            false
         );
     });
 
     test('confirms and selects avatar when grid card is clicked', async () => {
         const wrapper = mount(MyAvatars);
         await flushAll();
+
+        expect(wrapper.find('[data-testid="avatar-card"]').exists()).toBe(true);
 
         await wrapper.get('[data-testid="avatar-card"]').trigger('click');
         await flushAll();
