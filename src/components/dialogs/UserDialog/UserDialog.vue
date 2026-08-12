@@ -1,5 +1,5 @@
 <template>
-    <div class="user-dialog-scrollbars flex-1 min-h-0 min-w-0 flex flex-row">
+    <div class="bv-entity-dialog user-dialog-scrollbars flex-1 min-h-0 min-w-0 flex flex-row">
         <DialogHeader class="sr-only">
             <DialogTitle>{{
                 userDialog.ref?.displayName || userDialog.id || t('dialog.user.info.header')
@@ -7,8 +7,9 @@
             <DialogDescription>{{ getUserStateText(userDialog.ref || {}) }}</DialogDescription>
         </DialogHeader>
 
-        <div class="flex-none w-77 overflow-y-auto">
+        <div class="bv-entity-dialog-rail flex-none w-77 overflow-y-auto">
             <UserSummaryHeader
+                class="bv-entity-dialog-header"
                 :get-user-state-text="getUserStateText"
                 :copy-user-display-name="copyUserDisplayName"
                 :toggle-badge-visibility="toggleBadgeVisibility"
@@ -16,8 +17,9 @@
                 :user-dialog-command="userDialogCommand" />
         </div>
 
-        <div class="flex-1 min-w-0 flex flex-col min-h-0 pl-2">
+        <div class="bv-entity-dialog-body flex-1 min-w-0 flex flex-col min-h-0 pl-2">
             <TabsUnderline
+                class="bv-entity-dialog-tabs"
                 v-model="userDialog.activeTab"
                 :items="userDialogTabs"
                 :activeColor="userDialogTabColor"

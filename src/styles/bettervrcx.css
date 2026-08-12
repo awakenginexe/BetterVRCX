@@ -234,6 +234,52 @@ html.dark {
     color: var(--bv-text-strong);
 }
 
+.bv-dialog-shell {
+    border: 1px solid var(--bv-border);
+    border-radius: 16px;
+    background-color: var(--bv-bg-surface);
+    box-shadow: 0 24px 64px rgb(0 0 0 / 45%);
+}
+
+.bv-dialog-breadcrumbs {
+    min-height: 32px;
+    padding: 2px 8px 2px 2px;
+    border: 1px solid var(--bv-border);
+    background-color: var(--bv-bg-control);
+    color: var(--bv-text-muted);
+}
+
+.bv-entity-dialog {
+    min-height: 0;
+    color: var(--bv-text-strong);
+}
+
+.bv-entity-dialog-rail {
+    flex-basis: 302px;
+    width: 302px;
+    padding-right: 16px;
+    border-right: 1px solid var(--bv-border);
+}
+
+.bv-entity-dialog-body {
+    min-width: 0;
+    min-height: 0;
+}
+
+.bv-entity-dialog-header {
+    border-bottom: 1px solid var(--bv-border);
+}
+
+.bv-entity-dialog-tabs {
+    min-width: 0;
+    min-height: 0;
+}
+
+.bv-dialog-danger-actions [data-variant='destructive'] {
+    border-inline-start: 2px solid
+        color-mix(in srgb, var(--bv-danger) 60%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .bv-surface,
     .bv-surface-raised,

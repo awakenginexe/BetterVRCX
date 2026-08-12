@@ -1,13 +1,13 @@
 <template>
-    <div class="w-223 flex-1 min-h-0 flex flex-col">
+    <div class="bv-entity-dialog w-223 flex-1 min-h-0 flex flex-col">
         <DialogHeader class="sr-only">
             <DialogTitle>{{ avatarDialog.ref?.name || t('dialog.avatar.info.header') }}</DialogTitle>
             <DialogDescription>
                 {{ avatarDialog.ref?.description || avatarDialog.ref?.name || t('dialog.avatar.info.header') }}
             </DialogDescription>
         </DialogHeader>
-        <div class="flex-1 min-h-0 flex flex-col">
-            <div class="flex flex-shrink-0">
+        <div class="bv-entity-dialog-body flex-1 min-h-0 flex flex-col">
+            <div class="bv-entity-dialog-header flex flex-shrink-0">
                 <div style="flex: none; width: 160px; height: 120px">
                     <img
                         v-if="!imageError"
@@ -241,7 +241,7 @@
                                     <Ellipsis />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
+                            <DropdownMenuContent class="bv-dialog-danger-actions">
                                 <DropdownMenuItem @click="avatarDialogCommand('Refresh')">
                                     <RefreshCw class="size-4" />
                                     {{ t('dialog.avatar.actions.refresh') }}
@@ -337,6 +337,7 @@
             </div>
 
             <TabsUnderline
+                class="bv-entity-dialog-tabs"
                 v-model="avatarDialog.activeTab"
                 :items="avatarDialogTabs"
                 :unmount-on-hide="false"

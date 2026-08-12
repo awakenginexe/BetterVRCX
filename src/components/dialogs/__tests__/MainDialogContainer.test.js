@@ -25,6 +25,7 @@ vi.mock('@/stores', () => ({
     useWorldStore: () => ({ worldDialog: { visible: false } }),
     useAvatarStore: () => ({ avatarDialog: { visible: false } }),
     useGroupStore: () => ({ groupDialog: { visible: false } }),
+    useAppearanceSettingsStore: () => ({ displayVRCProfileBackgrounds: false }),
     useInstanceStore: () => ({
         previousInstancesInfoDialog: ref({ visible: false }),
         previousInstancesListDialog: ref({ visible: false, variant: 'user' })
@@ -32,7 +33,7 @@ vi.mock('@/stores', () => ({
 }));
 vi.mock('@/components/ui/dialog', () => ({
     Dialog: { template: '<div><slot /></div>' },
-    DialogContent: { template: '<div><slot /></div>' }
+    DialogContent: { template: '<div v-bind="$attrs"><slot /></div>' }
 }));
 vi.mock('@/components/ui/breadcrumb', () => ({
     Breadcrumb: { template: '<div><slot /></div>' },
@@ -77,7 +78,7 @@ vi.mock('../PreviousInstancesDialog/PreviousInstancesListDialog.vue', () => ({
     default: { template: '<div />' }
 }));
 vi.mock('../UserDialog/UserDialog.vue', () => ({
-    default: { template: '<div data-testid="user-dialog" />' }
+    default: { template: '<div data-testid="user-dialog" v-bind="$attrs" />' }
 }));
 vi.mock('../WorldDialog/WorldDialog.vue', () => ({
     default: { template: '<div />' }
@@ -88,6 +89,15 @@ import MainDialogContainer from '../MainDialogContainer.vue';
 describe('MainDialogContainer.vue', () => {
     beforeEach(() => {
         mocks.handleBreadcrumbClick.mockClear();
+    });
+
+    it('applies the entity dialog shell to the active user dialog', () => {
+        const wrapper = mount(MainDialogContainer);
+        expect(wrapper.get('.bv-dialog-shell').exists()).toBe(true);
+        expect(wrapper.get('.bv-dialog-breadcrumbs').exists()).toBe(true);
+        expect(wrapper.get('[data-testid="user-dialog"]').classes()).toContain(
+            'bv-entity-dialog'
+        );
     });
 
     it('renders active dialog and handles breadcrumb back click', async () => {

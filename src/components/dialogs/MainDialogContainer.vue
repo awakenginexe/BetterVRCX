@@ -229,10 +229,14 @@
 
 <template>
     <Dialog v-if="isOpen" v-model:open="isOpen">
-        <DialogContent :class="dialogClass" style="top: 10vh" :show-close-button="false" :style="dialogStyle">
+        <DialogContent
+            :class="[dialogClass, 'bv-dialog-shell']"
+            style="top: 10vh"
+            :show-close-button="false"
+            :style="dialogStyle">
             <Breadcrumb
                 v-if="shouldShowBreadcrumbs"
-                class="mb-2 flex-shrink-0 rounded-xl bg-(--profile-card) w-fit pr-4">
+                class="bv-dialog-breadcrumbs mb-2 flex-shrink-0 rounded-xl bg-(--profile-card) w-fit pr-4">
                 <BreadcrumbList>
                     <TooltipWrapper :content="backCrumbLabel" :disabled="!backCrumbLabel" :delayDuration="500">
                         <Button variant="ghost" size="icon-sm" @click="handleBreadcrumbClick(dialogCrumbs.length - 2)">
@@ -334,7 +338,14 @@
                 </BreadcrumbList>
             </Breadcrumb>
 
-            <component :is="activeComponent" v-if="activeComponent" v-bind="activeComponentProps" :key="activeType" />
+            <component
+                :is="activeComponent"
+                v-if="activeComponent"
+                v-bind="activeComponentProps"
+                :class="{
+                    'bv-entity-dialog': ['user', 'world', 'avatar', 'group'].includes(activeType)
+                }"
+                :key="activeType" />
         </DialogContent>
     </Dialog>
 </template>

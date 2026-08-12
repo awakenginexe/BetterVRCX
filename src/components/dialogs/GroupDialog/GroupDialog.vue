@@ -1,5 +1,5 @@
 <template>
-    <div class="flex-1 min-h-0 min-w-0 flex flex-row">
+    <div class="bv-entity-dialog flex-1 min-h-0 min-w-0 flex flex-row">
         <DialogHeader class="sr-only">
             <DialogTitle>{{ groupDialog.ref?.name || t('dialog.group.info.header') }}</DialogTitle>
             <DialogDescription>
@@ -8,8 +8,8 @@
         </DialogHeader>
 
         <!-- Summary card -->
-        <div class="flex-none w-77 pr-4 overflow-y-auto">
-            <div class="rounded-xl bg-(--profile-card) overflow-hidden flex flex-col">
+        <div class="bv-entity-dialog-rail flex-none w-77 pr-4 overflow-y-auto">
+            <div class="bv-entity-dialog-header rounded-xl bg-(--profile-card) overflow-hidden flex flex-col">
                 <!-- Banner with icon -->
                 <div class="relative aspect-17/6">
                     <img
@@ -176,7 +176,7 @@
                                         <MoreHorizontal />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent>
+                                <DropdownMenuContent class="bv-dialog-danger-actions">
                                     <DropdownMenuItem @click="groupDialogCommand('Refresh')">
                                         <RefreshCw class="size-4" />
                                         {{ t('dialog.group.actions.refresh') }}
@@ -504,8 +504,9 @@
         </div>
 
         <!-- Right side Tabs -->
-        <div class="flex-1 min-w-0 flex flex-col min-h-0 pl-4">
+        <div class="bv-entity-dialog-body flex-1 min-w-0 flex flex-col min-h-0 pl-4">
             <TabsUnderline
+                class="bv-entity-dialog-tabs"
                 v-model="groupDialog.activeTab"
                 :items="groupDialogTabs"
                 :unmount-on-hide="false"
