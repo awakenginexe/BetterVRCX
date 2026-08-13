@@ -87,3 +87,14 @@ Build and static verification:
 - A live desktop visual/interaction pass was not performed. Task 10 should check the settings rail at narrow center-panel widths and the metadata inspector with a range of image aspect ratios and long localized labels.
 - The four broader-suite baseline failures remain outside Task 8 scope and should be repaired separately; they do not involve files changed by this implementation.
 - The build's existing single license entry requiring review remains for the release/final-verification gate.
+
+## Recovery verification and final review
+
+- Recovery checkout: Task 8 implementation and its initial report were already committed as `0d6d147a` and `22911e13`; the unrelated untracked redesign/baseline documentation was preserved and not staged.
+- Fresh required focused command: `npx vitest run src/views/Tools/__tests__/Tools.test.js src/views/Tools/components/__tests__/ToolItem.test.js src/views/Tools/__tests__/ScreenshotMetadata.test.js src/views/Settings/__tests__/Settings.test.js src/views/Settings/components/__tests__/SettingsItem.test.js` passed: 5 files, 13 tests.
+- Fresh broader command: `npx vitest run src/views/Tools src/views/Settings` reproduced four unrelated baseline failures: two stale Wrist Overlay radio-group assumptions and two Changelog dialog expectations. It otherwise passed 89 of 93 tests across 14 of 16 files; no Task 8 focused test failed.
+- Fresh static checks passed: `npx oxfmt --check` over all 18 Task 8 source/test/style files, `git diff --check 9a9faa0c..HEAD`, and `git show --check` for both original Task 8 commits.
+- Protected-contract audit passed: Screenshot Metadata and each of the eight settings tab `script setup` blocks match the Task 8 base byte-for-byte after line-ending normalization. The catalog action composables, persistence key, route/dialog/native actions, all eight tab keys, immediate setters, stores, and platform gates remain unchanged.
+- Fresh production verification passed twice: `npm run prod` transformed 4,412 modules and generated the 105-entry third-party license manifest (one pre-existing review-required entry).
+- Final manual code review found one minor presentation defect: the three Task 8 page headings used negative letter spacing. Commit `5d243776` changes those declarations to `letter-spacing: 0`; the focused suite, formatter/diff checks, and production build all passed again afterward.
+- Final Task 8 verdict: complete. No significant Task 8-specific review findings remain. This work stopped before Task 9; no remote writes were performed.
