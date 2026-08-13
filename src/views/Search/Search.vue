@@ -702,35 +702,39 @@
     .search-view__result-row {
         margin-bottom: 6px;
         padding: 9px 11px;
-        border: 1px solid var(--bv-border);
-        border-radius: 9px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-md);
+        background: var(--bv-bg-surface-raised);
         cursor: pointer;
         transition:
-            border-color 140ms ease,
-            background-color 140ms ease;
+            border-color var(--bv-duration-fast) var(--bv-ease-out),
+            background-color var(--bv-duration-fast) var(--bv-ease-out),
+            box-shadow var(--bv-duration-fast) var(--bv-ease-out);
     }
 
     .search-view__result-row:hover {
-        border-color: color-mix(in srgb, var(--bv-accent) 32%, var(--bv-border));
-        background: var(--bv-bg-hover);
+        border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, var(--bv-border-default));
+        background: var(--bv-bg-control-hover);
+        box-shadow: var(--bv-shadow-sm);
     }
 
     .search-view__result-card {
         overflow: hidden;
         padding: 0;
-        border: 1px solid var(--bv-border);
-        border-radius: 12px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
         cursor: pointer;
         transition:
-            transform 150ms ease,
-            border-color 150ms ease,
-            box-shadow 150ms ease;
+            border-color var(--bv-duration-fast) var(--bv-ease-out),
+            background-color var(--bv-duration-fast) var(--bv-ease-out),
+            box-shadow var(--bv-duration-fast) var(--bv-ease-out);
     }
 
     .search-view__result-card:hover {
-        transform: translateY(-2px);
-        border-color: color-mix(in srgb, var(--bv-accent) 38%, var(--bv-border));
-        box-shadow: 0 10px 24px rgb(0 0 0 / 20%);
+        border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, var(--bv-border-default));
+        background: var(--bv-bg-control-hover);
+        box-shadow: var(--bv-shadow-md);
     }
 
     .search-view__result-card-action {
@@ -761,7 +765,7 @@
     @media (prefers-reduced-motion: reduce) {
         .search-view__result-row,
         .search-view__result-card {
-            transition-duration: 0.01ms;
+            transition: none;
         }
 
         .search-view__result-card:hover {

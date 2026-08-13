@@ -7,19 +7,25 @@
     display: flex;
     align-items: center;
     box-sizing: border-box;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius-lg) * var(--favorites-card-scale, 1));
+    border: 1px solid var(--bv-border-default);
+    border-radius: calc(var(--bv-radius-lg) * var(--favorites-card-scale, 1));
     padding: var(--favorites-card-padding-y, 8px)
         var(--favorites-card-padding-x, 8px);
     cursor: pointer;
     width: 100%;
     min-width: var(--favorites-card-min-width, 240px);
     max-width: var(--favorites-card-target-width, 320px);
+    background-color: var(--bv-bg-surface-raised);
+    transition:
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        border-color var(--bv-duration-fast) var(--bv-ease-out),
+        box-shadow var(--bv-duration-fast) var(--bv-ease-out);
 }
 
 .favorites-search-card:hover {
-    background-color: var(--accent);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--bv-bg-control-hover);
+    border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, var(--bv-border-default));
+    box-shadow: var(--bv-shadow-sm);
 }
 
 .favorites-search-card__content {
@@ -33,30 +39,27 @@
 .favorites-search-card__avatar {
     width: calc(48px * var(--favorites-card-scale, 1));
     height: calc(48px * var(--favorites-card-scale, 1));
-    border-radius: calc(var(--radius-lg) * var(--favorites-card-scale, 1));
+    border-radius: calc(var(--bv-radius-md) * var(--favorites-card-scale, 1));
+    border: 1px solid var(--bv-border-subtle);
     overflow: hidden;
     flex-shrink: 0;
+    background-color: var(--bv-bg-surface-base);
 }
 
 .favorites-search-card__avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: saturate(0.8) contrast(0.8);
-    transition: filter 0.2s ease;
-}
-
-.favorites-search-card:hover .favorites-search-card__avatar img {
-    filter: saturate(1) contrast(1);
+    display: block;
 }
 
 .favorites-search-card__avatar.is-empty {
     background: repeating-linear-gradient(
         -45deg,
-        rgba(148, 163, 184, 0.25),
-        rgba(148, 163, 184, 0.25) 10px,
-        rgba(255, 255, 255, 0.35) 10px,
-        rgba(255, 255, 255, 0.35) 20px
+        rgba(148, 163, 184, 0.15),
+        rgba(148, 163, 184, 0.15) 10px,
+        rgba(255, 255, 255, 0.08) 10px,
+        rgba(255, 255, 255, 0.08) 20px
     );
 }
 
@@ -70,6 +73,7 @@
 
 .favorites-search-card__detail .name {
     font-weight: 600;
+    color: var(--bv-text-strong);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -77,6 +81,7 @@
 
 .favorites-search-card__detail .extra {
     font-size: calc(12px * var(--favorites-card-scale, 1));
+    color: var(--bv-text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -908,6 +908,56 @@ html.dark {
 }
 
 /* ==========================================================================
+   Discovery & Media Card Primitives (Worlds / Avatars / Search)
+   ========================================================================== */
+
+.bv-discovery-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background-color: var(--bv-bg-surface-raised);
+    color: var(--bv-text-strong);
+    cursor: pointer;
+    transition:
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        border-color var(--bv-duration-fast) var(--bv-ease-out),
+        box-shadow var(--bv-duration-fast) var(--bv-ease-out);
+}
+
+.bv-discovery-card:hover {
+    background-color: var(--bv-bg-control-hover);
+    border-color: color-mix(
+        in srgb,
+        var(--bv-accent-primary) 35%,
+        var(--bv-border-default)
+    );
+    box-shadow: var(--bv-shadow-md);
+}
+
+.bv-discovery-card:active {
+    background-color: var(--bv-bg-control-active);
+    border-color: var(--bv-accent-primary);
+}
+
+.bv-card-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--bv-radius-md);
+    background-color: var(--bv-bg-surface-base);
+}
+
+.bv-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ==========================================================================
    Motion System: Vue Transitions & Animations
    ========================================================================== */
 
@@ -1077,6 +1127,10 @@ html.dark {
     .bv-nav-item,
     .bv-nav-sub-item,
     .bv-skeleton,
+    .bv-discovery-card,
+    .bv-entity-card,
+    .bv-entity-item-card,
+    .bv-friend-row,
     [class*='bv-transition-'] {
         animation: none !important;
         scroll-behavior: auto !important;

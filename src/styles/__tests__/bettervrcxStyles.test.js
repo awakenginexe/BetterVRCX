@@ -201,4 +201,13 @@ describe('BetterVRCX stylesheet contract', () => {
             expect(stylesheet).toContain(cls);
         }
     });
+
+    test('provides shared discovery and media card classes', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const discoveryClasses = ['.bv-discovery-card', '.bv-card-media'];
+
+        for (const cls of discoveryClasses) {
+            expect(stylesheet).toContain(cls);
+        }
+    });
 });

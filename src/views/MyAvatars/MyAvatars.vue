@@ -898,31 +898,30 @@
     .my-avatars-toolbar {
         min-width: 0;
         padding: 0.625rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        background: color-mix(in srgb, var(--muted) 44%, transparent);
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-control);
     }
 
     .my-avatars-workspace :deep(.avatar-card) {
-        border-color: color-mix(in srgb, var(--border) 84%, transparent);
-        background: color-mix(in srgb, var(--card) 94%, var(--muted));
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
         transition:
-            border-color 180ms ease,
-            transform 180ms ease;
+            border-color var(--bv-duration-fast) var(--bv-ease-out),
+            background-color var(--bv-duration-fast) var(--bv-ease-out),
+            box-shadow var(--bv-duration-fast) var(--bv-ease-out);
     }
 
     .my-avatars-workspace :deep(.avatar-card:hover) {
-        border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
-        transform: translateY(-1px);
+        border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, var(--bv-border-default));
+        background: var(--bv-bg-control-hover);
+        box-shadow: var(--bv-shadow-sm);
     }
 
     :deep(.avatar-table-thumbnail) {
-        filter: saturate(0.8) contrast(0.8);
-        transition: filter 0.2s ease;
-    }
-
-    :deep(tr:hover .avatar-table-thumbnail) {
-        filter: saturate(1) contrast(1);
+        display: block;
+        object-fit: cover;
     }
 
     @media (prefers-reduced-motion: reduce) {

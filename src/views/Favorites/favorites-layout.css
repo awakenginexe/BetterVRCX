@@ -17,9 +17,9 @@
     gap: 0.75rem;
     margin-bottom: 0.75rem;
     padding: 0.625rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--muted) 56%, transparent);
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background: var(--bv-bg-control);
 }
 
 .favorites-toolbar__search {
@@ -32,9 +32,9 @@
 
 .favorites-splitter {
     overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--background);
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background: var(--bv-bg-base);
 }
 
 .favorites-splitter [data-slot='resizable-handle'] {
@@ -45,64 +45,56 @@
 .favorites-splitter [data-slot='resizable-handle']::after {
     width: 2px;
     border-radius: 999px;
-    background: var(--border);
-    transition: background-color 180ms ease;
+    background: var(--bv-border-default);
+    transition: background-color var(--bv-duration-fast) var(--bv-ease-out);
 }
 
 .favorites-splitter [data-slot='resizable-handle']:hover::after,
 .favorites-splitter [data-slot='resizable-handle']:focus-visible::after {
-    background: var(--primary);
+    background: var(--bv-accent-primary);
 }
 
 .favorites-group-rail {
     padding: 0.75rem;
-    background: color-mix(in srgb, var(--muted) 44%, transparent);
+    background: var(--bv-bg-rail);
 }
 
 .favorites-group-section + .favorites-group-section {
     padding-top: 0.875rem;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--bv-border-subtle);
 }
 
 .group-item {
-    --favorites-group-accent: var(--border);
+    --favorites-group-accent: var(--bv-border-default);
 
     border: 1px solid
-        color-mix(in srgb, var(--favorites-group-accent) 36%, var(--border));
-    border-radius: var(--radius-lg);
+        color-mix(in srgb, var(--favorites-group-accent) 40%, var(--bv-border-default));
+    border-radius: var(--bv-radius-lg);
     padding: 0.625rem;
     cursor: pointer;
-    background: color-mix(
-        in srgb,
-        var(--favorites-group-accent) 5%,
-        var(--background)
-    );
+    background: var(--bv-bg-surface-base);
     transition:
-        background-color 180ms ease,
-        border-color 180ms ease,
-        transform 180ms ease;
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        border-color var(--bv-duration-fast) var(--bv-ease-out),
+        box-shadow var(--bv-duration-fast) var(--bv-ease-out);
 }
 
 .group-item:hover {
     border-color: color-mix(
         in srgb,
         var(--favorites-group-accent) 70%,
-        var(--border)
+        var(--bv-border-strong)
     );
-    background: color-mix(
-        in srgb,
-        var(--favorites-group-accent) 12%,
-        var(--background)
-    );
-    transform: translateY(-1px);
+    background: var(--bv-bg-control-hover);
+    box-shadow: var(--bv-shadow-sm);
 }
 
 .group-item.is-active {
     border-color: var(--favorites-group-accent);
     background: color-mix(
         in srgb,
-        var(--favorites-group-accent) 17%,
-        var(--background)
+        var(--favorites-group-accent) 15%,
+        var(--bv-bg-surface-raised)
     );
 }
 
@@ -118,7 +110,7 @@
 
 .favorites-content-pane {
     padding: 0.875rem 0.875rem 0.875rem 1.25rem;
-    background: var(--background);
+    background: var(--bv-bg-base);
 }
 
 .favorites-content-header {
@@ -128,20 +120,21 @@
     gap: 0.75rem;
     margin-bottom: 0.75rem;
     padding: 0.75rem 0.875rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--muted) 38%, transparent);
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background: var(--bv-bg-control);
 }
 
 .favorites-content-header > :first-child {
     min-width: 0;
     font-size: 1rem;
     font-weight: 650;
+    color: var(--bv-text-strong);
 }
 
 .favorites-content-header small {
     margin-left: 0.375rem;
-    color: var(--muted-foreground);
+    color: var(--bv-text-muted);
     font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
 }
@@ -158,14 +151,14 @@
     gap: 0.5rem;
     margin-bottom: 0.75rem;
     padding: 0.375rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--muted);
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-md);
+    background: var(--bv-bg-control);
 }
 
 .favorites-selection-actions--active {
-    border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
-    background: color-mix(in srgb, var(--primary) 8%, var(--muted));
+    border-color: color-mix(in srgb, var(--bv-accent-primary) 55%, var(--bv-border-default));
+    background: color-mix(in srgb, var(--bv-accent-primary) 8%, var(--bv-bg-control));
 }
 
 .favorites-search-grid,
@@ -185,23 +178,25 @@
 
 .favorites-card-list .favorites-item {
     min-height: 5.75rem;
-    border-color: color-mix(in srgb, var(--border) 84%, transparent);
-    background: color-mix(in srgb, var(--card) 92%, var(--muted));
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background: var(--bv-bg-surface-raised);
     transition:
-        border-color 180ms ease,
-        background-color 180ms ease,
-        transform 180ms ease;
+        border-color var(--bv-duration-fast) var(--bv-ease-out),
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        box-shadow var(--bv-duration-fast) var(--bv-ease-out);
 }
 
 .favorites-card-list .favorites-item:hover {
-    border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
-    background: color-mix(in srgb, var(--primary) 6%, var(--card));
-    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, var(--bv-border-default));
+    background: var(--bv-bg-control-hover);
+    box-shadow: var(--bv-shadow-sm);
 }
 
 .favorites-search-card {
-    border-color: color-mix(in srgb, var(--border) 84%, transparent);
-    background: color-mix(in srgb, var(--card) 92%, var(--muted));
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-lg);
+    background: var(--bv-bg-surface-raised);
 }
 
 @media (max-width: 720px) {
