@@ -1,6 +1,6 @@
 <template>
     <!--//- Pictures | Screenshot Helper-->
-    <div class="settings-tab-stack flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <SettingsGroup :title="t('view.settings.advanced.advanced.screenshot_helper.header')">
             <template #description>
                 {{ t('view.settings.advanced.advanced.screenshot_helper.description') }}

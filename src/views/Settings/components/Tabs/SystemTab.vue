@@ -1,5 +1,5 @@
 <template>
-    <div class="settings-tab-stack flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <SettingsGroup :title="t('view.settings.general.general.header')">
             <div class="flex flex-col gap-0.5 px-1 py-1">
                 <div class="flex-1">

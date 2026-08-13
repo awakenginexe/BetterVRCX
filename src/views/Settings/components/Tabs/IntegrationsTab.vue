@@ -1,5 +1,5 @@
 <template>
-    <div class="settings-tab-stack flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <!-- Discord Rich Presence -->
         <SettingsGroup :title="t('view.settings.discord_presence.discord_presence.header')">
             <template #description>

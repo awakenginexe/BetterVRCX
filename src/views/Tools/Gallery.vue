@@ -1320,15 +1320,16 @@
         gap: 0.5rem;
         min-height: 3.5rem;
         padding: 0.5rem 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        background: color-mix(in srgb, var(--muted) 44%, transparent);
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
     }
 
     .gallery-page__header .header {
         min-width: 0;
-        font-size: 1rem;
-        font-weight: 650;
+        color: var(--bv-text-strong);
+        font-size: var(--bv-text-base);
+        font-weight: var(--bv-weight-semibold);
     }
 
     .gallery-page__tabs {
@@ -1338,42 +1339,29 @@
     .gallery-media-panel {
         min-height: 100%;
         padding: 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        background: color-mix(in srgb, var(--card) 94%, var(--muted));
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface);
     }
 
     .gallery-media-grid :deep([data-slot='item']) {
         overflow: hidden;
-        border-color: color-mix(in srgb, var(--border) 84%, transparent);
-        background: var(--background);
+        border-color: var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
         transition:
-            border-color 180ms ease,
-            transform 180ms ease;
+            border-color var(--bv-motion-duration-fast) var(--bv-motion-ease-standard),
+            background-color var(--bv-motion-duration-fast) var(--bv-motion-ease-standard);
     }
 
     .gallery-media-grid :deep([data-slot='item']:hover) {
-        border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
-        transform: translateY(-1px);
-    }
-
-    .gallery-media-grid :deep(img) {
-        transition: transform 180ms ease;
-    }
-
-    .gallery-media-grid :deep([data-slot='item']:hover img) {
-        transform: scale(1.02);
+        border-color: var(--bv-border-strong);
+        background: var(--bv-bg-hover);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .gallery-media-grid :deep([data-slot='item']),
-        .gallery-media-grid :deep(img) {
+        .gallery-media-grid :deep([data-slot='item']) {
             transition: none;
-        }
-
-        .gallery-media-grid :deep([data-slot='item']:hover),
-        .gallery-media-grid :deep([data-slot='item']:hover img) {
-            transform: none;
         }
     }
 </style>

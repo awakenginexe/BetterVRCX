@@ -47,11 +47,11 @@
 <style scoped>
     .settings-item {
         display: flex;
-        min-height: 48px;
+        min-height: 44px;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        padding: 8px 2px;
+        gap: 18px;
+        padding: 6px 2px;
     }
 
     .settings-item__copy {
@@ -66,7 +66,8 @@
 
     .settings-item__label {
         color: var(--bv-text-strong);
-        font-size: 12px;
+        font-size: var(--bv-text-xs);
+        font-weight: var(--bv-weight-medium);
         line-height: 1.4;
     }
 
@@ -74,7 +75,7 @@
         max-width: 68ch;
         margin-top: 2px;
         color: var(--bv-text-muted);
-        font-size: 11px;
+        font-size: var(--bv-text-xxs);
         line-height: 1.45;
     }
 
@@ -90,26 +91,26 @@
         width: 24px;
         height: 24px;
         place-items: center;
-        border: 1px solid var(--bv-border);
-        border-radius: 7px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-sm);
         background: var(--bv-bg-control);
         color: var(--bv-text-muted);
         font-size: 13px;
     }
 
     .settings-item__intent[data-setting-intent='restart'] {
-        border-color: color-mix(in srgb, var(--bv-warning) 55%, var(--bv-border));
+        border-color: color-mix(in srgb, var(--bv-warning) 55%, var(--bv-border-default));
         color: var(--bv-warning);
     }
 
     .settings-item__intent[data-setting-intent='platform'],
     .settings-item__intent[data-setting-intent='credential'] {
-        border-color: color-mix(in srgb, var(--bv-info) 50%, var(--bv-border));
+        border-color: color-mix(in srgb, var(--bv-info) 50%, var(--bv-border-default));
         color: var(--bv-info);
     }
 
     .settings-item__intent[data-setting-intent='destructive'] {
-        border-color: color-mix(in srgb, var(--bv-danger) 55%, var(--bv-border));
+        border-color: color-mix(in srgb, var(--bv-danger) 55%, var(--bv-border-default));
         background: color-mix(in srgb, var(--bv-danger) 8%, var(--bv-bg-control));
         color: var(--bv-danger);
     }

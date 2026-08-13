@@ -148,14 +148,14 @@
     .settings-page__header {
         flex: 0 0 auto;
         padding-bottom: 12px;
-        border-bottom: 1px solid var(--bv-border);
+        border-bottom: 1px solid var(--bv-border-default);
     }
 
     .settings-page__header h1 {
         margin: 0;
         color: var(--bv-text-strong);
-        font-size: 20px;
-        font-weight: 700;
+        font-size: var(--bv-text-xl);
+        font-weight: var(--bv-weight-bold);
         letter-spacing: 0;
     }
 
@@ -163,7 +163,7 @@
         display: block;
         margin-top: 2px;
         color: var(--bv-text-muted);
-        font-size: 12px;
+        font-size: var(--bv-text-xs);
     }
 
     .settings-page__layout {
@@ -179,6 +179,9 @@
         min-height: 0;
         overflow-y: auto;
         padding: 8px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
     }
 
     .settings-page__nav {
@@ -195,17 +198,18 @@
 
     .settings-page__nav-section + .settings-page__nav-section {
         padding-top: 10px;
-        border-top: 1px solid var(--bv-border);
+        border-top: 1px solid var(--bv-border-default);
     }
 
     .settings-page__nav-section h2 {
         margin: 0 8px 4px;
         color: var(--bv-text-quiet);
-        font-size: 10px;
-        font-weight: 650;
+        font-size: var(--bv-text-xxs);
+        font-weight: var(--bv-weight-semibold);
     }
 
     .settings-page__nav-item {
+        position: relative;
         display: flex;
         min-height: 36px;
         cursor: pointer;
@@ -213,15 +217,15 @@
         gap: 9px;
         padding: 6px 9px;
         border: 0;
-        border-radius: 8px;
+        border-radius: var(--bv-radius-md);
         background: transparent;
         color: var(--bv-text-muted);
         font: inherit;
-        font-size: 12px;
+        font-size: var(--bv-text-xs);
         text-align: left;
         transition:
-            background-color 160ms ease,
-            color 160ms ease;
+            background-color var(--bv-motion-duration-fast) var(--bv-motion-ease-standard),
+            color var(--bv-motion-duration-fast) var(--bv-motion-ease-standard);
     }
 
     .settings-page__nav-item i {
@@ -239,7 +243,7 @@
     .settings-page__nav-item--active {
         background: color-mix(in srgb, var(--bv-accent) 13%, var(--bv-bg-control));
         color: var(--bv-text-strong);
-        font-weight: 650;
+        font-weight: var(--bv-weight-semibold);
     }
 
     .settings-page__nav-item--active i {
@@ -287,7 +291,7 @@
         .settings-page__nav-section + .settings-page__nav-section {
             padding: 0 0 0 8px;
             border-top: 0;
-            border-left: 1px solid var(--bv-border);
+            border-left: 1px solid var(--bv-border-default);
         }
 
         .settings-page__nav-section h2 {

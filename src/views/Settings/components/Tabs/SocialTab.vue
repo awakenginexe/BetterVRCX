@@ -1,5 +1,5 @@
 <template>
-    <div class="settings-tab-stack flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <SettingsGroup :title="t('view.settings.social.interaction.header')">
             <SettingsItem
                 :label="t('view.settings.appearance.user_dialog.recent_action_cooldown')"

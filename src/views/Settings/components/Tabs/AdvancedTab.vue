@@ -1,5 +1,5 @@
 <template>
-    <div class="settings-tab-stack flex flex-col gap-10 py-2">
+    <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <SettingsGroup :title="t('view.settings.advanced.advanced.vrchat_settings.header')">
             <SettingsItem
                 :label="t('view.settings.advanced.advanced.relaunch_vrchat.header')"

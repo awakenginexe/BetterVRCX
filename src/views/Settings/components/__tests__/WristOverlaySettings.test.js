@@ -60,23 +60,17 @@ vi.mock('@/components/ui/switch', () => ({
     }
 }));
 
-vi.mock('../../../../components/ui/radio-group', () => ({
-    RadioGroup: {
+vi.mock('@/components/ui/select', () => ({
+    Select: {
         props: ['modelValue', 'disabled'],
-        emits: ['update:modelValue'],
+        emits: ['update:modelValue', 'update:model-value'],
         template:
-            '<div data-testid="radio-group" :data-disabled="disabled"><button data-testid="radio-false" @click="$emit(\'update:modelValue\', \'false\')" /><button data-testid="radio-true" @click="$emit(\'update:modelValue\', \'true\')" /><slot /></div>'
+            '<div data-testid="select" :data-disabled="disabled"><button data-testid="select-true" @click="$emit(\'update:modelValue\', \'true\')" /><button data-testid="select-hand-2" @click="$emit(\'update:model-value\', \'2\')" /><slot /></div>'
     },
-    RadioGroupItem: { template: '<div />' }
-}));
-
-vi.mock('../../../../components/ui/toggle-group', () => ({
-    ToggleGroup: {
-        emits: ['update:model-value'],
-        template:
-            '<div data-testid="toggle-group"><button data-testid="toggle-right" @click="$emit(\'update:model-value\', \'2\')" /><slot /></div>'
-    },
-    ToggleGroupItem: { template: '<div><slot /></div>' }
+    SelectTrigger: { template: '<div><slot /></div>' },
+    SelectValue: { template: '<span />' },
+    SelectContent: { template: '<div><slot /></div>' },
+    SelectItem: { template: '<div><slot /></div>' }
 }));
 
 vi.mock('../SettingsGroup.vue', () => ({
@@ -101,26 +95,26 @@ describe('WristOverlaySettings.vue', () => {
         mocks.saveOpenVROption.mockClear();
     });
 
-    it('emits open-feed-filters and handles switch/radio/toggle updates', async () => {
+    it('emits open-feed-filters and handles switch and select updates', async () => {
         const wrapper = mount(WristOverlaySettings);
 
         // Feed filters button emits event
         await wrapper.get('[data-testid="filters-btn"]').trigger('click');
         expect(wrapper.emitted('open-feed-filters')).toBeTruthy();
 
-        // First switch is now overlayWrist (SteamVR Overlay moved to VrTab)
+        // First switch is overlayWrist
         const switches = wrapper.findAll('[data-testid="switch"]');
         await switches[0].trigger('click');
         expect(mocks.wristStore.setOverlayWrist).toHaveBeenCalledTimes(1);
         expect(mocks.saveOpenVROption).toHaveBeenCalled();
 
-        // First (and only) radio group is now overlay button (Start Overlay With moved to VrTab)
-        const radioGroups = wrapper.findAll('[data-testid="radio-group"]');
-        await radioGroups[0].get('[data-testid="radio-true"]').trigger('click');
+        // Select for overlay button
+        const selects = wrapper.findAll('[data-testid="select"]');
+        await selects[0].get('[data-testid="select-true"]').trigger('click');
         expect(mocks.wristStore.setOverlaybutton).toHaveBeenCalledTimes(1);
 
-        // Toggle group for overlay hand
-        await wrapper.get('[data-testid="toggle-right"]').trigger('click');
+        // Select for overlay hand
+        await selects[1].get('[data-testid="select-hand-2"]').trigger('click');
         expect(mocks.wristStore.setOverlayHand).toHaveBeenCalledWith('2');
     });
 
@@ -128,8 +122,8 @@ describe('WristOverlaySettings.vue', () => {
         mocks.wristStore.overlaybutton.value = true;
         const wrapper = mount(WristOverlaySettings);
 
-        const firstRadio = wrapper.findAll('[data-testid="radio-group"]')[0];
-        await firstRadio.get('[data-testid="radio-true"]').trigger('click');
+        const firstSelect = wrapper.findAll('[data-testid="select"]')[0];
+        await firstSelect.get('[data-testid="select-true"]').trigger('click');
 
         expect(mocks.wristStore.setOverlaybutton).not.toHaveBeenCalled();
     });

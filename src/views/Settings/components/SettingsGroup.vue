@@ -41,46 +41,49 @@
     .settings-group__header h2 {
         margin: 0;
         color: var(--bv-text-strong);
-        font-size: 14px;
-        font-weight: 680;
+        font-size: var(--bv-text-sm);
+        font-weight: var(--bv-weight-semibold);
     }
 
     .settings-group__description {
         max-width: 72ch;
         margin-top: 3px;
         color: var(--bv-text-muted);
-        font-size: 12px;
+        font-size: var(--bv-text-xs);
         line-height: 1.5;
     }
 
     .settings-group__surface {
         padding: 0;
         overflow: hidden;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface-raised);
         box-shadow: none;
     }
 
     .settings-group[data-tone='warning'] .settings-group__surface {
-        border-color: color-mix(in srgb, var(--bv-warning) 45%, var(--bv-border));
+        border-color: color-mix(in srgb, var(--bv-warning) 45%, var(--bv-border-default));
     }
 
     .settings-group[data-tone='danger'] .settings-group__surface {
-        border-color: color-mix(in srgb, var(--bv-danger) 50%, var(--bv-border));
-        background: color-mix(in srgb, var(--bv-danger) 5%, var(--bv-bg-surface));
+        border-color: color-mix(in srgb, var(--bv-danger) 50%, var(--bv-border-default));
+        background: color-mix(in srgb, var(--bv-danger) 5%, var(--bv-bg-surface-raised));
     }
 
     .settings-group[data-tone='credential'] .settings-group__surface,
     .settings-group[data-tone='platform'] .settings-group__surface {
-        border-color: color-mix(in srgb, var(--bv-info) 38%, var(--bv-border));
+        border-color: color-mix(in srgb, var(--bv-info) 38%, var(--bv-border-default));
     }
 
     .settings-group__content {
         display: flex;
         flex-direction: column;
         gap: 0;
-        padding: 8px 14px;
+        padding: 6px 14px;
     }
 
     .settings-group__content > :deep(* + *) {
-        border-top: 1px solid color-mix(in srgb, var(--bv-border) 72%, transparent);
+        border-top: 1px solid var(--bv-border-subtle);
     }
 </style>

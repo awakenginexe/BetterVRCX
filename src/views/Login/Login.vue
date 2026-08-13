@@ -441,10 +441,10 @@
         grid-template-rows: auto auto auto;
         width: min(100%, 820px);
         padding: clamp(18px, 3vw, 30px);
-        border: 1px solid var(--bv-border);
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--bv-bg-surface) 95%, transparent);
-        box-shadow: 0 24px 64px rgb(0 0 0 / 28%);
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-xl);
+        background: var(--bv-bg-surface-raised);
+        box-shadow: var(--bv-shadow-lg);
     }
 
     .bv-login-brand {
@@ -457,16 +457,16 @@
     .bv-login-brand-mark {
         width: 46px;
         height: 46px;
-        border-radius: 8px;
+        border-radius: var(--bv-radius-lg);
         object-fit: cover;
-        box-shadow: 0 8px 20px rgb(0 0 0 / 22%);
+        box-shadow: var(--bv-shadow-md);
     }
 
     .bv-login-brand h1 {
         margin: 0;
         color: var(--bv-text-strong);
-        font-size: 23px;
-        font-weight: 760;
+        font-size: var(--bv-text-2xl);
+        font-weight: var(--bv-weight-bold);
         line-height: 1.1;
     }
 
@@ -476,9 +476,9 @@
         min-height: 340px;
         max-height: min(420px, 48svh);
         padding: 4px;
-        border: 1px solid var(--bv-border);
-        border-radius: 6px;
-        background: var(--bv-bg-control);
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: var(--bv-bg-surface);
     }
 
     .x-login-form-container:has(> div:nth-child(3)) {
@@ -504,7 +504,7 @@
         width: 100%;
         margin: 0;
         border: 0;
-        background: var(--bv-border);
+        background: var(--bv-border-default);
     }
 
     .x-saved-account-list {
