@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-full min-h-0 flex-col overflow-hidden p-2 rounded-xl bg-(--profile-card)">
+    <div class="bv-entity-card flex h-full min-h-0 flex-col overflow-hidden p-2">
         <div class="shrink-0" style="display: flex; align-items: center; justify-content: space-between">
             <div style="display: flex; align-items: center">
                 <Button
@@ -102,7 +102,7 @@
                         <div
                             v-for="group in userDialogGroupEditGroups"
                             :key="group.id"
-                            class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-full hover:rounded-[25px_5px_5px_25px]"
+                            class="bv-entity-item-card w-full text-[13px]"
                             @click="showGroupDialog(group.id)">
                             <!-- Manual checkbox -->
                             <div

@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded-xl bg-(--profile-card) overflow-hidden flex flex-col">
+    <div class="bv-entity-card overflow-hidden flex flex-col">
         <div class="relative aspect-17/6">
             <div
                 v-if="
@@ -48,14 +48,7 @@
                     <Hand class="h-6 w-6 text-red-400" />
                 </TooltipWrapper>
             </div>
-            <div
-                class="absolute bottom-0 left-3 z-10 translate-y-1/2 overflow-hidden rounded-lg"
-                style="
-                    width: 96px;
-                    height: 96px;
-                    filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.95)) drop-shadow(0 0 4px rgb(0 0 0 / 0.75))
-                        drop-shadow(0 2px 8px rgb(0 0 0 / 0.55));
-                ">
+            <div class="absolute bottom-0 left-3 z-10 translate-y-1/2 overflow-hidden bv-entity-hero-avatar size-24">
                 <Image
                     v-if="userDialog.loading || userIconError"
                     class="w-full! h-full! object-cover text-muted-foreground bg-accent" />
@@ -367,10 +360,8 @@
         </div>
     </div>
 
-    <div class="rounded-xl bg-(--profile-card) p-3 flex flex-col mt-2">
-        <div
-            class="text-[10px] font-bold uppercase tracking-wide mb-2 pb-2 border-b border-muted-foreground/20"
-            :style="{ color: userDialog.theme.subtextColor }">
+    <div class="bv-entity-card p-3 flex flex-col mt-2">
+        <div class="bv-entity-card-header" :style="{ color: userDialog.theme.subtextColor }">
             {{
                 userDialog.id !== currentUser.id &&
                 userDialog.ref.profilePicOverride &&
@@ -396,7 +387,7 @@
                 style="display: inline-block" />
             <img
                 v-if="userDialog.ref.currentAvatarThumbnailImageUrl"
-                class="h-12 w-16 rounded-lg object-cover cursor-pointer flex-none"
+                class="h-12 w-16 rounded-lg object-cover cursor-pointer flex-none border border-(--bv-border-default)"
                 :src="userDialog.ref.currentAvatarThumbnailImageUrl"
                 @click="
                     showFullscreenImageDialog(
@@ -407,10 +398,8 @@
         </div>
     </div>
 
-    <div class="rounded-xl bg-(--profile-card) p-3 flex flex-col mt-2">
-        <div
-            class="text-[10px] font-bold uppercase tracking-wide mb-2 pb-2 border-b border-muted-foreground/20"
-            :style="{ color: userDialog.theme.subtextColor }">
+    <div class="bv-entity-card p-3 flex flex-col mt-2">
+        <div class="bv-entity-card-header" :style="{ color: userDialog.theme.subtextColor }">
             {{ t('dialog.user.info.represented_group') }}
         </div>
         <div
@@ -418,7 +407,7 @@
                 userDialog.isRepresentedGroupLoading ||
                 (userDialog.representedGroup && userDialog.representedGroup.isRepresenting)
             "
-            class="flex items-center gap-2.5 cursor-pointer"
+            class="bv-friend-row gap-2.5"
             @click="showGroupDialog(userDialog.representedGroup.groupId)">
             <div class="flex-1 min-w-0">
                 <div class="text-xs font-medium truncate">
@@ -447,7 +436,7 @@
         <div class="mt-2">
             <img
                 v-if="userDialog.representedGroup.bannerUrl"
-                class="w-full rounded-lg object-cover cursor-pointer h-[80px] aspect-6/1"
+                class="w-full rounded-lg object-cover cursor-pointer h-[80px] aspect-6/1 border border-(--bv-border-default)"
                 :src="userDialog.representedGroup.bannerUrl"
                 @click="showFullscreenImageDialog(userDialog.representedGroup.bannerUrl)"
                 loading="lazy" />

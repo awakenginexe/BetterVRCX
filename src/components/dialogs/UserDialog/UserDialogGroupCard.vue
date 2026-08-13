@@ -1,7 +1,5 @@
 <template>
-    <div
-        class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-41.75 hover:rounded-[25px_5px_5px_25px]"
-        @click="handleViewDetails">
+    <div class="bv-entity-item-card w-41.75 text-[13px]" @click="handleViewDetails">
         <div class="relative inline-block flex-none size-9 mr-2.5">
             <Avatar class="size-9">
                 <AvatarImage :src="group.iconUrl" class="object-cover" />

@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-xl bg-(--profile-card) p-2">
+    <div class="bv-entity-card flex h-full min-h-0 flex-col overflow-hidden p-2">
         <div class="shrink-0" style="display: flex; align-items: center; justify-content: space-between">
             <div style="display: flex; align-items: center">
                 <Button
@@ -42,7 +42,7 @@
                 <li
                     v-for="user in filteredMutualFriends"
                     :key="user.id"
-                    class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                    class="bv-entity-item-card cursor-pointer w-[167px] text-[13px]"
                     @click="showUserDialog(user.id)">
                     <div class="relative inline-block flex-none size-9 mr-2.5">
                         <Avatar class="size-9">

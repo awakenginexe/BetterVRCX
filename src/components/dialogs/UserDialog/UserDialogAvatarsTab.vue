@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-full min-h-0 flex-col overflow-hidden p-2 rounded-xl bg-(--profile-card)">
+    <div class="bv-entity-card flex h-full min-h-0 flex-col overflow-hidden p-2">
         <div style="display: flex; align-items: center; justify-content: space-between">
             <div style="display: flex; align-items: center">
                 <Button
@@ -65,7 +65,7 @@
                 <div
                     v-for="avatar in filteredUserDialogAvatars"
                     :key="avatar.id"
-                    class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                    class="bv-entity-item-card cursor-pointer w-[167px] text-[13px]"
                     @click="showAvatarDialog(avatar.id)">
                     <div class="relative inline-block flex-none size-9 mr-2.5">
                         <Avatar class="size-9">

@@ -11,7 +11,7 @@
             @click="getUserFavoriteWorlds(userDialog.id)">
         </Button> -->
     <template v-if="userDialog.userFavoriteWorlds && userDialog.userFavoriteWorlds.length > 0">
-        <div class="flex h-full min-h-0 flex-col overflow-hidden p-2 rounded-xl bg-(--profile-card)">
+        <div class="bv-entity-card flex h-full min-h-0 flex-col overflow-hidden p-2">
             <div class="pb-2">
                 <Input v-model="searchQuery" class="h-8 w-40 shrink-0" placeholder="Search worlds" @click.stop />
             </div>
@@ -21,7 +21,7 @@
                         <div
                             v-for="world in allFilteredFavoriteWorlds"
                             :key="world.favoriteId"
-                            class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                            class="bv-entity-item-card cursor-pointer w-[167px] text-[13px]"
                             @click="showWorldDialog(world.id)">
                             <div class="relative inline-block flex-none size-9 mr-2.5">
                                 <Avatar class="size-9">
@@ -73,7 +73,7 @@
                             <div
                                 v-for="world in list[2]"
                                 :key="world.favoriteId"
-                                class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                                class="bv-entity-item-card cursor-pointer w-[167px] text-[13px]"
                                 @click="showWorldDialog(world.id)">
                                 <div class="relative inline-block flex-none size-9 mr-2.5">
                                     <Avatar class="size-9">

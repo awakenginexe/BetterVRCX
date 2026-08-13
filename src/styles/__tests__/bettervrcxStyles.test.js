@@ -181,4 +181,24 @@ describe('BetterVRCX stylesheet contract', () => {
             /\.bv-badge\[data-tone='accent'\][^{]*\{[^}]*color:\s*var\(--bv-accent-primary\)/
         );
     });
+
+    test('provides shared entity dialog and social presentation surface classes', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const entityClasses = [
+            '.bv-entity-dialog',
+            '.bv-entity-dialog-rail',
+            '.bv-entity-dialog-body',
+            '.bv-entity-dialog-header',
+            '.bv-entity-card',
+            '.bv-entity-card-header',
+            '.bv-entity-hero-avatar',
+            '.bv-entity-badge',
+            '.bv-entity-item-card',
+            '.bv-friend-row'
+        ];
+
+        for (const cls of entityClasses) {
+            expect(stylesheet).toContain(cls);
+        }
+    });
 });

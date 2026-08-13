@@ -1,8 +1,8 @@
 <template>
     <template v-if="isFriendOnline(userDialog.friend) || currentUser.id === userDialog.id">
         <div class="flex flex-col gap-2.5 mb-2.5">
-            <div class="rounded-xl bg-(--profile-card) p-3">
-                <div class="flex items-center justify-between mb-2 pb-1 border-b border-muted-foreground/20">
+            <div class="bv-entity-card p-3">
+                <div class="bv-entity-card-header mb-2 pb-1">
                     <span
                         class="text-[10px] font-bold uppercase tracking-wide"
                         :style="{ color: userDialog.theme.subtextColor }">
@@ -61,7 +61,7 @@
                         <img
                             v-if="!userDialog.loading"
                             :src="userDialog.instance?.ref?.world?.thumbnailImageUrl"
-                            class="cursor-pointer"
+                            class="cursor-pointer border border-(--bv-border-default)"
                             style="width: 80px; height: 60px; border-radius: var(--radius-xl)"
                             @click="showFullscreenImageDialog(userDialog.instance?.ref?.world?.imageUrl)"
                             loading="lazy" />
@@ -71,7 +71,7 @@
                         style="flex: 1; margin-top: 8px; max-height: 150px; overflow: auto">
                         <div
                             v-if="userDialog.$location.userId"
-                            class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                            class="bv-friend-row w-[167px]"
                             @click="showUserDialog(userDialog.$location.userId)">
                             <template v-if="userDialog.$location.user">
                                 <div
@@ -101,7 +101,7 @@
                         <div
                             v-for="user in userDialog.users"
                             :key="user.id"
-                            class="box-border flex items-center p-1.5 text-[13px] cursor-pointer w-[167px] hover:rounded-[25px_5px_5px_25px]"
+                            class="bv-friend-row w-[167px]"
                             @click="showUserDialog(user.id)">
                             <div class="relative inline-block flex-none size-9 mr-2.5" :class="userStatusClass(user)">
                                 <Avatar class="size-9">
@@ -134,8 +134,8 @@
     <div class="@container">
         <div class="grid gap-2.5 grid-cols-1 @[560px]:grid-cols-[minmax(0,1fr)_230px]" style="align-items: start">
             <div class="flex flex-col gap-2.5">
-                <div class="rounded-xl bg-(--profile-card) p-3">
-                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-muted-foreground/20">
+                <div class="bv-entity-card p-3">
+                    <div class="bv-entity-card-header mb-2 pb-2">
                         <span
                             class="text-[10px] font-bold uppercase tracking-wide"
                             :style="{ color: userDialog.theme.subtextColor }">
@@ -162,7 +162,7 @@
                         </div>
                     </div>
                     <pre
-                        class="text-xs font-[inherit]"
+                        class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                         style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
                         >{{ bioCache.translated || userDialog.ref.bio || '—' }}</pre>
                     <div
@@ -183,9 +183,9 @@
 
                 <div
                     v-if="!hideUserNotes"
-                    class="rounded-xl bg-(--profile-card) p-3 cursor-pointer"
+                    class="bv-entity-card p-3 cursor-pointer hover:border-(--bv-border-strong)"
                     @click="isEditNoteAndMemoDialogVisible = true">
-                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-muted-foreground/20">
+                    <div class="bv-entity-card-header mb-2 pb-2">
                         <span
                             class="text-[10px] font-bold uppercase tracking-wide"
                             :style="{ color: userDialog.theme.subtextColor }">
@@ -197,7 +197,7 @@
                     </div>
                     <pre
                         v-if="userDialog.note"
-                        class="text-xs font-[inherit]"
+                        class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                         style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
                         >{{ userDialog.note }}</pre>
                     <pre class="text-xs font-[inherit] text-muted-foreground" v-else>—</pre>
@@ -205,9 +205,9 @@
 
                 <div
                     v-if="!hideUserMemos"
-                    class="rounded-xl bg-(--profile-card) p-3 cursor-pointer"
+                    class="bv-entity-card p-3 cursor-pointer hover:border-(--bv-border-strong)"
                     @click="isEditNoteAndMemoDialogVisible = true">
-                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-muted-foreground/20">
+                    <div class="bv-entity-card-header mb-2 pb-2">
                         <span
                             class="text-[10px] font-bold uppercase tracking-wide"
                             :style="{ color: userDialog.theme.subtextColor }">
@@ -219,7 +219,7 @@
                     </div>
                     <pre
                         v-if="userDialog.memo"
-                        class="text-xs font-[inherit]"
+                        class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                         style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
                         >{{ userDialog.memo }}</pre>
                     <pre class="text-xs font-[inherit] text-muted-foreground" v-else>—</pre>
@@ -227,8 +227,8 @@
             </div>
 
             <div class="flex flex-col gap-2.5">
-                <div class="rounded-xl bg-(--profile-card) p-3">
-                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-muted-foreground/20">
+                <div class="bv-entity-card p-3">
+                    <div class="bv-entity-card-header mb-2 pb-2">
                         <span
                             class="text-[10px] font-bold uppercase tracking-wide"
                             :style="{ color: userDialog.theme.subtextColor }">
@@ -346,10 +346,8 @@
                     </div>
                 </div>
 
-                <div class="rounded-xl bg-(--profile-card) p-3">
-                    <div
-                        class="text-[10px] font-bold uppercase tracking-wide mb-2 pb-2 border-b border-muted-foreground/20"
-                        :style="{ color: userDialog.theme.subtextColor }">
+                <div class="bv-entity-card p-3">
+                    <div class="bv-entity-card-header mb-2 pb-2" :style="{ color: userDialog.theme.subtextColor }">
                         {{ t('dialog.user.info.header') }}
                     </div>
                     <div class="flex flex-col gap-1.5">
@@ -411,16 +409,12 @@
                     </div>
                 </div>
 
-                <div
-                    v-if="userDialog.ref.id === currentUser.id && currentUser.homeLocation"
-                    class="rounded-xl bg-(--profile-card) p-3">
-                    <div
-                        class="text-[10px] font-bold uppercase tracking-wide mb-2 pb-2 border-b border-muted-foreground/20"
-                        :style="{ color: userDialog.theme.subtextColor }">
+                <div v-if="userDialog.ref.id === currentUser.id && currentUser.homeLocation" class="bv-entity-card p-3">
+                    <div class="bv-entity-card-header mb-2 pb-2" :style="{ color: userDialog.theme.subtextColor }">
                         {{ t('dialog.user.info.home_location') }}
                     </div>
                     <div
-                        class="flex items-center justify-between gap-2 text-xs cursor-pointer"
+                        class="flex items-center justify-between gap-2 text-xs cursor-pointer hover:text-foreground"
                         @click="showWorldDialog(currentUser.homeLocation)">
                         <span class="truncate" v-text="userDialog.$homeLocationName"></span>
                         <Button
