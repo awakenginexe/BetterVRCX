@@ -24,6 +24,7 @@ vi.mock('../../../stores', () => ({
     useAppearanceSettingsStore: () => ({
         navWidth: ref(220),
         isNavCollapsed: ref(false),
+        isRightSidebarCollapsed: ref(false),
         setNavCollapsed: (...a) => mocks.setNavCollapsed(...a),
         setNavWidth: (...a) => mocks.setNavWidth(...a)
     })
@@ -42,9 +43,7 @@ vi.mock('../../../composables/useMainLayoutResizable', () => ({
 }));
 vi.mock('../../../components/ui/resizable', () => ({
     ResizablePanelGroup: {
-        props: ['autoSaveId'],
-        template:
-            '<div :data-auto-save-id="autoSaveId"><slot :layout="[]" /></div>'
+        template: '<div><slot :layout="[]" /></div>'
     },
     ResizablePanel: {
         props: [
@@ -192,9 +191,6 @@ describe('MainLayout.vue', () => {
             'data-collapsed-size': '60',
             'data-size-unit': 'px'
         });
-        expect(
-            wrapper.get('[data-auto-save-id]').attributes('data-auto-save-id')
-        ).toBe('vrcx-main-layout-right-sidebar');
         expect(
             wrapper.get('[data-testid="right-sidebar"]').attributes()
         ).toMatchObject({

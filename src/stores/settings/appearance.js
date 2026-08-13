@@ -84,6 +84,7 @@ export const useAppearanceSettingsStore = defineStore(
         ]);
         const navWidth = ref(220);
         const rightSidebarWidth = ref(260);
+        const isRightSidebarCollapsed = ref(false);
         const isSidebarGroupByInstance = ref(true);
         const isHideFriendsInSameInstance = ref(false);
         const isSameInstanceAboveFavorites = ref(false);
@@ -190,7 +191,8 @@ export const useAppearanceSettingsStore = defineStore(
                 customFontFamilyConfig,
                 appCjkFontPackConfig,
                 lastDarkThemeConfig,
-                rightSidebarWidthConfig
+                rightSidebarWidthConfig,
+                isRightSidebarCollapsedConfig
             ] = await Promise.all([
                 configRepository.getString('VRCX_appLanguage'),
                 configRepository.getBool('displayVRCPlusIconsAsAvatar', true),
@@ -280,7 +282,8 @@ export const useAppearanceSettingsStore = defineStore(
                     'VRCX_lastDarkTheme',
                     fallbackDarkTheme
                 ),
-                configRepository.getInt('VRCX_rightSidebarWidth', 260)
+                configRepository.getInt('VRCX_rightSidebarWidth', 260),
+                configRepository.getBool('VRCX_isRightSidebarCollapsed', false)
             ]);
 
             if (appLanguageConfig) {
@@ -362,6 +365,7 @@ export const useAppearanceSettingsStore = defineStore(
                 260,
                 700
             );
+            isRightSidebarCollapsed.value = isRightSidebarCollapsedConfig;
             isSidebarGroupByInstance.value = isSidebarGroupByInstanceConfig;
             isHideFriendsInSameInstance.value =
                 isHideFriendsInSameInstanceConfig;
@@ -879,6 +883,25 @@ export const useAppearanceSettingsStore = defineStore(
         /**
          *
          */
+        function setIsRightSidebarCollapsed(val) {
+            const collapsed = Boolean(val);
+            if (isRightSidebarCollapsed.value !== collapsed) {
+                isRightSidebarCollapsed.value = collapsed;
+                configRepository.setBool(
+                    'VRCX_isRightSidebarCollapsed',
+                    collapsed
+                );
+            }
+        }
+        /**
+         *
+         */
+        function toggleRightSidebarCollapsed() {
+            setIsRightSidebarCollapsed(!isRightSidebarCollapsed.value);
+        }
+        /**
+         *
+         */
         function setIsSidebarGroupByInstance() {
             isSidebarGroupByInstance.value = !isSidebarGroupByInstance.value;
             configRepository.setBool(
@@ -1264,6 +1287,7 @@ export const useAppearanceSettingsStore = defineStore(
             sidebarSortMethods,
             navWidth,
             rightSidebarWidth,
+            isRightSidebarCollapsed,
             isSidebarGroupByInstance,
             isHideFriendsInSameInstance,
             isSameInstanceAboveFavorites,
@@ -1310,6 +1334,8 @@ export const useAppearanceSettingsStore = defineStore(
             setSidebarSortMethods,
             setNavWidth,
             setRightSidebarWidth,
+            setIsRightSidebarCollapsed,
+            toggleRightSidebarCollapsed,
             setIsSidebarGroupByInstance,
             setIsHideFriendsInSameInstance,
             setIsSameInstanceAboveFavorites,

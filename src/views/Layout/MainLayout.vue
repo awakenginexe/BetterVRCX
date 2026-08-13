@@ -20,7 +20,6 @@
                 <SidebarInset class="bv-center-frame min-w-0">
                     <ResizablePanelGroup
                         direction="horizontal"
-                        auto-save-id="vrcx-main-layout-right-sidebar"
                         :class="[
                             'group/main-layout flex-1 h-full min-w-0',
                             { 'aside-collapsed': isAsideCollapsedStatic }
@@ -133,7 +132,7 @@
     const router = useRouter();
 
     const appearanceSettingsStore = useAppearanceSettingsStore();
-    const { navWidth, isNavCollapsed } = storeToRefs(appearanceSettingsStore);
+    const { navWidth, isNavCollapsed, isRightSidebarCollapsed } = storeToRefs(appearanceSettingsStore);
 
     const sidebarOpen = computed(() => !isNavCollapsed.value);
 
@@ -141,40 +140,28 @@
         appearanceSettingsStore.setNavCollapsed(!open);
     };
 
-    let isResizingNav = false;
     let cleanupNavResize = null;
-
     const startNavResize = (event) => {
-        if (!sidebarOpen.value) {
-            return;
-        }
+        event.preventDefault();
+        const startX = event.clientX;
+        const startWidth = navWidth.value;
 
-        isResizingNav = true;
-        const prevUserSelect = document.body.style.userSelect;
-        const prevCursor = document.body.style.cursor;
-        document.body.style.userSelect = 'none';
-        document.body.style.cursor = 'col-resize';
-
-        const handleMove = (e) => {
-            if (!isResizingNav) {
-                return;
-            }
-            appearanceSettingsStore.setNavWidth(e.clientX);
+        const onPointerMove = (moveEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            appearanceSettingsStore.setNavWidth(startWidth + deltaX);
         };
 
-        const handleUp = () => {
-            isResizingNav = false;
-            document.body.style.userSelect = prevUserSelect;
-            document.body.style.cursor = prevCursor;
-            window.removeEventListener('pointermove', handleMove);
-            window.removeEventListener('pointerup', handleUp);
+        const onPointerUp = () => {
+            document.removeEventListener('pointermove', onPointerMove);
+            document.removeEventListener('pointerup', onPointerUp);
+            document.removeEventListener('pointercancel', onPointerUp);
             cleanupNavResize = null;
         };
 
-        window.addEventListener('pointermove', handleMove);
-        window.addEventListener('pointerup', handleUp);
-        cleanupNavResize = handleUp;
-        appearanceSettingsStore.setNavWidth(event.clientX);
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerUp);
+        cleanupNavResize = onPointerUp;
     };
 
     onUnmounted(() => {
@@ -197,9 +184,23 @@
     watch(isSideBarTabShow, async (show) => {
         await nextTick();
         if (show) {
-            asidePanelRef.value?.expand();
+            if (!isRightSidebarCollapsed.value) {
+                asidePanelRef.value?.expand();
+            } else {
+                asidePanelRef.value?.collapse();
+            }
         } else {
             asidePanelRef.value?.collapse();
+        }
+    });
+
+    watch(isRightSidebarCollapsed, async (collapsed) => {
+        if (!isSideBarTabShow.value) return;
+        await nextTick();
+        if (collapsed) {
+            asidePanelRef.value?.collapse();
+        } else {
+            asidePanelRef.value?.expand();
         }
     });
 

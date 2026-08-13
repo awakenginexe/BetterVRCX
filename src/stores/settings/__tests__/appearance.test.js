@@ -102,4 +102,34 @@ describe('appearance settings', () => {
             420
         );
     });
+
+    it('initializes and persists isRightSidebarCollapsed state', async () => {
+        configRepository.getBool.mockImplementation((key, fallback) =>
+            key === 'VRCX_isRightSidebarCollapsed' ? true : fallback
+        );
+
+        const store = useAppearanceSettingsStore();
+        await vi.waitFor(() =>
+            expect(store.isRightSidebarCollapsed).toBe(true)
+        );
+
+        expect(configRepository.getBool).toHaveBeenCalledWith(
+            'VRCX_isRightSidebarCollapsed',
+            false
+        );
+
+        store.setIsRightSidebarCollapsed(false);
+        expect(store.isRightSidebarCollapsed).toBe(false);
+        expect(configRepository.setBool).toHaveBeenCalledWith(
+            'VRCX_isRightSidebarCollapsed',
+            false
+        );
+
+        store.toggleRightSidebarCollapsed();
+        expect(store.isRightSidebarCollapsed).toBe(true);
+        expect(configRepository.setBool).toHaveBeenCalledWith(
+            'VRCX_isRightSidebarCollapsed',
+            true
+        );
+    });
 });
