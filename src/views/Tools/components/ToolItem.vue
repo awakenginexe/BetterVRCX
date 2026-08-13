@@ -63,7 +63,7 @@
         border: 0;
         border-radius: 9px;
         background: color-mix(in srgb, var(--bv-accent) 12%, var(--bv-bg-control));
-        color: var(--bv-accent-soft);
+        color: var(--bv-accent-primary);
     }
 
     .tool-item__heading {

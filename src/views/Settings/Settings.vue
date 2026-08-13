@@ -243,7 +243,7 @@
     }
 
     .settings-page__nav-item--active i {
-        color: var(--bv-accent-soft);
+        color: var(--bv-accent-primary);
     }
 
     .settings-page__content,

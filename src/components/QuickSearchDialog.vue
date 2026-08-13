@@ -304,7 +304,7 @@
     }
 
     :deep([data-slot='command-input-wrapper'] > .lucide-search) {
-        color: var(--bv-accent-soft);
+        color: var(--bv-accent-primary);
     }
 
     :deep([data-slot='command-input']) {
@@ -330,7 +330,7 @@
 
     :deep([data-slot='command-group-heading']) {
         padding: 12px 12px 6px;
-        color: var(--bv-accent-soft);
+        color: var(--bv-accent-primary);
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.08em;

@@ -170,4 +170,15 @@ describe('BetterVRCX stylesheet contract', () => {
         expect(stylesheet).toContain('--sidebar: var(--bv-bg-rail)');
         expect(globals).toContain("@import './bettervrcx.css';");
     });
+
+    test('ensures high-contrast legible foreground colors on badges and eyebrows', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+
+        expect(stylesheet).toMatch(
+            /\.bv-eyebrow[^{]*\{[^}]*color:\s*var\(--bv-accent-primary\)/
+        );
+        expect(stylesheet).toMatch(
+            /\.bv-badge\[data-tone='accent'\][^{]*\{[^}]*color:\s*var\(--bv-accent-primary\)/
+        );
+    });
 });

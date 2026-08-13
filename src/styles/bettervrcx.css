@@ -266,7 +266,7 @@ html.dark {
 
 .bv-eyebrow,
 .bv-type-caption {
-    color: var(--bv-accent-soft);
+    color: var(--bv-accent-primary);
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -684,22 +684,38 @@ html.dark {
 }
 
 .bv-badge[data-tone='accent'] {
-    border-color: var(--bv-accent-primary);
-    color: var(--bv-accent-soft);
+    border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, transparent);
+    background-color: var(--bv-accent-soft);
+    color: var(--bv-accent-primary);
 }
 
 .bv-badge[data-tone='success'] {
-    border-color: var(--bv-status-online);
+    border-color: color-mix(in srgb, var(--bv-status-online) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-online) 14%,
+        transparent
+    );
     color: var(--bv-status-online);
 }
 
 .bv-badge[data-tone='warning'] {
-    border-color: var(--bv-status-askme);
+    border-color: color-mix(in srgb, var(--bv-status-askme) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-askme) 14%,
+        transparent
+    );
     color: var(--bv-status-askme);
 }
 
 .bv-badge[data-tone='danger'] {
-    border-color: var(--bv-status-busy);
+    border-color: color-mix(in srgb, var(--bv-status-busy) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-busy) 14%,
+        transparent
+    );
     color: var(--bv-status-busy);
 }
 
