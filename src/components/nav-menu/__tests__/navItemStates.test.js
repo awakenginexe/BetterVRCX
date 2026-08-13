@@ -37,7 +37,10 @@ vi.mock('@/components/ui/sidebar', () => ({
 }));
 
 vi.mock('@/components/ui/collapsible', () => ({
-    Collapsible: { template: '<div><slot :open="true" /></div>' },
+    Collapsible: {
+        template:
+            '<div class="collapsible-root" v-bind="$attrs"><slot :open="true" /></div>'
+    },
     CollapsibleTrigger: { template: '<div><slot /></div>' },
     CollapsibleContent: { template: '<div><slot /></div>' }
 }));
@@ -84,7 +87,7 @@ const sampleFolder = {
 };
 
 describe('Navigation Item States & Zero-Layout-Shift', () => {
-    it('does not mark parent folder as active when a child is selected in expanded mode', () => {
+    it('does not mark parent folder as active when a child is selected in expanded mode and attaches bv-nav-folder group', () => {
         const wrapper = mount(NavMenuFolderItem, {
             props: {
                 item: sampleFolder,
@@ -98,6 +101,10 @@ describe('Navigation Item States & Zero-Layout-Shift', () => {
                 isToolItem: () => false
             }
         });
+
+        const folderGroup = wrapper.find('.bv-nav-folder-group');
+        expect(folderGroup.exists()).toBe(true);
+        expect(folderGroup.classes()).toContain('is-expanded');
 
         const folderBtn = wrapper.find('[data-testid="folder-btn"]');
         expect(folderBtn.classes()).toContain('bv-nav-folder-trigger');
@@ -137,7 +144,7 @@ describe('Navigation Item States & Zero-Layout-Shift', () => {
         expect(folderBtn.classes()).toContain('bv-nav-item-active');
     });
 
-    it('asserts stylesheet contains zero-layout-shift ::before indicators for selected states', () => {
+    it('asserts stylesheet contains zero-layout-shift ::before indicators for selected states and unified folder group rules', () => {
         const stylesheetPath = resolve(
             import.meta.dirname,
             '../../../styles/bettervrcx.css'
@@ -149,14 +156,17 @@ describe('Navigation Item States & Zero-Layout-Shift', () => {
         expect(stylesheet).toContain('.bv-nav-item.is-selected::before');
         expect(stylesheet).toContain('.bv-nav-sub-item.is-selected::before');
         expect(stylesheet).toContain('position: absolute');
-        expect(stylesheet).toContain('inset-inline-start: 0');
+
+        // Folder group container styles
+        expect(stylesheet).toContain('.bv-nav-folder-group');
+        expect(stylesheet).toContain('.bv-nav-folder-group.is-expanded');
+        expect(stylesheet).toContain(
+            'background-color: var(--bv-bg-surface-base)'
+        );
 
         // Folder trigger neutral styles
         expect(stylesheet).toContain(
             ".bv-nav-folder-trigger[data-state='open']"
-        );
-        expect(stylesheet).toContain(
-            'background-color: var(--bv-bg-surface-raised)'
         );
 
         // Reduced motion

@@ -486,31 +486,48 @@ html.dark {
     color: var(--bv-accent-primary);
 }
 
+/* Folder Group Container */
+.bv-nav-folder-group {
+    border-radius: var(--bv-radius-md);
+    border: 1px solid transparent;
+    transition:
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        border-color var(--bv-duration-fast) var(--bv-ease-out);
+}
+
+.bv-nav-folder-group.is-expanded {
+    background-color: var(--bv-bg-surface-base);
+    border-color: var(--bv-border-subtle);
+}
+
 /* Folder Trigger (neutral disclosure, not selected) */
 .bv-nav-folder-trigger[data-state='open'],
 .bv-nav-folder-trigger.is-expanded {
     border-color: transparent;
-    background-color: var(--bv-bg-surface-raised);
-    color: var(--bv-text-regular);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: transparent;
+    color: var(--bv-text-strong);
 }
 
 .bv-nav-folder-trigger[data-state='open']:hover,
 .bv-nav-folder-trigger.is-expanded:hover {
-    border-color: var(--bv-border-subtle);
+    border-color: transparent;
     background-color: var(--bv-bg-control-hover);
     color: var(--bv-text-strong);
 }
 
-/* Nested Navigation (Sub-menu) */
+/* Nested Navigation (Sub-menu inside folder) */
 .bv-nav-sub-list {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-inline-start: 18px;
-    padding-inline-start: 8px;
-    padding-block: 2px;
-    border-inline-start: 1px solid var(--bv-border-default);
+    gap: 1px;
+    margin: 0;
+    padding: 0 4px 4px 4px;
+    border: none;
+    border-bottom-left-radius: var(--bv-radius-md);
+    border-bottom-right-radius: var(--bv-radius-md);
 }
 
 .bv-nav-sub-item {
@@ -518,10 +535,10 @@ html.dark {
     display: flex;
     align-items: center;
     width: 100%;
-    min-height: 30px;
-    height: 30px;
+    min-height: 28px;
+    height: 28px;
     box-sizing: border-box;
-    padding: 0 8px;
+    padding: 0 8px 0 24px;
     gap: 8px;
     border: 1px solid transparent;
     border-radius: var(--bv-radius-sm);
@@ -543,7 +560,7 @@ html.dark {
 .bv-nav-sub-item:hover:not(:disabled):not([aria-disabled='true']):not(
     .is-selected
 ):not([data-active='true']) {
-    border-color: var(--bv-border-subtle);
+    border-color: transparent;
     background-color: var(--bv-bg-control-hover);
     color: var(--bv-text-strong);
 }
@@ -551,7 +568,7 @@ html.dark {
 .bv-nav-sub-item:active:not(:disabled):not([aria-disabled='true']):not(
     .is-selected
 ):not([data-active='true']) {
-    border-color: var(--bv-border-default);
+    border-color: transparent;
     background-color: var(--bv-bg-control-active);
     color: var(--bv-text-strong);
 }
@@ -570,11 +587,11 @@ html.dark {
 .bv-nav-sub-item.bv-nav-item-active::before {
     content: '';
     position: absolute;
-    inset-inline-start: 0;
+    inset-inline-start: 4px;
     top: 5px;
     bottom: 5px;
     width: 3px;
-    border-radius: 0 var(--bv-radius-xs) var(--bv-radius-xs) 0;
+    border-radius: var(--bv-radius-xs);
     background-color: var(--bv-accent-primary);
     pointer-events: none;
 }

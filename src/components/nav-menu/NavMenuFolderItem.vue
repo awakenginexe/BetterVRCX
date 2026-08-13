@@ -62,99 +62,101 @@
                         class="group/collapsible"
                         :default-open="activeMenuIndex && item.children?.some((e) => e.index === activeMenuIndex)">
                         <template #default="{ open }">
-                            <CollapsibleTrigger as-child>
-                                <SidebarMenuButton
-                                    :is-active="false"
-                                    :data-state="open ? 'open' : 'closed'"
-                                    :data-nav-key="item.index"
-                                    :class="[
-                                        'bv-nav-item bv-nav-folder-trigger bv-focus-ring',
-                                        { 'is-expanded': open }
-                                    ]"
-                                    :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
-                                    <i
-                                        :class="item.icon"
-                                        class="inline-flex size-6 items-center justify-center text-lg relative"
-                                        ><span
-                                            v-if="isNavItemNotified(item)"
-                                            class="notify-dot bv-status-dot"
-                                            data-status="danger"
-                                            role="img"
-                                            :aria-label="t('nav_menu.mark_all_read')"></span
-                                    ></i>
-                                    <span v-show="!isCollapsed" class="truncate">{{
-                                        item.titleIsCustom ? item.title : t(item.title || '')
-                                    }}</span>
+                            <div :class="['bv-nav-folder-group', { 'is-expanded': open }]">
+                                <CollapsibleTrigger as-child>
+                                    <SidebarMenuButton
+                                        :is-active="false"
+                                        :data-state="open ? 'open' : 'closed'"
+                                        :data-nav-key="item.index"
+                                        :class="[
+                                            'bv-nav-item bv-nav-folder-trigger bv-focus-ring',
+                                            { 'is-expanded': open }
+                                        ]"
+                                        :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
+                                        <i
+                                            :class="item.icon"
+                                            class="inline-flex size-6 items-center justify-center text-lg relative"
+                                            ><span
+                                                v-if="isNavItemNotified(item)"
+                                                class="notify-dot bv-status-dot"
+                                                data-status="danger"
+                                                role="img"
+                                                :aria-label="t('nav_menu.mark_all_read')"></span
+                                        ></i>
+                                        <span v-show="!isCollapsed" class="truncate">{{
+                                            item.titleIsCustom ? item.title : t(item.title || '')
+                                        }}</span>
 
-                                    <ChevronRight
-                                        v-show="!isCollapsed"
-                                        class="ml-auto size-4 shrink-0 transition-transform duration-150 ease-out"
-                                        :class="open ? 'rotate-90' : ''" />
-                                </SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <SidebarMenuSub class="bv-nav-sub-list">
-                                    <SidebarMenuSubItem v-for="entry in item.children" :key="entry.index">
-                                        <ContextMenu>
-                                            <ContextMenuTrigger as-child>
-                                                <SidebarMenuSubButton
-                                                    :is-active="activeMenuIndex === entry.index"
-                                                    :data-nav-key="entry.index"
-                                                    :data-active="activeMenuIndex === entry.index"
-                                                    :class="[
-                                                        'bv-nav-sub-item bv-focus-ring',
-                                                        { 'is-selected': activeMenuIndex === entry.index }
-                                                    ]"
-                                                    @click="emit('submenu-click', entry)">
-                                                    <i
-                                                        v-if="entry.icon"
-                                                        :class="entry.icon"
-                                                        class="inline-flex size-5 items-center justify-center text-base relative"
-                                                        ><span
-                                                            v-if="isEntryNotified(entry)"
-                                                            class="notify-dot bv-status-dot -right-0.5!"
-                                                            data-status="danger"
-                                                            role="img"
-                                                            :aria-label="t('nav_menu.mark_all_read')"></span
-                                                    ></i>
-                                                    <span v-if="entry.titleIsCustom" class="truncate">{{
-                                                        entry.label
-                                                    }}</span>
-                                                    <span v-else class="truncate">{{ t(entry.label) }}</span>
-                                                </SidebarMenuSubButton>
-                                            </ContextMenuTrigger>
-                                            <ContextMenuContent>
-                                                <ContextMenuItem
-                                                    v-if="hasNotifications"
-                                                    @click="emit('clear-notifications')">
-                                                    {{ t('nav_menu.mark_all_read') }}
-                                                </ContextMenuItem>
-                                                <ContextMenuSeparator v-if="hasNotifications" />
-                                                <template v-if="isDashboardItem(entry)">
-                                                    <ContextMenuItem @click="emit('edit-dashboard', entry)">
-                                                        {{ t('nav_menu.edit_dashboard') }}
-                                                    </ContextMenuItem>
+                                        <ChevronRight
+                                            v-show="!isCollapsed"
+                                            class="ml-auto size-4 shrink-0 transition-transform duration-150 ease-out"
+                                            :class="open ? 'rotate-90' : ''" />
+                                    </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub class="bv-nav-sub-list mx-0 border-l-0 px-1 py-0 translate-x-0">
+                                        <SidebarMenuSubItem v-for="entry in item.children" :key="entry.index">
+                                            <ContextMenu>
+                                                <ContextMenuTrigger as-child>
+                                                    <SidebarMenuSubButton
+                                                        :is-active="activeMenuIndex === entry.index"
+                                                        :data-nav-key="entry.index"
+                                                        :data-active="activeMenuIndex === entry.index"
+                                                        :class="[
+                                                            'bv-nav-sub-item bv-focus-ring',
+                                                            { 'is-selected': activeMenuIndex === entry.index }
+                                                        ]"
+                                                        @click="emit('submenu-click', entry)">
+                                                        <i
+                                                            v-if="entry.icon"
+                                                            :class="entry.icon"
+                                                            class="inline-flex size-5 items-center justify-center text-base relative"
+                                                            ><span
+                                                                v-if="isEntryNotified(entry)"
+                                                                class="notify-dot bv-status-dot -right-0.5!"
+                                                                data-status="danger"
+                                                                role="img"
+                                                                :aria-label="t('nav_menu.mark_all_read')"></span
+                                                        ></i>
+                                                        <span v-if="entry.titleIsCustom" class="truncate">{{
+                                                            entry.label
+                                                        }}</span>
+                                                        <span v-else class="truncate">{{ t(entry.label) }}</span>
+                                                    </SidebarMenuSubButton>
+                                                </ContextMenuTrigger>
+                                                <ContextMenuContent>
                                                     <ContextMenuItem
-                                                        variant="destructive"
-                                                        @click="emit('delete-dashboard', entry)">
-                                                        {{ t('nav_menu.delete_dashboard') }}
+                                                        v-if="hasNotifications"
+                                                        @click="emit('clear-notifications')">
+                                                        {{ t('nav_menu.mark_all_read') }}
                                                     </ContextMenuItem>
-                                                    <ContextMenuSeparator />
-                                                </template>
-                                                <ContextMenuItem
-                                                    v-if="isToolItem(entry)"
-                                                    @click="emit('unpin-tool', entry)">
-                                                    {{ t('nav_menu.custom_nav.unpin_from_nav') }}
-                                                </ContextMenuItem>
-                                                <ContextMenuSeparator v-if="isToolItem(entry)" />
-                                                <ContextMenuItem @click="emit('open-custom-nav')">
-                                                    {{ t('nav_menu.custom_nav.header') }}
-                                                </ContextMenuItem>
-                                            </ContextMenuContent>
-                                        </ContextMenu>
-                                    </SidebarMenuSubItem>
-                                </SidebarMenuSub>
-                            </CollapsibleContent>
+                                                    <ContextMenuSeparator v-if="hasNotifications" />
+                                                    <template v-if="isDashboardItem(entry)">
+                                                        <ContextMenuItem @click="emit('edit-dashboard', entry)">
+                                                            {{ t('nav_menu.edit_dashboard') }}
+                                                        </ContextMenuItem>
+                                                        <ContextMenuItem
+                                                            variant="destructive"
+                                                            @click="emit('delete-dashboard', entry)">
+                                                            {{ t('nav_menu.delete_dashboard') }}
+                                                        </ContextMenuItem>
+                                                        <ContextMenuSeparator />
+                                                    </template>
+                                                    <ContextMenuItem
+                                                        v-if="isToolItem(entry)"
+                                                        @click="emit('unpin-tool', entry)">
+                                                        {{ t('nav_menu.custom_nav.unpin_from_nav') }}
+                                                    </ContextMenuItem>
+                                                    <ContextMenuSeparator v-if="isToolItem(entry)" />
+                                                    <ContextMenuItem @click="emit('open-custom-nav')">
+                                                        {{ t('nav_menu.custom_nav.header') }}
+                                                    </ContextMenuItem>
+                                                </ContextMenuContent>
+                                            </ContextMenu>
+                                        </SidebarMenuSubItem>
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </div>
                         </template>
                     </Collapsible>
                 </div>
