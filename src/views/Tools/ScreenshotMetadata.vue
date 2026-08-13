@@ -867,7 +867,7 @@
         color: var(--bv-text-strong);
         font-size: 19px;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: 0;
     }
 
     .screenshot-metadata__back {

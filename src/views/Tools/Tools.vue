@@ -208,7 +208,7 @@
         color: var(--bv-text-strong);
         font-size: 20px;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: 0;
     }
 
     .tools-page__search {

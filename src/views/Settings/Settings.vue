@@ -156,7 +156,7 @@
         color: var(--bv-text-strong);
         font-size: 20px;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: 0;
     }
 
     .settings-page__active-label {
