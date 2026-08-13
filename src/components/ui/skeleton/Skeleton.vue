@@ -7,5 +7,5 @@
 </script>
 
 <template>
-    <div data-slot="skeleton" :class="cn('animate-pulse rounded-md bg-primary/10', props.class)" />
+    <div data-slot="skeleton" :class="cn('bv-skeleton min-h-4 rounded-md', props.class)" />
 </template>

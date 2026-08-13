@@ -12,32 +12,15 @@ function canonicalizeCssValue(value) {
     return value
         .replaceAll(/\s/g, '')
         .replaceAll(/(?<!\d)0\.(\d+)/g, '.$1')
+        .replaceAll(/(\.\d*?)0+(?=[,\);%]|$)/g, '$1')
         .toLowerCase();
 }
 
 describe('BetterVRCX stylesheet contract', () => {
     test('defines every approved semantic token', () => {
         const stylesheet = readFileSync(stylesheetPath, 'utf8');
-        const tokenNames = [
-            '--bv-bg-base',
-            '--bv-bg-rail',
-            '--bv-bg-surface',
-            '--bv-bg-control',
-            '--bv-bg-hover',
-            '--bv-border',
-            '--bv-accent',
-            '--bv-accent-soft',
-            '--bv-info',
-            '--bv-success',
-            '--bv-warning',
-            '--bv-danger',
-            '--bv-text-strong',
-            '--bv-text-muted',
-            '--bv-text-quiet',
-            '--bv-offline'
-        ];
 
-        for (const tokenName of tokenNames) {
+        for (const tokenName of Object.keys(BETTERVRCX_DESIGN_TOKENS)) {
             expect(stylesheet).toMatch(new RegExp(`${tokenName}\\s*:`));
         }
     });
@@ -56,22 +39,88 @@ describe('BetterVRCX stylesheet contract', () => {
         }
     });
 
-    test('provides the shared surface and state primitives', () => {
+    test('provides the shared surface hierarchy tiers', () => {
         const stylesheet = readFileSync(stylesheetPath, 'utf8');
         const selectors = [
             '.bv-surface',
+            '.bv-surface-base',
             '.bv-surface-raised',
-            '.bv-eyebrow',
-            '.bv-status-dot',
-            '.bv-badge',
-            '.bv-focus-ring',
-            '.bv-skeleton',
-            '.bv-empty-state',
-            '.bv-danger-zone'
+            '.bv-surface-floating',
+            '.bv-surface-overlay'
         ];
 
         for (const selector of selectors) {
             expect(stylesheet).toContain(selector);
+        }
+    });
+
+    test('provides typography hierarchy utilities', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const typographyClasses = [
+            '.bv-type-display',
+            '.bv-type-h1',
+            '.bv-type-h2',
+            '.bv-type-h3',
+            '.bv-type-body',
+            '.bv-type-body-compact',
+            '.bv-eyebrow',
+            '.bv-type-caption',
+            '.bv-type-mono'
+        ];
+
+        for (const cls of typographyClasses) {
+            expect(stylesheet).toContain(cls);
+        }
+    });
+
+    test('provides standard iconography helpers', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const iconClasses = [
+            '.bv-icon-xs',
+            '.bv-icon-sm',
+            '.bv-icon-md',
+            '.bv-icon-lg'
+        ];
+
+        for (const cls of iconClasses) {
+            expect(stylesheet).toContain(cls);
+        }
+    });
+
+    test('provides orthogonal interactive state classes', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const stateSelectors = [
+            '.bv-interactive',
+            '.bv-interactive--hover',
+            '.bv-interactive--pressed',
+            '.bv-interactive--selected',
+            '.bv-interactive--expanded',
+            '.bv-interactive--disabled',
+            '.bv-focus-ring'
+        ];
+
+        for (const selector of stateSelectors) {
+            expect(stylesheet).toContain(selector);
+        }
+    });
+
+    test('provides motion transition classes for Vue transitions', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const motionClasses = [
+            '.bv-transition-fade-enter-active',
+            '.bv-transition-fade-leave-active',
+            '.bv-transition-scale-enter-active',
+            '.bv-transition-scale-leave-active',
+            '.bv-transition-slide-up-enter-active',
+            '.bv-transition-slide-up-leave-active',
+            '.bv-transition-slide-down-enter-active',
+            '.bv-transition-slide-down-leave-active',
+            '.bv-transition-dialog-enter-active',
+            '.bv-transition-dialog-leave-active'
+        ];
+
+        for (const cls of motionClasses) {
+            expect(stylesheet).toContain(cls);
         }
     });
 

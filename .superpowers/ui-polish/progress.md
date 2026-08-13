@@ -9,7 +9,7 @@ This document tracks progress across the multi-session visual and interaction po
 | Session | Name | Status | Summary / Scope |
 |---|---|---|---|
 | **Session 0** | **Audit + Premium UI Spec** | **COMPLETE** | In-depth audit of visual & interaction flaws, definition of hybrid premium dark design system, token architecture, state model, motion system & blacklist in `docs/BETTERVRCX_PREMIUM_UI_SPEC.md`. |
-| **Session 1** | Foundation + Shared Primitives + Motion System | NOT STARTED | Core CSS tokens, elevation stack, `BvButton`, `BvSurface`, `BvBadge`, `BvDialogShell`, and base transitions. |
+| **Session 1** | **Foundation + Shared Primitives + Motion System** | **COMPLETE** | Core semantic design tokens, surface tiers, typography utilities, iconography helpers, orthogonal interactive states, `Surface`, `Button`, `Badge`, `Skeleton`, motion transitions, and reduced motion. |
 | **Session 2** | App Shell + Sidebar + Navigation | NOT STARTED | Header bar, persistent sidebar, `NavMenu`, `NavMenuFolderItem`, fixed hover/expanded/active states, and quick search trigger. |
 | **Session 3** | Social + Entity Surfaces | NOT STARTED | User, World, Avatar, and Group detail dialog shells, profile tabs, action clusters, and relationship badges. |
 | **Session 4** | Worlds + Groups + Avatars + Search | NOT STARTED | Card grids, discovery views, search workspace tabs, filters, and aspect-ratio media containers. |
@@ -24,3 +24,13 @@ This document tracks progress across the multi-session visual and interaction po
 - **Specification Authored**: Produced comprehensive specification `docs/BETTERVRCX_PREMIUM_UI_SPEC.md` covering 32 core areas.
 - **Motion Decision**: Selected native Vue 3 Transitions + GPU-accelerated CSS properties; enforced live-data performance blacklist.
 - **Application Code Untouched**: Zero changes in `src/`, `Dotnet/`, `src-electron/`, `package.json`. Local changes restricted strictly to documentation.
+
+---
+
+## Session 1 Verification & Completion Log
+- **Semantic Tokens Implemented**: Full HSL accent core, surface elevation tiers, foreground text hierarchy, border scale, radius scale, shadow scale, blur scale, density row heights, and motion timing/easings in `src/styles/bettervrcx.css` and `src/shared/constants/bettervrcxDesign.js`.
+- **Orthogonal Interactive State Model**: Established `.bv-interactive` state styles for default, hover, active/pressed, selected/current (3px leading accent bar), expanded (neutral background with no selection ring), focus-visible ring (`0 0 0 2px base, 0 0 0 4px accent`), and disabled state.
+- **Shared Primitives**: Enhanced `Button` & `Switch` to eliminate `transition-all` in favor of explicit GPU transitions; added semantic tone variants to `Badge`; enhanced `Skeleton` with `.bv-skeleton` shimmer and reduced-motion handling; introduced reusable `Surface` component (`src/components/ui/surface/`).
+- **Motion Foundation**: Established `.bv-transition-*` Vue transition classes and strict reduced-motion rules via `@media (prefers-reduced-motion: reduce)`.
+- **Verification**: 18/18 foundation tests passing; `oxfmt --check` passing; `npm run prod` built cleanly with zero errors; no changes to protected backend/Electron/IPC layers; pre-existing dirty files preserved.
+
