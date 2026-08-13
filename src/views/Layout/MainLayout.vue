@@ -27,7 +27,7 @@
                         ]"
                         @layout="handleLayout">
                         <template #default="{ layout }">
-                            <ResizablePanel :order="1">
+                            <ResizablePanel id="main-content-panel" :order="1">
                                 <div class="bv-route-content" data-shell-region="content">
                                     <RouterView v-slot="{ Component }">
                                         <KeepAlive exclude="ChartsInstance, ChartsMutual">
@@ -44,6 +44,7 @@
                                     'z-20 [&>div]:-translate-x-1/2'
                                 ]"></ResizableHandle>
                             <ResizablePanel
+                                id="right-sidebar-panel"
                                 ref="asidePanelRef"
                                 :default-size="asideDefaultSize"
                                 :min-size="asideMinSize"

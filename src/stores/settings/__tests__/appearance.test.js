@@ -81,4 +81,25 @@ describe('appearance settings', () => {
             220
         );
     });
+
+    it('initializes and persists rightSidebarWidth within constraints', async () => {
+        configRepository.getInt.mockImplementation((key, fallback) =>
+            key === 'VRCX_rightSidebarWidth' ? 340 : fallback
+        );
+
+        const store = useAppearanceSettingsStore();
+        await vi.waitFor(() => expect(store.rightSidebarWidth).toBe(340));
+
+        expect(configRepository.getInt).toHaveBeenCalledWith(
+            'VRCX_rightSidebarWidth',
+            260
+        );
+
+        store.setRightSidebarWidth(420);
+        expect(store.rightSidebarWidth).toBe(420);
+        expect(configRepository.setInt).toHaveBeenCalledWith(
+            'VRCX_rightSidebarWidth',
+            420
+        );
+    });
 });

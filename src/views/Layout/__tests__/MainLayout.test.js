@@ -48,6 +48,7 @@ vi.mock('../../../components/ui/resizable', () => ({
     },
     ResizablePanel: {
         props: [
+            'id',
             'defaultSize',
             'minSize',
             'maxSize',
@@ -58,6 +59,7 @@ vi.mock('../../../components/ui/resizable', () => ({
         template: `
             <div
                 data-testid="resizable-panel"
+                :id="id"
                 :data-default-size="defaultSize"
                 :data-min-size="minSize"
                 :data-max-size="maxSize"
@@ -180,7 +182,9 @@ describe('MainLayout.vue', () => {
             (panel) => panel.attributes('data-order') === '2'
         );
 
+        expect(center.attributes('id')).toBe('main-content-panel');
         expect(center.attributes('data-default-size')).toBeUndefined();
+        expect(rightRail.attributes('id')).toBe('right-sidebar-panel');
         expect(rightRail.attributes()).toMatchObject({
             'data-default-size': '260',
             'data-min-size': '260',

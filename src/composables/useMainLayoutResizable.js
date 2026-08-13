@@ -5,9 +5,10 @@ import { useAppearanceSettingsStore } from '../stores';
 
 export function useMainLayoutResizable() {
     const appearanceStore = useAppearanceSettingsStore();
-    const { isSideBarTabShow } = storeToRefs(appearanceStore);
+    const { isSideBarTabShow, rightSidebarWidth } =
+        storeToRefs(appearanceStore);
 
-    const asideDefaultSize = 260;
+    const asideDefaultSize = computed(() => rightSidebarWidth?.value || 260);
     const asideCollapsedSize = 60;
     const asideSizeUnit = 'px';
     const asideMinSize = 260;
@@ -24,7 +25,11 @@ export function useMainLayoutResizable() {
             isAsideCollapsedState.value = false;
             return;
         }
+        const asideSize = sizes[sizes.length - 1];
         isAsideCollapsedState.value = isAsideCollapsed(sizes);
+        if (typeof asideSize === 'number' && asideSize >= asideMinSize) {
+            appearanceStore.setRightSidebarWidth?.(asideSize);
+        }
     };
 
     const isAsideCollapsedStatic = computed(

@@ -83,6 +83,7 @@ export const useAppearanceSettingsStore = defineStore(
             'Sort by Last Active'
         ]);
         const navWidth = ref(220);
+        const rightSidebarWidth = ref(260);
         const isSidebarGroupByInstance = ref(true);
         const isHideFriendsInSameInstance = ref(false);
         const isSameInstanceAboveFavorites = ref(false);
@@ -188,7 +189,8 @@ export const useAppearanceSettingsStore = defineStore(
                 appFontFamilyConfig,
                 customFontFamilyConfig,
                 appCjkFontPackConfig,
-                lastDarkThemeConfig
+                lastDarkThemeConfig,
+                rightSidebarWidthConfig
             ] = await Promise.all([
                 configRepository.getString('VRCX_appLanguage'),
                 configRepository.getBool('displayVRCPlusIconsAsAvatar', true),
@@ -277,7 +279,8 @@ export const useAppearanceSettingsStore = defineStore(
                 configRepository.getString(
                     'VRCX_lastDarkTheme',
                     fallbackDarkTheme
-                )
+                ),
+                configRepository.getInt('VRCX_rightSidebarWidth', 260)
             ]);
 
             if (appLanguageConfig) {
@@ -354,6 +357,11 @@ export const useAppearanceSettingsStore = defineStore(
             }
             trustColor.value = { ...TRUST_COLOR_DEFAULTS };
             navWidth.value = clampInt(navWidthConfig, 64, 480);
+            rightSidebarWidth.value = clampInt(
+                rightSidebarWidthConfig || 260,
+                260,
+                700
+            );
             isSidebarGroupByInstance.value = isSidebarGroupByInstanceConfig;
             isHideFriendsInSameInstance.value =
                 isHideFriendsInSameInstanceConfig;
@@ -848,6 +856,29 @@ export const useAppearanceSettingsStore = defineStore(
         /**
          *
          */
+        function setRightSidebarWidth(widthOrArray) {
+            let width = null;
+            if (Array.isArray(widthOrArray) && widthOrArray.length) {
+                width = widthOrArray[widthOrArray.length - 1];
+            } else if (typeof widthOrArray === 'number') {
+                width = widthOrArray;
+            }
+            if (width && width >= 60) {
+                if (width >= 260) {
+                    const clamped = clampInt(width, 260, 700);
+                    if (rightSidebarWidth.value !== clamped) {
+                        rightSidebarWidth.value = clamped;
+                        configRepository.setInt(
+                            'VRCX_rightSidebarWidth',
+                            rightSidebarWidth.value
+                        );
+                    }
+                }
+            }
+        }
+        /**
+         *
+         */
         function setIsSidebarGroupByInstance() {
             isSidebarGroupByInstance.value = !isSidebarGroupByInstance.value;
             configRepository.setBool(
@@ -1232,6 +1263,7 @@ export const useAppearanceSettingsStore = defineStore(
             sidebarSortMethod3,
             sidebarSortMethods,
             navWidth,
+            rightSidebarWidth,
             isSidebarGroupByInstance,
             isHideFriendsInSameInstance,
             isSameInstanceAboveFavorites,
@@ -1277,6 +1309,7 @@ export const useAppearanceSettingsStore = defineStore(
             setSidebarSortMethod3,
             setSidebarSortMethods,
             setNavWidth,
+            setRightSidebarWidth,
             setIsSidebarGroupByInstance,
             setIsHideFriendsInSameInstance,
             setIsSameInstanceAboveFavorites,
