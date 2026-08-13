@@ -112,7 +112,11 @@ export const createColumns = ({
             meta: { label: () => t('table.playerList.timer') },
             sortingFn: (rowA, rowB) =>
                 (rowA.original?.timer ?? 0) - (rowB.original?.timer ?? 0),
-            cell: ({ row }) => <Timer epoch={row.original?.timer} />
+            cell: ({ row }) => (
+                <span class="font-mono tabular-nums">
+                    <Timer epoch={row.original?.timer} />
+                </span>
+            )
         },
         {
             id: 'displayName',

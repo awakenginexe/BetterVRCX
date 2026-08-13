@@ -207,6 +207,15 @@ const expandedRow = ({ row }) => {
     return null;
 };
 
+const FEED_TYPE_TONES = {
+    GPS: 'info',
+    Online: 'success',
+    Offline: 'muted',
+    Status: 'accent',
+    Avatar: 'info',
+    Bio: 'warning'
+};
+
 export const columns = [
     {
         id: 'expander',
@@ -276,9 +285,14 @@ export const columns = [
         meta: { label: () => t('table.feed.type') },
         cell: ({ row }) => {
             const type = row.getValue('type');
+            const tone = FEED_TYPE_TONES[type] || 'muted';
             return (
                 <div>
-                    <Badge variant="outline" class="text-muted-foreground">
+                    <Badge
+                        variant="outline"
+                        class="bv-log-badge"
+                        data-tone={tone}
+                    >
                         {t(`view.feed.filters.${type}`)}
                     </Badge>
                 </div>
@@ -433,8 +447,8 @@ export const columns = [
 function formatDifference(
     oldString,
     newString,
-    markerAddition = '<span class="x-text-added">{{text}}</span>',
-    markerDeletion = '<span class="x-text-removed">{{text}}</span>'
+    markerAddition = '<span class="x-text-added bv-log-diff-added">{{text}}</span>',
+    markerDeletion = '<span class="x-text-removed bv-log-diff-removed">{{text}}</span>'
 ) {
     [oldString, newString] = [oldString, newString].map((s) =>
         String(s ?? '')

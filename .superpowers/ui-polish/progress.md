@@ -13,9 +13,19 @@ This document tracks progress across the multi-session visual and interaction po
 | **Session 2** | **App Shell + Sidebar + Navigation** | **COMPLETE** | Header bar, persistent sidebar, `NavMenu`, `NavMenuFolderItem`, orthogonal state model, zero-shift indicators, global floating primitives, and status bar firewall. |
 | **Session 3** | **Social + Entity Surfaces** | **COMPLETE / HUMAN QA PASSED** | User, World, Avatar, and Group detail dialog shells, profile tabs, action clusters, relationship badges, Friends table, Friend Locations cards, Quick Search dialog, and shared entity tokens. |
 | **Session 4** | **Worlds + Groups + Avatars + Search** | **COMPLETE / HUMAN QA PASSED** | Card grids, discovery views, search workspace tabs, filters, and aspect-ratio media containers. |
-| **Session 5** | Feed + Logs + Data-heavy Surfaces | NOT STARTED | Activity Feed, Game Log, Friend Log, live Player List, virtualization alignment, and high-performance non-animating row updates. |
+| **Session 5** | **Feed + Logs + Data-heavy Surfaces** | **COMPLETE / AWAITING HUMAN QA** | Activity Feed, Game Log, Friend Log, live Player List, virtualization alignment, and high-performance non-animating row updates. |
 | **Session 6** | Tools + Settings + Secondary Surfaces | NOT STARTED | Settings categorization, Tools launcher, Screenshot Metadata, Gallery, and developer utilities. |
 | **Session 7** | Whole-app Polish + QA | NOT STARTED | End-to-end consistency pass, accessibility checks, `:focus-visible` audit, reduced motion verification, and test suite green-light. |
+
+---
+
+## Session 5 Verification & Completion Log
+- **Strict Live-Data Performance Firewall**: Guaranteed zero decorative transitions or animations on live streaming rows, counters, timestamps, or metrics. Replaced per-segment sticky `backdrop-blur-sm` in `GameLogSessionsSegment.vue` with opaque `--bv-bg-surface-raised` surface for responsive, hitch-free scrolling.
+- **Activity Feed Modernization**: Replaced hardcoded diff colors with `.bv-log-diff-added` and `.bv-log-diff-removed` using semantic tokens. Standardized feed event type badges with `.bv-log-badge` and semantic `data-tone` attributes.
+- **Friend Log & Moderation Ledger**: Replaced legacy ad-hoc badges with `.bv-log-badge`. Converted destructive delete buttons to `.bv-table-action-btn` using `text-destructive` semantics (separated from presence/status colors).
+- **Game Log (Table & Sessions Mode)**: Standardized event badges and action buttons across table and timeline sessions modes. Converted duration, play count, and timestamps to `tabular-nums` monospace styling.
+- **Player List & Photon Event Table**: Standardized live count indicators, instance card layout, and photon status dots (`--bv-status-online`, `--bv-status-busy`, `--bv-status-offline`). Added monospace tabular rendering to live instance timers to eliminate jitter.
+- **Verification**: 68/68 targeted unit tests passing (including dedicated `session5PerformanceFirewall.test.js`); `npx oxfmt --check` and `git diff --check` passing; `npm run prod` built cleanly with zero errors. All pre-existing dirty files preserved intact.
 
 ---
 

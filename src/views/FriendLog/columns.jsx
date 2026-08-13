@@ -15,6 +15,15 @@ import { showUserDialog } from '../../coordinators/userCoordinator';
 
 const { t } = i18n.global;
 
+const FRIEND_LOG_TYPE_TONES = {
+    Friend: 'success',
+    Unfriend: 'danger',
+    FriendRequest: 'info',
+    CancelFriendRequest: 'warning',
+    DisplayName: 'accent',
+    TrustLevel: 'accent'
+};
+
 export const createColumns = ({ onDelete, onDeletePrompt }) => {
     const { shiftHeld } = storeToRefs(useUiStore());
 
@@ -68,8 +77,13 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
             meta: { label: () => t('table.friendLog.type') },
             cell: ({ row }) => {
                 const type = row.getValue('type');
+                const tone = FRIEND_LOG_TYPE_TONES[type] || 'muted';
                 return (
-                    <Badge variant="outline" class="text-muted-foreground">
+                    <Badge
+                        variant="outline"
+                        class="bv-log-badge"
+                        data-tone={tone}
+                    >
                         {t(`view.friend_log.filters.${type}`)}
                     </Badge>
                 );
@@ -129,7 +143,10 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                     <div class="flex justify-end">
                         <button
                             type="button"
-                            class="inline-flex h-6 items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                            class="bv-table-action-btn bv-focus-ring"
+                            data-destructive={
+                                shiftHeld.value ? 'true' : undefined
+                            }
                             onClick={() =>
                                 shiftHeld.value
                                     ? onDelete(original)
@@ -137,7 +154,7 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                             }
                         >
                             {shiftHeld.value ? (
-                                <X class="h-4 w-4 text-red-600" />
+                                <X class="h-4 w-4 text-destructive" />
                             ) : (
                                 <Trash2 class="h-4 w-4" />
                             )}

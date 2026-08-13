@@ -406,23 +406,24 @@
         gap: 8px;
         min-height: 32px;
         padding: 0 11px;
-        border: 1px solid color-mix(in srgb, var(--bv-success) 35%, var(--bv-border));
-        border-radius: 8px;
+        border: 1px solid color-mix(in srgb, var(--bv-status-online) 35%, var(--bv-border-default));
+        border-radius: var(--bv-radius-md);
         color: var(--bv-text-strong);
-        background: color-mix(in srgb, var(--bv-success) 8%, var(--bv-bg-control));
+        background: color-mix(in srgb, var(--bv-status-online) 8%, var(--bv-bg-control));
     }
 
     .player-list__live-marker {
         width: 7px;
         height: 7px;
         border-radius: 999px;
-        background: var(--bv-success);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bv-success) 18%, transparent);
+        background: var(--bv-status-online);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bv-status-online) 18%, transparent);
     }
 
     .player-list__player-count {
         font-size: 12px;
         font-weight: 700;
+        font-variant-numeric: tabular-nums;
     }
 
     .player-list__instance {
@@ -432,7 +433,7 @@
         gap: 16px;
         min-height: 140px;
         padding: 14px;
-        border-radius: 14px;
+        border-radius: var(--bv-radius-lg);
     }
 
     .player-list__world-preview {
@@ -440,8 +441,8 @@
         height: 132px;
         overflow: hidden;
         padding: 0;
-        border: 1px solid var(--bv-border);
-        border-radius: 12px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-md);
         background: var(--bv-bg-control);
         cursor: pointer;
     }
@@ -492,7 +493,7 @@
         align-content: start;
         gap: 6px;
         padding-left: 14px;
-        border-left: 1px solid var(--bv-border);
+        border-left: 1px solid var(--bv-border-default);
     }
 
     .player-list__metric {
@@ -510,7 +511,7 @@
     .player-list__players {
         min-width: 0;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: var(--bv-radius-lg);
     }
 
     .player-list__photon {

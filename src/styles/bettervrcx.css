@@ -958,6 +958,136 @@ html.dark {
 }
 
 /* ==========================================================================
+   Data Surfaces, Logs & Operational Primitives (Feed / GameLog / FriendLog / PlayerList)
+   ========================================================================== */
+
+.bv-data-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--bv-space-4);
+    padding: var(--bv-space-4);
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-md);
+    background-color: var(--bv-bg-surface-raised);
+}
+
+.bv-log-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 18px;
+    padding: 1px 6px;
+    border: 1px solid var(--bv-border-default);
+    border-radius: var(--bv-radius-sm);
+    background-color: var(--bv-bg-control);
+    color: var(--bv-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.bv-log-badge[data-tone='accent'] {
+    border-color: color-mix(in srgb, var(--bv-accent-primary) 35%, transparent);
+    background-color: var(--bv-accent-soft);
+    color: var(--bv-accent-primary);
+}
+
+.bv-log-badge[data-tone='info'] {
+    border-color: color-mix(in srgb, var(--bv-status-joinme) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-joinme) 12%,
+        transparent
+    );
+    color: var(--bv-status-joinme);
+}
+
+.bv-log-badge[data-tone='success'] {
+    border-color: color-mix(in srgb, var(--bv-status-online) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-online) 12%,
+        transparent
+    );
+    color: var(--bv-status-online);
+}
+
+.bv-log-badge[data-tone='warning'] {
+    border-color: color-mix(in srgb, var(--bv-status-askme) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-askme) 12%,
+        transparent
+    );
+    color: var(--bv-status-askme);
+}
+
+.bv-log-badge[data-tone='danger'],
+.bv-log-badge[data-tone='destructive'] {
+    border-color: color-mix(in srgb, var(--bv-status-busy) 35%, transparent);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-busy) 12%,
+        transparent
+    );
+    color: var(--bv-status-busy);
+}
+
+.bv-log-diff-added {
+    color: var(--bv-status-online);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-online) 16%,
+        transparent
+    );
+    padding: 1px 3px;
+    border-radius: var(--bv-radius-xs);
+}
+
+.bv-log-diff-removed {
+    text-decoration: line-through;
+    color: var(--bv-status-busy);
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-busy) 16%,
+        transparent
+    );
+    padding: 1px 3px;
+    border-radius: var(--bv-radius-xs);
+}
+
+.bv-table-action-btn {
+    display: inline-flex;
+    height: 24px;
+    width: 24px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--bv-radius-sm);
+    background: transparent;
+    color: var(--bv-text-muted);
+    cursor: pointer;
+    transition:
+        background-color var(--bv-duration-fast) var(--bv-ease-out),
+        color var(--bv-duration-fast) var(--bv-ease-out);
+}
+
+.bv-table-action-btn:hover {
+    background-color: var(--bv-bg-control-hover);
+    color: var(--bv-text-strong);
+}
+
+.bv-table-action-btn[data-destructive='true']:hover,
+.bv-table-action-btn.is-destructive:hover {
+    background-color: color-mix(
+        in srgb,
+        var(--bv-status-busy) 15%,
+        transparent
+    );
+    color: var(--bv-status-busy);
+}
+
+/* ==========================================================================
    Motion System: Vue Transitions & Animations
    ========================================================================== */
 

@@ -347,19 +347,21 @@
         min-width: 180px;
     }
 
-    .feed :deep(.x-text-removed) {
+    .feed :deep(.x-text-removed),
+    .feed :deep(.bv-log-diff-removed) {
         text-decoration: line-through;
-        color: #ff0000;
-        background-color: rgba(255, 0, 0, 0.2);
-        padding: 2px 2px;
-        border-radius: 4px;
+        color: var(--bv-status-busy);
+        background-color: color-mix(in srgb, var(--bv-status-busy) 16%, transparent);
+        padding: 1px 3px;
+        border-radius: var(--bv-radius-xs);
     }
 
-    .feed :deep(.x-text-added) {
-        color: rgb(35, 188, 35);
-        background-color: rgba(76, 255, 80, 0.2);
-        padding: 2px 2px;
-        border-radius: 4px;
+    .feed :deep(.x-text-added),
+    .feed :deep(.bv-log-diff-added) {
+        color: var(--bv-status-online);
+        background-color: color-mix(in srgb, var(--bv-status-online) 16%, transparent);
+        padding: 1px 3px;
+        border-radius: var(--bv-radius-xs);
     }
 
     @media (max-width: 960px) {

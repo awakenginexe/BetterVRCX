@@ -38,6 +38,17 @@ const UNACTIONABLE_TYPES = new Set([
     'PortalSpawn'
 ]);
 
+const GAME_LOG_TYPE_TONES = {
+    Location: 'info',
+    OnPlayerJoined: 'success',
+    OnPlayerLeft: 'muted',
+    VideoPlay: 'accent',
+    Event: 'warning',
+    External: 'info',
+    StringLoad: 'muted',
+    ImageLoad: 'muted'
+};
+
 export const createColumns = ({ getCreatedAt, onDelete, onDeletePrompt }) => {
     const { showPreviousInstancesInfoDialog } = useInstanceStore();
     const { shiftHeld } = storeToRefs(useUiStore());
@@ -91,9 +102,14 @@ export const createColumns = ({ getCreatedAt, onDelete, onDeletePrompt }) => {
                 const label = t(`view.game_log.filters.${original.type}`);
                 const isLink =
                     Boolean(original.location) && original.type !== 'Location';
+                const tone = GAME_LOG_TYPE_TONES[original.type] || 'muted';
 
                 return (
-                    <Badge variant="outline" class="text-muted-foreground">
+                    <Badge
+                        variant="outline"
+                        class="bv-log-badge"
+                        data-tone={tone}
+                    >
                         <span
                             class={isLink ? 'cursor-pointer' : undefined}
                             onClick={() =>
@@ -366,7 +382,10 @@ export const createColumns = ({ getCreatedAt, onDelete, onDeletePrompt }) => {
                         {canDelete ? (
                             <button
                                 type="button"
-                                class="inline-flex h-6 items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                                class="bv-table-action-btn bv-focus-ring"
+                                data-destructive={
+                                    shiftHeld.value ? 'true' : undefined
+                                }
                                 onClick={() =>
                                     shiftHeld.value
                                         ? onDelete(original)
@@ -374,7 +393,7 @@ export const createColumns = ({ getCreatedAt, onDelete, onDeletePrompt }) => {
                                 }
                             >
                                 {shiftHeld.value ? (
-                                    <X class="h-4 w-4 text-red-600" />
+                                    <X class="h-4 w-4 text-destructive" />
                                 ) : (
                                     <Trash2 class="h-4 w-4" />
                                 )}
@@ -387,7 +406,7 @@ export const createColumns = ({ getCreatedAt, onDelete, onDeletePrompt }) => {
                             >
                                 <button
                                     type="button"
-                                    class="inline-flex h-6 items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                                    class="bv-table-action-btn bv-focus-ring"
                                     onClick={() =>
                                         showPreviousInstancesInfoDialog(
                                             original.location

@@ -210,4 +210,19 @@ describe('BetterVRCX stylesheet contract', () => {
             expect(stylesheet).toContain(cls);
         }
     });
+
+    test('provides shared data toolbar, log badge, and diff classes', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        const logClasses = [
+            '.bv-data-toolbar',
+            '.bv-log-badge',
+            '.bv-log-diff-added',
+            '.bv-log-diff-removed',
+            '.bv-table-action-btn'
+        ];
+
+        for (const cls of logClasses) {
+            expect(stylesheet).toContain(cls);
+        }
+    });
 });

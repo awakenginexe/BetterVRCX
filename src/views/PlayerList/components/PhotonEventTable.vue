@@ -243,7 +243,7 @@
         flex-wrap: wrap;
         gap: 8px;
         padding: 10px;
-        border-radius: 10px;
+        border-radius: var(--bv-radius-md);
     }
 
     .photon-events__status {
@@ -258,11 +258,11 @@
         width: 7px;
         height: 7px;
         border-radius: 999px;
-        background: var(--bv-offline);
+        background: var(--bv-status-offline);
     }
 
     .photon-events__status-dot--live {
-        background: var(--bv-success);
+        background: var(--bv-status-online);
     }
 
     .photon-events__status-dot--idle {
@@ -271,11 +271,11 @@
     }
 
     .photon-events__status-dot--offline {
-        background: var(--bv-danger);
+        background: var(--bv-status-busy);
     }
 
     .photon-events__table {
         overflow: hidden;
-        border-radius: 10px;
+        border-radius: var(--bv-radius-md);
     }
 </style>

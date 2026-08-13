@@ -11,7 +11,7 @@
                             {{ formatTime(event.created_at) }}
                         </span>
                         <div class="min-w-28 shrink-0">
-                            <Badge variant="outline" class="justify-center text-muted-foreground">
+                            <Badge variant="outline" class="bv-log-badge justify-center" data-tone="success">
                                 {{ t('view.game_log.filters.OnPlayerJoined') }}
                             </Badge>
                         </div>
@@ -50,7 +50,7 @@
                             {{ formatTime(event.created_at) }}
                         </span>
                         <div class="min-w-28 shrink-0">
-                            <Badge variant="outline" class="justify-center text-muted-foreground">
+                            <Badge variant="outline" class="bv-log-badge justify-center" data-tone="muted">
                                 {{ t('view.game_log.filters.OnPlayerLeft') }}
                             </Badge>
                         </div>
@@ -85,7 +85,7 @@
                     {{ formatTime(event.created_at) }}
                 </span>
                 <div class="min-w-28 shrink-0">
-                    <Badge variant="outline" class="justify-center text-muted-foreground">
+                    <Badge variant="outline" class="bv-log-badge justify-center" data-tone="success">
                         {{ t('view.game_log.filters.OnPlayerJoined') }}
                     </Badge>
                 </div>
@@ -105,7 +105,7 @@
                     {{ formatTime(event.created_at) }}
                 </span>
                 <div class="min-w-28 shrink-0">
-                    <Badge variant="outline" class="justify-center text-muted-foreground">
+                    <Badge variant="outline" class="bv-log-badge justify-center" data-tone="muted">
                         {{ t('view.game_log.filters.OnPlayerLeft') }}
                     </Badge>
                 </div>
@@ -127,7 +127,7 @@
                             {{ formatTime(event.created_at) }}
                         </span>
                         <div class="min-w-28 shrink-0">
-                            <Badge variant="outline" class="justify-center text-muted-foreground">
+                            <Badge variant="outline" class="bv-log-badge justify-center" data-tone="accent">
                                 {{ t('view.game_log.filters.VideoPlay') }}
                             </Badge>
                         </div>
@@ -143,7 +143,8 @@
                             <Badge
                                 v-if="event.playCount > 1"
                                 variant="secondary"
-                                class="shrink-0 text-[0.625rem] h-4 px-1">
+                                class="shrink-0 bv-log-badge text-[0.625rem] h-4 px-1"
+                                data-tone="accent">
                                 {{ t('view.game_log.sessions.play_count', { count: event.playCount }) }}
                             </Badge>
                         </span>

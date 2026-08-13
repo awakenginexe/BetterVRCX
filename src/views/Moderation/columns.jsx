@@ -15,6 +15,16 @@ import { showUserDialog } from '../../coordinators/userCoordinator';
 
 const { t, te } = i18n.global;
 
+const MODERATION_TYPE_TONES = {
+    block: 'danger',
+    mute: 'warning',
+    unmute: 'success',
+    hideAvatar: 'warning',
+    showAvatar: 'info',
+    interactOff: 'warning',
+    interactOn: 'info'
+};
+
 export const createColumns = ({ onDelete, onDeletePrompt }) => {
     const { shiftHeld } = storeToRefs(useUiStore());
     const { currentUser } = storeToRefs(useUserStore());
@@ -70,9 +80,14 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                 const type = row.getValue('type');
                 const typeKey = `view.moderation.filters.${type}`;
                 const label = te(typeKey) ? t(typeKey) : type;
+                const tone = MODERATION_TYPE_TONES[type] || 'muted';
 
                 return (
-                    <Badge variant="outline" class="text-muted-foreground">
+                    <Badge
+                        variant="outline"
+                        class="bv-log-badge"
+                        data-tone={tone}
+                    >
                         {label}
                     </Badge>
                 );
@@ -90,7 +105,7 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                 const original = row.original;
                 return (
                     <span
-                        class="cursor-pointer block w-full min-w-0 truncate pr-2.5 cursor-pointer"
+                        class="cursor-pointer block w-full min-w-0 truncate pr-2.5"
                         onClick={() => showUserDialog(original.sourceUserId)}
                     >
                         {original.sourceDisplayName}
@@ -111,7 +126,7 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                 const original = row.original;
                 return (
                     <span
-                        class="cursor-pointer block w-full whitespace-normal wrap-break-word pr-2.5 cursor-pointer"
+                        class="cursor-pointer block w-full whitespace-normal wrap-break-word pr-2.5"
                         onClick={() => showUserDialog(original.targetUserId)}
                     >
                         {original.targetDisplayName}
@@ -140,7 +155,10 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                     <div class="flex justify-end">
                         <button
                             type="button"
-                            class="inline-flex h-6 items-center justify-center text-muted-foreground hover:text-foreground"
+                            class="bv-table-action-btn bv-focus-ring"
+                            data-destructive={
+                                shiftHeld.value ? 'true' : undefined
+                            }
                             onClick={() =>
                                 shiftHeld.value
                                     ? onDelete(original)
@@ -148,7 +166,7 @@ export const createColumns = ({ onDelete, onDeletePrompt }) => {
                             }
                         >
                             {shiftHeld.value ? (
-                                <X class="h-4 w-4 text-red-600" />
+                                <X class="h-4 w-4 text-destructive" />
                             ) : (
                                 <Trash2 class="h-4 w-4" />
                             )}

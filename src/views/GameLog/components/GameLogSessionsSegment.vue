@@ -3,7 +3,7 @@
         <!-- Session header: sticky + clickable to collapse -->
         <button
             type="button"
-            class="sticky top-0 z-[5] flex items-center gap-2 px-3 py-2 bg-muted/80 backdrop-blur-sm w-full text-left border-none cursor-pointer hover:bg-muted transition-colors border-b border-border"
+            class="sticky top-0 z-[5] flex items-center gap-2 px-3 py-2 bg-[var(--bv-bg-surface-raised)] w-full text-left border-none cursor-pointer hover:bg-[var(--bv-bg-control-hover)] transition-colors border-b border-[var(--bv-border-default)]"
             @click="collapsed = !collapsed">
             <ChevronRight
                 class="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150"
@@ -15,13 +15,20 @@
                 class="text-sm min-w-0"
                 enable-context-menu
                 @click.stop />
-            <span class="shrink-0 text-muted-foreground text-[0.6875rem]">
+            <span class="shrink-0 text-muted-foreground text-[0.6875rem] tabular-nums">
                 {{ formatTime(segment.created_at) }}
             </span>
-            <Badge v-if="durationText" variant="outline" class="text-[0.625rem] font-tabular-nums h-4 px-1">
+            <Badge
+                v-if="durationText"
+                variant="outline"
+                class="bv-log-badge text-[0.625rem] font-mono tabular-nums h-4 px-1">
                 {{ durationText }}
             </Badge>
-            <Badge v-else-if="showCurrentBadge" variant="outline" class="text-[0.625rem] h-4 px-1">
+            <Badge
+                v-else-if="showCurrentBadge"
+                variant="outline"
+                class="bv-log-badge text-[0.625rem] h-4 px-1"
+                data-tone="accent">
                 {{ t('common.current_session') }}
             </Badge>
             <div

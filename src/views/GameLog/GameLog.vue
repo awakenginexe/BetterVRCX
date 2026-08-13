@@ -384,9 +384,9 @@
     }
 
     .game-log__table :deep(tbody button:focus-visible) {
-        outline: 2px solid var(--bv-accent);
+        outline: 2px solid var(--bv-accent-primary);
         outline-offset: 2px;
-        border-radius: 5px;
+        border-radius: var(--bv-radius-xs);
     }
 
     @media (max-width: 900px) {
