@@ -1,6 +1,8 @@
 <template>
     <div id="x-app" class="flex w-screen h-screen overflow-hidden cursor-default x-app-type">
-        <div class="wrist" :class="{ background: config && config.backgroundEnabled }">
+        <div
+            class="wrist bv-vr-overlay-frame bv-vr-wrist-frame"
+            :class="{ background: config && config.backgroundEnabled }">
             <div class="x-container" style="flex: 1">
                 <div class="x-friend-list" ref="list" style="color: var(--vr-text-secondary)">
                     <template v-if="config && config.minimalFeed">
@@ -1329,7 +1331,7 @@
             </div>
         </div>
         <!-- HMD Overlay -->
-        <div class="hmd">
+        <div class="hmd bv-vr-overlay-frame bv-vr-hmd-frame">
             <svg class="np-progress-circle">
                 <circle
                     class="np-progress-circle-stroke"

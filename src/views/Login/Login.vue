@@ -1,6 +1,6 @@
 <template>
-    <div class="x-login-container">
-        <div class="m-1.5" style="position: absolute; top: 0; left: 0">
+    <div class="x-login-container bv-login-page">
+        <div class="bv-login-utilities">
             <LoginSettingsDialog />
             <TooltipWrapper v-if="!noUpdater" side="top" :content="t('view.login.updater')">
                 <Button class="rounded-full mr-2 text-xs" size="icon-sm" variant="ghost" @click="showVRCXUpdateDialog">
@@ -31,7 +31,13 @@
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div class="x-login">
+        <section class="x-login bv-login-frame" aria-labelledby="bettervrcx-login-title">
+            <div class="bv-login-brand">
+                <img class="bv-login-brand-mark" :src="vrcxLogo" alt="" />
+                <div>
+                    <h1 id="bettervrcx-login-title">BetterVRCX</h1>
+                </div>
+            </div>
             <Alert
                 v-if="vrcStatusStore.hasIssue"
                 :variant="vrcStatusStore.isMajor ? 'destructive' : 'warning'"
@@ -43,7 +49,7 @@
                     {{ vrcStatusStore.statusText }}
                 </AlertDescription>
             </Alert>
-            <div class="x-login-form-container">
+            <div class="x-login-form-container bv-login-workspace">
                 <div>
                     <h2 class="m-0" style="font-weight: bold; text-align: center">{{ t('view.login.login') }}</h2>
                     <form id="login-form" @submit.prevent="onSubmit">
@@ -175,7 +181,7 @@
                     <p>{{ t('view.settings.general.legal_notice.disclaimer2') }}</p>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
 
@@ -219,6 +225,7 @@
 
     import LoginSettingsDialog from './Dialog/LoginSettingsDialog.vue';
 
+    const vrcxLogo = new URL('../../../images/VRCX.png', import.meta.url).href;
     const { userImage } = useUserDisplay();
     const { showVRCXUpdateDialog } = useVRCXUpdaterStore();
     const router = useRouter();
@@ -417,19 +424,61 @@
         justify-content: center;
         width: 100%;
         height: 100%;
+        padding: 28px;
+        overflow: auto;
+        background: var(--bv-bg-base);
+    }
+
+    .bv-login-utilities {
+        position: absolute;
+        top: 18px;
+        left: 18px;
+        z-index: 1;
     }
 
     .x-login {
         display: grid;
-        grid-template-rows: repeat(2, auto);
+        grid-template-rows: auto auto auto;
+        width: min(100%, 820px);
+        padding: clamp(18px, 3vw, 30px);
+        border: 1px solid var(--bv-border);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bv-bg-surface) 95%, transparent);
+        box-shadow: 0 24px 64px rgb(0 0 0 / 28%);
+    }
+
+    .bv-login-brand {
+        display: flex;
         align-items: center;
-        max-width: clamp(600px, 60svw, 800px);
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .bv-login-brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 8px 20px rgb(0 0 0 / 22%);
+    }
+
+    .bv-login-brand h1 {
+        margin: 0;
+        color: var(--bv-text-strong);
+        font-size: 23px;
+        font-weight: 760;
+        line-height: 1.1;
     }
 
     .x-login-form-container {
         display: grid;
-        gap: 8px;
-        height: 380px;
+        gap: 16px;
+        min-height: 340px;
+        max-height: min(420px, 48svh);
+        padding: 4px;
+        border: 1px solid var(--bv-border);
+        border-radius: 6px;
+        background: var(--bv-bg-control);
     }
 
     .x-login-form-container:has(> div:nth-child(3)) {
@@ -440,7 +489,7 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
-        padding: 16px;
+        padding: clamp(14px, 2.5vw, 22px);
         overflow-y: auto;
     }
 
@@ -455,6 +504,7 @@
         width: 100%;
         margin: 0;
         border: 0;
+        background: var(--bv-border);
     }
 
     .x-saved-account-list {
@@ -466,6 +516,35 @@
     }
 
     .x-legal-notice-container {
-        margin-top: 8px;
+        margin-top: 16px;
+        color: var(--bv-text-quiet);
+    }
+
+    .x-legal-notice-container p {
+        margin: 5px 0;
+    }
+
+    .x-legal-notice-container a {
+        color: var(--bv-text-muted);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    @media (max-width: 680px) {
+        .x-login-container {
+            align-items: flex-start;
+            padding: 70px 14px 18px;
+        }
+
+        .x-login-form-container,
+        .x-login-form-container:has(> div:nth-child(3)) {
+            grid-template-columns: 1fr;
+            max-height: none;
+        }
+
+        hr.x-vertical-divider {
+            width: 100%;
+            height: 1px;
+        }
     }
 </style>

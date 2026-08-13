@@ -1,11 +1,11 @@
 {
     "name": "VRCX",
     "private": true,
-    "description": "Friendship management tool for VRChat",
+    "description": "BetterVRCX is a desktop companion for managing your VRChat social life.",
     "keywords": [
         "vrchat"
     ],
-    "homepage": "https://github.com/vrcx-team/VRCX#readme",
+    "homepage": "https://github.com/awakenginexe/BetterVRCX#readme",
     "bugs": {
         "url": "https://github.com/vrcx-team/VRCX/issues"
     },
