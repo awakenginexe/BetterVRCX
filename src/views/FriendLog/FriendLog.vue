@@ -265,6 +265,8 @@
     }
 
     .friend-log__table-surface {
+        display: flex;
+        flex-direction: column;
         flex: 1;
         min-height: 0;
         padding: 10px;
