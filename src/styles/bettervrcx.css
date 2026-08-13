@@ -387,8 +387,7 @@ html.dark {
 }
 
 .bv-interactive:focus-visible,
-.bv-focus-ring:focus-visible,
-.bv-focus-ring:focus-within {
+.bv-focus-ring:focus-visible {
     outline: none;
     box-shadow:
         0 0 0 2px var(--bv-bg-base),
