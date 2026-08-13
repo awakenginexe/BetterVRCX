@@ -23,7 +23,7 @@ Allowed terminal exceptions are `NOT_APPLICABLE` and `BLOCKED`. `BLOCKED` requir
 | BVX-003 | Left navigation, folders, dashboards, pinned tools, Direct Access ordering | `src/components/nav-menu`, `src/shared/constants/ui.js` | `REDESIGNED` | Persistence/route checks, keyboard/focus review, navigation visual check |
 | BVX-004 | Center route frame, KeepAlive, resizable center/right rails | `src/views/Layout/MainLayout.vue` | `REDESIGNED` | Route smoke test, resize/collapse check, no dialog regression |
 | BVX-005 | Friends/Groups sidebar, live grouping, notification sheet, quick search entry | `src/views/Sidebar` | `REDESIGNED` | Virtualization and action checks, collapsed rail visual check |
-| BVX-006 | Login, saved accounts, redirect, status/updater messaging | `src/views/Login` | `DESIGN_NEEDED` | Auth form behavior, redirect guard, visual check |
+| BVX-006 | Login, saved accounts, redirect, status/updater messaging | `src/views/Login` | `VERIFIED` | Task 9 commit `3cbaa625`; 11 focused login/native-branding tests, source contract audit, formatter/diff checks, production build, final review PASS |
 | BVX-007 | Feed filters, date range, search, pagination, click-through | `src/views/Feed`, feed stores | `REDESIGNED` | Task 4A commits `cbb66195` + `7820d4a5`; 44 focused tests, row-ID fix review PASS, production build |
 | BVX-008 | Friends Locations segments, grouping, same-instance mode, virtualized cards | `src/views/FriendsLocations` | `REDESIGNED` | Task 4A commits `cbb66195` + `7820d4a5`; focused segment/virtualizer/card tests, review PASS, production build |
 | BVX-009 | Game Log table mode, sessions mode, filters, delete confirmation | `src/views/GameLog`, `src/stores/gameLog` | `REDESIGNED` | Task 5A commits `06e7613f` + `2091f5ea`; 36 focused tests, active-session count regression, review clean, production build |
@@ -52,10 +52,10 @@ Allowed terminal exceptions are `NOT_APPLICABLE` and `BLOCKED`. `BLOCKED` requir
 | BVX-032 | Quick Search worker/index/keyboard/remote targets | `src/components/QuickSearchDialog.vue`, `src/stores/quickSearch*` | `REDESIGNED` | Task 3B commits `5f63cd69` + `5e771146`; focused search/preview tests, review PASS, production build |
 | BVX-033 | Fullscreen image preview, crop, zoom/pan/rotate/copy/download | `src/components/FullscreenImagePreview.vue`, crop dialogs | `REDESIGNED` | Task 3B commits `5f63cd69` + `5e771146`; focused close/action tests, accessibility review PASS, production build |
 | BVX-034 | Context menus, popovers, sheets, tooltips, command/select primitives | `src/components/ui`, shared menus | `DESIGN_NEEDED` | Focus/escape/layer behavior and representative caller review |
-| BVX-035 | Electron titlebar, tray, native dialogs, notifications, IPC | `src-electron`, `src/plugins/interopApi.js` | `DESIGN_NEEDED` | Desktop build/native contract review; no IPC name changes |
-| BVX-036 | Separate VR/wrist overlay layout and update queue | `src/vr`, `src-electron/main.js` | `DESIGN_NEEDED` | `vr.html` build and constrained layout/IPC review |
-| BVX-037 | Localization, accessible labels, status/platform/trust semantics | `src/localization`, shared UI | `DESIGN_NEEDED` | Locale build/check, keyboard/focus and semantic color review |
-| BVX-038 | Production branding copy and metadata without compatibility break | `package.json`, `src`, README/release metadata | `DESIGN_NEEDED` | Search for public VRCX copy, package/app ID compatibility review |
+| BVX-035 | Electron titlebar, tray, native dialogs, notifications, IPC | `src-electron`, `src/plugins/interopApi.js` | `VERIFIED` | Task 9 commit `3cbaa625`; protected protocol/IPC/preload/native source audit, no native diff, production build, final review PASS |
+| BVX-036 | Separate VR/wrist overlay layout and update queue | `src/vr`, `src-electron/main.js` | `VERIFIED` | Task 9 commit `3cbaa625`; focused VR entry/queue/frame test, `vr.html` production output, no main-process diff, final review PASS |
+| BVX-037 | Localization, accessible labels, status/platform/trust semantics | `src/localization`, shared UI | `VERIFIED` | Task 9 commit `3cbaa625`; semantic landmark/heading/decorative-image audit, existing localized controls retained, focused tests, production build, final review PASS |
+| BVX-038 | Production branding copy and metadata without compatibility break | `package.json`, `src`, README/release metadata | `VERIFIED` | Task 9 commit `3cbaa625`; public copy audit, compatibility identifier assertions, formatter/diff checks, production build, final review PASS |
 
 ## Verification protocol
 
