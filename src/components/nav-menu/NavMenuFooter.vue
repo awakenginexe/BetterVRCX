@@ -282,6 +282,6 @@
 
 <style scoped>
     .bv-nav-footer {
-        border-top: 1px solid var(--bv-border);
+        border-top: 1px solid var(--bv-border-default);
     }
 </style>

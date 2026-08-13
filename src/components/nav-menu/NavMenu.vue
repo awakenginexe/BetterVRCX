@@ -17,7 +17,7 @@
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         :tooltip="t('dashboard.new_dashboard')"
-                        class="border border-dashed border-primary/40 text-primary hover:bg-primary/10"
+                        class="bv-nav-item bv-new-dashboard-btn"
                         @click="handleQuickCreateDashboard">
                         <div class="flex items-center gap-3 pl-1 group-data-[collapsible=icon]:pl-0">
                             <Plus class="size-4" />
@@ -472,7 +472,7 @@
 
 <style scoped>
     .bv-nav-brand {
-        border-bottom: 1px solid var(--bv-border);
+        border-bottom: 1px solid var(--bv-border-default);
     }
 
     .bv-nav-brand-mark {
@@ -480,36 +480,36 @@
         width: 26px;
         height: 26px;
         place-items: center;
-        border: 1px solid var(--bv-accent);
-        border-radius: 8px;
+        border: 1px solid var(--bv-accent-primary);
+        border-radius: var(--bv-radius-md);
         background: var(--bv-bg-control);
         color: var(--bv-text-strong);
         font-size: 12px;
         font-weight: 800;
+        box-shadow: var(--bv-shadow-sm);
     }
 
     .bv-nav-brand-label {
         color: var(--bv-text-strong);
-        font-size: 13px;
-        font-weight: 750;
-        letter-spacing: 0.01em;
-    }
-
-    :deep(.bv-nav-item) {
-        min-height: 34px;
-        border-radius: 8px;
-        color: var(--bv-text-muted);
-    }
-
-    :deep(.bv-nav-item:hover) {
-        background: var(--bv-bg-hover);
-        color: var(--bv-text-strong);
-    }
-
-    :deep(.bv-nav-item-active) {
-        background: color-mix(in srgb, var(--bv-accent) 18%, var(--bv-bg-control));
-        color: var(--bv-text-strong);
+        font-size: 13.5px;
         font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .bv-new-dashboard-btn {
+        border: 1px dashed var(--bv-border-strong);
+        color: var(--bv-accent-primary);
+        background: transparent;
+        transition:
+            background-color var(--bv-duration-fast) var(--bv-ease-out),
+            border-color var(--bv-duration-fast) var(--bv-ease-out),
+            color var(--bv-duration-fast) var(--bv-ease-out);
+    }
+
+    .bv-new-dashboard-btn:hover {
+        border-color: var(--bv-accent-primary);
+        background: var(--bv-accent-subtle);
+        color: var(--bv-accent-primary);
     }
 
     .bv-nav-notify-dot {

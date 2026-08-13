@@ -10,6 +10,7 @@
                         <DropdownMenuTrigger as-child>
                             <SidebarMenuButton
                                 :is-active="item.children?.some((e) => e.index === activeMenuIndex)"
+                                :data-nav-key="item.index"
                                 :class="[
                                     'bv-nav-item bv-focus-ring',
                                     {
@@ -63,14 +64,12 @@
                         <template #default="{ open }">
                             <CollapsibleTrigger as-child>
                                 <SidebarMenuButton
-                                    :is-active="item.children?.some((e) => e.index === activeMenuIndex)"
+                                    :is-active="false"
+                                    :data-state="open ? 'open' : 'closed'"
+                                    :data-nav-key="item.index"
                                     :class="[
-                                        'bv-nav-item bv-focus-ring',
-                                        {
-                                            'bv-nav-item-active': item.children?.some(
-                                                (entry) => entry.index === activeMenuIndex
-                                            )
-                                        }
+                                        'bv-nav-item bv-nav-folder-trigger bv-focus-ring',
+                                        { 'is-expanded': open }
                                     ]"
                                     :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
                                     <i
@@ -83,23 +82,29 @@
                                             role="img"
                                             :aria-label="t('nav_menu.mark_all_read')"></span
                                     ></i>
-                                    <span v-show="!isCollapsed">{{
+                                    <span v-show="!isCollapsed" class="truncate">{{
                                         item.titleIsCustom ? item.title : t(item.title || '')
                                     }}</span>
 
                                     <ChevronRight
                                         v-show="!isCollapsed"
-                                        class="ml-auto transition-transform"
+                                        class="ml-auto size-4 shrink-0 transition-transform duration-150 ease-out"
                                         :class="open ? 'rotate-90' : ''" />
                                 </SidebarMenuButton>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                                <SidebarMenuSub>
+                                <SidebarMenuSub class="bv-nav-sub-list">
                                     <SidebarMenuSubItem v-for="entry in item.children" :key="entry.index">
                                         <ContextMenu>
                                             <ContextMenuTrigger as-child>
                                                 <SidebarMenuSubButton
                                                     :is-active="activeMenuIndex === entry.index"
+                                                    :data-nav-key="entry.index"
+                                                    :data-active="activeMenuIndex === entry.index"
+                                                    :class="[
+                                                        'bv-nav-sub-item bv-focus-ring',
+                                                        { 'is-selected': activeMenuIndex === entry.index }
+                                                    ]"
                                                     @click="emit('submenu-click', entry)">
                                                     <i
                                                         v-if="entry.icon"
@@ -112,8 +117,10 @@
                                                             role="img"
                                                             :aria-label="t('nav_menu.mark_all_read')"></span
                                                     ></i>
-                                                    <span v-if="entry.titleIsCustom">{{ entry.label }}</span>
-                                                    <span v-else>{{ t(entry.label) }}</span>
+                                                    <span v-if="entry.titleIsCustom" class="truncate">{{
+                                                        entry.label
+                                                    }}</span>
+                                                    <span v-else class="truncate">{{ t(entry.label) }}</span>
                                                 </SidebarMenuSubButton>
                                             </ContextMenuTrigger>
                                             <ContextMenuContent>

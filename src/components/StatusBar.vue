@@ -786,7 +786,7 @@
 
 <style scoped>
     .bv-status-frame {
-        border-color: var(--bv-border);
+        border-color: var(--bv-border-default);
         background: var(--bv-bg-rail);
         color: var(--bv-text-muted);
     }

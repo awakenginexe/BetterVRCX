@@ -96,10 +96,10 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        height: 42px;
-        flex: 0 0 42px;
-        padding: 0 18px;
-        border-bottom: 1px solid var(--bv-border);
+        height: 40px;
+        flex: 0 0 40px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--bv-border-default);
         background: var(--bv-bg-rail);
         -webkit-app-region: drag;
     }

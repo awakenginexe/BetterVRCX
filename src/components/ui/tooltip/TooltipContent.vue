@@ -40,14 +40,14 @@
             v-bind="{ ...forwarded, ...$attrs }"
             :class="
                 cn(
-                    'bg-foreground text-background animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-12000 w-fit rounded-md px-3 py-1.5 text-xs text-balance',
+                    'bg-[var(--bv-bg-surface-floating)] text-[var(--bv-text-strong)] border border-[var(--bv-border-strong)] shadow-[var(--bv-shadow-md)] backdrop-blur-[var(--bv-blur-md)] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-12000 w-fit rounded-md px-2.5 py-1 text-xs text-balance select-none',
                     props.class
                 )
             ">
             <slot />
 
             <TooltipArrow
-                class="bg-foreground fill-foreground z-12000 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px]" />
+                class="bg-[var(--bv-bg-surface-floating)] fill-[var(--bv-bg-surface-floating)] stroke-[var(--bv-border-strong)] z-12000 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px]" />
         </TooltipContent>
     </TooltipPortal>
 </template>
