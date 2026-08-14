@@ -11,15 +11,15 @@
     <Platforms>x64;ARM64</Platforms>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <AssemblyTitle>VRCX</AssemblyTitle>
-    <Product>VRCX</Product>
-    <Copyright>vrcx-team, pypy, natsumi</Copyright>
+    <AssemblyTitle>BetterVRCX</AssemblyTitle>
+    <Product>BetterVRCX</Product>
+    <Copyright>vrcx-team, pypy, natsumi, awakenginexe</Copyright>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Title>VRCX</Title>
-    <Description>VRCX</Description>
+    <Title>BetterVRCX</Title>
+    <Description>BetterVRCX</Description>
     <PackageIcon>..\images\VRCX.png</PackageIcon>
-    <RepositoryUrl>https://github.com/vrcx-team/VRCX</RepositoryUrl>
+    <RepositoryUrl>https://github.com/awakenginexe/BetterVRCX</RepositoryUrl>
     <ResourceLanguages>en</ResourceLanguages>
     <SatelliteResourceLanguages>en-US;en</SatelliteResourceLanguages>
     <Nullable>enable</Nullable>

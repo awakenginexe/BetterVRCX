@@ -17,7 +17,7 @@ namespace VRCX
     public class Update
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private static readonly string VrcxSetupExecutable = Path.Join(Program.AppDataDirectory, "VRCX_Setup.exe");
+        private static readonly string VrcxSetupExecutable = Path.Join(Program.AppDataDirectory, "BetterVRCX_Setup.exe");
         private static readonly string UpdateExecutable = Path.Join(Program.AppDataDirectory, "update.exe");
         private static readonly string TempDownload = Path.Join(Program.AppDataDirectory, "tempDownload");
         private static readonly HttpClient httpClient;
@@ -48,7 +48,7 @@ namespace VRCX
 
         public static void Check()
         {
-            if (Process.GetProcessesByName("VRCX_Setup").Length > 0)
+            if (Process.GetProcessesByName("BetterVRCX_Setup").Length > 0 || Process.GetProcessesByName("VRCX_Setup").Length > 0)
                 Environment.Exit(0);
 
             if (File.Exists(TempDownload))

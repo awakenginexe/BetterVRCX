@@ -12,15 +12,15 @@
     !include "version_define.nsh"
 
     !define PRODUCT_VERSION ${PRODUCT_VERSION_FROM_FILE}
-    !define VERSION ${PRODUCT_VERSION_FROM_FILE}
+    !define VERSION ${DISPLAY_VERSION_FROM_FILE}
 
     VIProductVersion "${PRODUCT_VERSION}"
-    VIFileVersion "${VERSION}"
+    VIFileVersion "${PRODUCT_VERSION}"
     VIAddVersionKey "FileVersion" "${VERSION}"
-    VIAddVersionKey "ProductName" "VRCX"
-    VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
-    VIAddVersionKey "LegalCopyright" "Copyright vrcx-team, pypy, natsumi"
-    VIAddVersionKey "FileDescription" "Friendship management tool for VRChat"
+    VIAddVersionKey "ProductName" "BetterVRCX"
+    VIAddVersionKey "ProductVersion" "${VERSION}"
+    VIAddVersionKey "LegalCopyright" "Copyright vrcx-team, pypy, natsumi, awakenginexe"
+    VIAddVersionKey "FileDescription" "BetterVRCX - Friendship management tool for VRChat"
 
 ;--------------------------------
 ;Include Modern UI
@@ -35,10 +35,10 @@
     SetCompressor /SOLID lzma
     SetCompressorDictSize 16
     Unicode True
-    Name "VRCX"
-    OutFile "VRCX_Setup.exe"
-    InstallDir "$PROGRAMFILES64\VRCX"
-    InstallDirRegKey HKLM "Software\VRCX" "InstallDir"
+    Name "BetterVRCX"
+    OutFile "BetterVRCX_Setup.exe"
+    InstallDir "$PROGRAMFILES64\BetterVRCX"
+    InstallDirRegKey HKLM "Software\BetterVRCX" "InstallDir"
     RequestExecutionLevel admin
     ShowInstDetails show
 
@@ -61,33 +61,21 @@
 ;--------------------------------
 ;Pages
 
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfUpgrade
-    !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
-
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfUpgrade
+    !insertmacro MUI_PAGE_LICENSE "../LICENSE"
     !insertmacro MUI_PAGE_DIRECTORY
-
     !insertmacro MUI_PAGE_INSTFILES
-
-    ;------------------------------
-    ; Finish Page
-
-    ; Checkbox to launch VRCX.
-    !define MUI_FINISHPAGE_RUN
-    !define MUI_FINISHPAGE_RUN_TEXT "Launch VRCX"
-    !define MUI_FINISHPAGE_RUN_FUNCTION launchVRCX
-
-    ; Checkbox to create desktop shortcut.
-    !define MUI_FINISHPAGE_SHOWREADME
-    !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create desktop shortcut"
-    !define MUI_FINISHPAGE_SHOWREADME_FUNCTION createDesktopShortcut
-
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfUpgrade
+        !define MUI_FINISHPAGE_NOAUTOCLOSE
+        !define MUI_FINISHPAGE_SHOWREADME ""
+        !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+        !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+        !define MUI_FINISHPAGE_SHOWREADME_FUNCTION createDesktopShortcut
+        !define MUI_FINISHPAGE_RUN
+        !define MUI_FINISHPAGE_RUN_TEXT "Start BetterVRCX"
+        !define MUI_FINISHPAGE_RUN_FUNCTION launchBetterVRCX
     !insertmacro MUI_PAGE_FINISH
 
     !insertmacro MUI_UNPAGE_CONFIRM
     !insertmacro MUI_UNPAGE_INSTFILES
-    !insertmacro MUI_UNPAGE_FINISH
 
 ;--------------------------------
 ;Languages
@@ -107,15 +95,40 @@ Function SkipIfUpgrade
 FunctionEnd
 
 Function .onInit
-    StrCpy $upgradeInstallation 0
+    ; Check if 64-bit Windows
+    ${IfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONSTOP "This software only runs on 64-bit Windows." /SD IDOK
+        Abort
+    ${EndIf}
 
+    ; Check if BetterVRCX or VRCX is already installed
+    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "UninstallString"
+    StrCmp $R0 "" checkOldVrcx
+        StrCpy $upgradeInstallation 1
+        Goto notInstalled
+
+    checkOldVrcx:
     ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "UninstallString"
     StrCmp $R0 "" notInstalled
         StrCpy $upgradeInstallation 1
+
     notInstalled:
 
-    ; If VRCX is already running, display a warning message
+    ; If BetterVRCX is already running, display a warning message
     loop:
+    StrCpy $1 "BetterVRCX.exe"
+    nsProcess::_FindProcess "$1"
+    Pop $R1
+    ${If} $R1 = 0
+        MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "BetterVRCX is still running. $\n$\nClick `OK` to kill the running process or `Cancel` to cancel this installer." /SD IDOK IDCANCEL cancel
+            nsExec::ExecToStack "taskkill /IM BetterVRCX.exe"
+    ${Else}
+        Goto checkVrcxExe
+    ${EndIf}
+    Sleep 1000
+    Goto loop
+
+    checkVrcxExe:
     StrCpy $1 "VRCX.exe"
     nsProcess::_FindProcess "$1"
     Pop $R1
@@ -126,7 +139,7 @@ Function .onInit
         Goto done
     ${EndIf}
     Sleep 1000
-    Goto loop
+    Goto checkVrcxExe
 
     cancel:
         Abort
@@ -135,17 +148,17 @@ FunctionEnd
 
 Function .onInstSuccess
     ${If} $upgradeInstallation = 1
-        Call launchVRCX
+        Call launchBetterVRCX
     ${EndIf}
 FunctionEnd
 
 Function createDesktopShortcut
-    CreateShortcut "$DESKTOP\VRCX.lnk" "$INSTDIR\VRCX.exe"
+    CreateShortcut "$DESKTOP\BetterVRCX.lnk" "$INSTDIR\BetterVRCX.exe"
 FunctionEnd
 
-Function launchVRCX
+Function launchBetterVRCX
     SetOutPath $INSTDIR
-    ShellExecAsUser::ShellExecAsUser "" "$INSTDIR\VRCX.exe" ""
+    ShellExecAsUser::ShellExecAsUser "" "$INSTDIR\BetterVRCX.exe" ""
 FunctionEnd
 
 ;--------------------------------
@@ -169,56 +182,60 @@ Section "Install" SecInstall
 
     File /r /x *.log /x *.pdb "..\build\Cef\*.*"
 
-    WriteRegStr HKLM "Software\VRCX" "InstallDir" $INSTDIR
+    WriteRegStr HKLM "Software\BetterVRCX" "InstallDir" $INSTDIR
     WriteUninstaller "$INSTDIR\Uninstall.exe"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "DisplayName" "VRCX"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "Publisher" "vrcx-team"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "DisplayVersion" "${VERSION}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "DisplayArch" "x64"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "InstallLocation" "$INSTDIR"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "DisplayIcon" "$\"$INSTDIR\VRCX.ico$\""
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayName" "BetterVRCX"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "Publisher" "awakenginexe"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayVersion" "${VERSION}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayArch" "x64"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "InstallLocation" "$INSTDIR"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayIcon" "$\"$INSTDIR\VRCX.ico$\""
 
     ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM  "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX" "EstimatedSize" "$0"
+    WriteRegDWORD HKLM  "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "EstimatedSize" "$0"
 
     ${GetParameters} $R2
     ${GetOptions} $R2 /SKIP_SHORTCUT= $3
     StrCmp $3 "true" noShortcut
-        CreateShortCut "$SMPROGRAMS\VRCX.lnk" "$INSTDIR\VRCX.exe"
-        ApplicationID::Set "$SMPROGRAMS\VRCX.lnk" "VRCX"
+        CreateShortCut "$SMPROGRAMS\BetterVRCX.lnk" "$INSTDIR\BetterVRCX.exe"
+        ApplicationID::Set "$SMPROGRAMS\BetterVRCX.lnk" "BetterVRCX"
     noShortcut:
 
     WriteRegStr HKCU "Software\Classes\vrcx" "" "URL:vrcx"
-    WriteRegStr HKCU "Software\Classes\vrcx" "FriendlyTypeName" "VRCX"
+    WriteRegStr HKCU "Software\Classes\vrcx" "FriendlyTypeName" "BetterVRCX"
     WriteRegStr HKCU "Software\Classes\vrcx" "URL Protocol" ""
     WriteRegExpandStr HKCU "Software\Classes\vrcx\DefaultIcon" "" "$INSTDIR\VRCX.ico"
     WriteRegStr HKCU "Software\Classes\vrcx\shell" "" "open"
-    WriteRegStr HKCU "Software\Classes\vrcx\shell\open" "FriendlyAppName" "VRCX"
-    WriteRegStr HKCU "Software\Classes\vrcx\shell\open\command" "" '"$INSTDIR\VRCX.exe" /uri="%1" /params="%2 %3 %4"'
+    WriteRegStr HKCU "Software\Classes\vrcx\shell\open" "FriendlyAppName" "BetterVRCX"
+    WriteRegStr HKCU "Software\Classes\vrcx\shell\open\command" "" '"$INSTDIR\BetterVRCX.exe" /uri="%1" /params="%2 %3 %4"'
 SectionEnd
 
 ;--------------------------------
 ;Uninstaller Section
 
 Section "Uninstall"
-    ; If VRCX is already running, display a warning message and exit
-    StrCpy $1 "VRCX.exe"
+    ; If BetterVRCX is already running, display a warning message and exit
+    StrCpy $1 "BetterVRCX.exe"
     nsProcess::_FindProcess "$1"
     Pop $R1
     ${If} $R1 = 0
-        MessageBox MB_OK|MB_ICONEXCLAMATION "VRCX is still running. Cannot uninstall this software.$\nPlease close VRCX and try again." /SD IDOK
+        MessageBox MB_OK|MB_ICONEXCLAMATION "BetterVRCX is still running. Cannot uninstall this software.$\nPlease close BetterVRCX and try again." /SD IDOK
         Abort
     ${EndIf}
 
     RMDir /r "$INSTDIR"
 
-    DeleteRegKey HKLM "Software\VRCX"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX"
+    DeleteRegKey HKLM "Software\BetterVRCX"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRCX"
+    DeleteRegKey HKLM "Software\VRCX"
     DeleteRegKey HKCU "Software\Classes\vrcx"
 
     ${IfNot} ${Silent}
+        Delete "$SMPROGRAMS\BetterVRCX.lnk"
+        Delete "$DESKTOP\BetterVRCX.lnk"
         Delete "$SMPROGRAMS\VRCX.lnk"
         Delete "$DESKTOP\VRCX.lnk"
     ${EndIf}

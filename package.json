@@ -1,5 +1,6 @@
 {
-    "name": "VRCX",
+    "name": "BetterVRCX",
+    "version": "3.0.0",
     "private": true,
     "description": "BetterVRCX is a desktop companion for managing your VRChat social life.",
     "keywords": [
@@ -7,13 +8,13 @@
     ],
     "homepage": "https://github.com/awakenginexe/BetterVRCX#readme",
     "bugs": {
-        "url": "https://github.com/vrcx-team/VRCX/issues"
+        "url": "https://github.com/awakenginexe/BetterVRCX/issues"
     },
     "license": "MIT",
-    "author": "VRCX Team",
+    "author": "VRCX Team, awakenginexe",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/vrcx-team/VRCX.git"
+        "url": "git+https://github.com/awakenginexe/BetterVRCX.git"
     },
     "main": "src-electron/main.js",
     "scripts": {

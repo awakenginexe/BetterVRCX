@@ -72,14 +72,16 @@ namespace VRCX
                 // look for trailing git hash "-22bcd96" to indicate nightly build
                 var version = versionFile.Split('-');
                 if (version.Length > 0 && version[^1].Length == 7)
-                    Version = $"VRCX Nightly {versionFile}";
+                    Version = $"BetterVRCX Nightly {versionFile}";
+                else if (versionFile.StartsWith("BetterVRCX"))
+                    Version = versionFile;
                 else
-                    Version = $"VRCX {versionFile}";
+                    Version = $"BetterVRCX {versionFile}";
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to read version file");
-                Version = "VRCX Nightly Build";
+                Version = "BetterVRCX v3.0.0 B 2026.07.18";
             }
         }
 

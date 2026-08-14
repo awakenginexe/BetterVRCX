@@ -243,6 +243,52 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             await configRepository.setString('VRCX_id', vrcxId.value);
         }
     }
+    function isNewerVersion(remote, current) {
+        if (!remote || !current) return false;
+        const clean = (str) =>
+            String(str)
+                .replace(/^(BetterVRCX|VRCX)\s+/i, '')
+                .trim();
+        const rClean = clean(remote);
+        const cClean = clean(current);
+
+        if (rClean === cClean) return false;
+
+        // 1. Check Semver (e.g. "v3.0.0", "v2.1.0")
+        const semverRegex = /v?(\d+)\.(\d+)\.(\d+)/i;
+        const rSem = rClean.match(semverRegex);
+        const cSem = cClean.match(semverRegex);
+
+        if (rSem && cSem) {
+            const rMajor = parseInt(rSem[1], 10);
+            const rMinor = parseInt(rSem[2], 10);
+            const rPatch = parseInt(rSem[3], 10);
+
+            const cMajor = parseInt(cSem[1], 10);
+            const cMinor = parseInt(cSem[2], 10);
+            const cPatch = parseInt(cSem[3], 10);
+
+            if (rMajor !== cMajor) return rMajor > cMajor;
+            if (rMinor !== cMinor) return rMinor > cMinor;
+            if (rPatch !== cPatch) return rPatch > cPatch;
+        }
+
+        // 2. Check Date (e.g. "2026.07.18", "2026.05.03")
+        const dateRegex = /(\d{4})\.(\d{2})\.(\d{2})/;
+        const rDate = rClean.match(dateRegex);
+        const cDate = cClean.match(dateRegex);
+
+        if (rDate && cDate) {
+            const rDateVal = `${rDate[1]}.${rDate[2]}.${rDate[3]}`;
+            const cDateVal = `${cDate[1]}.${cDate[2]}.${cDate[3]}`;
+            if (rDateVal !== cDateVal) {
+                return rDateVal > cDateVal;
+            }
+        }
+
+        return rClean > cClean;
+    }
+
     function getAssetOfInterest(assets) {
         let downloadUrl = '';
         let hashString = '';
@@ -255,7 +301,8 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
                 WINDOWS &&
                 asset.name.endsWith('.exe') &&
                 (asset.content_type === 'application/x-msdownload' ||
-                    asset.content_type === 'application/x-msdos-program')
+                    asset.content_type === 'application/x-msdos-program' ||
+                    asset.content_type === 'application/octet-stream')
             ) {
                 downloadUrl = asset.browser_download_url;
                 if (asset.digest && asset.digest.startsWith('sha256:')) {
@@ -283,7 +330,9 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
         if (
             !currentVersion.value ||
             currentVersion.value === 'VRCX Nightly Build' ||
-            currentVersion.value === 'VRCX Build'
+            currentVersion.value === 'BetterVRCX Nightly Build' ||
+            currentVersion.value === 'VRCX Build' ||
+            currentVersion.value === 'BetterVRCX Build'
         ) {
             // ignore custom builds
             return false;
@@ -325,10 +374,10 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
         }
         pendingVRCXUpdate.value = false;
         logWebRequest('[EXTERNAL GET]', url, `(${response.status})`, json);
-        if (json === Object(json) && json.name && json.published_at) {
-            changeLogDialog.value.buildName = json.name;
+        if (json === Object(json) && (json.name || json.tag_name) && json.published_at) {
+            const releaseName = json.name || json.tag_name;
+            changeLogDialog.value.buildName = releaseName;
             changeLogDialog.value.changeLog = changeLogRemoveLinks(json.body);
-            const releaseName = json.name;
             setLatestAppVersion(releaseName);
             VRCXUpdateDialog.value.updatePendingIsLatest = false;
             if (autoUpdateVRCX.value === 'Off') {
@@ -337,9 +386,9 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             if (releaseName === pendingVRCXInstall.value) {
                 // update already downloaded
                 VRCXUpdateDialog.value.updatePendingIsLatest = true;
-            } else if (releaseName > currentVersion.value) {
+            } else if (isNewerVersion(releaseName, currentVersion.value)) {
                 const { downloadUrl, hashString, size } = getAssetOfInterest(
-                    json.assets
+                    json.assets || []
                 );
                 if (!downloadUrl) {
                     return true;
@@ -433,7 +482,7 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             }
         }
         D.releases = releases;
-        D.release = json[0].name;
+        D.release = json[0] ? (json[0].name || json[0].tag_name) : '';
         VRCXUpdateDialog.value.updatePendingIsLatest = false;
         if (D.release === pendingVRCXInstall.value) {
             // update already downloaded and latest version

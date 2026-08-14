@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -84,18 +84,18 @@ namespace VRCX
             //
             this.TrayMenu_Separator.Name = "TrayMenu_Separator";
             this.TrayMenu_Separator.Size = new Size(128, 6);
-            //
+            // 
             // TrayMenu_Quit
-            //
+            // 
             this.TrayMenu_Quit.Name = "TrayMenu_Quit";
             this.TrayMenu_Quit.Size = new Size(131, 22);
-            this.TrayMenu_Quit.Text = "Quit VRCX";
+            this.TrayMenu_Quit.Text = "Quit BetterVRCX";
             this.TrayMenu_Quit.Click += new EventHandler(this.TrayMenu_Quit_Click);
-            //
+            // 
             // TrayIcon
-            //
+            // 
             this.TrayIcon.ContextMenuStrip = this.TrayMenu;
-            this.TrayIcon.Text = "VRCX";
+            this.TrayIcon.Text = "BetterVRCX";
             this.TrayIcon.Visible = true;
             this.TrayIcon.MouseClick += new MouseEventHandler(this.TrayIcon_MouseClick);
             //

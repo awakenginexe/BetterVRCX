@@ -27,8 +27,12 @@ const whatsNewReleases = Object.freeze({
  */
 function normalizeReleaseVersion(version) {
     const normalizedVersion = String(version || '')
-        .replace(/^VRCX\s+/, '')
+        .replace(/^(BetterVRCX|VRCX)\s+/i, '')
         .trim();
+    const dateMatch = normalizedVersion.match(/\d{4}\.\d{2}\.\d{2}/);
+    if (dateMatch) {
+        return dateMatch[0];
+    }
     return /^\d{4}\.\d{2}\.\d{2}$/.test(normalizedVersion)
         ? normalizedVersion
         : '';
