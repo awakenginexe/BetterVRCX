@@ -132,12 +132,8 @@
     const router = useRouter();
 
     const appearanceSettingsStore = useAppearanceSettingsStore();
-    const {
-        navWidth,
-        rightSidebarWidth,
-        isNavCollapsed,
-        isRightSidebarCollapsed
-    } = storeToRefs(appearanceSettingsStore);
+    const { navWidth, rightSidebarWidth, isNavCollapsed, isRightSidebarCollapsed } =
+        storeToRefs(appearanceSettingsStore);
 
     const sidebarOpen = computed(() => !isNavCollapsed.value);
 
@@ -169,10 +165,6 @@
         cleanupNavResize = onPointerUp;
     };
 
-    onUnmounted(() => {
-        cleanupNavResize?.();
-    });
-
     const {
         asideDefaultSize,
         asideCollapsedSize,
@@ -187,42 +179,35 @@
 
     const asidePanelRef = ref(null);
     const isAsideDragging = ref(false);
-    let restoreAsideWidthFrame = null;
+    let resizeObserver = null;
+    let isRestoringAsideWidth = false;
 
-    const getAsidePanelGroupWidth = () => {
-        const panelElement = asidePanelRef.value?.$el;
-        return panelElement?.parentElement?.getBoundingClientRect?.().width;
-    };
-
-    const applyPersistedAsideWidth = async () => {
+    const restoreAsideWidth = (targetWidth = rightSidebarWidth.value) => {
         if (
-            document.visibilityState === 'hidden' ||
+            isRestoringAsideWidth ||
+            isAsideDragging.value ||
+            isRightSidebarCollapsed.value ||
             !isSideBarTabShow.value ||
-            isRightSidebarCollapsed.value
+            typeof targetWidth !== 'number' ||
+            targetWidth <= 0
         ) {
             return;
         }
-        const groupWidth = getAsidePanelGroupWidth();
-        if (
-            typeof groupWidth === 'number' &&
-            groupWidth < rightSidebarWidth.value
-        ) {
-            return;
-        }
-        await nextTick();
-        asidePanelRef.value?.resize(rightSidebarWidth.value);
-    };
 
-    const restoreAsideWidthAfterWindowResize = () => {
-        if (restoreAsideWidthFrame !== null) {
-            window.cancelAnimationFrame(restoreAsideWidthFrame);
+        const panelElement = asidePanelRef.value?.$el;
+        const groupElement = panelElement?.parentElement;
+        const groupWidth = groupElement?.getBoundingClientRect?.().width;
+
+        if (typeof groupWidth !== 'number' || groupWidth <= targetWidth || groupWidth < 100) {
+            return;
         }
-        restoreAsideWidthFrame = window.requestAnimationFrame(() => {
-            restoreAsideWidthFrame = window.requestAnimationFrame(() => {
-                restoreAsideWidthFrame = null;
-                applyPersistedAsideWidth();
-            });
-        });
+
+        isRestoringAsideWidth = true;
+        try {
+            asidePanelRef.value?.resize(targetWidth);
+        } finally {
+            isRestoringAsideWidth = false;
+        }
     };
 
     const handleAsideDragging = (isDragging) => {
@@ -235,17 +220,49 @@
     const handleAsideLayout = (sizes) => {
         handleLayout(sizes);
 
+        if (isAsideDragging.value || isRightSidebarCollapsed.value || !isSideBarTabShow.value) {
+            return;
+        }
+
         const asideSize = Array.isArray(sizes) ? sizes.at(-1) : null;
-        if (
-            !isAsideDragging.value &&
-            !isRightSidebarCollapsed.value &&
-            isSideBarTabShow.value &&
-            asideSize === asideMaxSize &&
-            rightSidebarWidth.value < asideMaxSize
-        ) {
-            restoreAsideWidthAfterWindowResize();
+        if (typeof asideSize === 'number' && Math.abs(asideSize - rightSidebarWidth.value) > 2) {
+            restoreAsideWidth(rightSidebarWidth.value);
         }
     };
+
+    watch(
+        asidePanelRef,
+        (panel) => {
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+                resizeObserver = null;
+            }
+            const groupEl = panel?.$el?.parentElement;
+            if (groupEl && typeof ResizeObserver === 'function') {
+                resizeObserver = new ResizeObserver(() => {
+                    restoreAsideWidth();
+                });
+                resizeObserver.observe(groupEl);
+            }
+        },
+        { immediate: true }
+    );
+
+    watch(rightSidebarWidth, (width) => {
+        restoreAsideWidth(width);
+    });
+
+    const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+            restoreAsideWidth();
+        }
+    };
+
+    onMounted(() => {
+        window.addEventListener('resize', restoreAsideWidth);
+        window.addEventListener('focus', restoreAsideWidth);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+    });
 
     watch(isSideBarTabShow, async (show) => {
         await nextTick();
@@ -270,29 +287,15 @@
         }
     });
 
-    watch(rightSidebarWidth, async () => {
-        await applyPersistedAsideWidth();
-    });
-
-    onMounted(() => {
-        window.addEventListener('resize', restoreAsideWidthAfterWindowResize);
-        window.addEventListener('focus', restoreAsideWidthAfterWindowResize);
-        document.addEventListener(
-            'visibilitychange',
-            restoreAsideWidthAfterWindowResize
-        );
-    });
-
     onUnmounted(() => {
-        window.removeEventListener('resize', restoreAsideWidthAfterWindowResize);
-        window.removeEventListener('focus', restoreAsideWidthAfterWindowResize);
-        document.removeEventListener(
-            'visibilitychange',
-            restoreAsideWidthAfterWindowResize
-        );
-        if (restoreAsideWidthFrame !== null) {
-            window.cancelAnimationFrame(restoreAsideWidthFrame);
+        cleanupNavResize?.();
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = null;
         }
+        window.removeEventListener('resize', restoreAsideWidth);
+        window.removeEventListener('focus', restoreAsideWidth);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
     });
 
     watch(
