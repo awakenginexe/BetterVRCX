@@ -189,6 +189,11 @@
     const isAsideDragging = ref(false);
     let restoreAsideWidthFrame = null;
 
+    const getAsidePanelGroupWidth = () => {
+        const panelElement = asidePanelRef.value?.$el;
+        return panelElement?.parentElement?.getBoundingClientRect?.().width;
+    };
+
     const applyPersistedAsideWidth = async () => {
         if (
             document.visibilityState === 'hidden' ||
@@ -197,14 +202,18 @@
         ) {
             return;
         }
+        const groupWidth = getAsidePanelGroupWidth();
+        if (
+            typeof groupWidth === 'number' &&
+            groupWidth < rightSidebarWidth.value
+        ) {
+            return;
+        }
         await nextTick();
         asidePanelRef.value?.resize(rightSidebarWidth.value);
     };
 
     const restoreAsideWidthAfterWindowResize = () => {
-        if (document.visibilityState === 'hidden') {
-            return;
-        }
         if (restoreAsideWidthFrame !== null) {
             window.cancelAnimationFrame(restoreAsideWidthFrame);
         }
@@ -267,6 +276,7 @@
 
     onMounted(() => {
         window.addEventListener('resize', restoreAsideWidthAfterWindowResize);
+        window.addEventListener('focus', restoreAsideWidthAfterWindowResize);
         document.addEventListener(
             'visibilitychange',
             restoreAsideWidthAfterWindowResize
@@ -275,6 +285,7 @@
 
     onUnmounted(() => {
         window.removeEventListener('resize', restoreAsideWidthAfterWindowResize);
+        window.removeEventListener('focus', restoreAsideWidthAfterWindowResize);
         document.removeEventListener(
             'visibilitychange',
             restoreAsideWidthAfterWindowResize
