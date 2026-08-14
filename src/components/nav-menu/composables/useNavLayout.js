@@ -98,6 +98,9 @@ export function useNavLayout({
             return `${DASHBOARD_NAV_KEY_PREFIX}${currentRoute.params.id}`;
         }
         const currentRouteName = currentRoute?.name;
+        if (currentRouteName === 'home') {
+            return 'home';
+        }
         const navKeys = Array.isArray(currentRoute?.meta?.navKeys)
             ? currentRoute.meta.navKeys
             : [currentRoute?.meta?.navKey || currentRouteName].filter(Boolean);
@@ -201,11 +204,14 @@ export function useNavLayout({
         if (hasNavigatedToInitialRoute) {
             return;
         }
+        hasNavigatedToInitialRoute = true;
+        if (router.currentRoute.value?.name === 'home') {
+            return;
+        }
         const firstEntry = getFirstNavEntryLocal(navLayout.value);
         if (!firstEntry) {
             return;
         }
-        hasNavigatedToInitialRoute = true;
         if (
             router.currentRoute.value?.name !== firstEntry.routeName ||
             (firstEntry.routeParams?.id &&

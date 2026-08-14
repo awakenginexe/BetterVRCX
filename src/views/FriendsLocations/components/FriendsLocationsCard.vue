@@ -1,7 +1,7 @@
 <template>
     <UserContextMenu :user-id="friend.id" :state="friend.state" :location="friend.ref?.location">
         <Card
-            class="friend-card bv-surface-raised bv-focus-ring x-hover-card relative"
+            class="friend-card bv-surface-raised bv-focus-ring x-hover-card relative overflow-hidden group"
             :style="cardStyle"
             role="button"
             tabindex="0"
@@ -9,48 +9,67 @@
             @click="activateFriend"
             @keydown.enter.prevent="activateFriend"
             @keydown.space.prevent="activateFriend">
-            <div class="friend-card__header grid items-center mb-1.75">
-                <div class="relative inline-block flex-none size-9 mr-2.5">
-                    <Avatar class="size-full rounded-full">
-                        <AvatarImage :src="userImage(friend.ref, true)" class="object-cover" />
-                        <AvatarFallback>
-                            <User class="text-muted-foreground" :size="Math.max(16, 20 * cardScale)" />
-                        </AvatarFallback>
-                    </Avatar>
-                </div>
-                <div
-                    class="friend-card__name font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
-                    :title="friend.name">
-                    {{ friend.name }}
-                </div>
-            </div>
-            <div class="friend-card__body grid">
-                <div
-                    v-if="displayInstanceInfo"
-                    @click.stop
-                    class="friend-card__world flex items-center justify-start box-border max-w-full min-w-0 overflow-hidden"
-                    :title="friend.worldName">
-                    <Location
-                        class="friend-card__location flex w-full overflow-hidden wrap-break-word text-center"
-                        :location="friend.ref?.location"
-                        :traveling="friend.ref?.travelingToLocation"
-                        enable-context-menu
-                        link />
-                </div>
-                <div class="friend-card__metadata">
-                    <div class="friend-card__status bv-badge">
-                        <span
-                            class="friend-card__status-dot bv-status-dot pointer-events-none"
-                            :class="statusPresentation.className"
-                            :data-status="statusPresentation.tone"
-                            aria-hidden="true"></span>
-                        <span class="friend-card__status-label">{{ statusPresentation.label }}</span>
+            <!-- World Background Layer -->
+            <div
+                v-if="worldImage"
+                class="absolute inset-0 z-0 bg-cover bg-center opacity-65 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none scale-105"
+                :style="{ backgroundImage: `url(${worldImage})` }" />
+            <div
+                v-if="worldImage"
+                class="absolute inset-0 z-0 bg-gradient-to-t from-black/90 via-black/65 to-black/35 pointer-events-none" />
+
+            <div class="relative z-10">
+                <div class="friend-card__header grid items-center mb-1.75">
+                    <div class="relative inline-block flex-none size-9 mr-2.5">
+                        <Avatar class="size-full rounded-full ring-1 ring-white/10">
+                            <AvatarImage :src="userImage(friend.ref, true)" class="object-cover" />
+                            <AvatarFallback>
+                                <User class="text-muted-foreground" :size="Math.max(16, 20 * cardScale)" />
+                            </AvatarFallback>
+                        </Avatar>
                     </div>
+                    <div class="flex items-center justify-between min-w-0 pr-1">
+                        <div
+                            class="friend-card__name font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
+                            :title="friend.name">
+                            {{ friend.name }}
+                        </div>
+                        <span
+                            v-if="capacityBadge"
+                            class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/40 text-muted-foreground ml-1 shrink-0 border border-white/5"
+                            :title="`Capacity: ${capacityBadge}`">
+                            {{ capacityBadge }}
+                        </span>
+                    </div>
+                </div>
+                <div class="friend-card__body grid">
                     <div
-                        class="friend-card__signature flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
-                        :title="friend.ref?.statusDescription">
-                        <Pencil v-if="friend.ref?.statusDescription" class="h-3.5 w-3.5 mr-0.5" style="opacity: 0.7" />
-                        {{ friend.ref?.statusDescription || '&nbsp;' }}
+                        v-if="displayInstanceInfo"
+                        @click.stop
+                        class="friend-card__world flex items-center justify-start box-border max-w-full min-w-0 overflow-hidden"
+                        :title="friend.worldName">
+                        <Location
+                            class="friend-card__location flex w-full overflow-hidden wrap-break-word text-center"
+                            :location="friend.ref?.location"
+                            :traveling="friend.ref?.travelingToLocation"
+                            enable-context-menu
+                            link />
+                    </div>
+                    <div class="friend-card__metadata">
+                        <div class="friend-card__status bv-badge">
+                            <span
+                                class="friend-card__status-dot bv-status-dot pointer-events-none"
+                                :class="statusPresentation.className"
+                                :data-status="statusPresentation.tone"
+                                aria-hidden="true"></span>
+                            <span class="friend-card__status-label">{{ statusPresentation.label }}</span>
+                        </div>
+                        <div
+                            class="friend-card__signature flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
+                            :title="friend.ref?.statusDescription">
+                            <Pencil v-if="friend.ref?.statusDescription" class="h-3.5 w-3.5 mr-0.5" style="opacity: 0.7" />
+                            {{ friend.ref?.statusDescription || '&nbsp;' }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,6 +85,8 @@
     import { useI18n } from 'vue-i18n';
 
     import { useUserDisplay } from '../../../composables/useUserDisplay';
+    import { useWorldStore } from '../../../stores';
+    import { parseLocation } from '../../../shared/utils';
 
     import Location from '../../../components/Location.vue';
     import UserContextMenu from '../../../components/UserContextMenu.vue';
@@ -73,6 +94,25 @@
 
     const { userImage, userStatusClass } = useUserDisplay();
     const { t } = useI18n();
+    const worldStore = useWorldStore();
+
+    const worldInfo = computed(() => {
+        const loc = props.friend.ref?.location || props.friend.ref?.travelingToLocation;
+        if (!loc) return null;
+        const L = parseLocation(loc);
+        if (!L.isRealInstance || !L.worldId) return null;
+        return worldStore.cachedWorlds.get(L.worldId) || null;
+    });
+
+    const worldImage = computed(() => {
+        return worldInfo.value?.thumbnailImageUrl || worldInfo.value?.imageUrl || null;
+    });
+
+    const capacityBadge = computed(() => {
+        const cap = worldInfo.value?.capacity;
+        if (!cap) return '';
+        return `${cap}`;
+    });
 
     const props = defineProps({
         friend: {

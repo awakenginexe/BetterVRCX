@@ -7,8 +7,7 @@
             class="bv-app-shell flex flex-col w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
             :class="{ 'pt-7': isMacOS }">
             <header v-if="!isMacOS" class="bv-desktop-taskbar" data-shell-region="taskbar">
-                <span class="bv-eyebrow">Desktop companion</span>
-                <span class="bv-product-label">BetterVRCX</span>
+                <StatusBar />
             </header>
 
             <main class="bv-route-frame">
@@ -46,6 +45,7 @@
     import MacOSTitleBar from './components/MacOSTitleBar.vue';
     import OtpDialogModal from './components/ui/dialog/OtpDialogModal.vue';
     import PromptDialogModal from './components/ui/dialog/PromptDialogModal.vue';
+    import StatusBar from './components/StatusBar.vue';
     import VRCXUpdateDialog from './components/dialogs/VRCXUpdateDialog.vue';
 
     import '@/styles/globals.css';
@@ -95,20 +95,12 @@
     .bv-desktop-taskbar {
         display: flex;
         align-items: center;
-        gap: 10px;
-        height: 40px;
-        flex: 0 0 40px;
-        padding: 0 16px;
+        height: 38px;
+        flex: 0 0 38px;
+        padding: 0 8px;
         border-bottom: 1px solid var(--bv-border-default);
         background: var(--bv-bg-rail);
         -webkit-app-region: drag;
-    }
-
-    .bv-product-label {
-        color: var(--bv-text-strong);
-        font-size: 13px;
-        font-weight: 750;
-        letter-spacing: 0.01em;
     }
 
     .bv-route-frame {

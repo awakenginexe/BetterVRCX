@@ -60,7 +60,6 @@
                     </ResizablePanelGroup>
                 </SidebarInset>
             </SidebarProvider>
-            <StatusBar />
         </div>
 
         <!-- ## Dialogs ## -->
@@ -123,7 +122,6 @@
     import PrimaryPasswordDialog from '../Settings/dialogs/PrimaryPasswordDialog.vue';
     import SendBoopDialog from '../../components/dialogs/SendBoopDialog.vue';
     import Sidebar from '../Sidebar/Sidebar.vue';
-    import StatusBar from '../../components/StatusBar.vue';
     import VRChatConfigDialog from '../Settings/dialogs/VRChatConfigDialog.vue';
     import WorldImportDialog from '../Favorites/dialogs/WorldImportDialog.vue';
     import WhatsNewDialog from '../../components/onboarding/WhatsNewDialog.vue';

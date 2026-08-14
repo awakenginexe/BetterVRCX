@@ -308,7 +308,7 @@
         if (typeof redirect === 'string' && redirect.startsWith('/') && redirect !== '/login') {
             return redirect;
         }
-        return '/feed';
+        return '/home';
     }
 
     watch(

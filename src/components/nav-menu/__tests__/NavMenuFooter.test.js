@@ -8,7 +8,8 @@ vi.mock('vue-i18n', () => ({
 }));
 
 vi.mock('lucide-vue-next', () => ({
-    Heart: { template: '<i />' }
+    Heart: { template: '<i />' },
+    Plus: { template: '<i />' }
 }));
 
 vi.mock('@/components/ui/tooltip', () => ({
@@ -67,15 +68,27 @@ const baseProps = {
 };
 
 describe('NavMenuFooter', () => {
-    it('renders version and emits toggle-theme click', async () => {
+    it('renders version and supports collapse toggle', async () => {
         const wrapper = mount(NavMenuFooter, { props: baseProps });
 
         expect(wrapper.text()).toContain('2026.01.01');
 
         const buttons = wrapper.findAll('[data-testid="sidebar-menu-btn"]');
-        await buttons[1].trigger('click');
+        const collapseBtn = buttons[buttons.length - 1];
+        await collapseBtn.trigger('click');
 
-        expect(wrapper.emitted('toggle-theme')).toHaveLength(1);
+        expect(wrapper.emitted('toggle-nav-collapse')).toHaveLength(1);
+    });
+
+    it('renders new dashboard button and emits quick-create-dashboard on click', async () => {
+        const wrapper = mount(NavMenuFooter, {
+            props: { ...baseProps, showNewDashboardButton: true }
+        });
+
+        const newDashboardBtn = wrapper.get('.bv-new-dashboard-btn');
+        await newDashboardBtn.trigger('click');
+
+        expect(wrapper.emitted('quick-create-dashboard')).toHaveLength(1);
     });
 
     it('labels the pending update marker with the non-color danger variant', () => {

@@ -134,10 +134,94 @@
                                 </ContextMenu>
                             </template>
 
+                            <template v-else-if="item.row.type === 'instance-group'">
+                                <div
+                                    class="relative overflow-hidden mb-2.5 p-2 rounded-xl border border-white/15 bg-black/20 group shadow-md hover:border-white/25 transition-all">
+                                    <!-- Instance World Image Background (covers entire group card) -->
+                                    <div
+                                        v-if="getInstanceWorldImage(item.row.location)"
+                                        class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity duration-300 pointer-events-none scale-105"
+                                        :style="{ backgroundImage: `url(${getInstanceWorldImage(item.row.location)})` }" />
+                                    <div
+                                        v-if="getInstanceWorldImage(item.row.location)"
+                                        class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30 pointer-events-none" />
+
+                                    <div class="relative z-10 space-y-1">
+                                        <!-- Header with location & count -->
+                                        <div class="flex items-center justify-between pb-1.5 mb-1 border-b border-white/15 px-1">
+                                            <Location class="inline text-xs truncate max-w-[200px] drop-shadow-sm font-medium" :location="item.row.location" />
+                                            <span class="text-xs font-bold font-mono text-white/90 drop-shadow-sm shrink-0">({{ item.row.count }})</span>
+                                        </div>
+
+                                        <!-- List of friends inside this instance -->
+                                        <div class="space-y-0.5">
+                                            <ContextMenu v-for="(friend, idx) in item.row.friends" :key="friend.id || idx">
+                                                <ContextMenuTrigger as-child>
+                                                    <FriendItem
+                                                        :friend="friend"
+                                                        :is-group-by-instance="true" />
+                                                </ContextMenuTrigger>
+                                                <ContextMenuContent>
+                                                    <ContextMenuItem
+                                                        v-if="friend.state === 'online'"
+                                                        @click="friendRequestInvite(friend)">
+                                                        {{ t('dialog.user.actions.request_invite') }}
+                                                        <ContextMenuShortcut
+                                                            v-if="isActionRecent(friend.id, 'Request Invite')">
+                                                            <Clock class="size-3.5 text-muted-foreground" />
+                                                        </ContextMenuShortcut>
+                                                    </ContextMenuItem>
+                                                    <ContextMenuItem
+                                                        v-if="isGameRunning"
+                                                        :disabled="!canInviteToMyLocation"
+                                                        @click="friendInvite(friend)">
+                                                        {{ t('dialog.user.actions.invite') }}
+                                                        <ContextMenuShortcut v-if="isActionRecent(friend.id, 'Invite')">
+                                                            <Clock class="size-3.5 text-muted-foreground" />
+                                                        </ContextMenuShortcut>
+                                                    </ContextMenuItem>
+                                                    <ContextMenuItem
+                                                        :disabled="!currentUser.isBoopingEnabled"
+                                                        @click="friendSendBoop(friend)">
+                                                        {{ t('dialog.user.actions.send_boop') }}
+                                                    </ContextMenuItem>
+                                                    <ContextMenuSeparator
+                                                        v-if="friend.state === 'online' && hasFriendLocation(friend)" />
+                                                    <ContextMenuItem
+                                                        v-if="friend.state === 'online' && hasFriendLocation(friend)"
+                                                        :disabled="!canJoinFriend(friend)"
+                                                        @click="friendJoin(friend)">
+                                                        {{ t('dialog.user.info.launch_invite_tooltip') }}
+                                                    </ContextMenuItem>
+                                                    <ContextMenuItem
+                                                        v-if="friend.state === 'online' && hasFriendLocation(friend)"
+                                                        :disabled="!canJoinFriend(friend)"
+                                                        @click="friendInviteSelf(friend)">
+                                                        {{ t('dialog.user.info.self_invite_tooltip') }}
+                                                    </ContextMenuItem>
+                                                </ContextMenuContent>
+                                            </ContextMenu>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
                             <template v-else-if="item.row.type === 'instance-header'">
-                                <div class="mb-1 flex items-center">
-                                    <Location class="inline text-xs" :location="item.row.location" />
-                                    <span class="text-xs ml-1.5">{{ `(${item.row.count})` }}</span>
+                                <div
+                                    class="relative overflow-hidden mb-1 px-2.5 py-1.5 rounded-lg border border-white/15 flex items-center justify-between text-xs bg-black/20 group hover:border-white/25 transition-all">
+                                    <!-- Instance World Image Background -->
+                                    <div
+                                        v-if="getInstanceWorldImage(item.row.location)"
+                                        class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity pointer-events-none scale-105"
+                                        :style="{ backgroundImage: `url(${getInstanceWorldImage(item.row.location)})` }" />
+                                    <div
+                                        v-if="getInstanceWorldImage(item.row.location)"
+                                        class="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35 pointer-events-none" />
+
+                                    <div class="relative z-10 flex items-center min-w-0 flex-1">
+                                        <Location class="inline text-xs truncate drop-shadow-sm font-medium" :location="item.row.location" />
+                                        <span class="text-xs ml-1.5 font-bold font-mono text-white/90 drop-shadow-sm shrink-0">{{ `(${item.row.count})` }}</span>
+                                    </div>
                                 </div>
                             </template>
 
@@ -235,9 +319,16 @@
         useGameStore,
         useLaunchStore,
         useLocationStore,
-        useUserStore
+        useUserStore,
+        useWorldStore
     } from '../../../stores';
-    import { buildFriendRow, buildInstanceHeaderRow, buildToggleRow, estimateRowSize } from '../friendsSidebarUtils';
+    import {
+        buildFriendRow,
+        buildInstanceGroupRow,
+        buildInstanceHeaderRow,
+        buildToggleRow,
+        estimateRowSize
+    } from '../friendsSidebarUtils';
     import { getFriendsSortFunction, isRealInstance } from '../../../shared/utils';
     import { instanceRequest, notificationRequest, queryRequest, userRequest } from '../../../api';
     import { useInviteChecks } from '../../../composables/useInviteChecks';
@@ -285,6 +376,19 @@
         storeToRefs(useFavoriteStore());
     const { lastLocation, lastLocationDestination } = storeToRefs(useLocationStore());
     const { isGameRunning } = storeToRefs(useGameStore());
+    const worldStore = useWorldStore();
+
+    function getInstanceWorldImage(loc) {
+        if (!loc) return null;
+        const L = parseLocation(loc);
+        if (!L.isRealInstance || !L.worldId) return null;
+        const cached = worldStore.cachedWorlds.get(L.worldId);
+        if (!cached) {
+            queryRequest.fetch('world.dialog', { worldId: L.worldId }).catch(() => {});
+            return null;
+        }
+        return cached.thumbnailImageUrl || cached.imageUrl || null;
+    }
     const { currentUser, editProfileDialog } = storeToRefs(userStore);
     const { checkCanInvite, checkCanInviteSelf } = useInviteChecks();
     const { userImage, userStatusClass } = useUserDisplay();
@@ -503,22 +607,14 @@
                 friendsInSameInstance.value.forEach((friendArr, groupIndex) => {
                     if (!friendArr || !friendArr.length) return;
                     const groupKey = friendArr?.[0]?.ref?.$location?.tag ?? `group-${groupIndex}`;
+                    const location = getFriendsLocations(friendArr, lastLocation.value);
                     rows.push(
-                        buildInstanceHeaderRow(
-                            getFriendsLocations(friendArr, lastLocation.value),
-                            friendArr.length,
-                            `instance:${groupKey}`
+                        buildInstanceGroupRow(
+                            location,
+                            friendArr,
+                            `instance-group:${groupKey}`
                         )
                     );
-                    friendArr.forEach((friend, idx) => {
-                        rows.push(
-                            buildFriendRow(friend, `instance:${groupKey}:${friend?.id ?? idx}`, {
-                                isGroupByInstance: true,
-                                paddingBottom: idx === friendArr.length - 1 ? 5 : undefined,
-                                itemStyle: idx === friendArr.length - 1 ? { marginBottom: '6px' } : undefined
-                            })
-                        );
-                    });
                 });
             }
         }

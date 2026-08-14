@@ -55,6 +55,7 @@
     import SocialTab from './components/Tabs/SocialTab.vue';
     import SystemTab from './components/Tabs/SystemTab.vue';
     import VrTab from './components/Tabs/VrTab.vue';
+    import HomeBackgroundSettings from '../../addons/homeBackground/HomeBackgroundSettings.vue';
 
     const { t } = useI18n();
     const activeTab = ref('system');
@@ -96,6 +97,12 @@
             label: t('view.settings.category.advanced'),
             icon: 'ri-tools-line',
             component: AdvancedTab
+        },
+        {
+            key: 'home-background',
+            label: 'Home Wallpaper',
+            icon: 'ri-image-edit-line',
+            component: HomeBackgroundSettings
         }
     ]);
     const settingsSections = computed(() => {
@@ -114,6 +121,11 @@
                 key: 'operations',
                 label: t('view.settings.category.advanced'),
                 tabKeys: ['integrations', 'advanced']
+            },
+            {
+                key: 'addons',
+                label: 'Addons',
+                tabKeys: ['home-background']
             }
         ];
 

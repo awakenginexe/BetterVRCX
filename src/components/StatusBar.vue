@@ -1,18 +1,24 @@
 <template>
     <div
-        class="bv-status-frame shrink-0 h-[24px] flex items-center border-t text-xs select-none overflow-hidden"
+        class="bv-top-taskbar-inner flex items-center w-full h-full text-xs select-none"
         style="font-family: var(--font-mono-cjk)"
         @contextmenu.prevent>
         <ContextMenu>
             <ContextMenuTrigger as-child>
-                <div class="flex items-center w-full h-full px-2">
-                    <!-- Left section -->
+                <div class="flex items-center w-full h-full px-1 gap-1">
+                    <!-- Left section: Brand Title + Status Badges -->
                     <div
-                        class="flex items-center flex-1 min-w-0 overflow-hidden [&>*:first-child]:pl-0.5"
+                        class="flex items-center flex-1 min-w-0 overflow-hidden gap-1 [&>*:first-child]:pl-0.5"
                         style="
                             mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
                             -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
                         ">
+                        <!-- BetterVRCX Brand Title -->
+                        <div class="flex items-center select-none no-drag pl-0.5 pr-2 shrink-0">
+                            <span class="bv-product-label">BetterVRCX</span>
+                        </div>
+                        <div class="h-3.5 w-px bg-border/60 mx-0.5 shrink-0 select-none" />
+
                         <TooltipWrapper
                             v-if="!isLinux && visibility.proxy"
                             :content="
@@ -20,14 +26,14 @@
                                     ? `${t('status_bar.proxy')}: ${vrcxStore.proxyServer}`
                                     : t('status_bar.proxy')
                             "
-                            side="top">
+                            side="bottom">
                             <div
-                                class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border cursor-pointer hover:bg-accent"
+                                class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors"
                                 @click="handleProxyClick">
                                 <span
                                     class="inline-block size-2 rounded-full shrink-0"
                                     :class="vrcxStore.proxyServer ? 'bg-status-online' : 'bg-status-offline-alt'" />
-                                <span class="text-foreground text-[11px]">{{
+                                <span class="text-foreground text-[11px] font-medium">{{
                                     vrcxStore.proxyServer || t('status_bar.proxy')
                                 }}</span>
                             </div>
@@ -40,14 +46,14 @@
                                     ? t('status_bar.steamvr_running')
                                     : t('status_bar.steamvr_stopped')
                             "
-                            side="top">
-                            <div class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border">
+                            side="bottom">
+                            <div class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap">
                                 <span
                                     class="inline-block size-2 rounded-full shrink-0"
                                     :class="
                                         gameStore.isSteamVRRunning ? 'bg-status-online' : 'bg-status-offline-alt'
                                     " />
-                                <span class="text-foreground text-[11px]">{{ t('status_bar.steamvr') }}</span>
+                                <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.steamvr') }}</span>
                             </div>
                         </TooltipWrapper>
 
@@ -58,14 +64,14 @@
                             :close-delay="50">
                             <HoverCardTrigger as-child>
                                 <div
-                                    class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border">
+                                    class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-default hover:bg-accent/40 transition-colors">
                                     <span
                                         class="inline-block size-2 rounded-full shrink-0"
                                         :class="
                                             gameStore.isGameRunning ? 'bg-status-online' : 'bg-status-offline-alt'
                                         " />
-                                    <span class="text-foreground text-[11px]">{{ t('status_bar.game') }}</span>
-                                    <span v-if="gameStore.isGameRunning" class="text-[10px] text-foreground">{{
+                                    <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.game') }}</span>
+                                    <span v-if="gameStore.isGameRunning" class="text-[10px] text-foreground font-mono">{{
                                         gameSessionText
                                     }}</span>
                                 </div>
@@ -73,9 +79,9 @@
                             <HoverCardContent
                                 v-if="gameStore.isGameRunning && userStore.currentUser.$online_for"
                                 class="w-auto min-w-[160px] px-3 py-2"
-                                side="top"
+                                side="bottom"
                                 align="start"
-                                :side-offset="4">
+                                :side-offset="6">
                                 <div class="flex flex-col gap-1">
                                     <div class="flex items-center justify-between gap-3">
                                         <span class="text-[11px] text-muted-foreground">{{
@@ -94,9 +100,9 @@
                             <HoverCardContent
                                 v-else-if="!gameStore.isGameRunning && gameStore.lastSessionDurationMs > 0"
                                 class="w-auto min-w-[160px] px-3 py-2"
-                                side="top"
+                                side="bottom"
                                 align="start"
-                                :side-offset="4">
+                                :side-offset="6">
                                 <div class="flex flex-col gap-1">
                                     <div class="flex items-center justify-between gap-3">
                                         <span class="text-[11px] text-muted-foreground">{{
@@ -119,30 +125,30 @@
                                 <TooltipWrapper
                                     v-if="!vrcStatusStore.hasIssue"
                                     :content="t('status_bar.servers_ok')"
-                                    side="top">
+                                    side="bottom">
                                     <div
-                                        class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border cursor-pointer hover:bg-accent"
+                                        class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors"
                                         @click="vrcStatusStore.openStatusPage()">
                                         <span class="inline-block size-2 rounded-full shrink-0 bg-status-online" />
-                                        <span class="text-foreground text-[11px]">{{ t('status_bar.servers') }}</span>
+                                        <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.servers') }}</span>
                                     </div>
                                 </TooltipWrapper>
                                 <div
                                     v-else
-                                    class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border cursor-pointer hover:bg-accent"
+                                    class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors"
                                     @click="vrcStatusStore.openStatusPage()">
                                     <span
                                         class="inline-block size-2 rounded-full shrink-0"
                                         :class="vrcStatusStore.isMajor ? 'bg-destructive' : 'bg-status-askme'" />
-                                    <span class="text-foreground text-[11px]">{{ t('status_bar.servers') }}</span>
+                                    <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.servers') }}</span>
                                 </div>
                             </HoverCardTrigger>
                             <HoverCardContent
                                 v-if="vrcStatusStore.hasIssue"
                                 class="w-[280px] px-3 py-2.5"
-                                side="top"
+                                side="bottom"
                                 align="start"
-                                :side-offset="4">
+                                :side-offset="6">
                                 <div class="flex items-center gap-1.5 mb-1.5">
                                     <span
                                         class="inline-block size-2 rounded-full shrink-0"
@@ -157,14 +163,14 @@
                             </HoverCardContent>
                         </HoverCard>
 
-                        <TooltipWrapper v-if="visibility.ws" :content="wsTooltip" side="top">
-                            <div class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border">
+                        <TooltipWrapper v-if="visibility.ws" :content="wsTooltip" side="bottom">
+                            <div class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap hover:bg-accent/40 transition-colors">
                                 <span
                                     class="inline-block size-2 rounded-full shrink-0"
                                     :class="wsState.connected ? 'bg-status-online' : 'bg-status-offline-alt'" />
-                                <span class="text-foreground text-[11px]">WebSocket</span>
+                                <span class="text-foreground text-[11px] font-medium">WebSocket</span>
                                 <canvas ref="wsCanvasRef" class="shrink-0 rounded-sm" />
-                                <span class="text-[10px] text-foreground">{{
+                                <span class="text-[10px] text-muted-foreground font-mono">{{
                                     t('status_bar.ws_avg_per_minute', { count: msgsPerMinuteAvg })
                                 }}</span>
                             </div>
@@ -172,17 +178,17 @@
 
                         <div
                             v-if="visibility.nowPlaying && nowPlaying.url"
-                            class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border min-w-0 max-w-[400px]">
+                            class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap min-w-0 max-w-[360px] bg-accent/30">
                             <i v-if="!isYouTubeNowPlaying" class="ri-play-fill text-[10px] shrink-0" />
                             <i v-if="isYouTubeNowPlaying" class="ri-youtube-fill text-[#FF0000] shrink-0 text-[12px]" />
-                            <TooltipWrapper v-else :content="nowPlaying.url" side="top">
+                            <TooltipWrapper v-else :content="nowPlaying.url" side="bottom">
                                 <span
-                                    class="text-[10px] shrink-0 truncate max-w-[180px] cursor-pointer hover:text-foreground"
+                                    class="text-[10px] shrink-0 truncate max-w-[160px] cursor-pointer hover:text-foreground"
                                     @click="handleNowPlayingClick"
                                     >{{ nowPlaying.url }}</span
                                 >
                             </TooltipWrapper>
-                            <TooltipWrapper :content="nowPlaying.name" side="top">
+                            <TooltipWrapper :content="nowPlaying.name" side="bottom">
                                 <span
                                     class="text-[11px] text-foreground truncate cursor-pointer"
                                     @click="handleNowPlayingClick"
@@ -191,22 +197,22 @@
                             </TooltipWrapper>
                             <template v-if="nowPlaying.playing">
                                 <div
-                                    class="shrink-0 h-[4px] rounded-full bg-muted overflow-hidden ml-1"
-                                    style="width: 40px"
+                                    class="shrink-0 h-[3px] rounded-full bg-muted overflow-hidden ml-1"
+                                    style="width: 36px"
                                     :title="`${nowPlayingElapsedText} / ${nowPlayingLengthText}`">
                                     <div
                                         class="h-full rounded-full bg-foreground/60 transition-[width] duration-1000 ease-linear"
                                         :style="{ width: `${nowPlaying.percentage}%` }" />
                                 </div>
-                                <span class="text-[10px] tabular-nums shrink-0">
+                                <span class="text-[10px] tabular-nums shrink-0 font-mono">
                                     {{ nowPlayingElapsedText }} / {{ nowPlayingLengthText }}
                                 </span>
                             </template>
                         </div>
                     </div>
 
-                    <!-- Right section -->
-                    <div class="flex items-center shrink-0 ml-auto [&>*:last-child]:border-r-0 [&>*:last-child]:pr-0.5">
+                    <!-- Right section: Clocks, Zoom, Uptime -->
+                    <div class="flex items-center shrink-0 ml-auto gap-0.5">
                         <template v-if="visibility.clocks">
                             <Popover
                                 v-for="(clock, idx) in visibleClocks"
@@ -214,11 +220,11 @@
                                 v-model:open="clockPopoverOpen[idx]">
                                 <PopoverTrigger as-child>
                                     <div
-                                        class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border cursor-pointer hover:bg-accent">
-                                        <span class="text-[10px] text-foreground">{{ formatClock(clock) }}</span>
+                                        class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors font-mono">
+                                        <span class="text-[11px] text-foreground">{{ formatClock(clock) }}</span>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent class="w-[280px]" side="top" align="center">
+                                <PopoverContent class="w-[280px]" side="bottom" align="end" :side-offset="6">
                                     <div class="flex flex-col gap-2 p-1">
                                         <label class="text-xs font-medium">{{ t('status_bar.timezone') }}</label>
                                         <Select
@@ -248,13 +254,13 @@
                         <TooltipWrapper
                             v-if="visibility.zoom"
                             :content="t('status_bar.zoom_tooltip')"
-                            side="top"
+                            side="bottom"
                             :disabled="zoomEditing">
                             <div
-                                class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border cursor-pointer hover:bg-accent"
+                                class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors font-mono"
                                 @click="toggleZoomEdit">
                                 <template v-if="zoomEditing">
-                                    <span class="text-[10px] text-foreground">{{ t('status_bar.zoom') }}</span>
+                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{ t('status_bar.zoom') }}</span>
                                     <NumberField
                                         v-model="zoomLevel"
                                         :step="1"
@@ -265,23 +271,23 @@
                                             <NumberFieldDecrement />
                                             <NumberFieldInput
                                                 ref="zoomInputRef"
-                                                class="h-[18px] text-[11px] px-0.5 text-center"
+                                                class="h-[20px] text-[11px] px-0.5 text-center"
                                                 @blur="setZoomLevel" />
                                             <NumberFieldIncrement />
                                         </NumberFieldContent>
                                     </NumberField>
                                 </template>
                                 <template v-else>
-                                    <span class="text-[10px] text-foreground">{{ t('status_bar.zoom') }}</span>
-                                    <span class="text-[10px] text-foreground">{{ zoomLevel }}%</span>
+                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{ t('status_bar.zoom') }}</span>
+                                    <span class="text-[11px] text-foreground">{{ zoomLevel }}%</span>
                                 </template>
                             </div>
                         </TooltipWrapper>
 
-                        <TooltipWrapper v-if="visibility.uptime" :content="t('status_bar.app_uptime')" side="top">
-                            <div class="flex items-center gap-1 px-2 h-[22px] whitespace-nowrap border-r border-border">
-                                <span class="text-[10px] text-foreground">{{ t('status_bar.app_uptime_short') }}</span>
-                                <span class="text-[10px] text-foreground">{{ appUptimeText }}</span>
+                        <TooltipWrapper v-if="visibility.uptime" :content="t('status_bar.app_uptime')" side="bottom">
+                            <div class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap font-mono">
+                                <span class="text-[10px] text-muted-foreground">{{ t('status_bar.app_uptime_short') }}</span>
+                                <span class="text-[11px] text-foreground">{{ appUptimeText }}</span>
                             </div>
                         </TooltipWrapper>
                     </div>
@@ -662,10 +668,9 @@
     function formatClock(clock) {
         try {
             const current = dayjs(now.value).utcOffset(normalizeUtcHour(clock.offset) * 60);
-            const time = current.format('HH:mm');
-            return `${time} ${formatUtcHour(clock.offset)}`;
+            return current.format('HH:mm');
         } catch {
-            return '??:?? UTC+0';
+            return '??:??';
         }
     }
 
@@ -785,9 +790,18 @@
 </script>
 
 <style scoped>
-    .bv-status-frame {
-        border-color: var(--bv-border-default);
-        background: var(--bv-bg-rail);
+    .bv-top-taskbar-inner {
         color: var(--bv-text-muted);
+    }
+
+    .bv-product-label {
+        color: var(--bv-text-strong);
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+    }
+
+    .no-drag {
+        -webkit-app-region: no-drag;
     }
 </style>

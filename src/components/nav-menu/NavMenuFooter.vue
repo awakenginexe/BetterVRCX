@@ -1,6 +1,16 @@
 <template>
     <SidebarFooter class="bv-nav-footer px-2 py-3">
         <SidebarMenu>
+            <SidebarMenuItem v-if="showNewDashboardButton">
+                <SidebarMenuButton
+                    :tooltip="t('dashboard.new_dashboard')"
+                    class="bv-nav-item bv-new-dashboard-btn mb-1"
+                    @click="emit('quick-create-dashboard')">
+                    <Plus class="size-4" />
+                    <span v-show="!isCollapsed">{{ t('dashboard.new_dashboard') }}</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -173,7 +183,7 @@
 </template>
 
 <script setup>
-    import { Heart } from 'lucide-vue-next';
+    import { Heart, Plus } from 'lucide-vue-next';
     import { useI18n } from 'vue-i18n';
     import { useRouter } from 'vue-router';
     import { computed, ref, watch } from 'vue';
@@ -207,6 +217,10 @@
             default: false
         },
         hasPendingInstall: {
+            type: Boolean,
+            default: false
+        },
+        showNewDashboardButton: {
             type: Boolean,
             default: false
         },
@@ -264,6 +278,7 @@
         'open-custom-nav',
         'logout-click',
         'toggle-nav-collapse',
+        'quick-create-dashboard',
         'open-github'
     ]);
     const { t } = useI18n();
@@ -283,5 +298,21 @@
 <style scoped>
     .bv-nav-footer {
         border-top: 1px solid var(--bv-border-default);
+    }
+
+    .bv-new-dashboard-btn {
+        border: 1px dashed var(--bv-border-strong);
+        color: var(--bv-accent-primary);
+        background: transparent;
+        transition:
+            background-color var(--bv-duration-fast) var(--bv-ease-out),
+            border-color var(--bv-duration-fast) var(--bv-ease-out),
+            color var(--bv-duration-fast) var(--bv-ease-out);
+    }
+
+    .bv-new-dashboard-btn:hover {
+        border-color: var(--bv-accent-primary);
+        background: var(--bv-accent-subtle);
+        color: var(--bv-accent-primary);
     }
 </style>

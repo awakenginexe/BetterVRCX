@@ -67,6 +67,23 @@ export function buildInstanceHeaderRow(location, count, key) {
 }
 
 /**
+ * @param {string} location - Instance location string
+ * @param {Array} friends - List of friends in instance
+ * @param {string} key - Unique key
+ * @returns {object} Row object
+ */
+export function buildInstanceGroupRow(location, friends, key) {
+    return {
+        type: 'instance-group',
+        key,
+        location,
+        count: friends.length,
+        friends,
+        paddingBottom: 6
+    };
+}
+
+/**
  * Estimate pixel height for a virtual row.
  * @param {object} row - Row object with type property
  * @returns {number} Estimated height in pixels
@@ -83,6 +100,9 @@ export function estimateRowSize(row) {
     }
     if (row.type === 'instance-header') {
         return 26 + (row.paddingBottom || 0);
+    }
+    if (row.type === 'instance-group') {
+        return 34 + (row.friends?.length || 1) * 44 + (row.paddingBottom || 0);
     }
     return 52 + (row.paddingBottom || 0);
 }

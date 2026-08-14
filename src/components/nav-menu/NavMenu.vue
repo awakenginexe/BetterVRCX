@@ -5,24 +5,20 @@
         collapsible="icon"
         class="bv-left-navigation"
         aria-label="BetterVRCX navigation">
-        <SidebarHeader class="bv-nav-brand px-2 py-3">
-            <div class="flex items-center gap-3 px-2">
-                <span class="bv-nav-brand-mark" aria-hidden="true">B</span>
-                <span v-show="!isCollapsed" class="bv-nav-brand-label">BetterVRCX</span>
-            </div>
-        </SidebarHeader>
-
-        <SidebarHeader v-if="showNewDashboardButton" class="px-2 py-2">
+        <SidebarHeader class="px-2 py-2">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
-                        :tooltip="t('dashboard.new_dashboard')"
-                        class="bv-nav-item bv-new-dashboard-btn"
-                        @click="handleQuickCreateDashboard">
-                        <div class="flex items-center gap-3 pl-1 group-data-[collapsible=icon]:pl-0">
-                            <Plus class="size-4" />
-                            <span v-show="!isCollapsed">{{ t('dashboard.new_dashboard') }}</span>
-                        </div>
+                        :tooltip="t('nav_tooltip.home') || 'Home'"
+                        :is-active="isHomeActive"
+                        :class="[
+                            'bv-nav-item bv-focus-ring',
+                            { 'bv-nav-item-active': isHomeActive }
+                        ]"
+                        data-nav-key="home"
+                        @click="handleHomeClick">
+                        <i class="ri-home-5-line inline-flex size-6 items-center justify-center text-lg relative" />
+                        <span v-show="!isCollapsed">{{ t('nav_tooltip.home') || 'Home' }}</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
@@ -142,6 +138,7 @@
             :is-dark-mode="isDarkMode"
             :has-pending-update="pendingVRCXUpdate"
             :has-pending-install="!!pendingVRCXInstall"
+            :show-new-dashboard-button="showNewDashboardButton"
             :version="version"
             :vrcx-logo="vrcxLogo"
             :themes="themes"
@@ -163,6 +160,7 @@
             @open-custom-nav="handleOpenCustomNavDialog"
             @logout-click="handleLogoutClick"
             @toggle-nav-collapse="toggleNavCollapse"
+            @quick-create-dashboard="handleQuickCreateDashboard"
             @open-github="openGithub" />
     </Sidebar>
 
@@ -330,6 +328,14 @@
             return item.children.some((entry) => isEntryNotified(entry));
         }
         return false;
+    };
+
+    const isHomeActive = computed(() => {
+        return activeMenuIndex.value === 'home' || router?.currentRoute?.value?.name === 'home';
+    });
+
+    const handleHomeClick = () => {
+        handleMenuItemClick({ key: 'home', routeName: 'home' });
     };
 
     const handleSettingsClick = () => {

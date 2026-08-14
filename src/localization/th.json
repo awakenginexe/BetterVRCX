@@ -88,6 +88,23 @@
         }
     },
     "view": {
+        "home": {
+            "title": "หน้าแรก",
+            "welcome": "ยินดีต้อนรับ!",
+            "subtitle_connected": "สำรวจโลก VRChat ข่าวสาร และเพื่อนของคุณ",
+            "subtitle_disconnected": "เชื่อมต่อกับ VRChat เพื่อดูโลกของคุณ",
+            "online_players": "ผู้เล่นออนไลน์",
+            "online_friends": "เพื่อนออนไลน์",
+            "vrchat_news": "ข่าวสาร VRChat",
+            "upcoming_events": "กิจกรรมที่กำลังจะมาถึง",
+            "friends_location": "ตำแหน่งของเพื่อน",
+            "no_events": "ไม่มีกิจกรรมที่กำหนดไว้ในเร็วๆ นี้",
+            "load_events": "โหลดกิจกรรม",
+            "no_friends_in_instances": "ไม่มีเพื่อนอยู่ในห้องสาธารณะในขณะนี้",
+            "show_more": "ดูเพิ่มเติม",
+            "see_all": "ดูทั้งหมด",
+            "open_post": "เปิดโพสต์ทางการ"
+        },
         "login": {
             "savedAccounts": "บัญชีที่บันทึกไว้",
             "login": "เข้าสู่ระบบ",

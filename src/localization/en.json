@@ -57,6 +57,7 @@
         "current_session": "Current"
     },
     "nav_tooltip": {
+        "home": "Home",
         "friends_locations": "Friends Locations",
         "feed": "Feed",
         "game_log": "Game Log",
@@ -235,6 +236,23 @@
         }
     },
     "view": {
+        "home": {
+            "title": "Home",
+            "welcome": "Welcome!",
+            "subtitle_connected": "Explore your VRChat world, news, and friends activity",
+            "subtitle_disconnected": "Connect to VRChat to see your world",
+            "online_players": "Online Players",
+            "online_friends": "Online Friends",
+            "vrchat_news": "VRChat News",
+            "upcoming_events": "Upcoming Events",
+            "friends_location": "Friends Locations",
+            "no_events": "No upcoming events scheduled",
+            "load_events": "Load Events",
+            "no_friends_in_instances": "No friends currently in joinable instances",
+            "show_more": "Show more",
+            "see_all": "See All",
+            "open_post": "Open Official Post"
+        },
         "login": {
             "savedAccounts": "Saved Accounts",
             "login": "Login",
