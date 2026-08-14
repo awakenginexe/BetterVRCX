@@ -11,7 +11,7 @@
         "url": "https://github.com/awakenginexe/BetterVRCX/issues"
     },
     "license": "MIT",
-    "author": "VRCX Team, awakenginexe",
+    "author": "Awake Ngine XE, pypy, Natsumi, Map1en",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/awakenginexe/BetterVRCX.git"
@@ -125,6 +125,13 @@
         "node": ">=24.15.0",
         "npm": ">=11.5.0"
     },
+    "allowScripts": {
+        "@sentry/cli": true,
+        "core-js": true,
+        "electron-winstaller": true,
+        "vue-demi": true,
+        "electron": true
+    },
     "build": {
         "appId": "app.vrcx",
         "productName": "VRCX",
@@ -178,7 +185,7 @@
             "output": "build"
         },
         "linux": {
-            "artifactName": "VRCX_Version.${ext}",
+            "artifactName": "BetterVRCX_Version.${ext}",
             "target": [
                 "AppImage"
             ],
@@ -199,7 +206,7 @@
             "description": "Friendship management tool for VRChat"
         },
         "mac": {
-            "artifactName": "VRCX_Version.${ext}",
+            "artifactName": "BetterVRCX_Version.${ext}",
             "target": [
                 "dmg"
             ],
@@ -207,12 +214,5 @@
             "category": "public.app-category.utilities",
             "executableName": "VRCX"
         }
-    },
-    "allowScripts": {
-        "@sentry/cli": true,
-        "core-js": true,
-        "electron-winstaller": true,
-        "vue-demi": true,
-        "electron": true
     }
 }

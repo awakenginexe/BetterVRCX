@@ -167,7 +167,11 @@
                         }}</a>
                     </p>
                     <p>
-                        &copy; 2019-2026
+                        &copy; 2026
+                        <a class="cursor-pointer" @click="openExternalLink('https://github.com/awakenginexe')"
+                            >Awake Ngine XE</a
+                        >
+                        Portion of &copy; 2019-2026
                         <a class="cursor-pointer" @click="openExternalLink('https://github.com/pypy-vrc')">pypy</a>
                         &amp;
                         <a class="cursor-pointer" @click="openExternalLink('https://github.com/Natsumi-sama')"
@@ -176,6 +180,7 @@
                         &amp;
                         <a class="cursor-pointer" @click="openExternalLink('https://github.com/Map1en')">Map1en</a>
                     </p>
+
                     <p>{{ t('view.settings.general.legal_notice.info') }}</p>
                     <p>{{ t('view.settings.general.legal_notice.disclaimer1') }}</p>
                     <p>{{ t('view.settings.general.legal_notice.disclaimer2') }}</p>

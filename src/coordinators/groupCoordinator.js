@@ -886,13 +886,12 @@ export function handleGroupRepresented(args) {
     const json = args.json;
     D.representedGroup = json;
     D.representedGroup.$thumbnailUrl = convertFileUrlToImageUrl(json.iconUrl);
-    if (!json || !json.isRepresenting) {
-        D.isRepresentedGroupLoading = false;
-    }
-    if (!json.groupId) {
+    D.isRepresentedGroupLoading = false;
+    if (!json || !json.groupId) {
         // no group
         return;
     }
+
     if (args.params.userId !== userStore.currentUser.id) {
         // not current user, don't apply someone elses myMember
         return;

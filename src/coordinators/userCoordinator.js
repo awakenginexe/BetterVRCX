@@ -60,6 +60,9 @@ import { useSharedFeedStore } from '../stores/sharedFeed';
 import { useUiStore } from '../stores/ui';
 import { useUserStore } from '../stores/user';
 
+const userPublicProfileRamCache = new Map();
+const userRefRamCache = new Map();
+
 const getRobotUrl = () =>
     `${AppDebug.endpointDomain}/file/file_0e8c4e32-7444-44ea-ade4-313c010d4bae/1/file`;
 
@@ -310,9 +313,27 @@ export function showUserDialog(userId) {
         userStore.applyUserDialogLocation(true);
         return;
     }
+    const cachedFullRef = userRefRamCache.get(userId);
+    const cachedFriend = friendStore.friends.get(userId);
+    const cachedPublicProfile = userPublicProfileRamCache.get(userId);
+
     D.id = userId;
+    D.ref = cachedFullRef
+        ? { ...cachedFullRef }
+        : cachedFriend
+          ? { ...cachedFriend }
+          : {};
+    D.publicProfileRef = cachedPublicProfile ? { ...cachedPublicProfile } : {};
+    D.friend = cachedFriend || {};
+    D.isFriend = Boolean(cachedFriend);
     D.memo = '';
-    D.note = '';
+    D.note =
+        (cachedFullRef && cachedFullRef.note) ||
+        (cachedFriend && cachedFriend.note)
+            ? String(cachedFullRef?.note || cachedFriend?.note || '')
+            : '';
+    D.loading = !cachedFullRef;
+
     getUserMemo(userId).then((memo) => {
         if (memo.userId === userId) {
             D.memo = memo.memo;
@@ -329,7 +350,6 @@ export function showUserDialog(userId) {
         }
     });
 
-    D.loading = true;
     D.avatars = [];
     D.worlds = [];
     D.instance = {
@@ -372,17 +392,42 @@ export function showUserDialog(userId) {
     D.dateFriendedInfo = [];
     D.mutualFriendCount = 0;
     D.mutualGroupCount = 0;
-    D.theme = {
-        iconColor: 'var(--muted-foreground)',
-        buttonColor: 'var(--primary)',
-        subtextColor: 'var(--muted-foreground)'
-    };
+    if (
+        cachedPublicProfile &&
+        appearanceSettingsStore.displayVRCProfileThemes
+    ) {
+        D.theme = {
+            iconColor: getReadableProfileThemeColor(
+                cachedPublicProfile.themeIconColor,
+                'var(--muted-foreground)',
+                appearanceSettingsStore.isDarkMode
+            ),
+            buttonColor: getReadableProfileThemeColor(
+                cachedPublicProfile.themeButtonColor,
+                'var(--primary)',
+                appearanceSettingsStore.isDarkMode
+            ),
+            subtextColor: getReadableProfileThemeColor(
+                cachedPublicProfile.themeSubtextColor,
+                'var(--muted-foreground)',
+                appearanceSettingsStore.isDarkMode
+            )
+        };
+    } else {
+        D.theme = {
+            iconColor: 'var(--muted-foreground)',
+            buttonColor: 'var(--primary)',
+            subtextColor: 'var(--muted-foreground)'
+        };
+    }
     if (userId === currentUser.id) {
         getWorldName(currentUser.homeLocation).then((worldName) => {
             D.$homeLocationName = worldName;
         });
     }
+    updateUserDialogProfile();
     AppApi.SendIpc('ShowUserDialog', userId);
+
     queryRequest
         .fetch('user', {
             userId
@@ -396,10 +441,12 @@ export function showUserDialog(userId) {
             throw err;
         })
         .then((args) => {
+            userRefRamCache.set(userId, args.ref);
             if (args.ref.id === D.id) {
                 D.loading = false;
 
                 D.ref = args.ref;
+
                 uiStore.setDialogCrumbLabel(
                     'user',
                     D.id,
@@ -532,8 +579,11 @@ export function showUserDialog(userId) {
                     .fetch('representedGroup', { userId })
                     .then((args1) => {
                         handleGroupRepresented(args1);
+                    })
+                    .catch(() => {
+                        D.isRepresentedGroupLoading = false;
                     });
-                updateUserDialogProfile();
+
                 D.visible = true;
                 userStore.applyUserDialogLocation(true);
             }
@@ -545,27 +595,34 @@ export function showUserDialog(userId) {
 export function updateUserDialogProfile() {
     const D = useUserStore().userDialog;
     const appearanceSettingsStore = useAppearanceSettingsStore();
+    const targetUserId = D.id;
+    if (!targetUserId) {
+        return;
+    }
     userRequest
-        .getPublicProfile({ userId: D.id })
+        .getPublicProfile({ userId: targetUserId })
         .then((args1) => {
+            const profile = args1.json || {};
+            userPublicProfileRamCache.set(targetUserId, profile);
             if (args1.params.userId !== D.id) {
                 return;
             }
-            D.publicProfileRef = args1.json;
+            D.publicProfileRef = profile;
+
             if (appearanceSettingsStore.displayVRCProfileThemes) {
                 D.theme = {
                     iconColor: getReadableProfileThemeColor(
-                        args1.json.themeIconColor,
+                        args1.json?.themeIconColor,
                         'var(--muted-foreground)',
                         appearanceSettingsStore.isDarkMode
                     ),
                     buttonColor: getReadableProfileThemeColor(
-                        args1.json.themeButtonColor,
+                        args1.json?.themeButtonColor,
                         'var(--primary)',
                         appearanceSettingsStore.isDarkMode
                     ),
                     subtextColor: getReadableProfileThemeColor(
-                        args1.json.themeSubtextColor,
+                        args1.json?.themeSubtextColor,
                         'var(--muted-foreground)',
                         appearanceSettingsStore.isDarkMode
                     )
@@ -574,7 +631,9 @@ export function updateUserDialogProfile() {
         })
         .catch((err) => {
             console.error('Failed to fetch public profile', err);
-            D.publicProfileRef = {};
+            if (D.id === targetUserId) {
+                D.publicProfileRef = {};
+            }
         });
 }
 

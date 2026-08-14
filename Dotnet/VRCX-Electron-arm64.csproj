@@ -14,7 +14,8 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <AssemblyTitle>BetterVRCX</AssemblyTitle>
     <Product>BetterVRCX</Product>
-    <Copyright>vrcx-team, pypy, natsumi, awakenginexe</Copyright>
+    <Copyright>© 2026 Awake Ngine XE. Portion of © 2019-2026 pypy &amp; Natsumi &amp; Map1en</Copyright>
+
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Title>BetterVRCX</Title>

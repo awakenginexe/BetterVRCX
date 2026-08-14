@@ -184,6 +184,16 @@ describe('UserSummaryHeader.vue', () => {
         expect(badge.exists()).toBe(false);
     });
 
+    test('renders skeleton placeholders when userDialog is loading without displayName', () => {
+        userDialogMock.value.loading = true;
+        userDialogMock.value.ref = {};
+        const wrapper = mountHeader();
+
+        const skeletons = wrapper.findAll('[data-slot="skeleton"]');
+        expect(skeletons.length).toBeGreaterThan(0);
+        expect(wrapper.text()).not.toContain('TargetUser');
+    });
+
     test('preserves copy displayName click behavior', async () => {
         const wrapper = mountHeader();
         const nameSpan = wrapper

@@ -19,7 +19,8 @@
     VIAddVersionKey "FileVersion" "${VERSION}"
     VIAddVersionKey "ProductName" "BetterVRCX"
     VIAddVersionKey "ProductVersion" "${VERSION}"
-    VIAddVersionKey "LegalCopyright" "Copyright vrcx-team, pypy, natsumi, awakenginexe"
+    VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Awake Ngine XE, Portion of (c) 2019-2026 pypy, Natsumi, Map1en"
+
     VIAddVersionKey "FileDescription" "BetterVRCX - Friendship management tool for VRChat"
 
 ;--------------------------------

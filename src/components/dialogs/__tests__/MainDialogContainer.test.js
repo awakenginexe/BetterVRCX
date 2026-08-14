@@ -147,6 +147,10 @@ describe('MainDialogContainer.vue', () => {
         const wrapper = mount(MainDialogContainer);
         const dialogContent = wrapper.find('.bv-dialog-shell');
         expect(dialogContent.attributes('style') || '').not.toContain('url(');
+        expect(dialogContent.attributes('data-has-backdrop')).toBeUndefined();
+        expect(dialogContent.classes()).not.toContain(
+            'bv-dialog-shell--has-backdrop'
+        );
     });
 
     it('resolves known texture backdrop from profileBackgrounds when displayVRCProfileBackgrounds is true', () => {
@@ -161,6 +165,10 @@ describe('MainDialogContainer.vue', () => {
         const style = dialogContent.attributes('style') || '';
         expect(style).toContain('url(');
         expect(style).toContain('BG_Cascade.png');
+        expect(dialogContent.attributes('data-has-backdrop')).toBe('true');
+        expect(dialogContent.classes()).toContain(
+            'bv-dialog-shell--has-backdrop'
+        );
     });
 
     it('generates gradient backdrop when displayVRCProfileBackgrounds is true and backgroundType is gradient', () => {
@@ -175,6 +183,10 @@ describe('MainDialogContainer.vue', () => {
         const dialogContent = wrapper.find('.bv-dialog-shell');
         const style = dialogContent.attributes('style') || '';
         expect(style).toContain('linear-gradient(');
+        expect(dialogContent.attributes('data-has-backdrop')).toBe('true');
+        expect(dialogContent.classes()).toContain(
+            'bv-dialog-shell--has-backdrop'
+        );
     });
 
     it('falls back safely without background image when texture is unknown', () => {
@@ -189,6 +201,10 @@ describe('MainDialogContainer.vue', () => {
         const style = dialogContent.attributes('style') || '';
         expect(style).not.toContain('url(');
         expect(style).toContain('overflow: hidden');
+        expect(dialogContent.attributes('data-has-backdrop')).toBeUndefined();
+        expect(dialogContent.classes()).not.toContain(
+            'bv-dialog-shell--has-backdrop'
+        );
     });
 
     it('returns empty backdrop style when active dialog is not user', () => {

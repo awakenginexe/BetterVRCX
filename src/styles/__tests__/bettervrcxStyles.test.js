@@ -225,4 +225,14 @@ describe('BetterVRCX stylesheet contract', () => {
             expect(stylesheet).toContain(cls);
         }
     });
+
+    test('provides Apple Glass design system for profile dialog backdrops', () => {
+        const stylesheet = readFileSync(stylesheetPath, 'utf8');
+        expect(stylesheet).toContain('.bv-dialog-shell .bv-entity-card');
+        expect(stylesheet).toContain(
+            "bv-dialog-shell[data-has-backdrop='true']"
+        );
+        expect(stylesheet).toContain('.bv-dialog-shell--has-backdrop');
+        expect(stylesheet).toContain('backdrop-filter: blur(');
+    });
 });

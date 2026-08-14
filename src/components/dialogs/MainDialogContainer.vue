@@ -225,12 +225,17 @@
         }
         return userDialogBaseStyle;
     });
+
+    const hasBackdrop = computed(() => {
+        return Boolean(dialogStyle.value && dialogStyle.value.backgroundImage);
+    });
 </script>
 
 <template>
     <Dialog v-if="isOpen" v-model:open="isOpen">
         <DialogContent
-            :class="[dialogClass, 'bv-dialog-shell']"
+            :class="[dialogClass, 'bv-dialog-shell', { 'bv-dialog-shell--has-backdrop': hasBackdrop }]"
+            :data-has-backdrop="hasBackdrop ? 'true' : undefined"
             style="top: 10vh"
             :show-close-button="false"
             :style="dialogStyle">

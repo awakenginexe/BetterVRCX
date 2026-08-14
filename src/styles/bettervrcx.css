@@ -853,6 +853,107 @@ html:not(.dark) .bv-vrcplus-badge {
     color: var(--bv-text-strong);
 }
 
+/* Apple Glass Design System for All Profile & Entity Dialogs */
+.bv-dialog-shell,
+.bv-dialog-shell[data-has-backdrop='true'],
+.bv-dialog-shell--has-backdrop {
+    --profile-card: rgba(18, 22, 31, 0.65);
+}
+
+.bv-dialog-shell .bv-entity-card,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-entity-card,
+.bv-dialog-shell--has-backdrop .bv-entity-card,
+.bv-dialog-shell .bg-\(--profile-card\),
+.bv-dialog-shell[data-has-backdrop='true'] .bg-\(--profile-card\),
+.bv-dialog-shell--has-backdrop .bg-\(--profile-card\) {
+    background-color: rgba(18, 22, 31, 0.65) !important;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.36),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.bv-dialog-shell .bv-dialog-breadcrumbs,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-dialog-breadcrumbs,
+.bv-dialog-shell--has-backdrop .bv-dialog-breadcrumbs {
+    background-color: rgba(18, 22, 31, 0.65) !important;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 4px 16px 0 rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.bv-dialog-shell .bv-entity-item-card,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-entity-item-card,
+.bv-dialog-shell--has-backdrop .bv-entity-item-card,
+.bv-dialog-shell .bv-friend-row,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-friend-row,
+.bv-dialog-shell--has-backdrop .bv-friend-row {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bv-dialog-shell .bv-entity-item-card:hover,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-entity-item-card:hover,
+.bv-dialog-shell--has-backdrop .bv-entity-item-card:hover,
+.bv-dialog-shell .bv-friend-row:hover,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-friend-row:hover,
+.bv-dialog-shell--has-backdrop .bv-friend-row:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.bv-dialog-shell .bv-entity-dialog-rail,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-entity-dialog-rail,
+.bv-dialog-shell--has-backdrop .bv-entity-dialog-rail {
+    border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+.bv-dialog-shell .bv-entity-card-header,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-entity-card-header,
+.bv-dialog-shell--has-backdrop .bv-entity-card-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html:not(.dark) .bv-dialog-shell,
+html:not(.dark) .bv-dialog-shell[data-has-backdrop='true'],
+html:not(.dark) .bv-dialog-shell--has-backdrop {
+    --profile-card: rgba(255, 255, 255, 0.7);
+}
+
+html:not(.dark) .bv-dialog-shell .bv-entity-card,
+html:not(.dark) .bv-dialog-shell[data-has-backdrop='true'] .bv-entity-card,
+html:not(.dark) .bv-dialog-shell--has-backdrop .bv-entity-card,
+html:not(.dark) .bv-dialog-shell .bg-\(--profile-card\),
+html:not(.dark)
+    .bv-dialog-shell[data-has-backdrop='true']
+    .bg-\(--profile-card\),
+html:not(.dark) .bv-dialog-shell--has-backdrop .bg-\(--profile-card\) {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+}
+
+.bv-dialog-shell .bv-skeleton,
+.bv-dialog-shell[data-has-backdrop='true'] .bv-skeleton,
+.bv-dialog-shell--has-backdrop .bv-skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.07) 25%,
+        rgba(255, 255, 255, 0.16) 50%,
+        rgba(255, 255, 255, 0.07) 75%
+    );
+    background-size: 200% 100%;
+}
+
 .bv-entity-card-header {
     display: flex;
     align-items: center;

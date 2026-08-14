@@ -161,24 +161,33 @@
                             </Button>
                         </div>
                     </div>
-                    <pre
-                        class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
-                        style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
-                        >{{ bioCache.translated || userDialog.ref.bio || '—' }}</pre>
-                    <div
-                        v-if="userDialog.ref.bioLinks && userDialog.ref.bioLinks.length"
-                        class="flex flex-wrap items-center gap-1.5 mt-2">
-                        <TooltipWrapper v-for="(link, index) in userDialog.ref.bioLinks" :key="index">
-                            <template #content>
-                                <span v-text="link"></span>
-                            </template>
-                            <img
-                                :src="getFaviconUrl(link)"
-                                style="width: 16px; height: 16px; vertical-align: middle; cursor: pointer"
-                                @click.stop="openExternalLink(link)"
-                                loading="lazy" />
-                        </TooltipWrapper>
-                    </div>
+                    <template v-if="userDialog.loading && !userDialog.ref.bio && !bioCache.translated">
+                        <div class="space-y-2 py-1">
+                            <Skeleton class="h-3.5 w-full rounded-md" />
+                            <Skeleton class="h-3.5 w-4/5 rounded-md" />
+                            <Skeleton class="h-3.5 w-2/3 rounded-md" />
+                        </div>
+                    </template>
+                    <template v-else>
+                        <pre
+                            class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
+                            style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
+                            >{{ bioCache.translated || userDialog.ref.bio || '—' }}</pre>
+                        <div
+                            v-if="userDialog.ref.bioLinks && userDialog.ref.bioLinks.length"
+                            class="flex flex-wrap items-center gap-1.5 mt-2">
+                            <TooltipWrapper v-for="(link, index) in userDialog.ref.bioLinks" :key="index">
+                                <template #content>
+                                    <span v-text="link"></span>
+                                </template>
+                                <img
+                                    :src="getFaviconUrl(link)"
+                                    style="width: 16px; height: 16px; vertical-align: middle; cursor: pointer"
+                                    @click.stop="openExternalLink(link)"
+                                    loading="lazy" />
+                            </TooltipWrapper>
+                        </div>
+                    </template>
                 </div>
 
                 <div
@@ -195,8 +204,13 @@
                             <Pencil class="h-3 w-3" :style="{ color: userDialog.theme.iconColor }" />
                         </Button>
                     </div>
+                    <template v-if="userDialog.loading && !userDialog.note">
+                        <div class="space-y-1.5 py-1">
+                            <Skeleton class="h-3.5 w-3/4 rounded-md" />
+                        </div>
+                    </template>
                     <pre
-                        v-if="userDialog.note"
+                        v-else-if="userDialog.note"
                         class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                         style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
                         >{{ userDialog.note }}</pre>
@@ -217,8 +231,13 @@
                             <Pencil class="h-3 w-3" :style="{ color: userDialog.theme.iconColor }" />
                         </Button>
                     </div>
+                    <template v-if="userDialog.loading && !userDialog.memo">
+                        <div class="space-y-1.5 py-1">
+                            <Skeleton class="h-3.5 w-2/3 rounded-md" />
+                        </div>
+                    </template>
                     <pre
-                        v-if="userDialog.memo"
+                        v-else-if="userDialog.memo"
                         class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                         style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
                         >{{ userDialog.memo }}</pre>
@@ -242,7 +261,23 @@
                             </span>
                         </span>
                     </div>
-                    <div class="flex flex-col gap-1.5">
+                    <template v-if="userDialog.loading">
+                        <div class="flex flex-col gap-2 py-1">
+                            <div class="flex justify-between items-center">
+                                <Skeleton class="h-3 w-16 rounded-md" />
+                                <Skeleton class="h-3 w-20 rounded-md" />
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <Skeleton class="h-3 w-20 rounded-md" />
+                                <Skeleton class="h-3 w-24 rounded-md" />
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <Skeleton class="h-3 w-16 rounded-md" />
+                                <Skeleton class="h-3 w-16 rounded-md" />
+                            </div>
+                        </div>
+                    </template>
+                    <div v-else class="flex flex-col gap-1.5">
                         <TooltipWrapper
                             :side="currentUser.id !== userDialog.id ? 'bottom' : 'top'"
                             :content="formatDateFilter(userOnlineForTimestamp(userDialog), 'long')"
@@ -350,7 +385,20 @@
                     <div class="bv-entity-card-header mb-2 pb-2" :style="{ color: userDialog.theme.subtextColor }">
                         {{ t('dialog.user.info.header') }}
                     </div>
-                    <div class="flex flex-col gap-1.5">
+                    <template v-if="userDialog.loading">
+                        <div class="flex flex-col gap-2 py-1">
+                            <div class="flex justify-between items-center">
+                                <Skeleton class="h-3 w-20 rounded-md" />
+                                <Skeleton class="h-3 w-24 rounded-md" />
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <Skeleton class="h-3 w-24 rounded-md" />
+                                <Skeleton class="h-3 w-20 rounded-md" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <div v-else class="flex flex-col gap-1.5">
                         <TooltipWrapper :side="currentUser.id !== userDialog.id ? 'bottom' : 'top'">
                             <template #content>
                                 <span
@@ -437,8 +485,10 @@
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     import { ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
+    import { Skeleton } from '@/components/ui/skeleton';
     import { Spinner } from '@/components/ui/spinner';
     import { storeToRefs } from 'pinia';
+
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
 

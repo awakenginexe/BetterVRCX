@@ -117,39 +117,6 @@
                         saveOpenVROption();
                     " />
             </SettingsItem>
-
-            <SettingsItem
-                :label="t('view.settings.appearance.appearance.vrc_profile_backgrounds')"
-                :description="t('view.settings.appearance.appearance.vrc_profile_backgrounds_description')">
-                <Switch
-                    :model-value="displayVRCProfileBackgrounds"
-                    :ariaLabel="t('view.settings.appearance.appearance.vrc_profile_backgrounds')"
-                    @update:modelValue="
-                        setDisplayVRCProfileBackgrounds();
-                        saveOpenVROption();
-                    " />
-            </SettingsItem>
-
-            <template v-if="displayVRCProfileBackgrounds">
-                <SettingsItem
-                    :label="t('view.settings.appearance.appearance.vrc_profile_backgrounds_opacity')"
-                    :description="t('view.settings.appearance.appearance.vrc_profile_backgrounds_opacity_description')">
-                    <NumberField
-                        v-model="profileBackgroundOpacity"
-                        :step="0.1"
-                        :min="0"
-                        :max="1"
-                        :format-options="{ maximumFractionDigits: 2 }"
-                        class="w-32"
-                        @update:modelValue="setProfileBackgroundOpacity">
-                        <NumberFieldContent>
-                            <NumberFieldDecrement />
-                            <NumberFieldInput />
-                            <NumberFieldIncrement />
-                        </NumberFieldContent>
-                    </NumberField>
-                </SettingsItem>
-            </template>
         </SettingsGroup>
 
         <SettingsGroup :title="t('view.settings.appearance.display.header')">
@@ -490,8 +457,6 @@
         appLanguage,
         displayVRCPlusIconsAsAvatar,
         displayVRCProfileThemes,
-        displayVRCProfileBackgrounds,
-        profileBackgroundOpacity,
         appFontFamily,
         customFontFamily,
         appCjkFontPack,
@@ -520,9 +485,8 @@
     const {
         setDisplayVRCPlusIconsAsAvatar,
         setDisplayVRCProfileThemes,
-        setDisplayVRCProfileBackgrounds,
-        setProfileBackgroundOpacity,
         setHideNicknames,
+
         setShowInstanceIdInLocation,
         setIsAgeGatedInstancesVisible,
         setInstanceUsersSortAlphabetical,

@@ -56,6 +56,7 @@
     import SystemTab from './components/Tabs/SystemTab.vue';
     import VrTab from './components/Tabs/VrTab.vue';
     import HomeBackgroundSettings from '../../addons/homeBackground/HomeBackgroundSettings.vue';
+    import ProfileBackgroundSettings from '../../addons/profileBackground/ProfileBackgroundSettings.vue';
 
     const { t } = useI18n();
     const activeTab = ref('system');
@@ -103,6 +104,12 @@
             label: 'Home Wallpaper',
             icon: 'ri-image-edit-line',
             component: HomeBackgroundSettings
+        },
+        {
+            key: 'profile-background',
+            label: 'Profile Backdrop',
+            icon: 'ri-image-2-line',
+            component: ProfileBackgroundSettings
         }
     ]);
     const settingsSections = computed(() => {
@@ -125,7 +132,7 @@
             {
                 key: 'addons',
                 label: 'Addons',
-                tabKeys: ['home-background']
+                tabKeys: ['home-background', 'profile-background']
             }
         ];
 

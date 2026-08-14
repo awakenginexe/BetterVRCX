@@ -62,8 +62,9 @@ export const useAppearanceSettingsStore = defineStore(
         const appCjkFontPack = ref(APP_CJK_FONT_PACK_DEFAULT_KEY);
         const displayVRCPlusIconsAsAvatar = ref(false);
         const displayVRCProfileThemes = ref(false);
-        const displayVRCProfileBackgrounds = ref(false);
+        const displayVRCProfileBackgrounds = ref(true);
         const profileBackgroundOpacity = ref(0.5);
+
         const hideNicknames = ref(false);
         const showInstanceIdInLocation = ref(false);
         const isAgeGatedInstancesVisible = ref(false);
@@ -199,9 +200,10 @@ export const useAppearanceSettingsStore = defineStore(
                 configRepository.getBool('VRCX_displayVRCProfileThemes', true),
                 configRepository.getBool(
                     'VRCX_displayVRCProfileBackgrounds',
-                    false
+                    true
                 ),
                 configRepository.getFloat('VRCX_profileBackgroundOpacity', 0.5),
+
                 configRepository.getBool('VRCX_hideNicknames', false),
                 configRepository.getBool(
                     'VRCX_showInstanceIdInLocation',

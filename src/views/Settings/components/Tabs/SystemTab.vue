@@ -155,12 +155,17 @@
         <SettingsGroup :title="t('view.settings.general.legal_notice.header')">
             <div class="flex flex-col gap-2 text-sm text-muted-foreground mb-2">
                 <p class="m-0">
-                    &copy; 2019-2026
+                    &copy; 2026
+                    <a class="cursor-pointer" @click="openExternalLink('https://github.com/awakenginexe')"
+                        >Awake Ngine XE</a
+                    >
+                    Portion of &copy; 2019-2026
                     <a class="cursor-pointer" @click="openExternalLink('https://github.com/pypy-vrc')">pypy</a> &amp;
                     <a class="cursor-pointer" @click="openExternalLink('https://github.com/Natsumi-sama')">Natsumi</a>
                     &amp;
                     <a class="cursor-pointer" @click="openExternalLink('https://github.com/Map1en')">Map1en</a>
                 </p>
+
                 <p class="m-0">{{ t('view.settings.general.legal_notice.info') }}</p>
                 <p class="m-0">{{ t('view.settings.general.legal_notice.disclaimer1') }}</p>
                 <p class="m-0">{{ t('view.settings.general.legal_notice.disclaimer2') }}</p>

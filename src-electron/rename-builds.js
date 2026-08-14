@@ -8,11 +8,13 @@ const buildDir = path.join(rootDir, 'build');
 
 let version = '';
 try {
-    version = fs.readFileSync(versionFilePath, 'utf8').trim();
-    // if (!version.includes('T')) {
-    //     // Remove dots only from Stable version
-    //     version = version.replaceAll('.', '');
-    // }
+    const rawVersion = fs.readFileSync(versionFilePath, 'utf8').trim();
+    const tagMatch = rawVersion.match(/v\d+\.\d+\.\d+/);
+    if (tagMatch) {
+        version = tagMatch[0];
+    } else {
+        version = rawVersion.split(' ')[0] || 'v3.0.0';
+    }
 } catch (err) {
     console.error('Error reading Version file:', err);
     process.exit(1);
@@ -20,35 +22,59 @@ try {
 
 function renameBuild(arch, platform) {
     if (platform === 'linux') {
-        const oldAppImage = path.join(buildDir, `VRCX_Version.AppImage`);
+        const candidateNames = [
+            'BetterVRCX_Version.AppImage',
+            'VRCX_Version.AppImage',
+            'BetterVRCX.AppImage'
+        ];
         const newAppImage = path.join(
             buildDir,
-            `VRCX_${version}_${arch}.AppImage`
+            `BetterVRCX_${version}_${arch}.AppImage`
         );
-        try {
+        let found = false;
+        for (const name of candidateNames) {
+            const oldAppImage = path.join(buildDir, name);
             if (fs.existsSync(oldAppImage)) {
-                fs.renameSync(oldAppImage, newAppImage);
-                console.log(`Renamed: ${oldAppImage} -> ${newAppImage}`);
-            } else {
-                console.log(`File not found: ${oldAppImage}`);
+                try {
+                    fs.renameSync(oldAppImage, newAppImage);
+                    console.log(`Renamed: ${oldAppImage} -> ${newAppImage}`);
+                    found = true;
+                    break;
+                } catch (err) {
+                    console.error('Error renaming files:', err);
+                    process.exit(1);
+                }
             }
-        } catch (err) {
-            console.error('Error renaming files:', err);
-            process.exit(1);
+        }
+        if (!found) {
+            console.log(
+                `File not found for linux AppImage rename in ${buildDir}`
+            );
         }
     } else if (platform === 'darwin') {
-        const oldDmg = path.join(buildDir, `VRCX_Version.dmg`);
-        const newDmg = path.join(buildDir, `VRCX_${version}_${arch}.dmg`);
-        try {
+        const candidateNames = [
+            'BetterVRCX_Version.dmg',
+            'VRCX_Version.dmg',
+            'BetterVRCX.dmg'
+        ];
+        const newDmg = path.join(buildDir, `BetterVRCX_${version}_${arch}.dmg`);
+        let found = false;
+        for (const name of candidateNames) {
+            const oldDmg = path.join(buildDir, name);
             if (fs.existsSync(oldDmg)) {
-                fs.renameSync(oldDmg, newDmg);
-                console.log(`Renamed: ${oldDmg} -> ${newDmg}`);
-            } else {
-                console.log(`File not found: ${oldDmg}`);
+                try {
+                    fs.renameSync(oldDmg, newDmg);
+                    console.log(`Renamed: ${oldDmg} -> ${newDmg}`);
+                    found = true;
+                    break;
+                } catch (err) {
+                    console.error('Error renaming files:', err);
+                    process.exit(1);
+                }
             }
-        } catch (err) {
-            console.error('Error renaming files:', err);
-            process.exit(1);
+        }
+        if (!found) {
+            console.log(`File not found for macos DMG rename in ${buildDir}`);
         }
     } else {
         console.log('No renaming needed for this platform.');
