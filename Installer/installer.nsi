@@ -11,8 +11,9 @@
 ;Version
     !include "version_define.nsh"
 
-    !define PRODUCT_VERSION ${PRODUCT_VERSION_FROM_FILE}
-    !define VERSION ${DISPLAY_VERSION_FROM_FILE}
+    !define PRODUCT_VERSION "${PRODUCT_VERSION_FROM_FILE}"
+    !define VERSION "${DISPLAY_VERSION_FROM_FILE}"
+
 
     VIProductVersion "${PRODUCT_VERSION}"
     VIFileVersion "${PRODUCT_VERSION}"
