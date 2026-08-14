@@ -719,6 +719,44 @@ html.dark {
     color: var(--bv-status-busy);
 }
 
+.bv-vrcplus-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+    border-radius: var(--bv-radius-xs);
+    background-color: color-mix(in srgb, #f59e0b 14%, transparent);
+    color: #fbbf24;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    user-select: none;
+    vertical-align: middle;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.bv-vrcplus-badge--sm {
+    height: 15px;
+    padding: 0 4px;
+    font-size: 9.5px;
+    line-height: 1;
+}
+
+.bv-vrcplus-badge--md {
+    height: 18px;
+    padding: 0 6px;
+    border-radius: var(--bv-radius-sm);
+    font-size: 11px;
+    line-height: 1;
+}
+
+html:not(.dark) .bv-vrcplus-badge {
+    border-color: color-mix(in srgb, #d97706 40%, transparent);
+    background-color: color-mix(in srgb, #f59e0b 16%, transparent);
+    color: #b45309;
+}
+
 .bv-skeleton {
     min-height: 1rem;
     border-radius: var(--bv-radius-sm);

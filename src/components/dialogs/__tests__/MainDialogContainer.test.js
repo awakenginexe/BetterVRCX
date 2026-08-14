@@ -11,7 +11,14 @@ const mocks = vi.hoisted(() => ({
             { type: 'world', id: 'w1', label: 'World' }
         ]
     },
-    userVisible: { value: true }
+    userVisible: { value: true },
+    worldVisible: { value: false },
+    displayVRCProfileBackgrounds: { value: false },
+    isDarkMode: { value: true },
+    profileBackgroundOpacity: { value: 0.5 },
+    userPublicProfileRef: {
+        value: null
+    }
 }));
 
 vi.mock('pinia', async (i) => ({ ...(await i()), storeToRefs: (s) => s }));
@@ -21,11 +28,23 @@ vi.mock('@/stores', () => ({
         closeMainDialog: (...a) => mocks.closeMainDialog(...a),
         handleBreadcrumbClick: (...a) => mocks.handleBreadcrumbClick(...a)
     }),
-    useUserStore: () => ({ userDialog: { visible: mocks.userVisible.value } }),
-    useWorldStore: () => ({ worldDialog: { visible: false } }),
+    useUserStore: () => ({
+        userDialog: {
+            visible: mocks.userVisible.value,
+            publicProfileRef: mocks.userPublicProfileRef.value
+        }
+    }),
+    useWorldStore: () => ({
+        worldDialog: { visible: mocks.worldVisible.value }
+    }),
+
     useAvatarStore: () => ({ avatarDialog: { visible: false } }),
     useGroupStore: () => ({ groupDialog: { visible: false } }),
-    useAppearanceSettingsStore: () => ({ displayVRCProfileBackgrounds: false }),
+    useAppearanceSettingsStore: () => ({
+        displayVRCProfileBackgrounds: mocks.displayVRCProfileBackgrounds.value,
+        isDarkMode: mocks.isDarkMode.value,
+        profileBackgroundOpacity: mocks.profileBackgroundOpacity.value
+    }),
     useInstanceStore: () => ({
         previousInstancesInfoDialog: ref({ visible: false }),
         previousInstancesListDialog: ref({ visible: false, variant: 'user' })
@@ -33,7 +52,10 @@ vi.mock('@/stores', () => ({
 }));
 vi.mock('@/components/ui/dialog', () => ({
     Dialog: { template: '<div><slot /></div>' },
-    DialogContent: { template: '<div v-bind="$attrs"><slot /></div>' }
+    DialogContent: {
+        props: ['showCloseButton'],
+        template: '<div v-bind="$attrs"><slot /></div>'
+    }
 }));
 vi.mock('@/components/ui/breadcrumb', () => ({
     Breadcrumb: { template: '<div><slot /></div>' },
@@ -89,6 +111,13 @@ import MainDialogContainer from '../MainDialogContainer.vue';
 describe('MainDialogContainer.vue', () => {
     beforeEach(() => {
         mocks.handleBreadcrumbClick.mockClear();
+        mocks.dialogCrumbs.value = [
+            { type: 'user', id: 'u1', label: 'User' },
+            { type: 'world', id: 'w1', label: 'World' }
+        ];
+        mocks.userVisible.value = true;
+        mocks.displayVRCProfileBackgrounds.value = false;
+        mocks.userPublicProfileRef.value = null;
     });
 
     it('applies the entity dialog shell to the active user dialog', () => {
@@ -106,5 +135,77 @@ describe('MainDialogContainer.vue', () => {
 
         await wrapper.get('[data-testid="btn"]').trigger('click');
         expect(mocks.handleBreadcrumbClick).toHaveBeenCalledWith(0);
+    });
+
+    it('does not apply profile backdrop when displayVRCProfileBackgrounds is false', () => {
+        mocks.displayVRCProfileBackgrounds.value = false;
+        mocks.userPublicProfileRef.value = {
+            backgroundType: 'texture',
+            backgroundTextureId: 'filigree'
+        };
+
+        const wrapper = mount(MainDialogContainer);
+        const dialogContent = wrapper.find('.bv-dialog-shell');
+        expect(dialogContent.attributes('style') || '').not.toContain('url(');
+    });
+
+    it('resolves known texture backdrop from profileBackgrounds when displayVRCProfileBackgrounds is true', () => {
+        mocks.displayVRCProfileBackgrounds.value = true;
+        mocks.userPublicProfileRef.value = {
+            backgroundType: 'texture',
+            backgroundTextureId: 'filigree'
+        };
+
+        const wrapper = mount(MainDialogContainer);
+        const dialogContent = wrapper.find('.bv-dialog-shell');
+        const style = dialogContent.attributes('style') || '';
+        expect(style).toContain('url(');
+        expect(style).toContain('BG_Cascade.png');
+    });
+
+    it('generates gradient backdrop when displayVRCProfileBackgrounds is true and backgroundType is gradient', () => {
+        mocks.displayVRCProfileBackgrounds.value = true;
+        mocks.userPublicProfileRef.value = {
+            backgroundType: 'gradient',
+            backgroundGradientTop: 'ff0000',
+            backgroundGradientBottom: '0000ff'
+        };
+
+        const wrapper = mount(MainDialogContainer);
+        const dialogContent = wrapper.find('.bv-dialog-shell');
+        const style = dialogContent.attributes('style') || '';
+        expect(style).toContain('linear-gradient(');
+    });
+
+    it('falls back safely without background image when texture is unknown', () => {
+        mocks.displayVRCProfileBackgrounds.value = true;
+        mocks.userPublicProfileRef.value = {
+            backgroundType: 'texture',
+            backgroundTextureId: 'unknown_texture_id_123'
+        };
+
+        const wrapper = mount(MainDialogContainer);
+        const dialogContent = wrapper.find('.bv-dialog-shell');
+        const style = dialogContent.attributes('style') || '';
+        expect(style).not.toContain('url(');
+        expect(style).toContain('overflow: hidden');
+    });
+
+    it('returns empty backdrop style when active dialog is not user', () => {
+        mocks.userVisible.value = false;
+        mocks.worldVisible.value = true;
+        mocks.displayVRCProfileBackgrounds.value = true;
+        mocks.dialogCrumbs.value = [
+            { type: 'world', id: 'w1', label: 'World' }
+        ];
+        mocks.userPublicProfileRef.value = {
+            backgroundType: 'texture',
+            backgroundTextureId: 'filigree'
+        };
+
+        const wrapper = mount(MainDialogContainer);
+        const dialogContent = wrapper.find('.bv-dialog-shell');
+        const style = dialogContent.attributes('style') || '';
+        expect(style).not.toContain('url(');
     });
 });

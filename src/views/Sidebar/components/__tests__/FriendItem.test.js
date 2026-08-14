@@ -99,6 +99,14 @@ vi.mock('lucide-vue-next', () => ({
     }
 }));
 
+vi.mock('@/components/ui/tooltip', () => ({
+    TooltipWrapper: {
+        props: ['content', 'side'],
+        template:
+            '<div data-testid="tooltip-wrapper" :title="content"><slot /></div>'
+    }
+}));
+
 import FriendItem from '../FriendItem.vue';
 
 function makeFriend(overrides = {}) {
@@ -176,5 +184,76 @@ describe('FriendItem.vue', () => {
         await button.trigger('click');
         expect(mocks.confirmDeleteFriend).toHaveBeenCalledWith('usr_orphan');
         expect(mocks.showUserDialog).not.toHaveBeenCalled();
+    });
+
+    test('renders VRC+ badge when friend.ref.$isVRCPlus is true', () => {
+        const wrapper = mountItem({
+            friend: makeFriend({
+                ref: {
+                    displayName: 'Bob',
+                    $userColour: '#fff',
+                    $isVRCPlus: true
+                }
+            })
+        });
+
+        expect(wrapper.text()).toContain('Bob');
+        expect(wrapper.text()).toContain('VRC+');
+        expect(wrapper.findComponent({ name: 'VrcPlusBadge' }).exists()).toBe(
+            true
+        );
+    });
+
+    test('does not render VRC+ badge when friend.ref.$isVRCPlus is false or missing', () => {
+        const wrapper = mountItem({
+            friend: makeFriend({
+                ref: {
+                    displayName: 'Charlie',
+                    $userColour: '#fff',
+                    $isVRCPlus: false
+                }
+            })
+        });
+
+        expect(wrapper.text()).toContain('Charlie');
+        expect(wrapper.text()).not.toContain('VRC+');
+        expect(wrapper.findComponent({ name: 'VrcPlusBadge' }).exists()).toBe(
+            false
+        );
+    });
+
+    test('renders VRC+ badge after nickname when nickname is present', () => {
+        const wrapper = mountItem({
+            friend: makeFriend({
+                $nickName: 'Chaz',
+                ref: {
+                    displayName: 'Charlie',
+                    $userColour: '#fff',
+                    $isVRCPlus: true
+                }
+            })
+        });
+
+        expect(wrapper.text()).toContain('Charlie (Chaz)');
+        expect(wrapper.text()).toContain('VRC+');
+        expect(wrapper.findComponent({ name: 'VrcPlusBadge' }).exists()).toBe(
+            true
+        );
+    });
+
+    test('maintains truncation and min-w-0 layout contract for display name container', () => {
+        const wrapper = mountItem({
+            friend: makeFriend({
+                ref: {
+                    displayName: 'VeryLongUsernameThatShouldTruncate',
+                    $userColour: '#fff',
+                    $isVRCPlus: true
+                }
+            })
+        });
+
+        const nameContainer = wrapper.find('.truncate');
+        expect(nameContainer.exists()).toBe(true);
+        expect(nameContainer.classes()).toContain('min-w-0');
     });
 });

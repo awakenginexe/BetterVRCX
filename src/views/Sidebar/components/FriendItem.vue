@@ -12,19 +12,19 @@
                 </Avatar>
             </div>
             <div class="flex-1 overflow-hidden h-9 flex flex-col justify-between">
-                <span
-                    v-if="!hideNicknames && friend.$nickName"
-                    class="block truncate font-medium leading-[18px]"
-                    :style="{ color: friend.ref.$userColour }">
-                    {{ friend.ref.displayName }} ({{ friend.$nickName }})
-                </span>
-                <span
-                    v-else
-                    class="block truncate font-medium leading-[18px]"
-                    :style="{ color: friend.ref.$userColour }"
-                    >{{ friend.ref.displayName
-                    }}{{ isGroupByInstance && allFavoriteFriendIds.has(friend.id) ? ' ⭐' : '' }}</span
-                >
+                <div class="flex items-center min-w-0 font-medium leading-[18px]">
+                    <span
+                        v-if="!hideNicknames && friend.$nickName"
+                        class="truncate flex-1 min-w-0"
+                        :style="{ color: friend.ref.$userColour }">
+                        {{ friend.ref.displayName }} ({{ friend.$nickName }})
+                    </span>
+                    <span v-else class="truncate flex-1 min-w-0" :style="{ color: friend.ref.$userColour }">
+                        {{ friend.ref.displayName
+                        }}{{ isGroupByInstance && allFavoriteFriendIds.has(friend.id) ? ' ⭐' : '' }}
+                    </span>
+                    <VrcPlusBadge v-if="friend.ref?.$isVRCPlus" size="sm" class="ml-1 flex-none shrink-0" />
+                </div>
 
                 <span v-if="isFriendActiveOrOffline" class="block truncate text-xs">{{
                     friend.ref.statusDescription
@@ -78,6 +78,7 @@
 
     import Location from '@/components/Location.vue';
     import Timer from '@/components/Timer.vue';
+    import VrcPlusBadge from '@/components/common/VrcPlusBadge.vue';
 
     import { useAppearanceSettingsStore, useFriendStore } from '../../../stores';
     import { useUserDisplay } from '../../../composables/useUserDisplay';

@@ -89,12 +89,14 @@
                             class="font-bold cursor-pointer wrap-anywhere"
                             v-text="userDialog.ref.displayName"
                             @click="copyUserDisplayName(userDialog.ref.displayName)"></span>
+                        <VrcPlusBadge v-if="isVrcPlusUser" size="md" class="ml-1" />
                         <TooltipWrapper
                             v-if="userDialog.publicProfileRef?.isEconomyCreator"
                             side="top"
                             :content="t('dialog.user.info.economy_creator')">
                             <BadgeCheck class="h-3.5 w-3.5 text-[#3b82f6]" />
                         </TooltipWrapper>
+
                         <TooltipWrapper v-if="userDialog.ref.pronouns" side="top" :content="t('dialog.user.pronouns')">
                             <span class="x-grey font-mono text-xs" v-text="userDialog.ref.pronouns"></span>
                         </TooltipWrapper>
@@ -463,7 +465,7 @@
         MessageCircle,
         User
     } from 'lucide-vue-next';
-    import { ref, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
 
@@ -474,6 +476,7 @@
     import { useGalleryStore, useUserStore } from '../../../stores';
     import { Badge } from '../../ui/badge';
     import { Checkbox } from '../../ui/checkbox';
+    import VrcPlusBadge from '@/components/common/VrcPlusBadge.vue';
 
     import UserActionDropdown from './UserActionDropdown.vue';
     import { showGroupDialog } from '@/coordinators/groupCoordinator';
@@ -503,9 +506,17 @@
 
     const { t } = useI18n();
 
-    const { userDialog, currentUser } = storeToRefs(useUserStore());
+    const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
     const { toggleSharedConnectionsOptOut, toggleDiscordFriendsOptOut, toggleAvatarCopying, toggleAllowBooping } =
         useUserStore();
+
+    const isVrcPlusUser = computed(() =>
+        Boolean(
+            userDialog.value.ref?.$isVRCPlus ||
+            userDialog.value.publicProfileRef?.hasVrcPlus ||
+            (userDialog.value.id === currentUser.value.id && isLocalUserVrcPlusSupporter.value)
+        )
+    );
 
     const { showFullscreenImageDialog } = useGalleryStore();
     const { userImage, userStatusClass } = useUserDisplay();
