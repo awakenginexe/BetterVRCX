@@ -24,8 +24,8 @@
                             'group/main-layout flex-1 h-full min-w-0',
                             { 'aside-collapsed': isAsideCollapsedStatic }
                         ]"
-                        @layout="handleLayout">
-                        <template #default="{ layout }">
+                        @layout="handleAsideLayout">
+                        <template #default>
                             <ResizablePanel id="main-content-panel" :order="1">
                                 <div class="bv-route-content" data-shell-region="content">
                                     <RouterView v-slot="{ Component }">
@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-    import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+    import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
     import { useRouter } from 'vue-router';
 
@@ -115,7 +115,6 @@
     import FriendImportDialog from '../Favorites/dialogs/FriendImportDialog.vue';
     import FullscreenImagePreview from '../../components/FullscreenImagePreview.vue';
     import GlobalToolsDialogs from '../Tools/components/GlobalToolsDialogs.vue';
-    import GroupMemberModerationDialog from '../../components/dialogs/GroupDialog/GroupMemberModerationDialog.vue';
     import InviteGroupDialog from '../../components/dialogs/InviteGroupDialog.vue';
     import LaunchDialog from '../../components/dialogs/LaunchDialog.vue';
     import LaunchOptionsDialog from '../Settings/dialogs/LaunchOptionsDialog.vue';
@@ -187,10 +186,55 @@
     } = useMainLayoutResizable();
 
     const asidePanelRef = ref(null);
+    const isAsideDragging = ref(false);
+    let restoreAsideWidthFrame = null;
+
+    const applyPersistedAsideWidth = async () => {
+        if (
+            document.visibilityState === 'hidden' ||
+            !isSideBarTabShow.value ||
+            isRightSidebarCollapsed.value
+        ) {
+            return;
+        }
+        await nextTick();
+        asidePanelRef.value?.resize(rightSidebarWidth.value);
+    };
+
+    const restoreAsideWidthAfterWindowResize = () => {
+        if (document.visibilityState === 'hidden') {
+            return;
+        }
+        if (restoreAsideWidthFrame !== null) {
+            window.cancelAnimationFrame(restoreAsideWidthFrame);
+        }
+        restoreAsideWidthFrame = window.requestAnimationFrame(() => {
+            restoreAsideWidthFrame = window.requestAnimationFrame(() => {
+                restoreAsideWidthFrame = null;
+                applyPersistedAsideWidth();
+            });
+        });
+    };
 
     const handleAsideDragging = (isDragging) => {
+        isAsideDragging.value = isDragging;
         if (!isDragging) {
             persistLatestLayout();
+        }
+    };
+
+    const handleAsideLayout = (sizes) => {
+        handleLayout(sizes);
+
+        const asideSize = Array.isArray(sizes) ? sizes.at(-1) : null;
+        if (
+            !isAsideDragging.value &&
+            !isRightSidebarCollapsed.value &&
+            isSideBarTabShow.value &&
+            asideSize === asideMaxSize &&
+            rightSidebarWidth.value < asideMaxSize
+        ) {
+            restoreAsideWidthAfterWindowResize();
         }
     };
 
@@ -217,10 +261,27 @@
         }
     });
 
-    watch(rightSidebarWidth, async (width) => {
-        if (!isSideBarTabShow.value || isRightSidebarCollapsed.value) return;
-        await nextTick();
-        asidePanelRef.value?.resize(width);
+    watch(rightSidebarWidth, async () => {
+        await applyPersistedAsideWidth();
+    });
+
+    onMounted(() => {
+        window.addEventListener('resize', restoreAsideWidthAfterWindowResize);
+        document.addEventListener(
+            'visibilitychange',
+            restoreAsideWidthAfterWindowResize
+        );
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener('resize', restoreAsideWidthAfterWindowResize);
+        document.removeEventListener(
+            'visibilitychange',
+            restoreAsideWidthAfterWindowResize
+        );
+        if (restoreAsideWidthFrame !== null) {
+            window.cancelAnimationFrame(restoreAsideWidthFrame);
+        }
     });
 
     watch(
