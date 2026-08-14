@@ -7,8 +7,16 @@ const packageJsonPath = path.join(rootDir, 'package.json');
 
 let version = '';
 try {
-    version = fs.readFileSync(versionFilePath, 'utf8').trim();
-    var index = version.indexOf('T');
+    const rawVersion = fs.readFileSync(versionFilePath, 'utf8').trim();
+    const semverMatch = rawVersion.match(/(\d+\.\d+\.\d+)/);
+    if (semverMatch) {
+        version = semverMatch[1];
+    } else {
+        const parts = rawVersion.split(' ');
+        version = parts[0].replace(/^v/, '');
+    }
+
+    const index = version.indexOf('T');
     if (index > 0) {
         // Remove time part from version
         version = version.substring(0, index).replaceAll('-', '.');
