@@ -41,7 +41,8 @@
                                 :class="[
                                     isAsideCollapsedStatic ? 'opacity-100' : 'opacity-0',
                                     'z-20 [&>div]:-translate-x-1/2'
-                                ]"></ResizableHandle>
+                                ]"
+                                @dragging="handleAsideDragging"></ResizableHandle>
                             <ResizablePanel
                                 id="right-sidebar-panel"
                                 ref="asidePanelRef"
@@ -132,7 +133,12 @@
     const router = useRouter();
 
     const appearanceSettingsStore = useAppearanceSettingsStore();
-    const { navWidth, isNavCollapsed, isRightSidebarCollapsed } = storeToRefs(appearanceSettingsStore);
+    const {
+        navWidth,
+        rightSidebarWidth,
+        isNavCollapsed,
+        isRightSidebarCollapsed
+    } = storeToRefs(appearanceSettingsStore);
 
     const sidebarOpen = computed(() => !isNavCollapsed.value);
 
@@ -175,11 +181,18 @@
         asideMinSize,
         asideMaxSize,
         handleLayout,
+        persistLatestLayout,
         isAsideCollapsedStatic,
         isSideBarTabShow
     } = useMainLayoutResizable();
 
     const asidePanelRef = ref(null);
+
+    const handleAsideDragging = (isDragging) => {
+        if (!isDragging) {
+            persistLatestLayout();
+        }
+    };
 
     watch(isSideBarTabShow, async (show) => {
         await nextTick();
@@ -202,6 +215,12 @@
         } else {
             asidePanelRef.value?.expand();
         }
+    });
+
+    watch(rightSidebarWidth, async (width) => {
+        if (!isSideBarTabShow.value || isRightSidebarCollapsed.value) return;
+        await nextTick();
+        asidePanelRef.value?.resize(width);
     });
 
     watch(

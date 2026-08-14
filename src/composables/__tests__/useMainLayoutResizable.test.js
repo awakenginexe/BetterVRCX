@@ -22,7 +22,14 @@ vi.mock('../../stores', () => ({
 import { useMainLayoutResizable } from '../useMainLayoutResizable';
 
 describe('useMainLayoutResizable', () => {
-    it('defines native pixel targets and uses rightSidebarWidth for default size', () => {
+    beforeEach(() => {
+        mocks.setRightSidebarWidth.mockReset();
+        mocks.setIsRightSidebarCollapsed.mockReset();
+        mocks.rightSidebarWidth.value = 320;
+        mocks.isRightSidebarCollapsed.value = false;
+    });
+
+    it('defines native pixel targets and persists the width after an explicit commit', () => {
         mocks.isRightSidebarCollapsed.value = false;
         const layout = useMainLayoutResizable();
 
@@ -35,11 +42,27 @@ describe('useMainLayoutResizable', () => {
         expect(layout.isAsideCollapsed([540, 260])).toBe(false);
 
         layout.handleLayout([600, 380]);
+        expect(mocks.setRightSidebarWidth).not.toHaveBeenCalled();
+        expect(mocks.setIsRightSidebarCollapsed).not.toHaveBeenCalled();
+
+        layout.persistLatestLayout();
         expect(mocks.setRightSidebarWidth).toHaveBeenCalledWith(380);
         expect(mocks.setIsRightSidebarCollapsed).toHaveBeenCalledWith(false);
 
         layout.handleLayout([940, 60]);
+        expect(mocks.setIsRightSidebarCollapsed).toHaveBeenCalledTimes(1);
+
+        layout.persistLatestLayout();
         expect(mocks.setIsRightSidebarCollapsed).toHaveBeenCalledWith(true);
+    });
+
+    it('does not let a non-user relayout overwrite the saved width', () => {
+        const layout = useMainLayoutResizable();
+
+        layout.handleLayout([300, 700]);
+
+        expect(mocks.setRightSidebarWidth).not.toHaveBeenCalled();
+        expect(mocks.setIsRightSidebarCollapsed).not.toHaveBeenCalled();
     });
 
     it('sets asideDefaultSize to 60px when isRightSidebarCollapsed is true', () => {

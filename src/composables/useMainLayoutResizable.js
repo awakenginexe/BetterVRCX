@@ -26,6 +26,7 @@ export function useMainLayoutResizable() {
         layout[layout.length - 1] <= asideCollapsedSize;
 
     const isAsideCollapsedState = ref(Boolean(isRightSidebarCollapsed?.value));
+    const latestLayout = ref(null);
 
     watch(
         () => isRightSidebarCollapsed?.value,
@@ -38,6 +39,25 @@ export function useMainLayoutResizable() {
         if (!Array.isArray(sizes) || sizes.length < 2) {
             return;
         }
+        const asideSize = sizes[sizes.length - 1];
+        if (
+            typeof asideSize !== 'number' ||
+            Number.isNaN(asideSize) ||
+            asideSize <= 0
+        ) {
+            return;
+        }
+
+        latestLayout.value = sizes;
+        isAsideCollapsedState.value = isAsideCollapsed(sizes);
+    };
+
+    const persistLatestLayout = () => {
+        const sizes = latestLayout.value;
+        if (!Array.isArray(sizes) || sizes.length < 2) {
+            return;
+        }
+
         const asideSize = sizes[sizes.length - 1];
         if (
             typeof asideSize !== 'number' ||
@@ -72,6 +92,7 @@ export function useMainLayoutResizable() {
         asideMinSize,
         asideMaxSize,
         handleLayout,
+        persistLatestLayout,
         isAsideCollapsed,
         isAsideCollapsedStatic,
         isSideBarTabShow,
