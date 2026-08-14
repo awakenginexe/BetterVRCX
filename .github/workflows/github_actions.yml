@@ -129,15 +129,20 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
       - name: Create NSIS installer
-        uses: joncloud/makensis-action@v5.0
-        with:
-          script-file: Installer/installer.nsi
-          additional-plugin-paths: Installer/Plugins
+        run: |
+          mkdir -p "C:/Program Files (x86)/NSIS/Plugins/x86-unicode"
+          cp -f Installer/Plugins/x86-unicode/*.dll "C:/Program Files (x86)/NSIS/Plugins/x86-unicode/"
+          "C:/Program Files (x86)/NSIS/makensis.exe" -V4 -INPUTCHARSET UTF8 Installer/installer.nsi
       - name: Rename setup
         run: |
           file_name="BetterVRCX_${{ needs.set_version.outputs.tag }}_Setup.exe"
           echo "Setup FileName: ${file_name}"
-          mv Installer/BetterVRCX_Setup.exe $file_name
+          if [ -f "Installer/BetterVRCX_Setup.exe" ]; then
+            mv Installer/BetterVRCX_Setup.exe $file_name
+          elif [ -f "BetterVRCX_Setup.exe" ]; then
+            mv BetterVRCX_Setup.exe $file_name
+          fi
+
       - name: Sign Cef setup
         uses: azure/trusted-signing-action@v1
         if: steps.check_sign.outputs.sign == 'true'
