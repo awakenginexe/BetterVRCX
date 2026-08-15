@@ -11,10 +11,7 @@
                     <SidebarMenuButton
                         :tooltip="t('nav_tooltip.home') || 'Home'"
                         :is-active="isHomeActive"
-                        :class="[
-                            'bv-nav-item bv-focus-ring',
-                            { 'bv-nav-item-active': isHomeActive }
-                        ]"
+                        :class="['bv-nav-item bv-focus-ring', { 'bv-nav-item-active': isHomeActive }]"
                         data-nav-key="home"
                         @click="handleHomeClick">
                         <i class="ri-home-5-line inline-flex size-6 items-center justify-center text-lg relative" />
@@ -347,7 +344,7 @@
     };
 
     const openGithub = () => {
-        openExternalLink('https://github.com/vrcx-team/VRCX');
+        openExternalLink(links.github);
     };
 
     const handleSupportLink = (id) => {

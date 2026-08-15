@@ -133,6 +133,8 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
 
         expect(success).toBe(true);
         expect(store.latestAppVersion).toBe('BetterVRCX v3.0.2');
-        expect(store.changeLogDialog.changeLog).toBe('');
+        expect(store.changeLogDialog.changeLog).toContain(
+            'No release notes provided'
+        );
     });
 });

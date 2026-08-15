@@ -387,7 +387,9 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
         ) {
             const releaseName = json.name || json.tag_name;
             changeLogDialog.value.buildName = releaseName;
-            changeLogDialog.value.changeLog = changeLogRemoveLinks(json.body);
+            changeLogDialog.value.changeLog =
+                changeLogRemoveLinks(json.body) ||
+                'No release notes provided for this release. Click GitHub below to view full details.';
             setLatestAppVersion(releaseName);
             VRCXUpdateDialog.value.updatePendingIsLatest = false;
             if (autoUpdateVRCX.value === 'Off') {

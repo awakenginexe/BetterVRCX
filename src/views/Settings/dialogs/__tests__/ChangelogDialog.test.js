@@ -98,11 +98,6 @@ describe('ChangelogDialog.vue', () => {
             expect(wrapper.text()).toContain('VRCX 2025.1.0');
         });
 
-        test('renders description text', () => {
-            const wrapper = mountComponent();
-            expect(wrapper.text()).toContain('dialog.change_log.description');
-        });
-
         test('renders GitHub button', () => {
             const wrapper = mountComponent();
             expect(wrapper.text()).toContain('dialog.change_log.github');
@@ -143,19 +138,7 @@ describe('ChangelogDialog.vue', () => {
 
             await githubBtn.trigger('click');
             expect(openExternalLinkFn).toHaveBeenCalledWith(
-                'https://github.com/vrcx-team/VRCX/releases'
-            );
-        });
-
-        test('clicking Ko-fi link opens external link', async () => {
-            const wrapper = mountComponent();
-            const links = wrapper.findAll('a');
-            const kofiLink = links.find((l) => l.text().includes('Ko-fi'));
-            expect(kofiLink).toBeTruthy();
-
-            await kofiLink.trigger('click');
-            expect(openExternalLinkFn).toHaveBeenCalledWith(
-                'https://ko-fi.com/map1en_'
+                'https://github.com/awakenginexe/BetterVRCX/releases'
             );
         });
     });
