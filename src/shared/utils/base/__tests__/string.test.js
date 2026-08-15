@@ -99,6 +99,11 @@ describe('String Utils', () => {
         test('preserves image links', () => {
             expect(changeLogRemoveLinks('![image](url)')).toBe('![image](url)');
         });
+
+        test('handles null and undefined safely', () => {
+            expect(changeLogRemoveLinks(null)).toBe('');
+            expect(changeLogRemoveLinks(undefined)).toBe('');
+        });
     });
 
     describe('replaceBioSymbols', () => {

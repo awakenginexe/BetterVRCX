@@ -6,16 +6,23 @@ const mocks = vi.hoisted(() => ({
         getString: vi.fn(),
         setString: vi.fn()
     },
-    changeLogRemoveLinks: vi.fn((value) => value),
+    changeLogRemoveLinks: vi.fn((value) => value || ''),
     toast: {
         error: vi.fn(),
         success: vi.fn(),
         warning: vi.fn()
+    },
+    webApiService: {
+        execute: vi.fn()
     }
 }));
 
 vi.mock('../../services/config', () => ({
     default: mocks.configRepository
+}));
+
+vi.mock('../../services/webapi', () => ({
+    default: mocks.webApiService
 }));
 
 vi.mock('../../shared/utils', () => ({
@@ -58,8 +65,33 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
         mocks.configRepository.setString.mockResolvedValue(undefined);
 
         globalThis.AppApi = {
-            GetVersion: vi.fn().mockResolvedValue('2026.1.0')
+            GetVersion: vi
+                .fn()
+                .mockResolvedValue('BetterVRCX v3.0.2 B 2026.08.16'),
+            CheckForUpdateExe: vi.fn().mockResolvedValue(false),
+            DownloadUpdate: vi.fn().mockResolvedValue(undefined),
+            CheckUpdateProgress: vi.fn().mockResolvedValue(100)
         };
+
+        mocks.webApiService.execute.mockResolvedValue({
+            status: 200,
+            data: JSON.stringify({
+                tag_name: 'v3.0.2',
+                name: 'BetterVRCX v3.0.2',
+                body: null,
+                published_at: '2026-08-16T01:30:00Z',
+                assets: [
+                    {
+                        name: 'BetterVRCX_v3.0.2_Setup.exe',
+                        state: 'uploaded',
+                        browser_download_url:
+                            'https://github.com/awakenginexe/BetterVRCX/releases/download/v3.0.2/BetterVRCX_v3.0.2_Setup.exe',
+                        size: 200000000,
+                        digest: 'sha256:abcd'
+                    }
+                ]
+            })
+        });
 
         setActivePinia(createPinia());
         useVRCXUpdaterStore();
@@ -93,5 +125,14 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
             'VRCX_autoUpdateVRCX',
             'Notify'
         );
+    });
+
+    test('checkForVRCXUpdate succeeds and sets latestAppVersion even with null release body', async () => {
+        const store = useVRCXUpdaterStore();
+        const success = await store.checkForVRCXUpdate();
+
+        expect(success).toBe(true);
+        expect(store.latestAppVersion).toBe('BetterVRCX v3.0.2');
+        expect(store.changeLogDialog.changeLog).toBe('');
     });
 });

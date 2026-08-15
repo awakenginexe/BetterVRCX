@@ -13,6 +13,7 @@ import {
 import { changeLogRemoveLinks } from '../shared/utils';
 
 import configRepository from '../services/config';
+import webApiService from '../services/webapi';
 
 import * as workerTimers from 'worker-timers';
 
@@ -286,23 +287,25 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             }
         }
 
-        return rClean > cClean;
+        if (rSem && cSem) {
+            return false;
+        }
+
+        return false;
     }
 
     function getAssetOfInterest(assets) {
         let downloadUrl = '';
         let hashString = '';
         let size = 0;
-        for (const asset of assets) {
+        for (const asset of assets || []) {
             if (asset.state !== 'uploaded') {
                 continue;
             }
             if (
                 WINDOWS &&
-                asset.name.endsWith('.exe') &&
-                (asset.content_type === 'application/x-msdownload' ||
-                    asset.content_type === 'application/x-msdos-program' ||
-                    asset.content_type === 'application/octet-stream')
+                typeof asset.name === 'string' &&
+                asset.name.toLowerCase().endsWith('.exe')
             ) {
                 downloadUrl = asset.browser_download_url;
                 if (asset.digest && asset.digest.startsWith('sha256:')) {
@@ -313,8 +316,8 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             }
             if (
                 LINUX &&
-                asset.name.endsWith(`${arch.value}.AppImage`) &&
-                asset.content_type === 'application/octet-stream'
+                typeof asset.name === 'string' &&
+                asset.name.endsWith(`${arch.value}.AppImage`)
             ) {
                 downloadUrl = asset.browser_download_url;
                 if (asset.digest && asset.digest.startsWith('sha256:')) {
@@ -357,7 +360,10 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
                     'VRCX-ID': vrcxId.value
                 }
             });
-            json = JSON.parse(response.data);
+            json =
+                typeof response?.data === 'string'
+                    ? JSON.parse(response.data)
+                    : response?.data;
         } catch (error) {
             console.error('Failed to check for VRCX update', error);
             return false;
@@ -374,7 +380,11 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
         }
         pendingVRCXUpdate.value = false;
         logWebRequest('[EXTERNAL GET]', url, `(${response.status})`, json);
-        if (json === Object(json) && (json.name || json.tag_name) && json.published_at) {
+        if (
+            json === Object(json) &&
+            (json.name || json.tag_name) &&
+            json.published_at
+        ) {
             const releaseName = json.name || json.tag_name;
             changeLogDialog.value.buildName = releaseName;
             changeLogDialog.value.changeLog = changeLogRemoveLinks(json.body);
@@ -445,7 +455,10 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
                     'VRCX-ID': vrcxId.value
                 }
             });
-            json = JSON.parse(response.data);
+            json =
+                typeof response?.data === 'string'
+                    ? JSON.parse(response.data)
+                    : response?.data;
         } catch (error) {
             console.error('Failed to check for VRCX update', error);
             return;
@@ -474,7 +487,7 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             if (release.prerelease) {
                 continue;
             }
-            assetLoop: for (const asset of release.assets) {
+            assetLoop: for (const asset of release.assets || []) {
                 if (asset.state === 'uploaded') {
                     releases.push(release);
                     break assetLoop;
@@ -482,7 +495,7 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             }
         }
         D.releases = releases;
-        D.release = json[0] ? (json[0].name || json[0].tag_name) : '';
+        D.release = releases[0] ? releases[0].name || releases[0].tag_name : '';
         VRCXUpdateDialog.value.updatePendingIsLatest = false;
         if (D.release === pendingVRCXInstall.value) {
             // update already downloaded and latest version
@@ -520,16 +533,21 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
     }
     function installVRCXUpdate() {
         for (const release of VRCXUpdateDialog.value.releases) {
-            if (release.name !== VRCXUpdateDialog.value.release) {
+            const releaseTitle = release.name || release.tag_name;
+            if (
+                release.name !== VRCXUpdateDialog.value.release &&
+                release.tag_name !== VRCXUpdateDialog.value.release &&
+                releaseTitle !== VRCXUpdateDialog.value.release
+            ) {
                 continue;
             }
             const { downloadUrl, hashString, size } = getAssetOfInterest(
-                release.assets
+                release.assets || []
             );
             if (!downloadUrl) {
                 return;
             }
-            const releaseName = release.name;
+            const releaseName = releaseTitle;
             downloadVRCXUpdate(downloadUrl, hashString, size, releaseName);
             break;
         }

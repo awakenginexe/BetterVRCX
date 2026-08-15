@@ -34,11 +34,26 @@ namespace VRCX
 
         public override void RestartApplication(bool isUpgrade)
         {
+            var exePath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
+            {
+                var args = new List<string>();
+                if (isUpgrade)
+                    args.Add(StartupArgs.VrcxLaunchArguments.IsUpgradePrefix);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = string.Join(' ', args),
+                    UseShellExecute = true
+                });
+                Environment.Exit(0);
+            }
         }
 
         public override bool CheckForUpdateExe()
         {
-            return false;
+            return File.Exists(Path.Join(Program.AppDataDirectory, "update.exe"));
         }
 
         public override void ExecuteVrOverlayFunction(string function, string json)

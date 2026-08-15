@@ -96,6 +96,9 @@ function localeIncludes(str, search, comparer) {
  * @returns {string}
  */
 function changeLogRemoveLinks(text) {
+    if (typeof text !== 'string') {
+        return '';
+    }
     return text.replace(/([^!])\[[^\]]+\]\([^)]+\)/g, '$1');
 }
 

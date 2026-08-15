@@ -96,11 +96,17 @@ namespace VRCX
             if (!string.IsNullOrWhiteSpace(StartupArgs.LaunchArguments.ProxyUrl))
                 args.Add($"{StartupArgs.VrcxLaunchArguments.ProxyUrlPrefix}={StartupArgs.LaunchArguments.ProxyUrl}");
 
+            var exePath = Path.Join(Program.BaseDirectory, "BetterVRCX.exe");
+            if (!File.Exists(exePath))
+                exePath = Path.Join(Program.BaseDirectory, "VRCX.exe");
+            if (!File.Exists(exePath) && !string.IsNullOrEmpty(Environment.ProcessPath))
+                exePath = Environment.ProcessPath;
+
             var vrcxProcess = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Join(Program.BaseDirectory, "VRCX.exe"),
+                    FileName = exePath,
                     Arguments = string.Join(' ', args),
                     UseShellExecute = true,
                     WorkingDirectory = Program.BaseDirectory
