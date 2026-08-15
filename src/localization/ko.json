@@ -29,6 +29,23 @@
         "pending_offline": "오프라인 대기"
     },
     "view": {
+        "home": {
+            "title": "홈",
+            "welcome": "환영합니다!",
+            "subtitle_connected": "VRChat 월드, 뉴스 및 친구들의 활동을 확인하세요",
+            "subtitle_disconnected": "VRChat에 연결하여 확인하세요",
+            "online_players": "온라인 플레이어",
+            "online_friends": "온라인 친구",
+            "vrchat_news": "VRChat 뉴스",
+            "upcoming_events": "예정된 이벤트",
+            "friends_location": "친구 위치",
+            "no_events": "예정된 이벤트가 없습니다",
+            "load_events": "이벤트 불러오기",
+            "no_friends_in_instances": "현재 참가 가능한 인스턴스에 있는 친구가 없습니다",
+            "show_more": "더 보기",
+            "see_all": "모두 보기",
+            "open_post": "공식 게시물 열기"
+        },
         "login": {
             "savedAccounts": "계정 선택",
             "login": "로그인",
@@ -236,7 +253,9 @@
                     "open_source_software_notice": "오픈 소스 소프트웨어 공지"
                 },
                 "contributors": {
-                    "header": "Contributors"
+                    "header": "Contributors",
+                    "bettervrcx_header": "BetterVRCX 기여자",
+                    "vrcx_header": "VRCX 기여자"
                 }
             },
             "appearance": {

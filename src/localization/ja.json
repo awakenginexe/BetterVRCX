@@ -235,6 +235,23 @@
         }
     },
     "view": {
+        "home": {
+            "title": "ホーム",
+            "welcome": "ようこそ！",
+            "subtitle_connected": "VRChat のワールド、ニュース、フレンドのアクティビティをチェック",
+            "subtitle_disconnected": "VRChat に接続してアクティビティを確認",
+            "online_players": "オンラインプレイヤー",
+            "online_friends": "オンラインフレンド",
+            "vrchat_news": "VRChat ニュース",
+            "upcoming_events": "今後のイベント",
+            "friends_location": "フレンドの居場所",
+            "no_events": "予定されているイベントはありません",
+            "load_events": "イベントを読み込む",
+            "no_friends_in_instances": "現在参加可能なインスタンスにいるフレンドはいません",
+            "show_more": "詳細を見る",
+            "see_all": "すべて見る",
+            "open_post": "公式記事を開く"
+        },
         "login": {
             "savedAccounts": "ログイン済みのアカウント",
             "login": "ログイン",
@@ -866,7 +883,9 @@
                     "open_source_software_notice": "オープンソースソフトウェアに関する注意事項"
                 },
                 "contributors": {
-                    "header": "貢献者"
+                    "header": "貢献者",
+                    "bettervrcx_header": "BetterVRCX 貢献者",
+                    "vrcx_header": "VRCX 貢献者"
                 }
             },
             "appearance": {

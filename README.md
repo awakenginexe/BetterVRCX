@@ -7,7 +7,7 @@
 [![GitHub Workflow Status](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml)
 [![VRCX Discord Invite](https://img.shields.io/discord/854071236363550763?color=%237289DA&logo=discord&logoColor=white&label=discord)](https://vrcx.app/discord)
 
-| **English** | [Français](./README/README.fr.md) | [日本語](./README/README.jp.md) | [简体中文](./README/README.zh_CN.md) | [Italiano](./README/README.it.md) | [Русский](./README/README.ru_RU.md) | [Español](./README/README.es.md) | [Polski](./README/README.pl.md) | [ภาษาไทย](./README/README.th.md) | [Magyar](./README/README.hu.md)
+| **English** | [ภาษาไทย](./README/README.th.md) | [日本語](./README/README.jp.md) | [简体中文](./README/README.zh_CN.md) | [繁體中文](./README/README.zh_TW.md) | [Italiano](./README/README.it.md) | [Русский](./README/README.ru_RU.md) | [Español](./README/README.es.md) | [Polski](./README/README.pl.md) | [Français](./README/README.fr.md) | [Magyar](./README/README.hu.md) |
 
 BetterVRCX is a desktop companion for VRChat that helps you manage your social life, monitor activity, and move between the desktop and VR without losing context. It preserves the proven VRCX compatibility surface while presenting a calmer, more focused workspace.
 
@@ -40,7 +40,7 @@ Beta/nightly build available [here](https://vrcx.app/github/nightly) or in-app `
   - Visualize a user's online activity patterns with a day-of-week × hour-of-day heatmap, including peak stats.
 - :camera: Store world data in the pictures you take in-game, so you can remember that one world you took those cool pictures in like... 6 months ago!
 - :bell: Monitor/respond to notifications
-  - You can send/receive invites and friend requests from VRCX as well as see the instance info of invites that you receive.
+  - You can send/receive invites and friend requests from BetterVRCX as well as see the instance info of invites that you receive.
 - :scroll: See stats/players for your current instance
 - :tv: See the links to videos that are playing in the world you're in, as well as various other logged data.
 - :performing_arts: Social Status Presets
@@ -52,15 +52,15 @@ Beta/nightly build available [here](https://vrcx.app/github/nightly) or in-app `
 - :crystal_ball: VR Overlay with configurable live feed of all supported events/notifications
 - :outbox_tray: Upload and manage avatar/world images and details without Unity
 - :electric_plug: Automatically launch apps when you start VRChat
-- :skull: Automatically restart and join last instance when VRC crashes
+- :skull: Automatically restart and join last instance when VRChat crashes
 - :left_right_arrow: Export/import data
   - Export friends list, avatar list, Discord names, notes, and favorite groups. Import favorite groups and group moderation bans.
 
 ## Miscellaneous
 
-- Want a new look for VRCX? Check out [Themes](https://github.com/vrcx-team/VRCX/wiki/Themes)
-- See [Building from source](https://github.com/vrcx-team/VRCX/wiki/Building-from-source) for instructions on how to build VRCX from source.
-- For a guide on how to run VRCX on Linux, see [here](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)
+- Want a new look for BetterVRCX? Check out [Themes](https://github.com/vrcx-team/VRCX/wiki/Themes)
+- See [Building from source](https://github.com/vrcx-team/VRCX/wiki/Building-from-source) for instructions on how to build BetterVRCX from source.
+- For a guide on how to run BetterVRCX on Linux, see [here](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)
 - Interested in contributing? See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 # Screenshots
@@ -110,11 +110,11 @@ Beta/nightly build available [here](https://vrcx.app/github/nightly) or in-app `
 </div>
 
 
-## Is VRCX against VRChat's TOS?
+## Is BetterVRCX against VRChat's TOS?
 
 **No.**
 
-VRCX is an external tool that uses the VRChat API to provide the features it does.
+BetterVRCX is an external tool that uses the VRChat API to provide the features it does.
 
 It does not modify the game in any way, only using the API responsibly to provide the features it does. It is not a mod, or a cheat, or any other form of modification to the game.
 

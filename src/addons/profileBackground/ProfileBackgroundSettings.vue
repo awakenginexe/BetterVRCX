@@ -1,5 +1,29 @@
 <template>
     <div class="space-y-6">
+        <SettingsGroup title="VRChat+ Profile Customization">
+            <SettingsItem
+                :label="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
+                :description="t('view.settings.appearance.appearance.vrcplus_profile_icons_description')">
+                <Switch
+                    :model-value="displayVRCPlusIconsAsAvatar"
+                    :aria-label="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
+                    @update:model-value="
+                        setDisplayVRCPlusIconsAsAvatar();
+                        saveOpenVROption();
+                    " />
+            </SettingsItem>
+
+            <SettingsItem :label="t('view.settings.appearance.appearance.vrc_profile_themes')">
+                <Switch
+                    :model-value="displayVRCProfileThemes"
+                    :aria-label="t('view.settings.appearance.appearance.vrc_profile_themes')"
+                    @update:model-value="
+                        setDisplayVRCProfileThemes();
+                        saveOpenVROption();
+                    " />
+            </SettingsItem>
+        </SettingsGroup>
+
         <SettingsGroup title="VRChat Profile Backdrops">
             <template #description>
                 <p class="text-xs text-muted-foreground">
@@ -42,8 +66,9 @@
 </template>
 
 <script setup>
+    import { useI18n } from 'vue-i18n';
     import { storeToRefs } from 'pinia';
-    import { useAppearanceSettingsStore } from '@/stores';
+    import { useAppearanceSettingsStore, useVrStore } from '@/stores';
     import { Switch } from '@/components/ui/switch';
     import {
         NumberField,
@@ -55,7 +80,19 @@
     import SettingsGroup from '../../views/Settings/components/SettingsGroup.vue';
     import SettingsItem from '../../views/Settings/components/SettingsItem.vue';
 
+    const { t } = useI18n();
     const appearanceSettingsStore = useAppearanceSettingsStore();
-    const { displayVRCProfileBackgrounds, profileBackgroundOpacity } = storeToRefs(appearanceSettingsStore);
-    const { setDisplayVRCProfileBackgrounds, setProfileBackgroundOpacity } = appearanceSettingsStore;
+    const { saveOpenVROption } = useVrStore();
+    const {
+        displayVRCPlusIconsAsAvatar,
+        displayVRCProfileThemes,
+        displayVRCProfileBackgrounds,
+        profileBackgroundOpacity
+    } = storeToRefs(appearanceSettingsStore);
+    const {
+        setDisplayVRCPlusIconsAsAvatar,
+        setDisplayVRCProfileThemes,
+        setDisplayVRCProfileBackgrounds,
+        setProfileBackgroundOpacity
+    } = appearanceSettingsStore;
 </script>

@@ -95,28 +95,6 @@
                         saveOpenVROption();
                     " />
             </SettingsItem>
-
-            <SettingsItem
-                :label="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
-                :description="t('view.settings.appearance.appearance.vrcplus_profile_icons_description')">
-                <Switch
-                    :model-value="displayVRCPlusIconsAsAvatar"
-                    :ariaLabel="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
-                    @update:modelValue="
-                        setDisplayVRCPlusIconsAsAvatar();
-                        saveOpenVROption();
-                    " />
-            </SettingsItem>
-
-            <SettingsItem :label="t('view.settings.appearance.appearance.vrc_profile_themes')">
-                <Switch
-                    :model-value="displayVRCProfileThemes"
-                    :ariaLabel="t('view.settings.appearance.appearance.vrc_profile_themes')"
-                    @update:modelValue="
-                        setDisplayVRCProfileThemes();
-                        saveOpenVROption();
-                    " />
-            </SettingsItem>
         </SettingsGroup>
 
         <SettingsGroup :title="t('view.settings.appearance.display.header')">
@@ -455,8 +433,6 @@
 
     const {
         appLanguage,
-        displayVRCPlusIconsAsAvatar,
-        displayVRCProfileThemes,
         appFontFamily,
         customFontFamily,
         appCjkFontPack,
@@ -483,8 +459,6 @@
     const appLanguageDisplayName = computed(() => getLanguageName(String(appLanguage.value)));
 
     const {
-        setDisplayVRCPlusIconsAsAvatar,
-        setDisplayVRCProfileThemes,
         setHideNicknames,
 
         setShowInstanceIdInLocation,

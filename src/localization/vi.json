@@ -29,6 +29,23 @@
         "pending_offline": "Đang chờ Offline"
     },
     "view": {
+        "home": {
+            "title": "Trang chủ",
+            "welcome": "Chào mừng!",
+            "subtitle_connected": "Khám phá thế giới VRChat, tin tức và hoạt động của bạn bè",
+            "subtitle_disconnected": "Kết nối với VRChat để xem thế giới của bạn",
+            "online_players": "Người chơi trực tuyến",
+            "online_friends": "Bạn bè trực tuyến",
+            "vrchat_news": "Tin tức VRChat",
+            "upcoming_events": "Sự kiện sắp diễn ra",
+            "friends_location": "Vị trí bạn bè",
+            "no_events": "Không có sự kiện sắp tới",
+            "load_events": "Tải sự kiện",
+            "no_friends_in_instances": "Hiện không có bạn bè trong phòng có thể tham gia",
+            "show_more": "Xem thêm",
+            "see_all": "Xem tất cả",
+            "open_post": "Mở bài đăng chính thức"
+        },
         "login": {
             "savedAccounts": "Tài khoản đã lưu",
             "login": "Đăng nhập",
@@ -225,7 +242,9 @@
                     "open_source_software_notice": "Open Source Software Notice"
                 },
                 "contributors": {
-                    "header": "Contributors - Đóng góp bởi"
+                    "header": "Contributors - Đóng góp bởi",
+                    "bettervrcx_header": "Người đóng góp cho BetterVRCX",
+                    "vrcx_header": "Người đóng góp cho VRCX"
                 }
             },
             "appearance": {

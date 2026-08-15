@@ -29,6 +29,23 @@
         "pending_offline": "Pending Offline"
     },
     "view": {
+        "home": {
+            "title": "Domů",
+            "welcome": "Vítejte!",
+            "subtitle_connected": "Prozkoumejte svůj svět VRChat, novinky a aktivitu přátel",
+            "subtitle_disconnected": "Připojte se k VRChat a prohlédněte si svůj svět",
+            "online_players": "Hráči online",
+            "online_friends": "Přátelé online",
+            "vrchat_news": "Novinky VRChat",
+            "upcoming_events": "Nadcházející události",
+            "friends_location": "Poloha přátel",
+            "no_events": "Žádné nadcházející události",
+            "load_events": "Načíst události",
+            "no_friends_in_instances": "Momentálně žádní přátelé v dostupných instancích",
+            "show_more": "Zobrazit více",
+            "see_all": "Zobrazit vše",
+            "open_post": "Otevřít oficiální příspěvek"
+        },
         "login": {
             "savedAccounts": "Uložené účty",
             "login": "Přihlášení",
@@ -243,7 +260,9 @@
                     "open_source_software_notice": "Oznámení o open source softwaru"
                 },
                 "contributors": {
-                    "header": "Příspěvatelé"
+                    "header": "Příspěvatelé",
+                    "bettervrcx_header": "Příspěvatelé BetterVRCX",
+                    "vrcx_header": "Příspěvatelé VRCX"
                 }
             },
             "appearance": {

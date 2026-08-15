@@ -312,7 +312,7 @@
                         {{ t('view.home.open_post') }}
                     </Button>
                     <Button size="sm" @click="newsDialogOpen = false">
-                        Close
+                        {{ t('dialog.change_log.close') }}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -372,6 +372,7 @@
 
     const {
         state: bgState,
+        activePhotoUrl,
         backgroundStyle,
         overlayStyle,
         saveHomeBackgroundConfig,
@@ -494,7 +495,7 @@
 
     onMounted(async () => {
         fetchOnlineVisits();
-        if (bgState.mode === 'vrchat_photos') {
+        if (bgState.mode === 'vrchat_photos' && !activePhotoUrl.value) {
             await fetchRandomVRChatPhoto();
         }
         fetchEvents();

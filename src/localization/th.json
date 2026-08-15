@@ -667,7 +667,9 @@
                     "open_source_software_notice": "ประกาศเกี่ยวกับซอฟต์แวร์โอเพนซอร์ส"
                 },
                 "contributors": {
-                    "header": "ผู้มีส่วนร่วม"
+                    "header": "ผู้มีส่วนร่วม",
+                    "bettervrcx_header": "ผู้มีส่วนร่วม BetterVRCX",
+                    "vrcx_header": "ผู้มีส่วนร่วม VRCX"
                 }
             },
             "appearance": {

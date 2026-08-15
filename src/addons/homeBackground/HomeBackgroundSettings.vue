@@ -72,7 +72,7 @@
                     <RotateCw class="size-3.5 mr-1" />
                     Pick Random Photo
                 </Button>
-                <Button size="sm" variant="outline" @click="pickCustomImage">
+                <Button size="sm" variant="outline" @click="pickSpecificPhoto">
                     <ImageIcon class="size-3.5 mr-1" />
                     Select Specific Photo
                 </Button>
@@ -188,14 +188,16 @@
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent"
                         style="mask-image: linear-gradient(to top, black 50%, transparent 100%)" />
-                    <div class="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-background/50" />
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-background/50" />
                 </div>
 
                 <!-- Miniature Home Dashboard Layout -->
                 <div class="relative z-10 flex flex-col justify-between h-full p-4 sm:p-5">
                     <!-- Top: Welcome & Stats -->
                     <div class="space-y-1">
-                        <div class="text-base sm:text-lg font-black text-white tracking-tight flex items-center gap-1.5 drop-shadow-md">
+                        <div
+                            class="text-base sm:text-lg font-black text-white tracking-tight flex items-center gap-1.5 drop-shadow-md">
                             <span>Welcome!</span>
                             <span class="text-primary-foreground font-black">{{ userDisplayName }}</span>
                         </div>
@@ -203,11 +205,13 @@
                             Explore your VRChat world, news, and friends activity
                         </p>
                         <div class="flex items-center gap-2 pt-1">
-                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-[9px] sm:text-[10px] text-white/80 backdrop-blur-sm">
+                            <div
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-[9px] sm:text-[10px] text-white/80 backdrop-blur-sm">
                                 <span class="size-1.5 rounded-full bg-emerald-400"></span>
                                 <span>Online Players: <strong class="text-white font-mono">85,289</strong></span>
                             </div>
-                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-[9px] sm:text-[10px] text-white/80 backdrop-blur-sm">
+                            <div
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-[9px] sm:text-[10px] text-white/80 backdrop-blur-sm">
                                 <span class="text-primary text-[10px]">👥</span>
                                 <span>Online Friends: <strong class="text-white font-mono">12</strong></span>
                             </div>
@@ -220,28 +224,40 @@
                     <!-- Bottom: Events/News & Friends Locations Mock Cards -->
                     <div class="space-y-2">
                         <div class="grid grid-cols-2 gap-2.5">
-                            <div class="p-2 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm flex flex-col justify-between h-14">
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-white/80">Upcoming Events</span>
+                            <div
+                                class="p-2 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm flex flex-col justify-between h-14">
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-white/80"
+                                    >Upcoming Events</span
+                                >
                                 <span class="text-[9px] text-white/50 text-center">No upcoming events scheduled</span>
                             </div>
-                            <div class="p-2 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm flex items-center gap-2 h-14">
-                                <div class="size-10 rounded bg-white/10 border border-white/10 shrink-0 flex items-center justify-center text-[10px] text-white/40">📰</div>
+                            <div
+                                class="p-2 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm flex items-center gap-2 h-14">
+                                <div
+                                    class="size-10 rounded bg-white/10 border border-white/10 shrink-0 flex items-center justify-center text-[10px] text-white/40">
+                                    📰
+                                </div>
                                 <div class="min-w-0">
                                     <span class="text-[9px] font-bold text-white line-clamp-1">Developer Update</span>
-                                    <span class="text-[8px] text-white/60 line-clamp-1">Latest VRChat news & features...</span>
+                                    <span class="text-[8px] text-white/60 line-clamp-1"
+                                        >Latest VRChat news & features...</span
+                                    >
                                 </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-1.5">
-                            <div class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
+                            <div
+                                class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
                                 <span class="truncate">Sala Pak Jai</span>
                                 <span class="text-white/50 font-mono">3/48</span>
                             </div>
-                            <div class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
+                            <div
+                                class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
                                 <span class="truncate">The Arch</span>
                                 <span class="text-white/50 font-mono">1/66</span>
                             </div>
-                            <div class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
+                            <div
+                                class="h-6 rounded-md bg-black/50 border border-white/10 backdrop-blur-sm px-2 flex items-center justify-between text-[8px] text-white/80">
                                 <span class="truncate">Japan Shrine</span>
                                 <span class="text-white/50 font-mono">1/50</span>
                             </div>
@@ -267,12 +283,14 @@
 
     const {
         state,
+        activePhotoUrl,
         defaultPresets,
         backgroundStyle,
         overlayStyle,
         saveHomeBackgroundConfig,
         initPhotosLocation,
         fetchRandomVRChatPhoto,
+        pickSpecificPhoto,
         pickCustomImage,
         pickPhotosFolder
     } = useHomeBackground();
@@ -280,7 +298,7 @@
     function setMode(mode) {
         state.mode = mode;
         saveHomeBackgroundConfig();
-        if (mode === 'vrchat_photos') {
+        if (mode === 'vrchat_photos' && !activePhotoUrl.value) {
             fetchRandomVRChatPhoto();
         }
     }
@@ -292,7 +310,7 @@
 
     onMounted(async () => {
         await initPhotosLocation();
-        if (state.mode === 'vrchat_photos') {
+        if (state.mode === 'vrchat_photos' && !activePhotoUrl.value) {
             fetchRandomVRChatPhoto();
         }
     });

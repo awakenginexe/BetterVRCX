@@ -157,46 +157,92 @@ export function useHomeBackground() {
         };
     });
 
-    async function pickCustomImage() {
-        if (typeof AppApi !== 'undefined' && AppApi?.OpenFileSelectorDialog) {
+    async function pickSpecificPhoto() {
+        let path = null;
+        if (typeof window !== 'undefined' && window.electron?.openFileDialog) {
+            try {
+                path = await window.electron.openFileDialog();
+            } catch (err) {
+                console.error('Failed to select file via electron:', err);
+            }
+        } else if (typeof AppApi !== 'undefined' && AppApi?.OpenFileSelectorDialog) {
             try {
                 const initialDir =
                     homeBackgroundState.vrchatPhotosFolder || (await AppApi.GetVRChatPhotosLocation?.()) || '';
-                const path = await AppApi.OpenFileSelectorDialog(
+                path = await AppApi.OpenFileSelectorDialog(
                     initialDir,
-                    'Image Files (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|All Files (*.*)|*.*',
-                    'Select Home Background Image'
+                    '.png',
+                    'Image Files (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|All Files (*.*)|*.*'
                 );
-                if (path) {
-                    homeBackgroundState.customPath = path;
-                    homeBackgroundState.mode = 'custom';
-                    activePhotoUrl.value = formatLocalPath(path);
-                    saveHomeBackgroundConfig();
-                    return path;
-                }
             } catch (err) {
                 console.error('Failed to select file via AppApi:', err);
             }
+        }
+
+        if (path) {
+            activePhotoUrl.value = formatLocalPath(path);
+            homeBackgroundState.customPath = path;
+            saveHomeBackgroundConfig();
+            return path;
+        }
+        return null;
+    }
+
+    async function pickCustomImage() {
+        let path = null;
+        if (typeof window !== 'undefined' && window.electron?.openFileDialog) {
+            try {
+                path = await window.electron.openFileDialog();
+            } catch (err) {
+                console.error('Failed to select file via electron:', err);
+            }
+        } else if (typeof AppApi !== 'undefined' && AppApi?.OpenFileSelectorDialog) {
+            try {
+                const initialDir =
+                    homeBackgroundState.vrchatPhotosFolder || (await AppApi.GetVRChatPhotosLocation?.()) || '';
+                path = await AppApi.OpenFileSelectorDialog(
+                    initialDir,
+                    '.png',
+                    'Image Files (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|All Files (*.*)|*.*'
+                );
+            } catch (err) {
+                console.error('Failed to select file via AppApi:', err);
+            }
+        }
+
+        if (path) {
+            homeBackgroundState.customPath = path;
+            homeBackgroundState.mode = 'custom';
+            activePhotoUrl.value = formatLocalPath(path);
+            saveHomeBackgroundConfig();
+            return path;
         }
         return null;
     }
 
     async function pickPhotosFolder() {
-        if (typeof AppApi !== 'undefined' && AppApi?.OpenFolderSelectorDialog) {
+        let folder = null;
+        if (typeof window !== 'undefined' && window.electron?.openDirectoryDialog) {
             try {
-                const folder = await AppApi.OpenFolderSelectorDialog(
-                    homeBackgroundState.vrchatPhotosFolder || '',
-                    'Select VRChat Photos Directory'
+                folder = await window.electron.openDirectoryDialog();
+            } catch (err) {
+                console.error('Failed to select folder via electron:', err);
+            }
+        } else if (typeof AppApi !== 'undefined' && AppApi?.OpenFolderSelectorDialog) {
+            try {
+                folder = await AppApi.OpenFolderSelectorDialog(
+                    homeBackgroundState.vrchatPhotosFolder || ''
                 );
-                if (folder) {
-                    homeBackgroundState.vrchatPhotosFolder = folder;
-                    saveHomeBackgroundConfig();
-                    await fetchRandomVRChatPhoto();
-                    return folder;
-                }
             } catch (err) {
                 console.error('Failed to select folder via AppApi:', err);
             }
+        }
+
+        if (folder) {
+            homeBackgroundState.vrchatPhotosFolder = folder;
+            saveHomeBackgroundConfig();
+            await fetchRandomVRChatPhoto();
+            return folder;
         }
         return null;
     }
@@ -211,6 +257,7 @@ export function useHomeBackground() {
         saveHomeBackgroundConfig,
         initPhotosLocation,
         fetchRandomVRChatPhoto,
+        pickSpecificPhoto,
         pickCustomImage,
         pickPhotosFolder
     };

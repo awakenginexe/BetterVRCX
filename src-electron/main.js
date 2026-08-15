@@ -180,7 +180,7 @@ if (!gotTheLock) {
 ipcMain.handle('dialog:openFile', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
         properties: ['openFile'],
-        filters: [{ name: 'Images', extensions: ['png'] }]
+        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp'] }]
     });
 
     if (!result.canceled && result.filePaths.length > 0) {

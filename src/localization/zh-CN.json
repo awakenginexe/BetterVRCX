@@ -235,6 +235,23 @@
         }
     },
     "view": {
+        "home": {
+            "title": "主页",
+            "welcome": "欢迎！",
+            "subtitle_connected": "探索你的 VRChat 世界、动态和好友活动",
+            "subtitle_disconnected": "连接到 VRChat 以查看你的世界",
+            "online_players": "在线玩家",
+            "online_friends": "在线好友",
+            "vrchat_news": "VRChat 新闻",
+            "upcoming_events": "即将到来的活动",
+            "friends_location": "好友所在位置",
+            "no_events": "暂无近期活动",
+            "load_events": "加载活动",
+            "no_friends_in_instances": "当前没有好友在可加入的房间中",
+            "show_more": "查看详情",
+            "see_all": "查看全部",
+            "open_post": "打开官方公告"
+        },
         "login": {
             "savedAccounts": "已保存的账号",
             "login": "登录",
@@ -739,7 +756,10 @@
                 "social": "社交",
                 "vr": "VR",
                 "media": "媒体",
-                "integrations": "集成"
+                "integrations": "集成",
+                "addons": "扩展插件",
+                "home_background": "主页壁纸",
+                "profile_background": "个人资料背景"
             },
             "social": {
                 "interaction": {
@@ -866,7 +886,9 @@
                     "open_source_software_notice": "开放源代码软件许可"
                 },
                 "contributors": {
-                    "header": "贡献者们"
+                    "header": "贡献者们",
+                    "bettervrcx_header": "BetterVRCX 贡献者",
+                    "vrcx_header": "VRCX 贡献者"
                 }
             },
             "appearance": {

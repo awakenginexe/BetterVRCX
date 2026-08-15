@@ -223,6 +223,23 @@
         }
     },
     "view": {
+        "home": {
+            "title": "Kezdőlap",
+            "welcome": "Üdvözöljük!",
+            "subtitle_connected": "Fedezd fel a VRChat világodat, a híreket és a barátaid aktivitását",
+            "subtitle_disconnected": "Csatlakozz a VRChat-hez a világod megtekintéséhez",
+            "online_players": "Online játékosok",
+            "online_friends": "Online barátok",
+            "vrchat_news": "VRChat hírek",
+            "upcoming_events": "Közelgő események",
+            "friends_location": "Barátok helyzete",
+            "no_events": "Nincsenek közelgő események",
+            "load_events": "Események betöltése",
+            "no_friends_in_instances": "Jelenleg egyetlen barát sincs csatlakozható szobában",
+            "show_more": "Részletek",
+            "see_all": "Összes megtekintése",
+            "open_post": "Hivatalos bejegyzés megnyitása"
+        },
         "login": {
             "savedAccounts": "Mentett fiókok",
             "login": "Bejelentkezés",
@@ -854,7 +871,9 @@
                     "open_source_software_notice": "Nyílt forráskódú szoftverre vonatkozó megjegyzés"
                 },
                 "contributors": {
-                    "header": "Közreműködők"
+                    "header": "Közreműködők",
+                    "bettervrcx_header": "BetterVRCX közreműködők",
+                    "vrcx_header": "VRCX közreműködők"
                 }
             },
             "appearance": {

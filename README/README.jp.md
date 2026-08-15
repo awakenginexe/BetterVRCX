@@ -1,15 +1,15 @@
 <div align="center">
 
-# <img src="https://raw.githubusercontent.com/vrcx-team/VRCX/master/images/VRCX.ico" width="64" height="64"> </img> VRCX
+# <img src="https://raw.githubusercontent.com/vrcx-team/VRCX/master/images/VRCX.ico" width="64" height="64"> </img> BetterVRCX
 
 [![GitHub release](https://img.shields.io/github/release/vrcx-team/VRCX.svg)](https://github.com/vrcx-team/VRCX/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/vrcx-team/VRCX/total?color=6451f1)](https://github.com/vrcx-team/VRCX/releases/latest)
 [![GitHub Workflow Status](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml)
 [![VRCX Discord Invite](https://img.shields.io/discord/854071236363550763?color=%237289DA&logo=discord&logoColor=white&label=discord)](https://vrcx.app/discord)
 
-| [English](/README.md) |
+| [English](../README.md) | [ภาษาไทย](./README.th.md) | **日本語** | [简体中文](./README.zh_CN.md) | [繁體中文](./README.zh_TW.md) | [Italiano](./README.it.md) | [Русский](./README.ru_RU.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Français](./README.fr.md) | [Magyar](./README.hu.md) |
 
-VRCX は VRChat クライアント (デスクトップ & VR) や Web サイト以上に様々な情報を提供し、より便利に VRChat をプレイできるようにするコンパニオンアプリケーションです。
+BetterVRCX は VRChat クライアント (デスクトップ & VR) や Web サイト以上に様々な情報を提供し、より便利に VRChat をプレイできるようにするコンパニオンアプリケーションです。
 
 # インストール方法
 
@@ -30,12 +30,12 @@ VRCX は VRChat クライアント (デスクトップ & VR) や Web サイト�
     - メモを保存して、出会いの記録を残しましょう！
 - :electric_plug: VRChat 起動時に一緒にアプリを起動
     - VRChat の起動時に他のアプリを同時起動できるよう設定できます。
-    - 例えば、VRChat を起動したら同時に OSC アプリやボイスチェンジャーを起動するようにできます。
+    - 例えば、VRChat を起動したら同時に BetterVRCX が OSC アプリやボイスチェンジャーを起動するようにできます。
 - :mag: アバター、ユーザー、ワールド、グループの検索
 - :earth_americas: 無制限！ローカル保存のワールドお気に入りリスト
 - :camera: ゲーム内で撮った写真にワールドデータを保存することで、半年前に撮影した綺麗なワールドをいつでも振り返ることができます。
 - :bell: 通知の監視 & 対応
-    - VRCX から招待やフレンドリクエストを送受信したり、受け取った招待先のインスタンス情報を確認することができます。
+    - BetterVRCX から招待やフレンドリクエストを送受信したり、受け取った招待先のインスタンス情報を確認することができます。
 - :scroll: 現在のインスタンスの情報やプレイヤーリストを確認可能
 - :tv: 今いるワールドで再生されている動画やその URL、その他様々なログを確認可能
 - :bar_chart: Discord Rich Presence の強化
@@ -51,80 +51,61 @@ VRCX は VRChat クライアント (デスクトップ & VR) や Web サイト�
 
 ## その他
 
-- VRCX の変わった姿を見たい？[テーマ](https://github.com/vrcx-team/VRCX/wiki/Themes)をチェック！
-- VRCX をソースからビルドするには[こちらのガイド](https://github.com/vrcx-team/VRCX/wiki/Building-from-source)をご覧ください。
-- VRCX を Linux で動かすには[こちらのガイド](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)をご覧ください。
+- BetterVRCX の変わった姿を見たい？[テーマ](https://github.com/vrcx-team/VRCX/wiki/Themes)をチェック！
+- BetterVRCX をソースからビルドするには[こちらのガイド](https://github.com/vrcx-team/VRCX/wiki/Building-from-source)をご覧ください。
+- BetterVRCX を Linux で動かすには[こちらのガイド](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)をご覧ください。
 
-# Screenshots
+# スクリーンショット
 
 <div align="center">
 
 <h3>ログイン</h3>
 
-<table>
-  <tr>
-    <td align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306004-32bf7310-222b-45a0-91cc-242a6cb26886.png" alt="login"></td>
-    <td align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306165-85a08a60-a0e0-4e50-b4e0-99c5f4fb5da4.png" alt="2fa"></td>
-  </tr>
-</table>
+<img src="../images/Preview/Login.png" alt="ログイン">
+
+<h3>ホーム</h3>
+
+<img src="../images/Preview/Home.png" alt="ホーム">
 
 <h3>フィード</h3>
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306317-361a3fcc-a506-4b64-9ad5-d198d81f533a.png" alt="feed">
+<img src="../images/Preview/Feed.png" alt="フィード">
 
 <h3>ゲームログ</h3>
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306386-e3ba8511-5afb-40a2-abf6-81ba31387dee.png" alt="gamelog">
+<img src="../images/Preview/GameLog.png" alt="ゲームログ">
 
 <h3>ユーザー情報</h3>
 
 <h4>自分</h4>
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306511-64a45c0f-96d1-4440-b135-544bc285e096.png" alt="me">
+<img src="../images/Preview/Userinfo-Me.png" alt="自分">
 
 <h4>フレンド</h4>
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306624-43d7a0ae-8f03-474c-bc60-c3a9b4d6ffb9.png" alt="friend">
+<img src="../images/Preview/Userinfo-Friend.png" alt="フレンド">
+
+<h4>フレンド VRC+</h4>
+
+<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="フレンド VRC+">
 
 <h3>ワールド</h3>
 
-<table>
-  <tr>
-    <td align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306691-65eeb2d2-c640-4abb-8d68-fc4d911b9504.png" alt="instance"></td>
-    <td align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306760-c7256775-7b59-419e-bc81-d27a81168d3e.png" alt="info"></td>
-  </tr>
-</table>
+<h4>インスタンス</h4>
 
-<h3>お気に入り</h3>
+<img src="../images/Preview/World-Instance.png" alt="インスタンス">
 
-<h4>フレンド</h4>
+<h4>情報</h4>
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258306890-1dbe80eb-d4d3-4d5f-a908-41f6c7f225a4.png" alt="friend">
+<img src="../images/Preview/World-Info.png" alt="情報">
 
-<h4>ワールド</h4>
-
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258307011-e27b28b3-9f5b-4f5a-9311-e0d1ec8659c6.png" alt="world">
-
-<h4>アバター</h4>
-
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258307171-5b530698-771a-435c-84fa-9b3ff17bf2dc.png" alt="avatar">
-
-<h3>フレンドログ</h3>
-
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/34514603/258307210-a727a0fe-cba8-438d-9c3f-2276d96be9c2.png" alt="friendlog">
-
-<h3>Discord Rich Presence</h3>
-
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/82102170/251997318-5a71249c-59fc-4ad6-9194-d6b1d4165600.png" alt="discord">
-
-<!-- The other images will be similar to this -->
 </div>
 
-## これは VRChat の利用規約に違反しますか？
+## BetterVRCX は VRChat の利用規約に違反しますか？
 
 **いいえ。**
 
-VRCX は VRChat API を使用して機能を提供する外部ツールです。
+BetterVRCX は VRChat API を使用して機能を提供する外部ツールです。
 
 このツールは API を責任を持って使用して機能を提供しているだけであり、Mod やチートなどのようにゲームを改変するものではありません。
 
@@ -132,4 +113,4 @@ API 使用に関する VRChat の声明は VRChat 公式 Discord サーバーの
 
 ---
 
-VRCX は VRChat によって承認されておらず、VRChat または VRChat の開発もしくは管理に公式に関与する者の見解や意見が反映されたものではありません。VRChat および関連するすべての財産は VRChat 株式会社の商標または登録商標です。
+BetterVRCX は VRChat によって承認されておらず、VRChat または VRChat の開発もしくは管理に公式に関与する者の見解や意見が反映されたものではありません。VRChat および関連するすべての財産は VRChat 株式会社の商標または登録商標です。

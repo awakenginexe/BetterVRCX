@@ -58,6 +58,23 @@
         "pending_offline": "En attendant l'hors ligne"
     },
     "view": {
+        "home": {
+            "title": "Accueil",
+            "welcome": "Bienvenue !",
+            "subtitle_connected": "Explorez votre univers VRChat, les actualités et l'activité de vos amis",
+            "subtitle_disconnected": "Connectez-vous à VRChat pour voir votre univers",
+            "online_players": "Joueurs en ligne",
+            "online_friends": "Amis en ligne",
+            "vrchat_news": "Actualités VRChat",
+            "upcoming_events": "Événements à venir",
+            "friends_location": "Localisation des amis",
+            "no_events": "Aucun événement à venir prévu",
+            "load_events": "Charger les événements",
+            "no_friends_in_instances": "Aucun ami actuellement dans des instances accessibles",
+            "show_more": "En savoir plus",
+            "see_all": "Voir tout",
+            "open_post": "Ouvrir l'article officiel"
+        },
         "login": {
             "savedAccounts": "Comptes sauvegadés",
             "login": "Connexion",
@@ -492,7 +509,9 @@
                     "open_source_software_notice": "Mentions relatives aux logiciels libres"
                 },
                 "contributors": {
-                    "header": "Contributeurs"
+                    "header": "Contributeurs",
+                    "bettervrcx_header": "Contributeurs BetterVRCX",
+                    "vrcx_header": "Contributeurs VRCX"
                 }
             },
             "appearance": {

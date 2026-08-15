@@ -32,6 +32,23 @@
         "pending_offline": "Ожидание отключения"
     },
     "view": {
+        "home": {
+            "title": "Главная",
+            "welcome": "Добро пожаловать!",
+            "subtitle_connected": "Исследуйте мир VRChat, новости и активность друзей",
+            "subtitle_disconnected": "Подключитесь к VRChat, чтобы увидеть ваш мир",
+            "online_players": "Игроков онлайн",
+            "online_friends": "Друзей онлайн",
+            "vrchat_news": "Новости VRChat",
+            "upcoming_events": "Предстоящие события",
+            "friends_location": "Где ваши друзья",
+            "no_events": "Нет запланированных событий",
+            "load_events": "Загрузить события",
+            "no_friends_in_instances": "Сейчас нет друзей в доступных инстансах",
+            "show_more": "Подробнее",
+            "see_all": "Показать все",
+            "open_post": "Открыть официальный пост"
+        },
         "login": {
             "savedAccounts": "Сохраненные аккаунты",
             "login": "Вход",
@@ -370,7 +387,9 @@
                     "open_source_software_notice": "Уведомление об открытом программном обеспечении"
                 },
                 "contributors": {
-                    "header": "Соавторы"
+                    "header": "Соавторы",
+                    "bettervrcx_header": "Авторы BetterVRCX",
+                    "vrcx_header": "Авторы VRCX"
                 }
             },
             "appearance": {

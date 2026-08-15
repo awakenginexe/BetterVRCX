@@ -142,11 +142,27 @@
             </SettingsItem>
         </SettingsGroup>
 
-        <SettingsGroup :title="t('view.settings.general.contributors.header')">
+        <SettingsGroup :title="t('view.settings.general.contributors.bettervrcx_header')">
+            <div class="flex flex-wrap gap-2.5 items-center">
+                <div
+                    v-for="contributor in betterVrcxContributors"
+                    :key="contributor.login"
+                    :title="'@' + contributor.login"
+                    class="group relative cursor-pointer"
+                    @click="openExternalLink(contributor.html_url)">
+                    <img
+                        :src="contributor.avatar_url"
+                        :alt="contributor.login"
+                        class="w-12 h-12 rounded-full border border-border/60 hover:scale-110 hover:border-primary transition-all duration-200 object-cover shadow-sm" />
+                </div>
+            </div>
+        </SettingsGroup>
+
+        <SettingsGroup :title="t('view.settings.general.contributors.vrcx_header')">
             <div>
                 <img
                     src="https://contrib.rocks/image?repo=vrcx-team/VRCX"
-                    alt="Contributors"
+                    alt="VRCX Contributors"
                     class="cursor-pointer"
                     @click="openExternalLink('https://github.com/vrcx-team/VRCX/graphs/contributors')" />
             </div>
@@ -183,7 +199,7 @@
 </template>
 
 <script setup>
-    import { computed, defineAsyncComponent, ref } from 'vue';
+    import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Switch } from '@/components/ui/switch';
     import { storeToRefs } from 'pinia';
@@ -226,6 +242,47 @@
     const isLinux = computed(() => LINUX);
     const isMacOS = computed(() => {
         return navigator.platform.indexOf('Mac') > -1;
+    });
+
+    const betterVrcxContributors = ref([
+        {
+            login: 'awakenginexe',
+            avatar_url: 'https://avatars.githubusercontent.com/u/267649137?v=4',
+            html_url: 'https://github.com/awakenginexe'
+        }
+    ]);
+
+    onMounted(async () => {
+        try {
+            const res = await fetch(
+                'https://api.github.com/repos/awakenginexe/BetterVRCX/commits?since=2026-01-01T00:00:00Z',
+                {
+                    headers: {
+                        Accept: 'application/vnd.github.v3+json'
+                    }
+                }
+            );
+            if (res.ok) {
+                const commits = await res.json();
+                const authorMap = new Map();
+                if (Array.isArray(commits)) {
+                    for (const item of commits) {
+                        if (item.author && item.author.login && !authorMap.has(item.author.login)) {
+                            authorMap.set(item.author.login, {
+                                login: item.author.login,
+                                avatar_url: item.author.avatar_url,
+                                html_url: item.author.html_url
+                            });
+                        }
+                    }
+                }
+                if (authorMap.size > 0) {
+                    betterVrcxContributors.value = Array.from(authorMap.values());
+                }
+            }
+        } catch {
+            // Keep default fallback
+        }
     });
 
     const OpenSourceSoftwareNoticeDialog = defineAsyncComponent(

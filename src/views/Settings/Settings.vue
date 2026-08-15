@@ -101,13 +101,13 @@
         },
         {
             key: 'home-background',
-            label: 'Home Wallpaper',
+            label: t('view.settings.category.home_background'),
             icon: 'ri-image-edit-line',
             component: HomeBackgroundSettings
         },
         {
             key: 'profile-background',
-            label: 'Profile Backdrop',
+            label: t('view.settings.category.profile_background'),
             icon: 'ri-image-2-line',
             component: ProfileBackgroundSettings
         }
@@ -131,7 +131,7 @@
             },
             {
                 key: 'addons',
-                label: 'Addons',
+                label: t('view.settings.category.addons'),
                 tabKeys: ['home-background', 'profile-background']
             }
         ];

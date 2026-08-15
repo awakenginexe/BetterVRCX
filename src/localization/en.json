@@ -761,7 +761,10 @@
                 "social": "Social",
                 "vr": "VR",
                 "media": "Media",
-                "integrations": "Integrations"
+                "integrations": "Integrations",
+                "addons": "Addons",
+                "home_background": "Home Wallpaper",
+                "profile_background": "Profile Backdrop"
             },
             "social": {
                 "interaction": {
@@ -888,7 +891,9 @@
                     "open_source_software_notice": "Open Source Software Notice"
                 },
                 "contributors": {
-                    "header": "Contributors"
+                    "header": "Contributors",
+                    "bettervrcx_header": "BetterVRCX Contributors",
+                    "vrcx_header": "VRCX Contributors"
                 }
             },
             "appearance": {
