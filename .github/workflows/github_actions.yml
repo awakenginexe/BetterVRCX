@@ -33,7 +33,7 @@ jobs:
           else
               TAG="${RAW_VERSION%% *}"
               if [[ -z "${TAG}" || "${TAG}" != v* ]]; then
-                  TAG="v3.0.2"
+                  TAG="v3.0.3"
               fi
           fi
           CLEAN_TAG="${TAG#v}"
