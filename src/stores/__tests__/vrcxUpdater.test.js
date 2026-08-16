@@ -67,7 +67,7 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
         globalThis.AppApi = {
             GetVersion: vi
                 .fn()
-                .mockResolvedValue('BetterVRCX v3.0.5 B 2026.08.16'),
+                .mockResolvedValue('BetterVRCX v3.0.6 B 2026.08.16'),
             CheckForUpdateExe: vi.fn().mockResolvedValue(false),
             DownloadUpdate: vi.fn().mockResolvedValue(undefined),
             CheckUpdateProgress: vi.fn().mockResolvedValue(100)
@@ -76,16 +76,16 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
         mocks.webApiService.execute.mockResolvedValue({
             status: 200,
             data: JSON.stringify({
-                tag_name: 'v3.0.5',
-                name: 'BetterVRCX v3.0.5',
+                tag_name: 'v3.0.6',
+                name: 'BetterVRCX v3.0.6',
                 body: null,
                 published_at: '2026-08-16T10:45:00Z',
                 assets: [
                     {
-                        name: 'BetterVRCX_Setup_v3.0.5.exe',
+                        name: 'BetterVRCX_Setup_v3.0.6.exe',
                         state: 'uploaded',
                         browser_download_url:
-                            'https://github.com/awakenginexe/BetterVRCX/releases/download/v3.0.5/BetterVRCX_Setup_v3.0.5.exe',
+                            'https://github.com/awakenginexe/BetterVRCX/releases/download/v3.0.6/BetterVRCX_Setup_v3.0.6.exe',
                         size: 200000000,
                         digest: 'sha256:abcd'
                     }
@@ -132,7 +132,7 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
         const success = await store.checkForVRCXUpdate();
 
         expect(success).toBe(true);
-        expect(store.latestAppVersion).toBe('BetterVRCX v3.0.5');
+        expect(store.latestAppVersion).toBe('BetterVRCX v3.0.6');
         expect(store.changeLogDialog.changeLog).toContain(
             'No release notes provided'
         );
