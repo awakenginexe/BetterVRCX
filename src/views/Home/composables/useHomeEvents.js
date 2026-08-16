@@ -4,6 +4,16 @@ import groupRequest from '../../../api/group';
 import { getGroupName } from '../../../shared/utils/group';
 import { formatDateFilter } from '../../../coordinators/dateCoordinator';
 import { homeBackgroundState } from '../../../addons/homeBackground/homeBackgroundStore';
+import { replaceBioSymbols } from '../../../shared/utils/base/string';
+
+function extractEvents(res) {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res.results)) return res.results;
+    if (Array.isArray(res.json)) return res.json;
+    if (Array.isArray(res.data)) return res.data;
+    return [];
+}
 
 export function useHomeEvents() {
     const events = ref([]);
@@ -15,29 +25,39 @@ export function useHomeEvents() {
         isLoading.value = true;
         error.value = null;
         try {
-            const now = new Date();
-            const currentMonthIso = dayjs(now).format('YYYY-MM-DDTHH:mm:ss[Z]');
-            const nextMonthIso = dayjs(now)
+            const now = dayjs();
+            const currentMonthIso = now.format('YYYY-MM-DDTHH:mm:ss[Z]');
+            const nextMonthIso = now
                 .add(1, 'month')
                 .startOf('month')
                 .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-            const [groupRes, followingRes, nextMonthGroupRes] =
-                await Promise.allSettled([
-                    groupRequest.getGroupCalendars({ n: 100, date: currentMonthIso }),
-                    groupRequest.getFollowingGroupCalendars({ n: 100, date: currentMonthIso }),
-                    groupRequest.getGroupCalendars({ n: 100, date: nextMonthIso })
-                ]);
+            const [
+                groupRes,
+                followingRes,
+                featuredRes,
+                nextMonthGroupRes,
+                nextMonthFollowingRes
+            ] = await Promise.allSettled([
+                groupRequest.getGroupCalendars({ n: 100, date: currentMonthIso }),
+                groupRequest.getFollowingGroupCalendars({ n: 100, date: currentMonthIso }),
+                groupRequest.getFeaturedGroupCalendars({ n: 100, date: currentMonthIso }),
+                groupRequest.getGroupCalendars({ n: 100, date: nextMonthIso }),
+                groupRequest.getFollowingGroupCalendars({ n: 100, date: nextMonthIso })
+            ]);
 
             const allRaw = [];
-            if (groupRes.status === 'fulfilled' && Array.isArray(groupRes.value)) {
-                allRaw.push(...groupRes.value);
-            }
-            if (followingRes.status === 'fulfilled' && Array.isArray(followingRes.value)) {
-                allRaw.push(...followingRes.value);
-            }
-            if (nextMonthGroupRes.status === 'fulfilled' && Array.isArray(nextMonthGroupRes.value)) {
-                allRaw.push(...nextMonthGroupRes.value);
+            const settledResponses = [
+                groupRes,
+                followingRes,
+                featuredRes,
+                nextMonthGroupRes,
+                nextMonthFollowingRes
+            ];
+            for (const r of settledResponses) {
+                if (r.status === 'fulfilled') {
+                    allRaw.push(...extractEvents(r.value));
+                }
             }
 
             const uniqueMap = new Map();
@@ -82,8 +102,10 @@ export function useHomeEvents() {
                     }
                     return {
                         id: evt.id,
-                        name: evt.title || evt.name || 'Untitled Event',
-                        description: evt.description || '',
+                        name: replaceBioSymbols(
+                            evt.title || evt.name || 'Untitled Event'
+                        ),
+                        description: replaceBioSymbols(evt.description || ''),
                         groupId,
                         groupName: groupName || 'VRChat Group',
                         startsAt: evt.startsAt,

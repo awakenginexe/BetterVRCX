@@ -5,6 +5,7 @@ import { homeBackgroundState } from '../../../../addons/homeBackground/homeBackg
 
 const mockGetGroupCalendars = vi.fn();
 const mockGetFollowingGroupCalendars = vi.fn();
+const mockGetFeaturedGroupCalendars = vi.fn();
 const mockGetGroupName = vi.fn();
 const mockFormatDateFilter = vi.fn();
 
@@ -12,7 +13,9 @@ vi.mock('../../../../api/group', () => ({
     default: {
         getGroupCalendars: (...args) => mockGetGroupCalendars(...args),
         getFollowingGroupCalendars: (...args) =>
-            mockGetFollowingGroupCalendars(...args)
+            mockGetFollowingGroupCalendars(...args),
+        getFeaturedGroupCalendars: (...args) =>
+            mockGetFeaturedGroupCalendars(...args)
     }
 }));
 
@@ -29,43 +32,49 @@ describe('useHomeEvents composable', () => {
         vi.clearAllMocks();
         mockGetGroupName.mockResolvedValue('Test Group');
         mockFormatDateFilter.mockReturnValue('Formatted Date');
+        mockGetFeaturedGroupCalendars.mockResolvedValue({ results: [] });
         homeBackgroundState.eventsDaysAhead = 7;
     });
 
-    test('fetches upcoming events from group and following calendars and sorts them chronologically', async () => {
+    test('fetches upcoming events from CalendarResponse objects with { results: [] } and sorts them chronologically', async () => {
         const futureDate1 = dayjs().add(2, 'day').toISOString();
         const futureDate2 = dayjs().add(5, 'day').toISOString();
         const pastDate = dayjs().subtract(2, 'day').toISOString();
 
-        mockGetGroupCalendars.mockResolvedValueOnce([
-            {
-                id: 'evt_2',
-                title: 'Later Event',
-                ownerId: 'grp_1',
-                startsAt: futureDate2,
-                endsAt: dayjs(futureDate2).add(1, 'hour').toISOString()
-            },
-            {
-                id: 'evt_past',
-                title: 'Past Event',
-                ownerId: 'grp_1',
-                startsAt: pastDate,
-                endsAt: dayjs(pastDate).add(1, 'hour').toISOString()
-            }
-        ]);
+        mockGetGroupCalendars.mockResolvedValueOnce({
+            results: [
+                {
+                    id: 'evt_2',
+                    title: 'Later Event',
+                    ownerId: 'grp_1',
+                    startsAt: futureDate2,
+                    endsAt: dayjs(futureDate2).add(1, 'hour').toISOString()
+                },
+                {
+                    id: 'evt_past',
+                    title: 'Past Event',
+                    ownerId: 'grp_1',
+                    startsAt: pastDate,
+                    endsAt: dayjs(pastDate).add(1, 'hour').toISOString()
+                }
+            ]
+        });
 
-        mockGetFollowingGroupCalendars.mockResolvedValueOnce([
-            {
-                id: 'evt_1',
-                title: 'Sooner Event',
-                ownerId: 'grp_2',
-                startsAt: futureDate1,
-                endsAt: dayjs(futureDate1).add(1, 'hour').toISOString()
-            }
-        ]);
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({
+            results: [
+                {
+                    id: 'evt_1',
+                    title: 'Sooner Event',
+                    ownerId: 'grp_2',
+                    startsAt: futureDate1,
+                    endsAt: dayjs(futureDate1).add(1, 'hour').toISOString()
+                }
+            ]
+        });
 
-        // Next month mock
-        mockGetGroupCalendars.mockResolvedValueOnce([]);
+        // Next month mocks
+        mockGetGroupCalendars.mockResolvedValueOnce({ results: [] });
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({ results: [] });
 
         const { events, isLoading, hasLoaded, fetchEvents } = useHomeEvents();
 
@@ -92,24 +101,27 @@ describe('useHomeEvents composable', () => {
         const eventIn2Days = dayjs().add(2, 'day').toISOString();
         const eventIn6Days = dayjs().add(6, 'day').toISOString();
 
-        mockGetGroupCalendars.mockResolvedValueOnce([
-            {
-                id: 'evt_within_3d',
-                title: 'Within 3 Days',
-                ownerId: 'grp_1',
-                startsAt: eventIn2Days,
-                endsAt: dayjs(eventIn2Days).add(1, 'hour').toISOString()
-            },
-            {
-                id: 'evt_after_6d',
-                title: 'After 6 Days',
-                ownerId: 'grp_1',
-                startsAt: eventIn6Days,
-                endsAt: dayjs(eventIn6Days).add(1, 'hour').toISOString()
-            }
-        ]);
-        mockGetFollowingGroupCalendars.mockResolvedValueOnce([]);
-        mockGetGroupCalendars.mockResolvedValueOnce([]);
+        mockGetGroupCalendars.mockResolvedValueOnce({
+            results: [
+                {
+                    id: 'evt_within_3d',
+                    title: 'Within 3 Days',
+                    ownerId: 'grp_1',
+                    startsAt: eventIn2Days,
+                    endsAt: dayjs(eventIn2Days).add(1, 'hour').toISOString()
+                },
+                {
+                    id: 'evt_after_6d',
+                    title: 'After 6 Days',
+                    ownerId: 'grp_1',
+                    startsAt: eventIn6Days,
+                    endsAt: dayjs(eventIn6Days).add(1, 'hour').toISOString()
+                }
+            ]
+        });
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({ results: [] });
+        mockGetGroupCalendars.mockResolvedValueOnce({ results: [] });
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({ results: [] });
 
         const { events, fetchEvents } = useHomeEvents();
         await fetchEvents();
@@ -128,9 +140,12 @@ describe('useHomeEvents composable', () => {
             endsAt: dayjs(futureDate).add(2, 'hour').toISOString()
         };
 
-        mockGetGroupCalendars.mockResolvedValueOnce([eventData]);
-        mockGetFollowingGroupCalendars.mockResolvedValueOnce([eventData]);
-        mockGetGroupCalendars.mockResolvedValueOnce([]);
+        mockGetGroupCalendars.mockResolvedValueOnce({ results: [eventData] });
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({
+            results: [eventData]
+        });
+        mockGetGroupCalendars.mockResolvedValueOnce({ results: [] });
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce({ results: [] });
 
         const { events, fetchEvents } = useHomeEvents();
         await fetchEvents();
@@ -145,6 +160,9 @@ describe('useHomeEvents composable', () => {
             new Error('Network error')
         );
         mockGetGroupCalendars.mockRejectedValueOnce(new Error('Network error'));
+        mockGetFollowingGroupCalendars.mockRejectedValueOnce(
+            new Error('Network error')
+        );
 
         const { events, isLoading, hasLoaded, error, fetchEvents } =
             useHomeEvents();
