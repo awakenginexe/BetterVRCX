@@ -80,7 +80,7 @@
                         <button
                             type="button"
                             class="text-[11px] font-bold uppercase tracking-wider text-white/60 hover:text-white transition-colors cursor-pointer"
-                            @click="goToSocial">
+                            @click="openCalendar">
                             {{ t('view.home.see_all') }} &rarr;
                         </button>
                     </div>
@@ -90,12 +90,22 @@
                         <div
                             v-for="evt in events.slice(0, 3)"
                             :key="evt.id"
-                            class="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl hover:border-white/20 transition-all">
-                            <div class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0 border border-primary/30">
-                                <Calendar class="size-6" />
+                            class="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl hover:border-white/20 hover:bg-black/60 transition-all cursor-pointer"
+                            @click="openCalendar">
+                            <div class="size-12 rounded-xl overflow-hidden bg-primary/20 flex items-center justify-center text-primary shrink-0 border border-primary/30">
+                                <img
+                                    v-if="evt.imageUrl"
+                                    :src="evt.imageUrl"
+                                    class="size-full object-cover" />
+                                <Calendar v-else class="size-6" />
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-bold text-white truncate">{{ evt.name }}</h4>
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="text-sm font-bold text-white truncate">{{ evt.name }}</h4>
+                                    <span v-if="evt.formattedTime" class="text-[11px] font-medium text-primary shrink-0 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                                        {{ evt.formattedTime }}
+                                    </span>
+                                </div>
                                 <p class="text-xs text-white/60 truncate mt-0.5">{{ evt.groupName }}</p>
                             </div>
                         </div>
@@ -347,7 +357,12 @@
         DialogHeader,
         DialogTitle
     } from '@/components/ui/dialog';
-    import { useFriendStore, useUserStore, useWorldStore } from '../../stores';
+    import {
+        useFriendStore,
+        useToolsStore,
+        useUserStore,
+        useWorldStore
+    } from '../../stores';
     import { useUserDisplay } from '../../composables/useUserDisplay';
     import { useHomeBackground } from '../../addons/homeBackground/homeBackgroundStore';
     import { useHomeNews } from './composables/useHomeNews';
@@ -364,6 +379,7 @@
     const userStore = useUserStore();
     const friendStore = useFriendStore();
     const worldStore = useWorldStore();
+    const toolsStore = useToolsStore();
     const { userImage } = useUserDisplay();
     const { currentUser } = storeToRefs(userStore);
 
@@ -481,8 +497,8 @@
         }
     }
 
-    function goToSocial() {
-        router.push({ name: 'favorite-friends' });
+    function openCalendar() {
+        toolsStore.openDialog('groupCalendar');
     }
 
     function goToFriendsLocations() {

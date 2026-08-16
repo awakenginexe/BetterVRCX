@@ -1,5 +1,8 @@
 import { ref } from 'vue';
+import dayjs from 'dayjs';
 import groupRequest from '../../../api/group';
+import { getGroupName } from '../../../shared/utils/group';
+import { formatDateFilter } from '../../../coordinators/dateCoordinator';
 
 export function useHomeEvents() {
     const events = ref([]);
@@ -11,22 +14,81 @@ export function useHomeEvents() {
         isLoading.value = true;
         error.value = null;
         try {
-            const res = await groupRequest.getFollowingGroupCalendars({ n: 10 });
-            if (Array.isArray(res)) {
-                events.value = res.map((evt) => ({
-                    id: evt.id,
-                    name: evt.name || evt.title || 'Untitled Event',
-                    description: evt.description || '',
-                    groupId: evt.groupId,
-                    groupName: evt.groupName || 'VRChat Group',
-                    startTime: evt.startsAt || evt.start_time,
-                    imageUrl: evt.imageUrl || evt.image_url || null,
-                    location: evt.location || evt.worldId || null
-                }));
+            const now = new Date();
+            const currentMonthIso = dayjs(now).format('YYYY-MM-DDTHH:mm:ss[Z]');
+            const nextMonthIso = dayjs(now)
+                .add(1, 'month')
+                .startOf('month')
+                .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+            const [groupRes, followingRes, nextMonthGroupRes] =
+                await Promise.allSettled([
+                    groupRequest.getGroupCalendars({ n: 100, date: currentMonthIso }),
+                    groupRequest.getFollowingGroupCalendars({ n: 100, date: currentMonthIso }),
+                    groupRequest.getGroupCalendars({ n: 100, date: nextMonthIso })
+                ]);
+
+            const allRaw = [];
+            if (groupRes.status === 'fulfilled' && Array.isArray(groupRes.value)) {
+                allRaw.push(...groupRes.value);
             }
+            if (followingRes.status === 'fulfilled' && Array.isArray(followingRes.value)) {
+                allRaw.push(...followingRes.value);
+            }
+            if (nextMonthGroupRes.status === 'fulfilled' && Array.isArray(nextMonthGroupRes.value)) {
+                allRaw.push(...nextMonthGroupRes.value);
+            }
+
+            const uniqueMap = new Map();
+            for (const evt of allRaw) {
+                if (evt && evt.id && !uniqueMap.has(evt.id)) {
+                    uniqueMap.set(evt.id, evt);
+                }
+            }
+
+            const upcoming = Array.from(uniqueMap.values()).filter((evt) => {
+                if (!evt || !evt.startsAt) return false;
+                const end = evt.endsAt
+                    ? dayjs(evt.endsAt)
+                    : dayjs(evt.startsAt).add(2, 'hour');
+                return end.isAfter(dayjs());
+            });
+
+            upcoming.sort((a, b) => dayjs(a.startsAt).diff(dayjs(b.startsAt)));
+
+            const topEvents = upcoming.slice(0, 10);
+            const mapped = await Promise.all(
+                topEvents.map(async (evt) => {
+                    const groupId = evt.ownerId || evt.groupId;
+                    let groupName = '';
+                    if (groupId) {
+                        try {
+                            groupName = await getGroupName(groupId);
+                        } catch {
+                            // ignore error
+                        }
+                    }
+                    return {
+                        id: evt.id,
+                        name: evt.title || evt.name || 'Untitled Event',
+                        description: evt.description || '',
+                        groupId,
+                        groupName: groupName || 'VRChat Group',
+                        startsAt: evt.startsAt,
+                        endsAt: evt.endsAt,
+                        formattedTime: evt.startsAt
+                            ? formatDateFilter(evt.startsAt, 'long')
+                            : '',
+                        imageUrl: evt.imageUrl || evt.image_url || null,
+                        location: evt.location || evt.worldId || null
+                    };
+                })
+            );
+
+            events.value = mapped;
             hasLoaded.value = true;
         } catch (err) {
-            console.warn('Could not load following group calendars:', err);
+            console.warn('Could not load upcoming events:', err);
             error.value = err;
             hasLoaded.value = true;
         } finally {
