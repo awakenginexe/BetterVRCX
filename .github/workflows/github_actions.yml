@@ -135,7 +135,7 @@ jobs:
           "C:/Program Files (x86)/NSIS/makensis.exe" -V4 -INPUTCHARSET UTF8 Installer/installer.nsi
       - name: Rename setup
         run: |
-          file_name="BetterVRCX_${{ needs.set_version.outputs.tag }}_Setup.exe"
+          file_name="BetterVRCX_Setup_${{ needs.set_version.outputs.tag }}.exe"
           echo "Setup FileName: ${file_name}"
           if [ -f "Installer/BetterVRCX_Setup.exe" ]; then
             mv Installer/BetterVRCX_Setup.exe $file_name
@@ -157,7 +157,7 @@ jobs:
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
           files: |
-            ${{ github.workspace }}\BetterVRCX_${{ needs.set_version.outputs.tag }}_Setup.exe
+            ${{ github.workspace }}\BetterVRCX_Setup_${{ needs.set_version.outputs.tag }}.exe
 
       - name: Upload Cef dotnet artifacts
         uses: actions/upload-artifact@v7
@@ -168,7 +168,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: BetterVRCX-Setup
-          path: BetterVRCX_${{ needs.set_version.outputs.tag }}_Setup.exe
+          path: BetterVRCX_Setup_${{ needs.set_version.outputs.tag }}.exe
 
   build_dotnet_linux:
     runs-on: ubuntu-latest

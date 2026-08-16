@@ -82,10 +82,10 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
                 published_at: '2026-08-16T10:45:00Z',
                 assets: [
                     {
-                        name: 'BetterVRCX_v3.0.5_Setup.exe',
+                        name: 'BetterVRCX_Setup_v3.0.5.exe',
                         state: 'uploaded',
                         browser_download_url:
-                            'https://github.com/awakenginexe/BetterVRCX/releases/download/v3.0.5/BetterVRCX_v3.0.5_Setup.exe',
+                            'https://github.com/awakenginexe/BetterVRCX/releases/download/v3.0.5/BetterVRCX_Setup_v3.0.5.exe',
                         size: 200000000,
                         digest: 'sha256:abcd'
                     }
