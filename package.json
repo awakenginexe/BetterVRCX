@@ -1,6 +1,6 @@
 {
     "name": "BetterVRCX",
-    "version": "3.0.4",
+    "version": "3.0.5",
     "private": true,
     "description": "BetterVRCX is a desktop companion for managing your VRChat social life.",
     "keywords": [
@@ -135,10 +135,14 @@
     "build": {
         "appId": "app.vrcx",
         "productName": "VRCX",
-        "icon": "images/VRCX.png",
+        "icon": "images/BetterVRCX.png",
         "files": [
             "build/html/**/*",
             "src-electron/*",
+            "images/BetterVRCX.png",
+            "images/BetterVRCX.ico",
+            "images/BetterVRCX_notify.png",
+            "images/BetterVRCX_notify.ico",
             "images/VRCX.png",
             "images/VRCX.ico",
             "images/VRCX_notify.png",
@@ -189,7 +193,7 @@
             "target": [
                 "AppImage"
             ],
-            "icon": "images/VRCX.png",
+            "icon": "images/BetterVRCX.png",
             "category": "Utility",
             "executableName": "vrcx",
             "desktop": {
@@ -210,7 +214,7 @@
             "target": [
                 "dmg"
             ],
-            "icon": "images/VRCX.png",
+            "icon": "images/BetterVRCX.png",
             "category": "public.app-category.utilities",
             "executableName": "VRCX"
         }

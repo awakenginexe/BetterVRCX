@@ -19,7 +19,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Title>BetterVRCX</Title>
     <Description>BetterVRCX</Description>
-    <PackageIcon>..\images\VRCX.png</PackageIcon>
+    <PackageIcon>..\images\BetterVRCX.png</PackageIcon>
     <RepositoryUrl>https://github.com/awakenginexe/BetterVRCX</RepositoryUrl>
     <ResourceLanguages>en</ResourceLanguages>
     <SatelliteResourceLanguages>en-US;en</SatelliteResourceLanguages>
@@ -44,7 +44,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>..\images\VRCX.ico</ApplicationIcon>
+    <ApplicationIcon>..\images\BetterVRCX.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -83,6 +83,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>openvr_api.dll</TargetPath>
     </None>
+    <Content Include="..\images\BetterVRCX.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\images\BetterVRCX_notify.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\images\BetterVRCX.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\images\BetterVRCX_notify.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\images\VRCX.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -90,6 +102,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\images\VRCX.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\images\VRCX_notify.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

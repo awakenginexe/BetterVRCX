@@ -1,11 +1,10 @@
 <div align="center">
 
-# <img src="https://raw.githubusercontent.com/vrcx-team/VRCX/master/images/VRCX.ico" width="64" height="64"> </img> BetterVRCX
+# <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
-[![GitHub release](https://img.shields.io/github/release/vrcx-team/VRCX.svg)](https://github.com/vrcx-team/VRCX/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/vrcx-team/VRCX/total?color=6451f1)](https://github.com/vrcx-team/VRCX/releases/latest)
-[![GitHub Workflow Status](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml)
-[![VRCX Discord Invite](https://img.shields.io/discord/854071236363550763?color=%237289DA&logo=discord&logoColor=white&label=discord)](https://vrcx.app/discord)
+[![GitHub release](https://img.shields.io/github/release/awakenginexe/BetterVRCX.svg)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/awakenginexe/BetterVRCX/total?color=6451f1)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
+[![GitHub Workflow Status](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml)
 
 | [English](../README.md) | [ภาษาไทย](./README.th.md) | [日本語](./README.jp.md) | [简体中文](./README.zh_CN.md) | [繁體中文](./README.zh_TW.md) | **Italiano** | [Русский](./README.ru_RU.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Français](./README.fr.md) | [Magyar](./README.hu.md) |
 
@@ -15,7 +14,7 @@ BetterVRCX è un'applicazione di assistenza/accompagnamento per VRChat che forni
 
 <div align="center">
 
-Scarica e installa l'ultimo installer (`VRCX_Setup.exe`) da [qui](https://github.com/vrcx-team/VRCX/releases/latest).
+Scarica e installa l'ultimo installer (`BetterVRCX_Setup.exe`) da [qui](https://github.com/awakenginexe/BetterVRCX/releases/latest).
 
 # Funzionalità
 

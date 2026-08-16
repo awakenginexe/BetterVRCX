@@ -230,7 +230,7 @@
 
     import LoginSettingsDialog from './Dialog/LoginSettingsDialog.vue';
 
-    const vrcxLogo = new URL('../../../images/VRCX.png', import.meta.url).href;
+    const vrcxLogo = new URL('../../../images/BetterVRCX.png', import.meta.url).href;
     const { userImage } = useUserDisplay();
     const { showVRCXUpdateDialog } = useVRCXUpdaterStore();
     const router = useRouter();

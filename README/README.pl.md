@@ -1,11 +1,10 @@
 <div align="center">
 
-# <img src="https://raw.githubusercontent.com/vrcx-team/VRCX/master/images/VRCX.ico" width="64" height="64"> </img> BetterVRCX
+# <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
-[![GitHub release](https://img.shields.io/github/release/vrcx-team/VRCX.svg)](https://github.com/vrcx-team/VRCX/releases/latest)
-[![Liczba pobrań](https://img.shields.io/github/downloads/vrcx-team/VRCX/total?color=6451f1)](https://github.com/vrcx-team/VRCX/releases/latest)
-[![Status GitHub Workflow](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/vrcx-team/VRCX/actions/workflows/github_actions.yml)
-[![Discord VRCX Discord](https://img.shields.io/discord/854071236363550763?color=%237289DA&logo=discord&logoColor=white&label=discord)](https://vrcx.app/discord)
+[![GitHub release](https://img.shields.io/github/release/awakenginexe/BetterVRCX.svg)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
+[![Liczba pobrań](https://img.shields.io/github/downloads/awakenginexe/BetterVRCX/total?color=6451f1)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
+[![Status GitHub Workflow](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml)
 
 | [English](../README.md) | [ภาษาไทย](./README.th.md) | [日本語](./README.jp.md) | [简体中文](./README.zh_CN.md) | [繁體中文](./README.zh_TW.md) | [Italiano](./README.it.md) | [Русский](./README.ru_RU.md) | [Español](./README.es.md) | **Polski** | [Français](./README.fr.md) | [Magyar](./README.hu.md) |
 
@@ -15,7 +14,7 @@ BetterVRCX to aplikacja pomocnicza dla VRChat, która dostarcza informacje i pom
 
 <div align="center">
 
-Pobierz i uruchom najnowszy instalator (`VRCX_Setup.exe`) [stąd](https://github.com/vrcx-team/VRCX/releases/latest).
+Pobierz i uruchom najnowszy instalator (`BetterVRCX_Setup.exe`) [stąd](https://github.com/awakenginexe/BetterVRCX/releases/latest).
 
 # Funkcje
 

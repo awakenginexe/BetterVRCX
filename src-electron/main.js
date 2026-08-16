@@ -327,7 +327,7 @@ function createWindow() {
         y,
         width,
         height,
-        icon: path.join(rootDir, 'images/VRCX.png'),
+        icon: path.join(rootDir, 'images/BetterVRCX.png'),
         autoHideMenuBar: true,
         titleBarStyle: 'hiddenInset',
         webPreferences: {
@@ -453,7 +453,7 @@ function createOverlayWindowOffscreen() {
         y,
         width,
         height,
-        icon: path.join(rootDir, 'images/VRCX.png'),
+        icon: path.join(rootDir, 'images/BetterVRCX.png'),
         autoHideMenuBar: true,
         transparent: true,
         frame: false,
@@ -506,27 +506,27 @@ function destroyTray() {
 function createTray() {
     if (process.platform === 'darwin') {
         const image = nativeImage.createFromPath(
-            path.join(rootDir, 'images/VRCX.png')
+            path.join(rootDir, 'images/BetterVRCX.png')
         );
         trayIcon = image.resize({ width: 16, height: 16 });
 
         const imageNotify = nativeImage.createFromPath(
-            path.join(rootDir, 'images/VRCX_notify.png')
+            path.join(rootDir, 'images/BetterVRCX_notify.png')
         );
         trayIconNotify = imageNotify.resize({ width: 16, height: 16 });
     } else if (process.platform === 'linux') {
         const image = nativeImage.createFromPath(
-            path.join(rootDir, 'images/VRCX.png')
+            path.join(rootDir, 'images/BetterVRCX.png')
         );
         trayIcon = image.resize({ width: 64, height: 64 });
 
         const imageNotify = nativeImage.createFromPath(
-            path.join(rootDir, 'images/VRCX_notify.png')
+            path.join(rootDir, 'images/BetterVRCX_notify.png')
         );
         trayIconNotify = imageNotify.resize({ width: 64, height: 64 });
     } else {
-        trayIcon = path.join(rootDir, 'images/VRCX.ico');
-        trayIconNotify = path.join(rootDir, 'images/VRCX_notify.ico');
+        trayIcon = path.join(rootDir, 'images/BetterVRCX.ico');
+        trayIconNotify = path.join(rootDir, 'images/BetterVRCX_notify.ico');
     }
     tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([

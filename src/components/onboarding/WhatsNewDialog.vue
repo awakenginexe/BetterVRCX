@@ -100,7 +100,7 @@
     import { Button } from '@/components/ui/button';
     import { openExternalLink } from '../../shared/utils';
     import { useVRCXUpdaterStore } from '../../stores';
-    import vrcxLogo from '../../../images/VRCX.png';
+    import vrcxLogo from '../../../images/BetterVRCX.png';
 
     const { t } = useI18n();
     const vrcxUpdaterStore = useVRCXUpdaterStore();

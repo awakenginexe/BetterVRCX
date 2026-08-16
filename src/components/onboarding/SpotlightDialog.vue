@@ -54,7 +54,7 @@
     import { Dialog, DialogContent } from '@/components/ui/dialog';
     import { Button } from '@/components/ui/button';
     import configRepository from '../../services/config';
-    import vrcxLogo from '../../../images/VRCX.png';
+    import vrcxLogo from '../../../images/BetterVRCX.png';
 
     const { t } = useI18n();
 

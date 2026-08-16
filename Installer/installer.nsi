@@ -59,8 +59,8 @@
 ;--------------------------------
 ;Icons
 
-    !define MUI_ICON "../images/VRCX.ico"
-    !define MUI_UNICON "../images/VRCX.ico"
+    !define MUI_ICON "../images/BetterVRCX.ico"
+    !define MUI_UNICON "../images/BetterVRCX.ico"
 
 ;--------------------------------
 ;Pages
@@ -194,7 +194,7 @@ Section "Install" SecInstall
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayArch" "x64"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayIcon" "$\"$INSTDIR\VRCX.ico$\""
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BetterVRCX" "DisplayIcon" "$\"$INSTDIR\BetterVRCX.ico$\""
 
     ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
@@ -210,7 +210,7 @@ Section "Install" SecInstall
     WriteRegStr HKCU "Software\Classes\vrcx" "" "URL:vrcx"
     WriteRegStr HKCU "Software\Classes\vrcx" "FriendlyTypeName" "BetterVRCX"
     WriteRegStr HKCU "Software\Classes\vrcx" "URL Protocol" ""
-    WriteRegExpandStr HKCU "Software\Classes\vrcx\DefaultIcon" "" "$INSTDIR\VRCX.ico"
+    WriteRegExpandStr HKCU "Software\Classes\vrcx\DefaultIcon" "" "$INSTDIR\BetterVRCX.ico"
     WriteRegStr HKCU "Software\Classes\vrcx\shell" "" "open"
     WriteRegStr HKCU "Software\Classes\vrcx\shell\open" "FriendlyAppName" "BetterVRCX"
     WriteRegStr HKCU "Software\Classes\vrcx\shell\open\command" "" '"$INSTDIR\BetterVRCX.exe" /uri="%1" /params="%2 %3 %4"'
