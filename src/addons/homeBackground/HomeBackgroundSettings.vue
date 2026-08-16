@@ -173,6 +173,33 @@
             </div>
         </div>
 
+        <!-- Upcoming Events Timeframe -->
+        <div class="space-y-3 pt-2 border-t border-border">
+            <div>
+                <label class="text-xs font-medium text-foreground">Upcoming Events Range</label>
+                <p class="text-[11px] text-muted-foreground">
+                    Only show upcoming group events starting within this timeframe to help you prepare
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                <button
+                    v-for="opt in eventRangeOptions"
+                    :key="opt.value"
+                    type="button"
+                    class="flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all cursor-pointer"
+                    :class="
+                        (state.eventsDaysAhead ?? 7) === opt.value
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary text-primary font-semibold'
+                            : 'border-border bg-card hover:bg-accent/40 text-foreground'
+                    "
+                    @click="setEventsDaysAhead(opt.value)">
+                    <span class="text-xs font-medium">{{ opt.label }}</span>
+                    <span class="text-[10px] text-muted-foreground mt-0.5">{{ opt.sublabel }}</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Live Preview -->
         <div class="space-y-2 pt-2 border-t border-border">
             <div class="flex items-center justify-between">
@@ -294,6 +321,21 @@
         pickCustomImage,
         pickPhotosFolder
     } = useHomeBackground();
+
+    const eventRangeOptions = [
+        { value: 1, label: '1 Day', sublabel: 'Next 24h' },
+        { value: 3, label: '3 Days', sublabel: 'Within 3d' },
+        { value: 5, label: '5 Days', sublabel: 'Within 5d' },
+        { value: 7, label: '7 Days', sublabel: 'Within 1w' },
+        { value: 14, label: '14 Days', sublabel: 'Within 2w' },
+        { value: 30, label: '30 Days', sublabel: 'Within 1m' },
+        { value: 0, label: 'All', sublabel: 'Any Time' }
+    ];
+
+    function setEventsDaysAhead(days) {
+        state.eventsDaysAhead = days;
+        saveHomeBackgroundConfig();
+    }
 
     function setMode(mode) {
         state.mode = mode;

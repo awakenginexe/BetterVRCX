@@ -509,6 +509,13 @@
         fetchOnlineVisits();
     }, 600000);
 
+    watch(
+        () => bgState.eventsDaysAhead,
+        () => {
+            fetchEvents();
+        }
+    );
+
     onMounted(async () => {
         fetchOnlineVisits();
         if (bgState.mode === 'vrchat_photos' && !activePhotoUrl.value) {

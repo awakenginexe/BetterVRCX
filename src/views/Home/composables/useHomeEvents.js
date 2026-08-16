@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import groupRequest from '../../../api/group';
 import { getGroupName } from '../../../shared/utils/group';
 import { formatDateFilter } from '../../../coordinators/dateCoordinator';
+import { homeBackgroundState } from '../../../addons/homeBackground/homeBackgroundStore';
 
 export function useHomeEvents() {
     const events = ref([]);
@@ -46,12 +47,23 @@ export function useHomeEvents() {
                 }
             }
 
+            const daysAhead = Number(homeBackgroundState?.eventsDaysAhead ?? 7);
+
             const upcoming = Array.from(uniqueMap.values()).filter((evt) => {
                 if (!evt || !evt.startsAt) return false;
+                const start = dayjs(evt.startsAt);
                 const end = evt.endsAt
                     ? dayjs(evt.endsAt)
-                    : dayjs(evt.startsAt).add(2, 'hour');
-                return end.isAfter(dayjs());
+                    : start.add(2, 'hour');
+
+                if (!end.isAfter(dayjs())) return false;
+
+                if (daysAhead > 0) {
+                    const maxDate = dayjs().add(daysAhead, 'day').endOf('day');
+                    if (start.isAfter(maxDate)) return false;
+                }
+
+                return true;
             });
 
             upcoming.sort((a, b) => dayjs(a.startsAt).diff(dayjs(b.startsAt)));

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import dayjs from 'dayjs';
 import { useHomeEvents } from '../useHomeEvents';
+import { homeBackgroundState } from '../../../../addons/homeBackground/homeBackgroundStore';
 
 const mockGetGroupCalendars = vi.fn();
 const mockGetFollowingGroupCalendars = vi.fn();
@@ -28,6 +29,7 @@ describe('useHomeEvents composable', () => {
         vi.clearAllMocks();
         mockGetGroupName.mockResolvedValue('Test Group');
         mockFormatDateFilter.mockReturnValue('Formatted Date');
+        homeBackgroundState.eventsDaysAhead = 7;
     });
 
     test('fetches upcoming events from group and following calendars and sorts them chronologically', async () => {
@@ -82,6 +84,38 @@ describe('useHomeEvents composable', () => {
         expect(events.value[0].groupName).toBe('Test Group');
         expect(events.value[1].id).toBe('evt_2');
         expect(events.value[1].name).toBe('Later Event');
+    });
+
+    test('filters events according to eventsDaysAhead setting', async () => {
+        homeBackgroundState.eventsDaysAhead = 3;
+
+        const eventIn2Days = dayjs().add(2, 'day').toISOString();
+        const eventIn6Days = dayjs().add(6, 'day').toISOString();
+
+        mockGetGroupCalendars.mockResolvedValueOnce([
+            {
+                id: 'evt_within_3d',
+                title: 'Within 3 Days',
+                ownerId: 'grp_1',
+                startsAt: eventIn2Days,
+                endsAt: dayjs(eventIn2Days).add(1, 'hour').toISOString()
+            },
+            {
+                id: 'evt_after_6d',
+                title: 'After 6 Days',
+                ownerId: 'grp_1',
+                startsAt: eventIn6Days,
+                endsAt: dayjs(eventIn6Days).add(1, 'hour').toISOString()
+            }
+        ]);
+        mockGetFollowingGroupCalendars.mockResolvedValueOnce([]);
+        mockGetGroupCalendars.mockResolvedValueOnce([]);
+
+        const { events, fetchEvents } = useHomeEvents();
+        await fetchEvents();
+
+        expect(events.value.length).toBe(1);
+        expect(events.value[0].id).toBe('evt_within_3d');
     });
 
     test('deduplicates events present in both group and following calendars', async () => {

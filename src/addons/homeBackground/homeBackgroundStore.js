@@ -23,7 +23,8 @@ function loadSavedConfig() {
                     dimOpacity: parsed.dimOpacity ?? 50,
                     blur: parsed.blur ?? 0,
                     fit: parsed.fit || 'cover',
-                    positionY: parsed.positionY ?? 50
+                    positionY: parsed.positionY ?? 50,
+                    eventsDaysAhead: parsed.eventsDaysAhead ?? 7
                 };
             }
         }
@@ -38,7 +39,8 @@ function loadSavedConfig() {
         dimOpacity: 50,
         blur: 0,
         fit: 'cover',
-        positionY: 50
+        positionY: 50,
+        eventsDaysAhead: 7
     };
 }
 
