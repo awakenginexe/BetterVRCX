@@ -6,8 +6,9 @@ import { homeBackgroundState } from '../../../../addons/homeBackground/homeBackg
 const mockGetGroupCalendars = vi.fn();
 const mockGetFollowingGroupCalendars = vi.fn();
 const mockGetFeaturedGroupCalendars = vi.fn();
-const mockGetGroupName = vi.fn();
+const mockGetGroupSummary = vi.fn();
 const mockFormatDateFilter = vi.fn();
+const mockConvertFileUrlToImageUrl = vi.fn();
 
 vi.mock('../../../../api/group', () => ({
     default: {
@@ -20,7 +21,12 @@ vi.mock('../../../../api/group', () => ({
 }));
 
 vi.mock('../../../../shared/utils/group', () => ({
-    getGroupName: (...args) => mockGetGroupName(...args)
+    getGroupSummary: (...args) => mockGetGroupSummary(...args),
+    getGroupName: vi.fn().mockResolvedValue('Test Group')
+}));
+
+vi.mock('../../../../shared/utils/common', () => ({
+    convertFileUrlToImageUrl: (...args) => mockConvertFileUrlToImageUrl(...args)
 }));
 
 vi.mock('../../../../coordinators/dateCoordinator', () => ({
@@ -30,8 +36,13 @@ vi.mock('../../../../coordinators/dateCoordinator', () => ({
 describe('useHomeEvents composable', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockGetGroupName.mockResolvedValue('Test Group');
+        mockGetGroupSummary.mockResolvedValue({
+            name: 'Test Group',
+            iconUrl: 'https://example.com/icon.png',
+            bannerUrl: 'https://example.com/banner.png'
+        });
         mockFormatDateFilter.mockReturnValue('Formatted Date');
+        mockConvertFileUrlToImageUrl.mockImplementation((url) => url);
         mockGetFeaturedGroupCalendars.mockResolvedValue({ results: [] });
         homeBackgroundState.eventsDaysAhead = 7;
     });
@@ -91,6 +102,8 @@ describe('useHomeEvents composable', () => {
         expect(events.value[0].id).toBe('evt_1');
         expect(events.value[0].name).toBe('Sooner Event');
         expect(events.value[0].groupName).toBe('Test Group');
+        expect(events.value[0].groupIconUrl).toBe('https://example.com/icon.png');
+        expect(events.value[0].imageUrl).toBe('https://example.com/icon.png');
         expect(events.value[1].id).toBe('evt_2');
         expect(events.value[1].name).toBe('Later Event');
     });

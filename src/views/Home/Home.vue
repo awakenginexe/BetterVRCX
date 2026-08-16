@@ -90,23 +90,29 @@
                         <div
                             v-for="evt in events.slice(0, 3)"
                             :key="evt.id"
-                            class="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl hover:border-white/20 hover:bg-black/60 transition-all cursor-pointer"
+                            class="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl hover:border-white/20 hover:bg-black/60 transition-all cursor-pointer group"
                             @click="openCalendar">
-                            <div class="size-12 rounded-xl overflow-hidden bg-primary/20 flex items-center justify-center text-primary shrink-0 border border-primary/30">
+                            <div class="size-12 rounded-xl overflow-hidden bg-white/5 flex items-center justify-center text-primary shrink-0 border border-white/10 shadow-inner group-hover:border-primary/40 transition-all">
                                 <img
-                                    v-if="evt.imageUrl"
-                                    :src="evt.imageUrl"
+                                    v-if="evt.imageUrl || evt.groupIconUrl"
+                                    :src="evt.imageUrl || evt.groupIconUrl"
                                     class="size-full object-cover" />
-                                <Calendar v-else class="size-6" />
+                                <Calendar v-else class="size-6 text-primary" />
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2">
-                                    <h4 class="text-sm font-bold text-white truncate">{{ evt.name }}</h4>
+                                    <h4 class="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">{{ evt.name }}</h4>
                                     <span v-if="evt.formattedTime" class="text-[11px] font-medium text-primary shrink-0 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
                                         {{ evt.formattedTime }}
                                     </span>
                                 </div>
-                                <p class="text-xs text-white/60 truncate mt-0.5">{{ evt.groupName }}</p>
+                                <div class="flex items-center gap-1.5 mt-1 min-w-0">
+                                    <img
+                                        v-if="evt.groupIconUrl"
+                                        :src="evt.groupIconUrl"
+                                        class="size-3.5 rounded-full object-cover shrink-0 border border-white/20" />
+                                    <p class="text-xs text-white/60 truncate">{{ evt.groupName }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>

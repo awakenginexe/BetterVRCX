@@ -1,5 +1,6 @@
 import { parseLocation } from './location';
 import { queryRequest } from '../../api';
+import { convertFileUrlToImageUrl } from './common';
 
 /**
  *
@@ -43,30 +44,49 @@ function hasGroupModerationPermission(group) {
 /**
  *
  * @param {string} data
- * @returns {Promise<string>}
+ * @returns {Promise<{name: string, iconUrl: string, bannerUrl: string}>}
  */
-async function getGroupName(data) {
+async function getGroupSummary(data) {
     if (!data) {
-        return '';
+        return { name: '', iconUrl: '', bannerUrl: '' };
     }
-    let groupName = '';
     let groupId = data;
     if (!data.startsWith('grp_')) {
         const L = parseLocation(data);
         groupId = L.groupId;
         if (!L.groupId) {
-            return '';
+            return { name: '', iconUrl: '', bannerUrl: '' };
         }
     }
     try {
         const args = await queryRequest.fetch('group.dialog', {
             groupId
         });
-        groupName = args.ref.name;
+        const ref = args?.ref || {};
+        return {
+            name: ref.name || '',
+            iconUrl: ref.iconUrl ? convertFileUrlToImageUrl(ref.iconUrl) : '',
+            bannerUrl: ref.bannerUrl ? convertFileUrlToImageUrl(ref.bannerUrl) : ''
+        };
     } catch (err) {
         console.error(err);
     }
-    return groupName;
+    return { name: '', iconUrl: '', bannerUrl: '' };
 }
 
-export { hasGroupPermission, hasGroupModerationPermission, getGroupName };
+/**
+ *
+ * @param {string} data
+ * @returns {Promise<string>}
+ */
+async function getGroupName(data) {
+    const summary = await getGroupSummary(data);
+    return summary.name;
+}
+
+export {
+    hasGroupPermission,
+    hasGroupModerationPermission,
+    getGroupName,
+    getGroupSummary
+};

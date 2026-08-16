@@ -1,10 +1,11 @@
 import { ref } from 'vue';
 import dayjs from 'dayjs';
 import groupRequest from '../../../api/group';
-import { getGroupName } from '../../../shared/utils/group';
+import { getGroupSummary } from '../../../shared/utils/group';
 import { formatDateFilter } from '../../../coordinators/dateCoordinator';
 import { homeBackgroundState } from '../../../addons/homeBackground/homeBackgroundStore';
 import { replaceBioSymbols } from '../../../shared/utils/base/string';
+import { convertFileUrlToImageUrl } from '../../../shared/utils/common';
 
 function extractEvents(res) {
     if (!res) return [];
@@ -93,13 +94,21 @@ export function useHomeEvents() {
                 topEvents.map(async (evt) => {
                     const groupId = evt.ownerId || evt.groupId;
                     let groupName = '';
+                    let groupIconUrl = '';
                     if (groupId) {
                         try {
-                            groupName = await getGroupName(groupId);
+                            const summary = await getGroupSummary(groupId);
+                            groupName = summary.name;
+                            groupIconUrl = summary.iconUrl || summary.bannerUrl;
                         } catch {
                             // ignore error
                         }
                     }
+                    const rawImageUrl = evt.imageUrl || evt.image_url;
+                    const eventImageUrl = rawImageUrl
+                        ? convertFileUrlToImageUrl(rawImageUrl)
+                        : '';
+
                     return {
                         id: evt.id,
                         name: replaceBioSymbols(
@@ -108,12 +117,13 @@ export function useHomeEvents() {
                         description: replaceBioSymbols(evt.description || ''),
                         groupId,
                         groupName: groupName || 'VRChat Group',
+                        groupIconUrl,
                         startsAt: evt.startsAt,
                         endsAt: evt.endsAt,
                         formattedTime: evt.startsAt
                             ? formatDateFilter(evt.startsAt, 'long')
                             : '',
-                        imageUrl: evt.imageUrl || evt.image_url || null,
+                        imageUrl: eventImageUrl || groupIconUrl || null,
                         location: evt.location || evt.worldId || null
                     };
                 })
