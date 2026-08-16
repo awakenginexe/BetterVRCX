@@ -204,7 +204,7 @@
                     "support": "Hỗ trợ"
                 },
                 "vrcx_updater": {
-                    "header": "Cập nhật VRCX",
+                    "header": "Cập nhật BetterVRCX",
                     "change_build": "Thay đổi phiên bản",
                     "auto_update_off": "Tắt",
                     "auto_update_notify": "Thông báo",
@@ -1246,7 +1246,7 @@
             "add_item": "Thêm mục"
         },
         "vrcx_updater": {
-            "header": "Cập nhật VRCX",
+            "header": "Cập nhật BetterVRCX",
             "latest_version": "VRCX đã được cập nhật mới nhất.",
             "ready_for_update": "Sẵn sằng cài đặt, khởi động lại để áp dụng",
             "download": "Tải xuống",

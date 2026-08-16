@@ -336,7 +336,7 @@
                     "support": "Поддержка"
                 },
                 "vrcx_updater": {
-                    "header": "Обновление VRCX",
+                    "header": "Обновление BetterVRCX",
                     "change_build": "Изменить сборку",
                     "update_action": "Действия по обновлению",
                     "auto_update_off": "Выкл",
@@ -1424,7 +1424,7 @@
             "add_item": "Добавить"
         },
         "vrcx_updater": {
-            "header": "Обновление VRCX",
+            "header": "Обновление BetterVRCX",
             "latest_version": "У вас установлена актуальная версия VRCX.",
             "ready_for_update": "Готово к установке, перезапустите VRCX для применения.",
             "download": "Скачать",

@@ -807,7 +807,7 @@
                     "support": "Támogatás"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX frissítő",
+                    "header": "BetterVRCX frissítő",
                     "change_build": "Build váltása",
                     "update_action": "Frissítési művelet",
                     "auto_update_off": "Kikapcsolva",
@@ -2390,7 +2390,7 @@
             "add_item": "Elem hozzáadása"
         },
         "vrcx_updater": {
-            "header": "VRCX frissítő",
+            "header": "BetterVRCX frissítő",
             "latest_version": "A VRCX naprakész.",
             "ready_for_update": "Telepítésre kész, indítsd újra a VRCX-et az alkalmazáshoz.",
             "branch_stable": "Stabil",

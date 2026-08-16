@@ -603,7 +603,7 @@
                     "support": "การสนับสนุน"
                 },
                 "vrcx_updater": {
-                    "header": "ตัวอัปเดต VRCX",
+                    "header": "ตัวอัปเดต BetterVRCX",
                     "change_build": "เปลี่ยน Build",
                     "update_action": "การดำเนินการอัปเดต",
                     "auto_update_off": "ปิด",
@@ -2183,7 +2183,7 @@
             "add_item": "เพิ่มรายการ"
         },
         "vrcx_updater": {
-            "header": "ตัวอัปเดต VRCX",
+            "header": "ตัวอัปเดต BetterVRCX",
             "latest_version": "VRCX เป็นเวอร์ชันล่าสุดแล้ว",
             "ready_for_update": "พร้อมติดตั้งแล้ว, รีสตาร์ท VRCX เพื่อใช้งาน",
             "download": "ดาวน์โหลด",

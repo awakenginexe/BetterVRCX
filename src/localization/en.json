@@ -827,7 +827,7 @@
                     "support": "Support"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX Updater",
+                    "header": "BetterVRCX Updater",
                     "change_build": "Change Build",
                     "update_action": "Update Action",
                     "auto_update_off": "Off",
@@ -2448,7 +2448,7 @@
             "add_item": "Add Item"
         },
         "vrcx_updater": {
-            "header": "VRCX Updater",
+            "header": "BetterVRCX Updater",
             "latest_version": "VRCX is up to date.",
             "ready_for_update": "Ready for install, restart VRCX to apply.",
             "branch_stable": "Stable",

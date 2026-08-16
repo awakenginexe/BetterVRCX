@@ -19,7 +19,9 @@
                     <Tabs :model-value="branch" class="w-full" @update:modelValue="handleBranchChange">
                         <TabsList class="grid w-full grid-cols-2">
                             <TabsTrigger value="Stable">{{ t('dialog.vrcx_updater.branch_stable') }}</TabsTrigger>
-                            <TabsTrigger value="Nightly">{{ t('dialog.vrcx_updater.branch_nightly') }}</TabsTrigger>
+                            <TabsTrigger value="Nightly" disabled>{{
+                                t('dialog.vrcx_updater.branch_nightly')
+                            }}</TabsTrigger>
                         </TabsList>
                         <TabsContent value="Nightly">
                             <Alert variant="destructive">

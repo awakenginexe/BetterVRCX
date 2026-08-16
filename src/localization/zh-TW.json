@@ -814,7 +814,7 @@
                     "support": "支援"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX 更新器",
+                    "header": "BetterVRCX 更新器",
                     "change_build": "變更版本",
                     "update_action": "更新動作",
                     "auto_update_off": "關閉",
@@ -2415,7 +2415,7 @@
             "add_item": "新增項目"
         },
         "vrcx_updater": {
-            "header": "VRCX 更新器",
+            "header": "BetterVRCX 更新器",
             "latest_version": "VRCX 已是最新版本",
             "ready_for_update": "已準備好安裝更新，重新啟動 VRCX 來套用更新",
             "branch_stable": "穩定版",

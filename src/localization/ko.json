@@ -215,7 +215,7 @@
                     "support": "지원/커뮤니티"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX 업데이터",
+                    "header": "BetterVRCX 업데이터",
                     "change_build": "버전 변경",
                     "auto_update_off": "끄기",
                     "auto_update_notify": "알림",
@@ -1257,7 +1257,7 @@
             "add_item": "항목 추가"
         },
         "vrcx_updater": {
-            "header": "VRCX 업데이트",
+            "header": "BetterVRCX 업데이트",
             "latest_version": "최신 버전입니다",
             "ready_for_update": "설치가 준비됐습니다. VRCX를 재시작하면 적용됩니다",
             "download": "다운로드",

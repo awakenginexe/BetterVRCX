@@ -819,7 +819,7 @@
                     "support": "サポート"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX アップデーター",
+                    "header": "BetterVRCX アップデーター",
                     "change_build": "ビルドを変更",
                     "update_action": "更新がリリースされたとき",
                     "auto_update_off": "何もしない",
@@ -2432,7 +2432,7 @@
             "add_item": "追加"
         },
         "vrcx_updater": {
-            "header": "VRCX アップデーター",
+            "header": "BetterVRCX アップデーター",
             "latest_version": "VRCXは最新版です。",
             "ready_for_update": "インストールの準備が完了しました。VRCX を再起動して適用してください。",
             "branch_stable": "安定板",

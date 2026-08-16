@@ -210,7 +210,7 @@
                     "support": "Podpora"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX Aktualizátor",
+                    "header": "BetterVRCX Aktualizátor",
                     "change_build": "Změnit verzi",
                     "update_action": "Aktualizace",
                     "auto_update_off": "Vypnuto",
@@ -1327,7 +1327,7 @@
             "add_item": "Add Item"
         },
         "vrcx_updater": {
-            "header": "VRCX Updater",
+            "header": "BetterVRCX Updater",
             "latest_version": "VRCX is up to date.",
             "ready_for_update": "Ready for install, restart VRCX to apply.",
             "download": "Download",

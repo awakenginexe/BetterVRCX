@@ -822,7 +822,7 @@
                     "support": "获取帮助支持"
                 },
                 "vrcx_updater": {
-                    "header": "VRCX 更新设置",
+                    "header": "BetterVRCX 更新设置",
                     "change_build": "更改版本",
                     "update_action": "自动更新",
                     "auto_update_off": "关闭",
@@ -2435,7 +2435,7 @@
             "add_item": "新增项目"
         },
         "vrcx_updater": {
-            "header": "VRCX 更新",
+            "header": "BetterVRCX 更新",
             "latest_version": "VRCX 已是最新版本",
             "ready_for_update": "现已准备好安装更新，重启 VRCX 以开始安装",
             "branch_stable": "稳定版",

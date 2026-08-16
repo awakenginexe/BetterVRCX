@@ -303,7 +303,7 @@
                     "support": "Soporte"
                 },
                 "vrcx_updater": {
-                    "header": "Actualizador de VRCX",
+                    "header": "Actualizador de BetterVRCX",
                     "change_build": "Cambiar compilación",
                     "update_action": "Acción de actualización",
                     "auto_update_off": "Apagado",
@@ -1440,7 +1440,7 @@
             "add_item": "Añadir Elemento"
         },
         "vrcx_updater": {
-            "header": "Actualizador de VRCX",
+            "header": "Actualizador de BetterVRCX",
             "latest_version": "VRCX está actualizado.",
             "ready_for_update": "Listo para instalar, reinicia VRCX para aplicar.",
             "download": "Descargar",
