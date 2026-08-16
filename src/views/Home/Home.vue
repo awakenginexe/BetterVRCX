@@ -331,7 +331,7 @@
 </template>
 
 <script setup>
-    import { computed, onMounted, ref } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { useIntervalFn } from '@vueuse/core';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
