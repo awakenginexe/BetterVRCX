@@ -62,6 +62,7 @@ export const useAppearanceSettingsStore = defineStore(
         const appCjkFontPack = ref(APP_CJK_FONT_PACK_DEFAULT_KEY);
         const displayVRCPlusIconsAsAvatar = ref(false);
         const displayVRCProfileThemes = ref(false);
+        const displayVRCProfileEffects = ref(true);
         const displayVRCProfileBackgrounds = ref(true);
         const profileBackgroundOpacity = ref(0.5);
 
@@ -156,6 +157,7 @@ export const useAppearanceSettingsStore = defineStore(
                 appLanguageConfig,
                 displayVRCPlusIconsAsAvatarConfig,
                 displayVRCProfileThemesConfig,
+                displayVRCProfileEffectsConfig,
                 displayVRCProfileBackgroundsConfig,
                 profileBackgroundOpacityConfig,
                 hideNicknamesConfig,
@@ -198,6 +200,7 @@ export const useAppearanceSettingsStore = defineStore(
                 configRepository.getString('VRCX_appLanguage'),
                 configRepository.getBool('displayVRCPlusIconsAsAvatar', true),
                 configRepository.getBool('VRCX_displayVRCProfileThemes', true),
+                configRepository.getBool('VRCX_displayVRCProfileEffects', true),
                 configRepository.getBool(
                     'VRCX_displayVRCProfileBackgrounds',
                     true
@@ -323,6 +326,7 @@ export const useAppearanceSettingsStore = defineStore(
             displayVRCPlusIconsAsAvatar.value =
                 displayVRCPlusIconsAsAvatarConfig;
             displayVRCProfileThemes.value = displayVRCProfileThemesConfig;
+            displayVRCProfileEffects.value = displayVRCProfileEffectsConfig;
             displayVRCProfileBackgrounds.value =
                 displayVRCProfileBackgroundsConfig;
             profileBackgroundOpacity.value = profileBackgroundOpacityConfig;
@@ -646,6 +650,17 @@ export const useAppearanceSettingsStore = defineStore(
             configRepository.setBool(
                 'VRCX_displayVRCProfileThemes',
                 displayVRCProfileThemes.value
+            );
+        }
+
+        /**
+         *
+         */
+        function setDisplayVRCProfileEffects() {
+            displayVRCProfileEffects.value = !displayVRCProfileEffects.value;
+            configRepository.setBool(
+                'VRCX_displayVRCProfileEffects',
+                displayVRCProfileEffects.value
             );
         }
 
@@ -1271,6 +1286,7 @@ export const useAppearanceSettingsStore = defineStore(
             appCjkFontPack,
             displayVRCPlusIconsAsAvatar,
             displayVRCProfileThemes,
+            displayVRCProfileEffects,
             displayVRCProfileBackgrounds,
             profileBackgroundOpacity,
             hideNicknames,
@@ -1318,6 +1334,7 @@ export const useAppearanceSettingsStore = defineStore(
             setAppLanguage,
             setDisplayVRCPlusIconsAsAvatar,
             setDisplayVRCProfileThemes,
+            setDisplayVRCProfileEffects,
             setDisplayVRCProfileBackgrounds,
             setProfileBackgroundOpacity,
             setHideNicknames,

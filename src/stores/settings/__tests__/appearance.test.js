@@ -132,4 +132,25 @@ describe('appearance settings', () => {
             true
         );
     });
+
+    it('enables profile effects by default and persists the opt-out', async () => {
+        const store = useAppearanceSettingsStore();
+
+        await vi.waitFor(() =>
+            expect(store.displayVRCProfileEffects).toBe(true)
+        );
+
+        expect(configRepository.getBool).toHaveBeenCalledWith(
+            'VRCX_displayVRCProfileEffects',
+            true
+        );
+
+        store.setDisplayVRCProfileEffects();
+
+        expect(store.displayVRCProfileEffects).toBe(false);
+        expect(configRepository.setBool).toHaveBeenCalledWith(
+            'VRCX_displayVRCProfileEffects',
+            false
+        );
+    });
 });

@@ -22,6 +22,15 @@
                         saveOpenVROption();
                     " />
             </SettingsItem>
+
+            <SettingsItem
+                label="VRChat Profile Effects"
+                description="Show VRChat's animated profile banner effects and circular profile icon frames.">
+                <Switch
+                    :model-value="displayVRCProfileEffects"
+                    aria-label="VRChat Profile Effects"
+                    @update:model-value="setDisplayVRCProfileEffects" />
+            </SettingsItem>
         </SettingsGroup>
 
         <SettingsGroup title="VRChat Profile Backdrops">
@@ -86,12 +95,14 @@
     const {
         displayVRCPlusIconsAsAvatar,
         displayVRCProfileThemes,
+        displayVRCProfileEffects,
         displayVRCProfileBackgrounds,
         profileBackgroundOpacity
     } = storeToRefs(appearanceSettingsStore);
     const {
         setDisplayVRCPlusIconsAsAvatar,
         setDisplayVRCProfileThemes,
+        setDisplayVRCProfileEffects,
         setDisplayVRCProfileBackgrounds,
         setProfileBackgroundOpacity
     } = appearanceSettingsStore;

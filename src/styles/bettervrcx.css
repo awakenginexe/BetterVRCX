@@ -970,11 +970,16 @@ html:not(.dark) .bv-dialog-shell--has-backdrop .bg-\(--profile-card\) {
 
 .bv-entity-hero-avatar {
     position: relative;
-    border-radius: var(--bv-radius-lg);
+    border-radius: var(--bv-radius-full);
     overflow: hidden;
     border: 2px solid var(--bv-border-strong);
     box-shadow: var(--bv-shadow-md);
     background-color: var(--bv-bg-surface-base);
+}
+
+.bv-entity-hero-avatar-frame {
+    position: relative;
+    z-index: 30;
 }
 
 .bv-entity-badge {
