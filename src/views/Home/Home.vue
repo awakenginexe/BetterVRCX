@@ -56,7 +56,7 @@
             </header>
 
             <!-- Spacious open area to showcase custom screenshot wallpaper -->
-            <div class="flex-1 min-h-[140px] md:min-h-[220px] pointer-events-none" />
+            <div class="flex-1 min-h-[380px] md:min-h-[500px] lg:min-h-[55vh] pointer-events-none" />
 
             <!-- Bottom Dashboard Area (Split Events/News & Friends Locations) -->
             <div class="space-y-6 pb-6">
