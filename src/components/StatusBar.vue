@@ -14,10 +14,10 @@
                             -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
                         ">
                         <!-- BetterVRCX Brand Title -->
-                        <div class="flex items-center select-none no-drag pl-0.5 pr-2 shrink-0">
+                        <div v-if="!props.embedded" class="flex items-center select-none no-drag pl-0.5 pr-2 shrink-0">
                             <span class="bv-product-label">BetterVRCX</span>
                         </div>
-                        <div class="h-3.5 w-px bg-border/60 mx-0.5 shrink-0 select-none" />
+                        <div v-if="!props.embedded" class="h-3.5 w-px bg-border/60 mx-0.5 shrink-0 select-none" />
 
                         <TooltipWrapper
                             v-if="!isLinux && visibility.proxy"
@@ -53,7 +53,9 @@
                                     :class="
                                         gameStore.isSteamVRRunning ? 'bg-status-online' : 'bg-status-offline-alt'
                                     " />
-                                <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.steamvr') }}</span>
+                                <span class="text-foreground text-[11px] font-medium">{{
+                                    t('status_bar.steamvr')
+                                }}</span>
                             </div>
                         </TooltipWrapper>
 
@@ -70,10 +72,14 @@
                                         :class="
                                             gameStore.isGameRunning ? 'bg-status-online' : 'bg-status-offline-alt'
                                         " />
-                                    <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.game') }}</span>
-                                    <span v-if="gameStore.isGameRunning" class="text-[10px] text-foreground font-mono">{{
-                                        gameSessionText
+                                    <span class="text-foreground text-[11px] font-medium">{{
+                                        t('status_bar.game')
                                     }}</span>
+                                    <span
+                                        v-if="gameStore.isGameRunning"
+                                        class="text-[10px] text-foreground font-mono"
+                                        >{{ gameSessionText }}</span
+                                    >
                                 </div>
                             </HoverCardTrigger>
                             <HoverCardContent
@@ -130,7 +136,9 @@
                                         class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors"
                                         @click="vrcStatusStore.openStatusPage()">
                                         <span class="inline-block size-2 rounded-full shrink-0 bg-status-online" />
-                                        <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.servers') }}</span>
+                                        <span class="text-foreground text-[11px] font-medium">{{
+                                            t('status_bar.servers')
+                                        }}</span>
                                     </div>
                                 </TooltipWrapper>
                                 <div
@@ -140,7 +148,9 @@
                                     <span
                                         class="inline-block size-2 rounded-full shrink-0"
                                         :class="vrcStatusStore.isMajor ? 'bg-destructive' : 'bg-status-askme'" />
-                                    <span class="text-foreground text-[11px] font-medium">{{ t('status_bar.servers') }}</span>
+                                    <span class="text-foreground text-[11px] font-medium">{{
+                                        t('status_bar.servers')
+                                    }}</span>
                                 </div>
                             </HoverCardTrigger>
                             <HoverCardContent
@@ -164,7 +174,8 @@
                         </HoverCard>
 
                         <TooltipWrapper v-if="visibility.ws" :content="wsTooltip" side="bottom">
-                            <div class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap hover:bg-accent/40 transition-colors">
+                            <div
+                                class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap hover:bg-accent/40 transition-colors">
                                 <span
                                     class="inline-block size-2 rounded-full shrink-0"
                                     :class="wsState.connected ? 'bg-status-online' : 'bg-status-offline-alt'" />
@@ -260,7 +271,9 @@
                                 class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap cursor-pointer hover:bg-accent/60 transition-colors font-mono"
                                 @click="toggleZoomEdit">
                                 <template v-if="zoomEditing">
-                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{ t('status_bar.zoom') }}</span>
+                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{
+                                        t('status_bar.zoom')
+                                    }}</span>
                                     <NumberField
                                         v-model="zoomLevel"
                                         :step="1"
@@ -278,15 +291,20 @@
                                     </NumberField>
                                 </template>
                                 <template v-else>
-                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{ t('status_bar.zoom') }}</span>
+                                    <span class="text-[10px] text-muted-foreground mr-0.5">{{
+                                        t('status_bar.zoom')
+                                    }}</span>
                                     <span class="text-[11px] text-foreground">{{ zoomLevel }}%</span>
                                 </template>
                             </div>
                         </TooltipWrapper>
 
                         <TooltipWrapper v-if="visibility.uptime" :content="t('status_bar.app_uptime')" side="bottom">
-                            <div class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap font-mono">
-                                <span class="text-[10px] text-muted-foreground">{{ t('status_bar.app_uptime_short') }}</span>
+                            <div
+                                class="no-drag flex items-center gap-1 px-1.5 h-[22px] rounded-md whitespace-nowrap font-mono">
+                                <span class="text-[10px] text-muted-foreground">{{
+                                    t('status_bar.app_uptime_short')
+                                }}</span>
                                 <span class="text-[11px] text-foreground">{{ appUptimeText }}</span>
                             </div>
                         </TooltipWrapper>
@@ -436,6 +454,13 @@
 
     dayjs.extend(utc);
     dayjs.extend(timezone);
+
+    const props = defineProps({
+        embedded: {
+            type: Boolean,
+            default: false
+        }
+    });
 
     const { t } = useI18n();
 

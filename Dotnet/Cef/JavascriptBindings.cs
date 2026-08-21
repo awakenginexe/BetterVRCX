@@ -11,6 +11,7 @@ namespace VRCX
             repository.Register("WebApi", WebApi.Instance);
             repository.Register("VRCXStorage", VRCXStorage.Instance);
             repository.Register("SQLite", SQLite.Instance);
+            repository.Register("DatabaseBackupApi", new DatabaseBackupApi());
             repository.Register("LogWatcher", LogWatcher.Instance);
             repository.Register("Discord", Discord.Instance);
             repository.Register("AssetBundleManager", AssetBundleManager.Instance);

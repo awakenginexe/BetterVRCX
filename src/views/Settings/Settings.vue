@@ -57,6 +57,7 @@
     import VrTab from './components/Tabs/VrTab.vue';
     import HomeBackgroundSettings from '../../addons/homeBackground/HomeBackgroundSettings.vue';
     import ProfileBackgroundSettings from '../../addons/profileBackground/ProfileBackgroundSettings.vue';
+    import GoogleDriveBackupSettings from '../../addons/googleDriveBackup/GoogleDriveBackupSettings.vue';
 
     const { t } = useI18n();
     const activeTab = ref('system');
@@ -110,6 +111,12 @@
             label: t('view.settings.category.profile_background'),
             icon: 'ri-image-2-line',
             component: ProfileBackgroundSettings
+        },
+        {
+            key: 'google-drive-backup',
+            label: t('view.settings.category.google_drive_backup'),
+            icon: 'ri-google-fill',
+            component: GoogleDriveBackupSettings
         }
     ]);
     const settingsSections = computed(() => {
@@ -132,7 +139,7 @@
             {
                 key: 'addons',
                 label: t('view.settings.category.addons'),
-                tabKeys: ['home-background', 'profile-background']
+                tabKeys: ['home-background', 'profile-background', 'google-drive-backup']
             }
         ];
 

@@ -1,12 +1,21 @@
 <template>
     <TooltipProvider>
+        <AppTitleBar
+            v-if="isCefWindows"
+            :app-version="store.vrcxUpdater.appVersion"
+            :latest-app-version="store.vrcxUpdater.latestAppVersion"
+            :checking-for-update="store.vrcxUpdater.checkingForVRCXUpdate">
+            <template #status>
+                <StatusBar :embedded="true" />
+            </template>
+        </AppTitleBar>
         <MacOSTitleBar></MacOSTitleBar>
 
         <div
             id="x-app"
             class="bv-app-shell flex flex-col w-screen h-screen overflow-hidden cursor-default [&>.x-container]:pt-[15px]"
-            :class="{ 'pt-7': isMacOS }">
-            <header v-if="!isMacOS" class="bv-desktop-taskbar" data-shell-region="taskbar">
+            :class="{ 'pt-7': isMacOS, 'pt-8': isCefWindows }">
+            <header v-if="!isMacOS && !isCefWindows" class="bv-desktop-taskbar" data-shell-region="taskbar">
                 <StatusBar />
             </header>
 
@@ -41,6 +50,7 @@
     import { initNoty } from './plugins/noty';
 
     import AlertDialogModal from './components/ui/alert-dialog/AlertDialogModal.vue';
+    import AppTitleBar from './components/AppTitleBar.vue';
     import DatabaseUpgradeDialog from './components/dialogs/DatabaseUpgradeDialog.vue';
     import MacOSTitleBar from './components/MacOSTitleBar.vue';
     import OtpDialogModal from './components/ui/dialog/OtpDialogModal.vue';
@@ -53,6 +63,9 @@
     console.log(`isLinux: ${LINUX}`);
 
     const isMacOS = computed(() => navigator.platform.includes('Mac'));
+    const isCefWindows = computed(() => {
+        return WINDOWS && typeof window !== 'undefined' && !window.electron;
+    });
 
     const theme = computed(() => {
         return store.appearanceSettings.isDarkMode ? 'dark' : 'light';

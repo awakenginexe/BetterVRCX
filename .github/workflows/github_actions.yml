@@ -33,7 +33,7 @@ jobs:
           else
               TAG="${RAW_VERSION%% *}"
               if [[ -z "${TAG}" || "${TAG}" != v* ]]; then
-                  TAG="v3.1.1"
+                  TAG="v3.2.0"
               fi
           fi
           CLEAN_TAG="${TAG#v}"
@@ -82,6 +82,15 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Build Cef .NET Application
         run: dotnet build Dotnet/VRCX-Cef.csproj -p:Configuration=Release -p:WarningLevel=0 -p:Platform=x64 -p:PlatformTarget=x64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m -a x64 --self-contained
+      - name: Configure Google Drive OAuth client
+        env:
+          BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
+            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+            exit 1
+          fi
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Cef/google-drive-client-id.txt
       - name: Check if we want to sign
         id: check_sign
         run: |
@@ -191,6 +200,15 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Build Electron x64 .NET Application
         run: dotnet build 'Dotnet/VRCX-Electron.csproj' -p:Configuration=Release -p:WarningLevel=0 -p:Platform=x64 -p:PlatformTarget=x64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m -a x64
+      - name: Configure Google Drive OAuth client
+        env:
+          BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
+            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+            exit 1
+          fi
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
       - name: Upload Electron x64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -203,6 +221,15 @@ jobs:
 
       - name: Build Electron arm64 .NET Application
         run: dotnet build 'Dotnet/VRCX-Electron-arm64.csproj' -p:Configuration=Release -p:WarningLevel=0 -p:Platform=arm64 -p:PlatformTarget=arm64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m -a arm64
+      - name: Configure Google Drive OAuth client
+        env:
+          BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
+            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+            exit 1
+          fi
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
       - name: Upload Electron arm64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -230,6 +257,15 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Build Electron x64 .NET Application
         run: dotnet build 'Dotnet/VRCX-Electron.csproj' -p:Configuration=Release -p:WarningLevel=0 -p:Platform=x64 -p:PlatformTarget=x64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m -a x64
+      - name: Configure Google Drive OAuth client
+        env:
+          BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
+            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+            exit 1
+          fi
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
       - name: Upload Electron x64 .NET artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -242,6 +278,15 @@ jobs:
 
       - name: Build Electron arm64 .NET Application
         run: dotnet build 'Dotnet/VRCX-Electron-arm64.csproj' -p:Configuration=Release -p:WarningLevel=0 -p:Platform=arm64 -p:PlatformTarget=arm64 -p:RestorePackagesConfig=true -t:"Restore;Clean;Build" -m -a arm64
+      - name: Configure Google Drive OAuth client
+        env:
+          BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
+            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+            exit 1
+          fi
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
       - name: Upload Electron arm64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:

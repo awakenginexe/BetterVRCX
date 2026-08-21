@@ -97,6 +97,7 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
     <PackageReference Include="SourceGear.sqlite3" Version="3.53.4" />
     <PackageReference Include="System.Data.SQLite" Version="2.0.3" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
     <PackageReference Include="System.Management" Version="10.0.10" />
     <PackageReference Include="Websocket.Client" Version="5.5.0" />
   </ItemGroup>
@@ -104,6 +105,8 @@
   <ItemGroup>
     <Content Remove="obj\**" />
     <Compile Remove="obj\**" />
+    <Content Remove="obj1\**" />
+    <Compile Remove="obj1\**" />
     <Content Remove="Cef\**" />
     <Compile Remove="Cef\**" />
     <Content Remove="AppApi\Cef\**" />
@@ -123,5 +126,11 @@
     <Reference Include="librsync.net">
       <HintPath>libs\librsync.net.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DBMerger\Config.cs" />
+    <Compile Include="DBMerger\Merger.cs" />
+    <Compile Include="DBMerger\SqliteExtensions.cs" />
   </ItemGroup>
 </Project>

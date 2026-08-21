@@ -13,7 +13,7 @@ try {
     if (tagMatch) {
         version = tagMatch[0];
     } else {
-        version = rawVersion.split(' ')[0] || 'v3.1.1';
+        version = rawVersion.split(' ')[0] || 'v3.2.0';
     }
 } catch (err) {
     console.error('Error reading Version file:', err);

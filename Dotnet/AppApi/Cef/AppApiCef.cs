@@ -137,6 +137,31 @@ namespace VRCX
             MainForm.Instance.Invoke(new Action(() => { MainForm.Instance.Focus_Window(); }));
         }
 
+        public void BeginWindowDrag()
+        {
+            MainForm.Instance?.BeginWindowDrag();
+        }
+
+        public void MinimizeWindow()
+        {
+            MainForm.Instance?.MinimizeWindow();
+        }
+
+        public void ToggleMaximizeWindow()
+        {
+            MainForm.Instance?.ToggleMaximizeWindow();
+        }
+
+        public bool IsWindowMaximized()
+        {
+            return MainForm.Instance?.IsWindowMaximized() ?? false;
+        }
+
+        public void CloseWindow()
+        {
+            MainForm.Instance?.CloseWindow();
+        }
+
         public override void ChangeTheme(int value)
         {
             WinformThemer.SetGlobalTheme(value);

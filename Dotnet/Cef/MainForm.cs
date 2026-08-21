@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using CefSharp;
 using CefSharp.WinForms;
@@ -24,6 +25,30 @@ namespace VRCX
         private int LastSizeWidth;
         private int LastSizeHeight;
         private FormWindowState LastWindowStateToRestore = FormWindowState.Normal;
+
+        private const int WM_NCHITTEST = 0x0084;
+        private const int HTCLIENT = 1;
+        private const int HTCAPTION = 2;
+        private const int HTLEFT = 10;
+        private const int HTRIGHT = 11;
+        private const int HTTOP = 12;
+        private const int HTTOPLEFT = 13;
+        private const int HTTOPRIGHT = 14;
+        private const int HTBOTTOM = 15;
+        private const int HTBOTTOMLEFT = 16;
+        private const int HTBOTTOMRIGHT = 17;
+        private const int WM_NCLBUTTONDOWN = 0x00A1;
+        private const int RESIZE_BORDER = 8;
+        private const int WS_THICKFRAME = 0x00040000;
+        private const int WS_MINIMIZEBOX = 0x00020000;
+        private const int WS_MAXIMIZEBOX = 0x00010000;
+        private const int WS_SYSMENU = 0x00080000;
+
+        [DllImport("user32.dll")]
+        private static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr handle, int message, IntPtr wParam, IntPtr lParam);
 
         public MainForm()
         {
@@ -88,6 +113,105 @@ namespace VRCX
 
             JavascriptBindings.ApplyAppJavascriptBindings(Browser.JavascriptObjectRepository);
             Controls.Add(Browser);
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                var createParams = base.CreateParams;
+                createParams.Style |= WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+                return createParams;
+            }
+        }
+
+        protected override void WndProc(ref Message message)
+        {
+            if (message.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
+            {
+                var point = PointToClient(Cursor.Position);
+                var resizeHit = GetResizeHitTest(point);
+                if (resizeHit != HTCLIENT)
+                {
+                    message.Result = (IntPtr)resizeHit;
+                    return;
+                }
+            }
+
+            base.WndProc(ref message);
+        }
+
+        private int GetResizeHitTest(Point point)
+        {
+            var left = point.X <= RESIZE_BORDER;
+            var right = point.X >= ClientSize.Width - RESIZE_BORDER;
+            var top = point.Y <= RESIZE_BORDER;
+            var bottom = point.Y >= ClientSize.Height - RESIZE_BORDER;
+
+            if (top && left) return HTTOPLEFT;
+            if (top && right) return HTTOPRIGHT;
+            if (bottom && left) return HTBOTTOMLEFT;
+            if (bottom && right) return HTBOTTOMRIGHT;
+            if (left) return HTLEFT;
+            if (right) return HTRIGHT;
+            if (top) return HTTOP;
+            if (bottom) return HTBOTTOM;
+            return HTCLIENT;
+        }
+
+        public void BeginWindowDrag()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(BeginWindowDrag));
+                return;
+            }
+
+            ReleaseCapture();
+            SendMessage(Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
+        }
+
+        public void MinimizeWindow()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(MinimizeWindow));
+                return;
+            }
+
+            WindowState = FormWindowState.Minimized;
+        }
+
+        public void ToggleMaximizeWindow()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(ToggleMaximizeWindow));
+                return;
+            }
+
+            WindowState = WindowState == FormWindowState.Maximized
+                ? FormWindowState.Normal
+                : FormWindowState.Maximized;
+        }
+
+        public bool IsWindowMaximized()
+        {
+            if (InvokeRequired)
+                return (bool)Invoke(new Func<bool>(IsWindowMaximized));
+
+            return WindowState == FormWindowState.Maximized;
+        }
+
+        public void CloseWindow()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(CloseWindow));
+                return;
+            }
+
+            Close();
         }
 
         private void MainForm_Load(object sender, System.EventArgs e)

@@ -103,6 +103,7 @@
     <PackageReference Include="SourceGear.sqlite3" Version="3.53.4" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.10" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119" /> <!--DO NOT UPGRADE-->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
     <PackageReference Include="System.Management" Version="10.0.10" />
     <PackageReference Include="Websocket.Client" Version="5.5.0" />
@@ -111,6 +112,8 @@
   <ItemGroup>
     <Content Remove="obj\**" />
     <Compile Remove="obj\**" />
+    <Content Remove="obj1\**" />
+    <Compile Remove="obj1\**" />
     <Content Remove="Cef\**" />
     <Compile Remove="Cef\**" />
     <Content Remove="AppApi\Cef\**" />
@@ -121,6 +124,12 @@
     <Compile Remove="OverlayWebSocket\**" />
     <Content Remove="DBMerger\**" />
     <Compile Remove="DBMerger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DBMerger\Config.cs" />
+    <Compile Include="DBMerger\Merger.cs" />
+    <Compile Include="DBMerger\SqliteExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

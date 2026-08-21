@@ -88,15 +88,14 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
 
         let checkedForUpdatesDuringAnnouncement = false;
         if (await shouldAnnounceCurrentVersion()) {
+            // Record the release before loading remote changelog data. If the
+            // request fails, the same announcement must not block every next
+            // application startup.
+            await markCurrentVersionAsSeen();
             const shown = await showWhatsNewDialog();
-            if (shown) {
-                await markCurrentVersionAsSeen();
-            } else if (isRecognizedStableReleaseVersion()) {
+            if (!shown && isRecognizedStableReleaseVersion()) {
                 const result = await showChangeLogDialog({ prefetch: true });
                 checkedForUpdatesDuringAnnouncement = result.checkedForUpdates;
-                if (result.shown) {
-                    await markCurrentVersionAsSeen();
-                }
             }
         } else {
             await syncCurrentVersionState();
@@ -112,6 +111,18 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
     const currentVersion = computed(() =>
         appVersion.value.replace(' (Linux)', '')
     );
+
+    /**
+     * Use the release date as the announcement identity when it is present.
+     * Build labels can vary between packages of the same release, but the
+     * user should only get one startup announcement for that release.
+     *
+     * @param {string} version
+     * @returns {string}
+     */
+    function getVersionAnnouncementKey(version) {
+        return normalizeReleaseVersion(version) || String(version || '').trim();
+    }
 
     /**
      * @param {string} value
@@ -154,13 +165,16 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             'VRCX_lastVRCXVersion',
             ''
         );
-        return lastVersion !== currentVersion.value;
+        return (
+            getVersionAnnouncementKey(lastVersion) !==
+            getVersionAnnouncementKey(currentVersion.value)
+        );
     }
 
     async function markCurrentVersionAsSeen() {
         await configRepository.setString(
             'VRCX_lastVRCXVersion',
-            currentVersion.value
+            getVersionAnnouncementKey(currentVersion.value)
         );
     }
 
@@ -180,7 +194,11 @@ export const useVRCXUpdaterStore = defineStore('VRCXUpdater', () => {
             'VRCX_lastVRCXVersion',
             ''
         );
-        return Boolean(lastVersion) && lastVersion !== currentVersion.value;
+        const currentVersionKey = getVersionAnnouncementKey(
+            currentVersion.value
+        );
+        const lastVersionKey = getVersionAnnouncementKey(lastVersion);
+        return Boolean(lastVersionKey) && lastVersionKey !== currentVersionKey;
     }
 
     function isRecognizedStableReleaseVersion() {

@@ -74,6 +74,16 @@ vi.mock(
         }
     })
 );
+vi.mock(
+    '../../../addons/googleDriveBackup/GoogleDriveBackupSettings.vue',
+    () => ({
+        default: {
+            name: 'GoogleDriveBackupSettings',
+            template:
+                '<div data-settings-body="google-drive-backup">google-drive-backup</div>'
+        }
+    })
+);
 
 import Settings from '../Settings.vue';
 import { i18n } from '@/plugins/i18n';
@@ -88,7 +98,8 @@ const tabKeys = [
     'integrations',
     'advanced',
     'home-background',
-    'profile-background'
+    'profile-background',
+    'google-drive-backup'
 ];
 
 describe('Settings.vue', () => {
@@ -102,8 +113,8 @@ describe('Settings.vue', () => {
                 .findAll('[data-settings-tab]')
                 .map((node) => node.attributes('data-settings-tab'))
         ).toEqual(tabKeys);
-        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(10);
-        expect(wrapper.findAll('[data-settings-panel]')).toHaveLength(10);
+        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(11);
+        expect(wrapper.findAll('[data-settings-panel]')).toHaveLength(11);
 
         await wrapper.get('[data-settings-tab="media"]').trigger('click');
 
@@ -118,7 +129,7 @@ describe('Settings.vue', () => {
         expect(wrapper.get('[data-settings-panel="system"]').isVisible()).toBe(
             false
         );
-        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(10);
+        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(11);
     });
 
     test('can switch to profile backdrop addon tab', async () => {
@@ -137,6 +148,26 @@ describe('Settings.vue', () => {
         expect(
             wrapper
                 .get('[data-settings-panel="profile-background"]')
+                .isVisible()
+        ).toBe(true);
+    });
+
+    test('can switch to the Google Drive backup addon tab', async () => {
+        const wrapper = mount(Settings, {
+            global: { plugins: [i18n] }
+        });
+        await wrapper
+            .get('[data-settings-tab="google-drive-backup"]')
+            .trigger('click');
+
+        expect(
+            wrapper
+                .get('[data-settings-tab="google-drive-backup"]')
+                .attributes('aria-current')
+        ).toBe('page');
+        expect(
+            wrapper
+                .get('[data-settings-panel="google-drive-backup"]')
                 .isVisible()
         ).toBe(true);
     });

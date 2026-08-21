@@ -138,3 +138,67 @@ describe('useVRCXUpdaterStore.setAutoUpdateVRCX', () => {
         );
     });
 });
+
+describe('useVRCXUpdaterStore startup changelog announcement', () => {
+    let storedVersion;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        storedVersion = 'BetterVRCX v3.2.0 B 2026.08.18';
+
+        mocks.configRepository.getString.mockImplementation(
+            (key, defaultValue) => {
+                if (key === 'VRCX_autoUpdateVRCX') {
+                    return Promise.resolve('Off');
+                }
+                if (key === 'VRCX_id') {
+                    return Promise.resolve('test-vrcx-id');
+                }
+                if (key === 'VRCX_lastVRCXVersion') {
+                    return Promise.resolve(storedVersion);
+                }
+                return Promise.resolve(defaultValue ?? '');
+            }
+        );
+        mocks.configRepository.setString.mockImplementation((key, value) => {
+            if (key === 'VRCX_lastVRCXVersion') {
+                storedVersion = String(value);
+            }
+            return Promise.resolve();
+        });
+
+        globalThis.AppApi = {
+            GetVersion: vi
+                .fn()
+                .mockResolvedValue('BetterVRCX v3.2.0 B 2026.08.19'),
+            CheckForUpdateExe: vi.fn().mockResolvedValue(false),
+            DownloadUpdate: vi.fn().mockResolvedValue(undefined),
+            CheckUpdateProgress: vi.fn().mockResolvedValue(100)
+        };
+
+        mocks.webApiService.execute.mockRejectedValue(
+            new Error('temporary changelog request failure')
+        );
+    });
+
+    async function initializeUpdater() {
+        setActivePinia(createPinia());
+        const store = useVRCXUpdaterStore();
+        for (let index = 0; index < 5; index += 1) {
+            await flushPromises();
+        }
+        return store;
+    }
+
+    test('marks the release as seen before a failed changelog request can repeat on the next launch', async () => {
+        await initializeUpdater();
+
+        expect(storedVersion).toBe('2026.08.19');
+
+        mocks.webApiService.execute.mockClear();
+        const secondStore = await initializeUpdater();
+
+        expect(secondStore.changeLogDialog.visible).toBe(false);
+        expect(mocks.webApiService.execute).not.toHaveBeenCalled();
+    });
+});

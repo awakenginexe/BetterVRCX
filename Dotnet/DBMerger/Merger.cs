@@ -47,7 +47,17 @@ public partial class Merger(SQLiteConnection dbConn, string oldDBName, string ne
         }
 
         logger.Info("Optimizing database size...");
-        SqliteExtensions.ExecuteNonQuery(dbConn, "VACUUM new_db;");
+        try
+        {
+            SqliteExtensions.ExecuteNonQuery(dbConn, $"VACUUM {newDBName};");
+        }
+        catch (SQLiteException ex)
+        {
+            // VACUUM runs after the merge transaction has committed. It is
+            // only an optimization, so it must not make a successful merge
+            // appear failed after data is already durable.
+            logger.Warn(ex, "Could not optimize the merged database; keeping the committed data.");
+        }
         logger.Info("Merge completed without any major issues!");
     }
 
@@ -335,15 +345,43 @@ public partial class Merger(SQLiteConnection dbConn, string oldDBName, string ne
             unMergedTables.RemoveAt(i);
             i--;
 
-            // Skip friend log current for obvious reasons
-            // Skip notes and mutual friends since they aren't time based
-            // Skip activity tables, they're only used for cache data
-            if (table.EndsWith("_friend_log_current") || table.EndsWith("_notes") ||
-                table.EndsWith("_mutual_graph_friends") || table.EndsWith("_mutual_graph_links") || table.EndsWith("_mutual_graph_meta") ||
-                table.Contains("_activity_"))
+            if (table.EndsWith("_notes"))
             {
+                if (config.PreserveOverlappingData)
+                    MergeNotes(table);
                 continue;
             }
+
+            // The current friend table is a materialized view with one row per
+            // friend rather than a history table. Keep the local row when it
+            // already exists, and import friends that are only in the backup.
+            // Friend changes themselves remain available in friend_log_history.
+            if (table.EndsWith("_friend_log_current"))
+            {
+                unMergedTables.Add(table);
+                MergeTable(
+                    candidate => candidate == table,
+                    [0],
+                    (old, existing) => existing ?? old
+                );
+                continue;
+            }
+
+            // Cloud restores must never ask for Console.ReadLine or discard a
+            // side of an overlapping history range. Insert source rows whose
+            // non-primary-key values are not already present in the target.
+            // The normal DBMerger CLI retains its existing cutoff prompt.
+            if (config.PreserveOverlappingData)
+            {
+                MergeRowsPreservingBoth(table);
+                continue;
+            }
+
+            // Skip notes, mutual friends, and activity caches in the legacy
+            // interactive merger since they are not time based.
+            if (table.EndsWith("_mutual_graph_friends") || table.EndsWith("_mutual_graph_links") || table.EndsWith("_mutual_graph_meta") ||
+                table.Contains("_activity_"))
+                continue;
 
             logger.Debug($"Merging table `{table}` into new database");
 
@@ -397,6 +435,102 @@ public partial class Merger(SQLiteConnection dbConn, string oldDBName, string ne
             MergeUsersOverlap(overlappingTables, oldestInNewTables.Value, newestInOldTables.Value);
         }
     }
+
+    private void MergeNotes(string table)
+    {
+        unMergedTables.Add(table);
+        MergeTable(
+            candidate => candidate == table,
+            [0],
+            (old, existing) =>
+            {
+                if (existing == null)
+                    return old;
+
+                var merged = (object[])existing.Clone();
+                if (old.Length > 1 && existing.Length > 1 &&
+                    old.Length > 3 && existing.Length > 3 &&
+                    DateTime.TryParse(Convert.ToString(old[3]), out var oldDate) &&
+                    DateTime.TryParse(Convert.ToString(existing[3]), out var existingDate) &&
+                    oldDate > existingDate)
+                {
+                    merged[1] = old[1];
+                    merged[3] = old[3];
+                }
+
+                var oldNote = Convert.ToString(old[2]) ?? string.Empty;
+                var existingNote = Convert.ToString(existing[2]) ?? string.Empty;
+                if (!string.Equals(oldNote, existingNote, StringComparison.Ordinal) &&
+                    !existingNote.EndsWith(oldNote, StringComparison.Ordinal))
+                {
+                    merged[2] = string.IsNullOrEmpty(oldNote)
+                        ? existingNote
+                        : string.IsNullOrEmpty(existingNote)
+                            ? oldNote
+                            : oldNote + "\n" + existingNote;
+                }
+
+                return merged;
+            }
+        );
+    }
+
+    private void MergeRowsPreservingBoth(string table)
+    {
+        var sourceColumns = GetTableColumnNames(dbConn, oldDBName, table);
+        var destinationColumns = GetTableColumnNames(dbConn, newDBName, table);
+        var generatedPrimaryKeyColumns = GetGeneratedPrimaryKeyColumnNames(dbConn, newDBName, table);
+        var insertColumns = sourceColumns
+            .Where(destinationColumns.Contains)
+            .Where(column => !generatedPrimaryKeyColumns.Contains(column))
+            .ToList();
+        if (insertColumns.Count == 0)
+        {
+            // Tables whose primary key is a natural text key (for example a
+            // mutual-friend id) must retain that key to remain meaningful.
+            insertColumns = sourceColumns.Where(destinationColumns.Contains).ToList();
+        }
+        if (insertColumns.Count == 0)
+            return;
+
+        var primaryKeyColumns = GetPrimaryKeyColumnNames(dbConn, newDBName, table);
+        var matchColumns = insertColumns.Where(column => !primaryKeyColumns.Contains(column)).ToList();
+        if (matchColumns.Count == 0)
+            matchColumns = insertColumns;
+
+        var insertClause = string.Join(", ", insertColumns.Select(QuoteIdentifier));
+        var selectClause = string.Join(", ", insertColumns.Select(column => $"source.{QuoteIdentifier(column)}"));
+        var duplicateClause = string.Join(
+            " AND ",
+            matchColumns.Select(column =>
+                $"target.{QuoteIdentifier(column)} IS source.{QuoteIdentifier(column)}"));
+
+        var query = $"INSERT INTO {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} ({insertClause}) " +
+                    $"SELECT {selectClause} FROM {QuoteIdentifier(oldDBName)}.{QuoteIdentifier(table)} source " +
+                    $"WHERE NOT EXISTS (SELECT 1 FROM {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} target WHERE {duplicateClause});";
+        try
+        {
+            SqliteExtensions.ExecuteNonQuery(dbConn, query);
+        }
+        catch (SQLiteException ex)
+        {
+            // A unique constraint can represent a logical conflict that has
+            // no safe automatic winner (for example a cache row with the same
+            // key but different payload). Abort the transaction instead of
+            // silently deleting either side.
+            logger.Error(ex, $"Could not preserve both sides of table `{table}`.");
+            throw;
+        }
+    }
+
+    private static List<string> GetPrimaryKeyColumnNames(SQLiteConnection conn, string db, string table)
+        => SqliteExtensions.ReadStrings(conn, $"SELECT name FROM pragma_table_info(@p0, @p1) WHERE pk > 0 ORDER BY pk;", table, db);
+
+    private static List<string> GetGeneratedPrimaryKeyColumnNames(SQLiteConnection conn, string db, string table)
+        => SqliteExtensions.ReadStrings(conn, $"SELECT name FROM pragma_table_info(@p0, @p1) WHERE pk > 0 AND upper(type) = 'INTEGER' ORDER BY pk;", table, db);
+
+    private static string QuoteIdentifier(string identifier)
+        => "\"" + identifier.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 
     private void MergeUsersOverlap(List<string> tables, DateTime oldestInNew, DateTime newestInOld)
     {

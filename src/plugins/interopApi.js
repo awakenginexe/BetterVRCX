@@ -19,6 +19,7 @@ export async function initInteropApi(isVrOverlay = false) {
                 'WebApi',
                 'VRCXStorage',
                 'SQLite',
+                'DatabaseBackupApi',
                 'LogWatcher',
                 'Discord',
                 'AssetBundleManager'
@@ -28,6 +29,7 @@ export async function initInteropApi(isVrOverlay = false) {
             window.WebApi = InteropApi.WebApi;
             window.VRCXStorage = InteropApi.VRCXStorage;
             window.SQLite = InteropApi.SQLite;
+            window.DatabaseBackupApi = InteropApi.DatabaseBackupApi;
             window.LogWatcher = InteropApi.LogWatcher;
             window.Discord = InteropApi.Discord;
             window.AssetBundleManager = InteropApi.AssetBundleManager;

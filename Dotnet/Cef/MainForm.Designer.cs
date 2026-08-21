@@ -104,6 +104,7 @@ namespace VRCX
             this.AutoScaleDimensions = new SizeF(96F, 96F);
             this.AutoScaleMode = AutoScaleMode.Dpi;
             this.ClientSize = new Size(842, 561);
+            this.FormBorderStyle = FormBorderStyle.None;
             this.MinimumSize = new Size(320, 240);
             this.Name = "MainForm";
             this.StartPosition = FormStartPosition.CenterScreen;

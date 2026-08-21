@@ -17,6 +17,7 @@ declare global {
         WebApi: WebApi;
         VRCXStorage: VRCXStorage;
         SQLite: SQLite;
+        DatabaseBackupApi: DatabaseBackupApi;
         LogWatcher: LogWatcher;
         Discord: Discord;
         AssetBundleManager: AssetBundleManager;
@@ -132,6 +133,15 @@ declare global {
         ExecuteNonQuery: (sql: string, args: string) => Promise<Number>;
     };
 
+    const DatabaseBackupApi: {
+        GetStatus(): Promise<string>;
+        ConnectGoogleDrive(): Promise<string>;
+        DisconnectGoogleDrive(): Promise<string>;
+        BackupNow(): Promise<string>;
+        ListBackups(): Promise<string>;
+        RestoreBackup(fileId: string, mode: string): Promise<string>;
+    };
+
     const LogWatcher: {
         Get(): Promise<Array<[string, string, string, ...any[]]>>;
         SetDateTill(date: string): Promise<void>;
@@ -183,6 +193,11 @@ declare global {
         CheckForUpdateExe(): Promise<boolean>;
         ExecuteVrOverlayFunction(key: string, json: string): Promise<void>;
         FocusWindow(): Promise<void>;
+        BeginWindowDrag(): Promise<void>;
+        MinimizeWindow(): Promise<void>;
+        ToggleMaximizeWindow(): Promise<void>;
+        IsWindowMaximized(): Promise<boolean>;
+        CloseWindow(): Promise<void>;
         ChangeTheme(value: number): Promise<void>;
         DoFunny(): Promise<void>;
         GetClipboard(): Promise<string>;

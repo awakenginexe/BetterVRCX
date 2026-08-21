@@ -24,7 +24,6 @@ namespace VRCX
         public static void ArgsCheck(string[] args)
         {
             Args = args;
-            Debug.Assert(Program.LaunchDebug = true);
 
             LaunchArguments = ParseArgs(args);
 
@@ -120,7 +119,9 @@ namespace VRCX
 
         private static bool IsDuplicateProcessRunning(VrcxLaunchArguments launchArguments)
         {
-            var processes = Process.GetProcessesByName("VRCX");
+            var processes = Process.GetProcessesByName("VRCX")
+                .Concat(Process.GetProcessesByName("BetterVRCX"))
+                .ToArray();
             var isDuplicateProcessRunning = false;
             foreach (var process in processes)
             {

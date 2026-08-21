@@ -17,6 +17,7 @@ import { useGalleryStore } from './gallery';
 import { useGameLogStore } from './gameLog';
 import { useGameStore } from './game';
 import { useGeneralSettingsStore } from './settings/general';
+import { useGoogleDriveBackupStore } from './googleDriveBackup';
 import { useQuickSearchStore } from './quickSearch';
 import { useGroupStore } from './group';
 import { useInstanceStore } from './instance';
@@ -157,7 +158,8 @@ export function createGlobalStores() {
         charts: useChartsStore(),
         dashboard: useDashboardStore(),
         modal: useModalStore(),
-        quickSearch: useQuickSearchStore()
+        quickSearch: useQuickSearchStore(),
+        googleDriveBackup: useGoogleDriveBackupStore()
     };
 }
 
@@ -200,5 +202,6 @@ export {
     useUpdateLoopStore,
     useVrcStatusStore,
     useModalStore,
-    useQuickSearchStore
+    useQuickSearchStore,
+    useGoogleDriveBackupStore
 };

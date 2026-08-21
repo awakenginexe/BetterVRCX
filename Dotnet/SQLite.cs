@@ -12,7 +12,8 @@ namespace VRCX
     {
         public static SQLite Instance;
         private readonly ReaderWriterLockSlim m_ConnectionLock;
-        private SQLiteConnection m_Connection;
+        private SQLiteConnection? m_Connection;
+        private string? m_DataSource;
 
         static SQLite()
         {
@@ -34,15 +35,73 @@ namespace VRCX
             if (!string.IsNullOrEmpty(jsonDataSource))
                 dataSource = jsonDataSource;
 
-            m_Connection = new SQLiteConnection($"Data Source=\"{dataSource}\";Version=3;PRAGMA locking_mode=NORMAL;PRAGMA busy_timeout=5000;PRAGMA journal_mode=WAL;PRAGMA optimize=0x10002;", true);
-
-            m_Connection.Open();
+            m_DataSource = dataSource;
+            OpenConnection();
         }
 
         public void Exit()
         {
-            m_Connection.Close();
-            m_Connection.Dispose();
+            m_ConnectionLock.EnterWriteLock();
+            try
+            {
+                CloseConnection();
+            }
+            finally
+            {
+                m_ConnectionLock.ExitWriteLock();
+            }
+        }
+
+        public string GetDatabaseLocation()
+        {
+            m_ConnectionLock.EnterReadLock();
+            try
+            {
+                return m_DataSource ?? Program.ConfigLocation;
+            }
+            finally
+            {
+                m_ConnectionLock.ExitReadLock();
+            }
+        }
+
+        internal TResult WithWriteLock<TResult>(Func<SQLiteConnection, TResult> operation)
+        {
+            ArgumentNullException.ThrowIfNull(operation);
+            m_ConnectionLock.EnterWriteLock();
+            try
+            {
+                return operation(GetConnection());
+            }
+            finally
+            {
+                m_ConnectionLock.ExitWriteLock();
+            }
+        }
+
+        internal TResult WithDatabaseClosed<TResult>(Func<string, TResult> operation)
+        {
+            ArgumentNullException.ThrowIfNull(operation);
+            m_ConnectionLock.EnterWriteLock();
+            try
+            {
+                var dataSource = m_DataSource ?? Program.ConfigLocation;
+                m_DataSource = dataSource;
+                CloseConnection();
+                return operation(dataSource);
+            }
+            finally
+            {
+                try
+                {
+                    if (m_Connection == null && !string.IsNullOrEmpty(m_DataSource))
+                        OpenConnection();
+                }
+                finally
+                {
+                    m_ConnectionLock.ExitWriteLock();
+                }
+            }
         }
 
         // for Electron
@@ -57,7 +116,7 @@ namespace VRCX
             m_ConnectionLock.EnterReadLock();
             try
             {
-                using var command = new SQLiteCommand(sql, m_Connection);
+                using var command = new SQLiteCommand(sql, GetConnection());
                 if (args != null)
                 {
                     foreach (var arg in args)
@@ -91,7 +150,7 @@ namespace VRCX
             m_ConnectionLock.EnterWriteLock();
             try
             {
-                using var command = new SQLiteCommand(sql, m_Connection);
+                using var command = new SQLiteCommand(sql, GetConnection());
                 if (args != null)
                 {
                     foreach (var arg in args)
@@ -107,6 +166,28 @@ namespace VRCX
             }
 
             return result;
+        }
+
+        private SQLiteConnection GetConnection()
+        {
+            return m_Connection ?? throw new InvalidOperationException("The SQLite connection is not initialized.");
+        }
+
+        private void OpenConnection()
+        {
+            var dataSource = m_DataSource ?? throw new InvalidOperationException("The SQLite database location is not initialized.");
+            m_Connection = new SQLiteConnection($"Data Source=\"{dataSource}\";Version=3;PRAGMA locking_mode=NORMAL;PRAGMA busy_timeout=5000;PRAGMA journal_mode=WAL;PRAGMA optimize=0x10002;", true);
+            m_Connection.Open();
+        }
+
+        private void CloseConnection()
+        {
+            if (m_Connection == null)
+                return;
+
+            m_Connection.Close();
+            m_Connection.Dispose();
+            m_Connection = null;
         }
     }
 }
