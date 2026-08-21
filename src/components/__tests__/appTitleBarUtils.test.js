@@ -10,14 +10,14 @@ describe('appTitleBarUtils', () => {
     test('extracts the release version and build tag', () => {
         expect(parseAppVersion('BetterVRCX v3.2.0 B 2026.08.19')).toEqual({
             version: '3.2.0',
-            build: 'B 2026.08.19'
+            build: '2026.08.19'
         });
     });
 
-    test('shows the 3.2.2 release without a leading v', () => {
-        expect(parseAppVersion('BetterVRCX v3.2.2 B 2026.08.21')).toEqual({
-            version: '3.2.2',
-            build: 'B 2026.08.21'
+    test('shows the 3.2.3 release date without the build marker', () => {
+        expect(parseAppVersion('BetterVRCX v3.2.3 B 2026.08.22')).toEqual({
+            version: '3.2.3',
+            build: '2026.08.22'
         });
     });
 

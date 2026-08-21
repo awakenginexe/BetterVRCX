@@ -21,7 +21,7 @@ export function parseAppVersion(value) {
         version: versionMatch
             ? `${versionMatch[1]}.${versionMatch[2]}.${versionMatch[3]}`
             : '—',
-        build: buildMatch ? `B ${buildMatch[1]}` : ''
+        build: buildMatch ? buildMatch[1] : ''
     };
 }
 

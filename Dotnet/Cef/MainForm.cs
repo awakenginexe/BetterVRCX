@@ -27,6 +27,8 @@ namespace VRCX
         private FormWindowState LastWindowStateToRestore = FormWindowState.Normal;
 
         private const int WM_NCHITTEST = 0x0084;
+        private const int WM_GETMINMAXINFO = 0x0024;
+        private const int WM_NCCALCSIZE = 0x0083;
         private const int HTCLIENT = 1;
         private const int HTCAPTION = 2;
         private const int HTLEFT = 10;
@@ -43,12 +45,59 @@ namespace VRCX
         private const int WS_MINIMIZEBOX = 0x00020000;
         private const int WS_MAXIMIZEBOX = 0x00010000;
         private const int WS_SYSMENU = 0x00080000;
+        private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public int dwFlags;
+        }
 
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
 
         [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr handle, int message, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr handle, uint flags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO monitorInfo);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsZoomed(IntPtr handle);
 
         public MainForm()
         {
@@ -127,6 +176,38 @@ namespace VRCX
 
         protected override void WndProc(ref Message message)
         {
+            if (message.Msg == WM_NCCALCSIZE &&
+                message.WParam != IntPtr.Zero &&
+                IsZoomed(Handle))
+            {
+                message.Result = IntPtr.Zero;
+                return;
+            }
+
+            if (message.Msg == WM_GETMINMAXINFO)
+            {
+                var monitor = MonitorFromWindow(Handle, MONITOR_DEFAULTTONEAREST);
+                if (monitor != IntPtr.Zero)
+                {
+                    var monitorInfo = new MONITORINFO
+                    {
+                        cbSize = Marshal.SizeOf<MONITORINFO>()
+                    };
+
+                    if (GetMonitorInfo(monitor, ref monitorInfo))
+                    {
+                        var maxInfo = Marshal.PtrToStructure<MINMAXINFO>(message.LParam);
+                        maxInfo.ptMaxPosition.X = monitorInfo.rcWork.Left - monitorInfo.rcMonitor.Left;
+                        maxInfo.ptMaxPosition.Y = monitorInfo.rcWork.Top - monitorInfo.rcMonitor.Top;
+                        maxInfo.ptMaxSize.X = monitorInfo.rcWork.Right - monitorInfo.rcWork.Left;
+                        maxInfo.ptMaxSize.Y = monitorInfo.rcWork.Bottom - monitorInfo.rcWork.Top;
+                        Marshal.StructureToPtr(maxInfo, message.LParam, false);
+                        message.Result = IntPtr.Zero;
+                        return;
+                    }
+                }
+            }
+
             if (message.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
             {
                 var point = PointToClient(Cursor.Position);

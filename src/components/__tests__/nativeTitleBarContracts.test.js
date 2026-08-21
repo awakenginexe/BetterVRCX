@@ -42,6 +42,23 @@ describe('native CEF title-bar contracts', () => {
         );
     });
 
+    test('constrains borderless maximize to the monitor work area', () => {
+        const mainForm = readFileSync(mainFormPath, 'utf8');
+
+        expect(mainForm).toContain('WM_GETMINMAXINFO');
+        expect(mainForm).toContain('MonitorFromWindow');
+        expect(mainForm).toContain('GetMonitorInfo');
+        expect(mainForm).toContain('rcWork');
+    });
+
+    test('removes the native frame gap while maximized', () => {
+        const mainForm = readFileSync(mainFormPath, 'utf8');
+
+        expect(mainForm).toContain('WM_NCCALCSIZE');
+        expect(mainForm).toContain('IsZoomed');
+        expect(mainForm).toContain('message.WParam != IntPtr.Zero');
+    });
+
     test('exposes window actions through AppApiCef', () => {
         const appApi = readFileSync(appApiPath, 'utf8');
         const mainForm = readFileSync(mainFormPath, 'utf8');
