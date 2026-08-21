@@ -17,7 +17,10 @@ import {
 } from '../../shared/utils/discordPresence';
 import {
     ActivityType,
-    StatusDisplayType
+    StatusDisplayType,
+    BETTERVRCX_DISCORD_APP_ID,
+    BETTERVRCX_DISCORD_BIG_ICON,
+    BETTERVRCX_DISCORD_BIG_ICON_TEXT
 } from '../../shared/constants/discord';
 import { queryRequest } from '../../api';
 import { useGameLogStore } from '../gameLog';
@@ -325,12 +328,10 @@ export const useDiscordPresenceSettingsStore = defineStore(
             let statusDisplayType = discordWorldNameAsDiscordStatus.value
                 ? StatusDisplayType.Details
                 : StatusDisplayType.Name;
-            let appId = '883308884863901717';
-            let bigIcon = 'vrchat';
+            let appId = BETTERVRCX_DISCORD_APP_ID;
+            let bigIcon = BETTERVRCX_DISCORD_BIG_ICON;
             let detailsUrl = state.lastLocationDetails.worldLink;
-            let poweredBy = t(
-                'view.settings.discord_presence.rpc.powered_by_vrcx'
-            );
+            let poweredBy = BETTERVRCX_DISCORD_BIG_ICON_TEXT;
 
             let partyId = `${state.lastLocationDetails.worldId}:${state.lastLocationDetails.instanceName}`;
             let partySize = locationStore.lastLocation.playerList.size;
@@ -399,8 +400,8 @@ export const useDiscordPresenceSettingsStore = defineStore(
                 stateText = '';
                 startTime = 0;
                 endTime = 0;
-                appId = '883308884863901717'; // default VRChat app id
-                bigIcon = 'vrchat';
+                appId = BETTERVRCX_DISCORD_APP_ID;
+                bigIcon = BETTERVRCX_DISCORD_BIG_ICON;
                 activityType = ActivityType.Playing;
                 statusDisplayType = StatusDisplayType.Name;
             }

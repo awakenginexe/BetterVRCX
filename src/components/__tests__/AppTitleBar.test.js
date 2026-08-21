@@ -14,8 +14,8 @@ const appApi = {
 function mountTitleBar(props = {}, slots = {}) {
     return mount(AppTitleBar, {
         props: {
-            appVersion: 'BetterVRCX v3.2.0 B 2026.08.19',
-            latestAppVersion: 'BetterVRCX v3.2.0',
+            appVersion: 'BetterVRCX v3.2.2 B 2026.08.21',
+            latestAppVersion: 'BetterVRCX v3.2.2',
             ...props
         },
         slots
@@ -38,10 +38,10 @@ describe('AppTitleBar.vue', () => {
             wrapper.get('[data-testid="app-title-bar-logo"]').attributes('alt')
         ).toBe('BetterVRCX');
         expect(wrapper.get('[data-testid="app-version-tag"]').text()).toBe(
-            'v3.2.0'
+            '3.2.2'
         );
         expect(wrapper.get('[data-testid="app-build-tag"]').text()).toBe(
-            'B 2026.08.19'
+            'B 2026.08.21'
         );
         expect(
             wrapper.get('[data-testid="app-version-tag"]').classes()

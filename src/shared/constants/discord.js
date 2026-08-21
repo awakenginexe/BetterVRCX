@@ -34,6 +34,10 @@ class StatusDisplayType {
     }
 }
 
+const BETTERVRCX_DISCORD_APP_ID = '1523727103336513546';
+const BETTERVRCX_DISCORD_BIG_ICON = 'bettervrcx';
+const BETTERVRCX_DISCORD_BIG_ICON_TEXT = 'Powered by BetterVRCX';
+
 Object.freeze(ActivityType);
 Object.freeze(StatusDisplayType);
 
@@ -45,4 +49,10 @@ Object.defineProperty(StatusDisplayType, '_Name', { writable: false });
 Object.defineProperty(StatusDisplayType, '_State', { writable: false });
 Object.defineProperty(StatusDisplayType, '_Details', { writable: false });
 
-export { ActivityType, StatusDisplayType };
+export {
+    ActivityType,
+    StatusDisplayType,
+    BETTERVRCX_DISCORD_APP_ID,
+    BETTERVRCX_DISCORD_BIG_ICON,
+    BETTERVRCX_DISCORD_BIG_ICON_TEXT
+};

@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
     getPlatformLabel,
@@ -6,9 +6,26 @@ import {
     getRpcWorldConfig,
     isPopcornPalaceWorld
 } from '../discordPresence';
-import { ActivityType, StatusDisplayType } from '../../constants/discord';
+import {
+    ActivityType,
+    StatusDisplayType,
+    BETTERVRCX_DISCORD_APP_ID,
+    BETTERVRCX_DISCORD_BIG_ICON,
+    BETTERVRCX_DISCORD_BIG_ICON_TEXT
+} from '../../constants/discord';
 
 const t = (key) => key;
+
+describe('BetterVRCX Discord RPC branding', () => {
+    test('uses the supplied BetterVRCX Discord application and asset', () => {
+        expect(BETTERVRCX_DISCORD_APP_ID).toBe('1523727103336513546');
+        expect(BETTERVRCX_DISCORD_BIG_ICON).toBe('bettervrcx');
+    });
+
+    test('uses the requested large-image tooltip', () => {
+        expect(BETTERVRCX_DISCORD_BIG_ICON_TEXT).toBe('Powered by BetterVRCX');
+    });
+});
 
 describe('getPlatformLabel', () => {
     test('returns VR label when game is running in VR', () => {
