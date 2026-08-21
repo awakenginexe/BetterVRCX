@@ -85,12 +85,14 @@ jobs:
       - name: Configure Google Drive OAuth client
         env:
           BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+          BETTERVRCX_GOOGLE_CLIENT_SECRET: ${{ secrets.BETTERVRCX_GOOGLE_CLIENT_SECRET }}
         run: |
-          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
-            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" || -z "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" ]]; then
+            echo "Missing BETTERVRCX_GOOGLE_CLIENT_ID variable or BETTERVRCX_GOOGLE_CLIENT_SECRET secret." >&2
             exit 1
           fi
           printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Cef/google-drive-client-id.txt
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" > build/Cef/google-drive-client-secret.txt
       - name: Check if we want to sign
         id: check_sign
         run: |
@@ -203,12 +205,14 @@ jobs:
       - name: Configure Google Drive OAuth client
         env:
           BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+          BETTERVRCX_GOOGLE_CLIENT_SECRET: ${{ secrets.BETTERVRCX_GOOGLE_CLIENT_SECRET }}
         run: |
-          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
-            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" || -z "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" ]]; then
+            echo "Missing BETTERVRCX_GOOGLE_CLIENT_ID variable or BETTERVRCX_GOOGLE_CLIENT_SECRET secret." >&2
             exit 1
           fi
           printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" > build/Electron/google-drive-client-secret.txt
       - name: Upload Electron x64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -224,12 +228,14 @@ jobs:
       - name: Configure Google Drive OAuth client
         env:
           BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+          BETTERVRCX_GOOGLE_CLIENT_SECRET: ${{ secrets.BETTERVRCX_GOOGLE_CLIENT_SECRET }}
         run: |
-          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
-            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" || -z "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" ]]; then
+            echo "Missing BETTERVRCX_GOOGLE_CLIENT_ID variable or BETTERVRCX_GOOGLE_CLIENT_SECRET secret." >&2
             exit 1
           fi
           printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" > build/Electron/google-drive-client-secret.txt
       - name: Upload Electron arm64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -260,12 +266,14 @@ jobs:
       - name: Configure Google Drive OAuth client
         env:
           BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+          BETTERVRCX_GOOGLE_CLIENT_SECRET: ${{ secrets.BETTERVRCX_GOOGLE_CLIENT_SECRET }}
         run: |
-          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
-            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" || -z "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" ]]; then
+            echo "Missing BETTERVRCX_GOOGLE_CLIENT_ID variable or BETTERVRCX_GOOGLE_CLIENT_SECRET secret." >&2
             exit 1
           fi
           printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" > build/Electron/google-drive-client-secret.txt
       - name: Upload Electron x64 .NET artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -281,12 +289,14 @@ jobs:
       - name: Configure Google Drive OAuth client
         env:
           BETTERVRCX_GOOGLE_CLIENT_ID: ${{ vars.BETTERVRCX_GOOGLE_CLIENT_ID }}
+          BETTERVRCX_GOOGLE_CLIENT_SECRET: ${{ secrets.BETTERVRCX_GOOGLE_CLIENT_SECRET }}
         run: |
-          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" ]]; then
-            echo "Missing repository variable BETTERVRCX_GOOGLE_CLIENT_ID." >&2
+          if [[ -z "${BETTERVRCX_GOOGLE_CLIENT_ID}" || -z "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" ]]; then
+            echo "Missing BETTERVRCX_GOOGLE_CLIENT_ID variable or BETTERVRCX_GOOGLE_CLIENT_SECRET secret." >&2
             exit 1
           fi
           printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_ID}" > build/Electron/google-drive-client-id.txt
+          printf '%s\n' "${BETTERVRCX_GOOGLE_CLIENT_SECRET}" > build/Electron/google-drive-client-secret.txt
       - name: Upload Electron arm64 dotnet artifacts
         uses: actions/upload-artifact@v7
         with:

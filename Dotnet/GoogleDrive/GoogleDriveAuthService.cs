@@ -15,30 +15,37 @@ namespace VRCX.GoogleDrive;
 
 public sealed record GoogleDriveOAuthOptions
 {
-    public GoogleDriveOAuthOptions(string clientId)
+    public GoogleDriveOAuthOptions(string clientId, string? clientSecret = null)
     {
         ClientId = clientId?.Trim() ?? string.Empty;
+        ClientSecret = clientSecret?.Trim() ?? string.Empty;
     }
 
     public string ClientId { get; }
+    public string ClientSecret { get; }
 
     public const string DriveFileScope = "https://www.googleapis.com/auth/drive.file";
     public const string ClientIdEnvironmentVariable = "BETTERVRCX_GOOGLE_CLIENT_ID";
+    public const string ClientSecretEnvironmentVariable = "BETTERVRCX_GOOGLE_CLIENT_SECRET";
     public const string ClientIdFileName = "google-drive-client-id.txt";
+    public const string ClientSecretFileName = "google-drive-client-secret.txt";
 
-    public static GoogleDriveOAuthOptions Default => new(LoadClientId());
+    public static GoogleDriveOAuthOptions Default => new(
+        LoadConfiguredValue(ClientIdEnvironmentVariable, ClientIdFileName),
+        LoadConfiguredValue(ClientSecretEnvironmentVariable, ClientSecretFileName));
 
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(ClientId);
+    public bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
 
-    private static string LoadClientId()
+    private static string LoadConfiguredValue(string environmentVariable, string fileName)
     {
-        var environmentValue = Environment.GetEnvironmentVariable(ClientIdEnvironmentVariable);
+        var environmentValue = Environment.GetEnvironmentVariable(environmentVariable);
         if (!string.IsNullOrWhiteSpace(environmentValue))
             return environmentValue.Trim();
 
         try
         {
-            var path = Path.Combine(AppContext.BaseDirectory, ClientIdFileName);
+            var path = Path.Combine(AppContext.BaseDirectory, fileName);
             return File.Exists(path) ? File.ReadAllText(path).Trim() : string.Empty;
         }
         catch (IOException)
@@ -156,6 +163,7 @@ public sealed class GoogleDriveAuthService
         var form = new Dictionary<string, string>
         {
             ["client_id"] = _options.ClientId,
+            ["client_secret"] = _options.ClientSecret,
             ["code"] = authorizationCode,
             ["code_verifier"] = codeVerifier,
             ["redirect_uri"] = redirectUri.AbsoluteUri,
@@ -175,6 +183,7 @@ public sealed class GoogleDriveAuthService
         var form = new Dictionary<string, string>
         {
             ["client_id"] = _options.ClientId,
+            ["client_secret"] = _options.ClientSecret,
             ["refresh_token"] = refreshToken,
             ["grant_type"] = "refresh_token"
         };
@@ -185,7 +194,7 @@ public sealed class GoogleDriveAuthService
     {
         if (!_options.IsConfigured)
             throw new GoogleDriveOAuthException(
-                "Google Drive OAuth is not configured. Add the release client ID before connecting Google Drive.");
+                "Google Drive OAuth credentials are not configured. Add the release client ID and client secret before connecting Google Drive.");
     }
 
     private async Task<GoogleTokenSet> RequestTokenAsync(

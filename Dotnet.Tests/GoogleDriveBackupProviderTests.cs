@@ -25,7 +25,7 @@ public sealed class GoogleDriveBackupProviderTests
             return Json("{\"files\":[{\"id\":\"backup-1\",\"name\":\"Desktop-2026-08-19-232100.sqlite3\",\"size\":\"14200\",\"createdTime\":\"2026-08-19T16:21:00Z\",\"appProperties\":{\"bettervrcx_backup\":\"1\",\"device_name\":\"Desktop\",\"schema_version\":\"16\"}}]}");
         });
         using var httpClient = new HttpClient(handler);
-        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client"), httpClient);
+        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client", "test-secret"), httpClient);
         var provider = new GoogleDriveBackupProvider(httpClient, auth, new FakeTokenStore("refresh"), new GoogleTokenSet("access", "refresh", DateTimeOffset.UtcNow.AddHours(1)));
 
         var backups = await provider.ListBackupsAsync();
@@ -38,7 +38,7 @@ public sealed class GoogleDriveBackupProviderTests
     }
 
     [Fact]
-    public async Task Expired_access_token_is_refreshed_without_a_client_secret()
+    public async Task Expired_access_token_is_refreshed_with_the_configured_client_secret()
     {
         var tokenRequestBody = string.Empty;
         var handler = new RecordingHandler(request =>
@@ -53,7 +53,7 @@ public sealed class GoogleDriveBackupProviderTests
             return Json("{\"user\":{\"emailAddress\":\"user@example.com\"}}");
         });
         using var httpClient = new HttpClient(handler);
-        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client"), httpClient);
+        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client", "test-secret"), httpClient);
         var provider = new GoogleDriveBackupProvider(
             httpClient,
             auth,
@@ -64,7 +64,7 @@ public sealed class GoogleDriveBackupProviderTests
 
         Assert.Equal("user@example.com", email);
         Assert.Contains("grant_type=refresh_token", tokenRequestBody);
-        Assert.DoesNotContain("client_secret=", tokenRequestBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("client_secret=test-secret", tokenRequestBody, StringComparison.OrdinalIgnoreCase);
     }
 
     private static HttpResponseMessage Json(string content) => new(HttpStatusCode.OK)

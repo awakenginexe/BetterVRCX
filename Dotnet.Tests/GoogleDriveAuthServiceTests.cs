@@ -14,14 +14,14 @@ namespace BetterVRCX.Tests;
 public sealed class GoogleDriveAuthServiceTests
 {
     [Fact]
-    public async Task ExchangeCode_uses_pkce_fields_without_a_client_secret()
+    public async Task ExchangeCode_uses_pkce_fields_with_the_configured_client_secret()
     {
         var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{\"access_token\":\"access\",\"refresh_token\":\"refresh\",\"expires_in\":3600,\"token_type\":\"Bearer\"}")
         });
         using var httpClient = new HttpClient(handler);
-        var options = new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com");
+        var options = new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com", "test-secret");
         var service = new GoogleDriveAuthService(
             options,
             httpClient);
@@ -38,7 +38,7 @@ public sealed class GoogleDriveAuthServiceTests
         Assert.Contains("code_verifier=code-verifier", handler.RequestBody);
         Assert.Contains("redirect_uri=http%3A%2F%2F127.0.0.1%3A43123%2Foauth2callback%2F", handler.RequestBody);
         Assert.Contains("grant_type=authorization_code", handler.RequestBody);
-        Assert.DoesNotContain("client_secret=", handler.RequestBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("client_secret=test-secret", handler.RequestBody, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class GoogleDriveAuthServiceTests
         });
         using var httpClient = new HttpClient(handler);
         var service = new GoogleDriveAuthService(
-            new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com"),
+            new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com", "test-secret"),
             httpClient);
 
         var exception = await Assert.ThrowsAsync<GoogleDriveOAuthException>(() => service.ExchangeCodeAsync(
@@ -69,7 +69,7 @@ public sealed class GoogleDriveAuthServiceTests
     public void CreateAuthorizationRequest_uses_drive_file_and_s256()
     {
         var service = new GoogleDriveAuthService(
-            new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com"),
+            new GoogleDriveOAuthOptions("test-client.apps.googleusercontent.com", "test-secret"),
             new HttpClient());
         var request = service.CreateAuthorizationRequest(
             new Uri("http://127.0.0.1:43123/oauth2callback/"),
@@ -88,7 +88,7 @@ public sealed class GoogleDriveAuthServiceTests
     public void Unconfigured_client_id_is_rejected_before_authorization()
     {
         var service = new GoogleDriveAuthService(
-            new GoogleDriveOAuthOptions(string.Empty),
+            new GoogleDriveOAuthOptions(string.Empty, string.Empty),
             new HttpClient());
 
         var exception = Assert.Throws<GoogleDriveOAuthException>(() => service.CreateAuthorizationRequest(
@@ -96,28 +96,36 @@ public sealed class GoogleDriveAuthServiceTests
             "state-value",
             "code-verifier"));
 
-        Assert.Contains("not configured", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("credentials", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
     public void Default_reads_the_public_client_id_from_the_development_environment()
     {
         var previous = Environment.GetEnvironmentVariable(GoogleDriveOAuthOptions.ClientIdEnvironmentVariable);
+        var previousSecret = Environment.GetEnvironmentVariable(GoogleDriveOAuthOptions.ClientSecretEnvironmentVariable);
         try
         {
             Environment.SetEnvironmentVariable(
                 GoogleDriveOAuthOptions.ClientIdEnvironmentVariable,
                 "test-client.apps.googleusercontent.com");
+            Environment.SetEnvironmentVariable(
+                GoogleDriveOAuthOptions.ClientSecretEnvironmentVariable,
+                "test-secret");
 
             Assert.Equal(
                 "test-client.apps.googleusercontent.com",
                 GoogleDriveOAuthOptions.Default.ClientId);
+            Assert.Equal("test-secret", GoogleDriveOAuthOptions.Default.ClientSecret);
         }
         finally
         {
             Environment.SetEnvironmentVariable(
                 GoogleDriveOAuthOptions.ClientIdEnvironmentVariable,
                 previous);
+            Environment.SetEnvironmentVariable(
+                GoogleDriveOAuthOptions.ClientSecretEnvironmentVariable,
+                previousSecret);
         }
     }
 
