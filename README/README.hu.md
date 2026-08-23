@@ -2,9 +2,17 @@
 
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
-[![GitHub release](https://img.shields.io/github/release/awakenginexe/BetterVRCX.svg)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/awakenginexe/BetterVRCX/total?color=6451f1)](https://github.com/awakenginexe/BetterVRCX/releases/latest)
-[![GitHub Workflow Status](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml/badge.svg)](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml)
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
+</p>
+
+<p align="center">
+  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/4f934214b570fdacce91db7c5996996721b40bf2587ff3a7cb68678a8d9db2ab">
+    <img alt="VirusTotal scan for BetterVRCX.exe" src="./VirusTotal-BetterVRCX.svg" />
+  </a>
+</p>
 
 | [English](../README.md) | [ภาษาไทย](./README.th.md) | [日本語](./README.jp.md) | [简体中文](./README.zh_CN.md) | [繁體中文](./README.zh_TW.md) | [Italiano](./README.it.md) | [Русский](./README.ru_RU.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Français](./README.fr.md) | **Magyar** |
 
