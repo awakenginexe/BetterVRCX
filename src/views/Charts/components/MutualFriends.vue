@@ -312,6 +312,8 @@
     import { Spinner } from '@/components/ui/spinner';
     import { VirtualCombobox } from '@/components/ui/virtual-combobox';
     import { createNodeBorderProgram } from '@sigma/node-border';
+    import { createNodeImageProgram } from '@sigma/node-image';
+    import { createNodeCompoundProgram } from 'sigma/rendering';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
@@ -357,23 +359,43 @@
     const MAX_LABEL_NAME_LENGTH = 20;
 
     const COLORS_PALETTE = [
-        '#5470c6',
-        '#91cc75',
-        '#fac858',
-        '#ee6666',
-        '#73c0de',
-        '#3ba272',
-        '#fc8452',
-        '#9a60b4',
-        '#ea7ccc'
+        '#38bdf8', // Sky Blue
+        '#4ade80', // Emerald Green
+        '#facc15', // Amber Gold
+        '#f87171', // Coral Red
+        '#a78bfa', // Violet Purple
+        '#fb923c', // Tangerine Orange
+        '#2dd4bf', // Mint Teal
+        '#f472b6', // Rose Pink
+        '#818cf8', // Royal Indigo
+        '#34d399', // Cyan Green
+        '#e879f9'  // Neon Fuchsia
     ];
 
     const NodeBorderProgram = createNodeBorderProgram({
         borders: [
-            { size: { value: 0.1 }, color: { value: '#f2f2f2' } },
-            { size: { fill: true }, color: { attribute: 'color' } }
+            { size: { value: 0.18, mode: 'relative' }, color: { attribute: 'borderColor' } },
+            { size: { fill: true }, color: { attribute: 'borderColor' } }
         ]
     });
+
+    const BaseImageProgram = createNodeImageProgram({
+        keepWithinCircle: true,
+        padding: 0,
+        objectFit: 'cover'
+    });
+
+    class InnerAvatarImageProgram extends BaseImageProgram {
+        processVisibleItem(nodeIndex, startIndex, data) {
+            super.processVisibleItem(nodeIndex, startIndex, data);
+            this.array[startIndex + 2] = (data.size || 10) * 0.80;
+        }
+    }
+
+    const MutualNodeProgram = createNodeCompoundProgram([
+        NodeBorderProgram,
+        InnerAvatarImageProgram
+    ]);
 
     const mutualGraphWorkspaceRef = ref(null);
     const graphContainerRef = ref(null);
@@ -422,18 +444,18 @@
 
     const LAYOUT_ITERATIONS_MIN = 300;
     const LAYOUT_ITERATIONS_MAX = 1500;
-    const LAYOUT_SPACING_MIN = 8;
-    const LAYOUT_SPACING_MAX = 240;
+    const LAYOUT_SPACING_MIN = 30;
+    const LAYOUT_SPACING_MAX = 400;
     const EDGE_CURVATURE_MIN = 0;
     const EDGE_CURVATURE_MAX = 0.2;
     const COMMUNITY_SEPARATION_MIN = 0;
     const COMMUNITY_SEPARATION_MAX = 3;
 
     const LAYOUT_DEFAULTS = {
-        layoutIterations: 800,
-        layoutSpacing: 60,
-        edgeCurvature: 0.1,
-        communitySeparation: 0
+        layoutIterations: 900,
+        layoutSpacing: 140,
+        edgeCurvature: 0.08,
+        communitySeparation: 0.4
     };
 
     const layoutSettings = reactive({ ...LAYOUT_DEFAULTS });
@@ -859,8 +881,10 @@
         graph.forEachNode((node) => {
             const communityId = communities[node];
             const idx = idToIndex.get(communityId) ?? 0;
+            const communityColor = COLORS_PALETTE[idx % COLORS_PALETTE.length];
             graph.setNodeAttribute(node, 'community', communityId);
-            graph.setNodeAttribute(node, 'color', COLORS_PALETTE[idx % COLORS_PALETTE.length]);
+            graph.setNodeAttribute(node, 'borderColor', communityColor);
+            graph.setNodeAttribute(node, 'color', communityColor);
         });
     }
 
@@ -914,9 +938,19 @@
 
         nodeIds.forEach((id) => {
             const degree = nodeDegree.get(id) || 0;
-            const size = 4 + (maxDegree ? (degree / maxDegree) * 18 : 0);
+            const size = 10 + (maxDegree ? (degree / maxDegree) * 20 : 0);
             const label = truncateLabelText(nodeNames.get(id) || id);
-            const attrs = { label, size, type: 'border' };
+
+            const friendEntry = friends.value?.get ? friends.value.get(id) : undefined;
+            const userObj = friendEntry?.ref || cachedUsers.get(id);
+            const image = userObj ? userImage(userObj, true, '128') : '';
+
+            const attrs = {
+                label,
+                size,
+                image,
+                type: 'mutualNode'
+            };
             if (meta?.has(id)) {
                 const m = meta.get(id);
                 attrs.optedOut = m.optedOut;
@@ -952,8 +986,8 @@
         const DEFAULT_LABEL_THRESHOLD = 10;
 
         const labelColor = isDarkMode.value ? '#e2e8f0' : '#111827';
-        const EDGE_BASE = isDarkMode.value ? '#334155' : '#94a3b8';
-        const EDGE_ACTIVE = isDarkMode.value ? '#bac1c9' : '#0f172a';
+        const EDGE_BASE = isDarkMode.value ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.3)';
+        const EDGE_ACTIVE = isDarkMode.value ? '#38bdf8' : '#0284c7';
 
         let cameraState = null;
 
@@ -975,8 +1009,10 @@
                 labelColor: { color: labelColor },
                 defaultEdgeColor: EDGE_BASE,
                 zIndex: true,
-                defaultNodeType: 'border',
-                nodeProgramClasses: { border: NodeBorderProgram },
+                defaultNodeType: 'mutualNode',
+                nodeProgramClasses: {
+                    mutualNode: MutualNodeProgram
+                },
                 edgeProgramClasses: { curve: EdgeCurveProgram },
                 defaultDrawNodeHover: (ctx, data, settings) => {
                     if (!data.label) return;
@@ -985,11 +1021,11 @@
                     const font = settings.labelFont ?? 'sans-serif';
                     const smallFontSize = Math.max(9, fontSize - 2);
 
-                    ctx.font = `${fontSize}px ${font}`;
+                    ctx.font = `600 ${fontSize}px ${font}`;
                     ctx.textBaseline = 'middle';
 
-                    const paddingX = 6;
-                    const paddingY = 4;
+                    const paddingX = 10;
+                    const paddingY = 6;
 
                     let subLine = '';
                     if (data.lastFetchedAt) {
@@ -999,36 +1035,48 @@
                     const labelWidth = ctx.measureText(data.label).width;
                     ctx.font = `${smallFontSize}px ${font}`;
                     const subWidth = subLine ? ctx.measureText(subLine).width : 0;
-                    ctx.font = `${fontSize}px ${font}`;
+                    ctx.font = `600 ${fontSize}px ${font}`;
 
                     const w = Math.max(labelWidth, subWidth) + paddingX * 2;
-                    const lineHeight = fontSize + paddingY;
+                    const lineHeight = fontSize + 4;
                     const totalLines = subLine ? 2 : 1;
-                    const h = lineHeight * totalLines + paddingY;
+                    const h = lineHeight * totalLines + paddingY * 2;
 
-                    const x = data.x + data.size - 5;
+                    const x = data.x + data.size + 6;
                     const y = data.y - h / 2;
+                    const radius = 8;
 
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-                    ctx.shadowBlur = 6;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+                    ctx.shadowBlur = 12;
                     ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 2;
+                    ctx.shadowOffsetY = 4;
 
-                    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-                    ctx.fillRect(x, y, w, h);
+                    ctx.beginPath();
+                    if (typeof ctx.roundRect === 'function') {
+                        ctx.roundRect(x, y, w, h, radius);
+                    } else {
+                        ctx.rect(x, y, w, h);
+                    }
+                    ctx.fillStyle = isDarkMode.value ? 'rgba(20, 24, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                    ctx.fill();
 
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = isDarkMode.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+                    ctx.stroke();
 
-                    ctx.fillStyle = '#111827';
-                    ctx.font = `${fontSize}px ${font}`;
+                    ctx.fillStyle = isDarkMode.value ? '#f8fafc' : '#0f172a';
+                    ctx.font = `600 ${fontSize}px ${font}`;
                     ctx.fillText(data.label, x + paddingX, y + paddingY + fontSize / 2);
 
                     if (subLine) {
-                        ctx.fillStyle = data.optedOut ? '#dc2626' : '#6b7280';
+                        ctx.fillStyle = data.optedOut ? '#ef4444' : (isDarkMode.value ? '#94a3b8' : '#64748b');
                         ctx.font = `${smallFontSize}px ${font}`;
                         ctx.fillText(subLine, x + paddingX, y + paddingY + lineHeight + smallFontSize / 2);
                     }
+                    ctx.restore();
                 }
             });
         } else {
@@ -1056,12 +1104,11 @@
         sigmaInstance.setSetting('nodeReducer', (node, data) => {
             const res = { ...data };
 
-            if (data.optedOut) {
-                res.borderColor = '#9ca3af';
-            }
+            const baseBorderColor = data.optedOut ? '#9ca3af' : (data.borderColor || data.color || '#3b82f6');
+            res.borderColor = baseBorderColor;
+            res.color = data.color || baseBorderColor;
 
             if (!hovered) {
-                res.color = data.optedOut ? '#d1d5db' : data.color;
                 res.zIndex = 1;
                 return res;
             }
@@ -1070,25 +1117,26 @@
             const isNeighbor = neighbors.has(node);
 
             if (isHover) {
-                res.color = '#facc15';
-                res.size = (data.size || 4) * 1.6;
+                res.borderColor = '#facc15';
+                res.size = (data.size || 10) * 1.45;
                 res.label = `${data.label} (${neighbors.size})`;
-                res.labelColor = '#111827';
-                res.zIndex = 3;
+                res.labelColor = isDarkMode.value ? '#ffffff' : '#111827';
+                res.zIndex = 10;
                 return res;
             }
 
             if (isNeighbor) {
-                res.color = data.color;
-                res.size = (data.size || 4) * 1.2;
+                res.borderColor = baseBorderColor;
+                res.size = (data.size || 10) * 1.2;
                 res.label = data.label;
-                res.labelColor = '#111827';
-                res.zIndex = 2;
+                res.labelColor = isDarkMode.value ? '#ffffff' : '#111827';
+                res.zIndex = 5;
                 return res;
             }
 
-            res.color = isDarkMode.value ? 'rgba(148,163,184,0.04)' : 'rgba(100,116,139,0.06)';
-            res.size = 0.7;
+            res.borderColor = isDarkMode.value ? 'rgba(148,163,184,0.1)' : 'rgba(100,116,139,0.15)';
+            res.color = isDarkMode.value ? 'rgba(148,163,184,0.05)' : 'rgba(100,116,139,0.08)';
+            res.size = (data.size || 10) * 0.75;
             res.label = '';
             res.zIndex = 0;
             return res;
@@ -1100,7 +1148,7 @@
             if (!hovered) {
                 res.hidden = false;
                 res.color = EDGE_BASE;
-                res.size = data.size || 1;
+                res.size = data.size || 0.75;
                 return res;
             }
 
@@ -1110,7 +1158,7 @@
             if (active) {
                 res.hidden = false;
                 res.color = EDGE_ACTIVE;
-                res.size = data.size || 1;
+                res.size = 1.75;
                 return res;
             }
 

@@ -1,4 +1,4 @@
-import { createPinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 
 import { getSentry, isSentryOptedIn } from '../plugins';
 import { useAdvancedSettingsStore } from './settings/advanced';
@@ -43,6 +43,7 @@ import { useWorldStore } from './world';
 import { useWristOverlaySettingsStore } from './settings/wristOverlay';
 
 export const pinia = createPinia();
+setActivePinia(pinia);
 
 async function registerSentryPiniaPlugin() {
     if (!NIGHTLY) return;

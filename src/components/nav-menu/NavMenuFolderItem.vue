@@ -20,16 +20,16 @@
                                     }
                                 ]"
                                 :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
-                                <i
-                                    :class="item.icon"
-                                    class="inline-flex size-6 items-center justify-center text-lg relative"
-                                    ><span
-                                        v-if="isNavItemNotified(item)"
-                                        class="notify-dot bv-status-dot -right-1!"
-                                        data-status="danger"
-                                        role="img"
-                                        :aria-label="t('nav_menu.mark_all_read')"></span
-                                ></i>
+                                <span class="bv-nav-icon-box">
+                                    <i :class="item.icon" class="text-lg relative">
+                                        <span
+                                            v-if="isNavItemNotified(item)"
+                                            class="notify-dot bv-status-dot -right-1!"
+                                            data-status="danger"
+                                            role="img"
+                                            :aria-label="t('nav_menu.mark_all_read')"></span>
+                                    </i>
+                                </span>
                                 <span v-show="!isCollapsed">{{
                                     item.titleIsCustom ? item.title : t(item.title || '')
                                 }}</span>
@@ -73,23 +73,23 @@
                                             { 'is-expanded': open }
                                         ]"
                                         :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
-                                        <i
-                                            :class="item.icon"
-                                            class="inline-flex size-6 items-center justify-center text-lg relative"
-                                            ><span
-                                                v-if="isNavItemNotified(item)"
-                                                class="notify-dot bv-status-dot"
-                                                data-status="danger"
-                                                role="img"
-                                                :aria-label="t('nav_menu.mark_all_read')"></span
-                                        ></i>
+                                        <span class="bv-nav-icon-box">
+                                            <i :class="item.icon" class="text-lg relative">
+                                                <span
+                                                    v-if="isNavItemNotified(item)"
+                                                    class="notify-dot bv-status-dot"
+                                                    data-status="danger"
+                                                    role="img"
+                                                    :aria-label="t('nav_menu.mark_all_read')"></span>
+                                            </i>
+                                        </span>
                                         <span v-show="!isCollapsed" class="truncate">{{
                                             item.titleIsCustom ? item.title : t(item.title || '')
                                         }}</span>
 
                                         <ChevronRight
                                             v-show="!isCollapsed"
-                                            class="ml-auto size-4 shrink-0 transition-transform duration-150 ease-out"
+                                            class="ml-auto size-4 shrink-0 transition-transform duration-200 ease-out"
                                             :class="open ? 'rotate-90' : ''" />
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>

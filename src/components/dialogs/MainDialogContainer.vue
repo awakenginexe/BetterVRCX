@@ -188,10 +188,11 @@
             backgroundClip: 'padding-box'
         };
 
-        const opacity = -appearanceSettingsStore.profileBackgroundOpacity + 1; // Invert the opacity value
-        const textureOverlay = appearanceSettingsStore.isDarkMode
-            ? `rgba(0, 0, 0, ${opacity})`
-            : `rgba(255, 255, 255, ${opacity})`;
+        const opacity = Math.min(0.86, Math.max(0.72, -appearanceSettingsStore.profileBackgroundOpacity * 0.3 + 0.8));
+        const darkOverlay = `rgba(13, 16, 23, ${opacity})`;
+        const lightOverlay = `rgba(255, 255, 255, ${opacity * 0.85})`;
+        const textureOverlay = appearanceSettingsStore.isDarkMode ? darkOverlay : lightOverlay;
+
         if (userStore.userDialog.publicProfileRef?.backgroundType === 'gradient') {
             const bgTopColor = getReadableProfileThemeColor(
                 `#${userStore.userDialog.publicProfileRef?.backgroundGradientTop}`,

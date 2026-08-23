@@ -58,7 +58,9 @@
                 </TooltipWrapper>
             </div>
             <div class="absolute bottom-0 left-3 z-30 translate-y-1/2 bv-entity-hero-avatar-frame size-24">
-                <div class="bv-entity-hero-avatar relative size-full overflow-hidden rounded-full">
+                <div
+                    class="bv-entity-hero-avatar bv-avatar-halo relative size-full overflow-hidden rounded-full"
+                    :data-status="userDialog.ref.status">
                     <Skeleton
                         v-if="userDialog.loading && !userDialog.ref.displayName"
                         class="w-full! h-full! rounded-none" />
@@ -67,7 +69,7 @@
                         class="w-full! h-full! object-cover text-muted-foreground bg-accent" />
                     <img
                         v-else
-                        class="w-full h-full object-cover cursor-pointer"
+                        class="w-full h-full object-cover cursor-pointer transition-transform duration-300 hover:scale-105"
                         :src="userImage(userDialog.ref, true, '256', true)"
                         @click.stop="
                             showFullscreenImageDialog(userDialog.ref.userIcon || userDialog.ref.currentAvatarImageUrl)

@@ -1,6 +1,6 @@
 {
     "name": "BetterVRCX",
-    "version": "3.2.3",
+    "version": "3.3.0",
     "private": true,
     "description": "BetterVRCX is a desktop companion for managing your VRChat social life.",
     "keywords": [
@@ -41,6 +41,7 @@
         "start-electron": "electron . --hot-reload"
     },
     "dependencies": {
+        "@sigma/node-image": "^3.0.0",
         "hazardous": "^0.3.0",
         "node-api-dotnet": "^0.9.21"
     },

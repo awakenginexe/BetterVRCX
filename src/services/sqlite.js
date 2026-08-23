@@ -6,43 +6,47 @@ import { useModalStore } from '../stores';
 class SQLiteService {
     handleSQLiteError(e) {
         if (typeof e.message === 'string' && !window.isVrOverlay) {
-            const modalStore = useModalStore();
-            if (e.message.includes('database disk image is malformed')) {
-                modalStore
-                    .confirm({
+            try {
+                const modalStore = useModalStore();
+                if (e.message.includes('database disk image is malformed')) {
+                    modalStore
+                        .confirm({
+                            description:
+                                'Please repair or delete your database file by following these instructions.',
+                            title: 'Your database is corrupted'
+                        })
+                        .then(({ ok }) => {
+                            if (!ok) return;
+                            openExternalLink(
+                                'https://github.com/vrcx-team/VRCX/wiki#how-to-repair-vrcx-database'
+                            );
+                        })
+                        .catch(() => {});
+                }
+                if (e.message.includes('database or disk is full')) {
+                    modalStore.alert({
+                        description: i18n.global.t('message.database.disk_space'),
+                        title: 'Disk containing database is full'
+                    });
+                }
+                if (
+                    e.message.includes('database is locked') ||
+                    e.message.includes('attempt to write a readonly database')
+                ) {
+                    modalStore.alert({
                         description:
-                            'Please repair or delete your database file by following these instructions.',
-                        title: 'Your database is corrupted'
-                    })
-                    .then(({ ok }) => {
-                        if (!ok) return;
-                        openExternalLink(
-                            'https://github.com/vrcx-team/VRCX/wiki#how-to-repair-vrcx-database'
-                        );
-                    })
-                    .catch(() => {});
-            }
-            if (e.message.includes('database or disk is full')) {
-                modalStore.alert({
-                    description: i18n.global.t('message.database.disk_space'),
-                    title: 'Disk containing database is full'
-                });
-            }
-            if (
-                e.message.includes('database is locked') ||
-                e.message.includes('attempt to write a readonly database')
-            ) {
-                modalStore.alert({
-                    description:
-                        'Please close other applications that might be using the database file.',
-                    title: 'Database is locked'
-                });
-            }
-            if (e.message.includes('disk I/O error')) {
-                modalStore.alert({
-                    description: i18n.global.t('message.database.disk_error'),
-                    title: 'Disk I/O error'
-                });
+                            'Please close other applications that might be using the database file.',
+                        title: 'Database is locked'
+                    });
+                }
+                if (e.message.includes('disk I/O error')) {
+                    modalStore.alert({
+                        description: i18n.global.t('message.database.disk_error'),
+                        title: 'Disk I/O error'
+                    });
+                }
+            } catch {
+                // Ignore modalStore errors if called during early startup
             }
         }
         throw e;

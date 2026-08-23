@@ -1,11 +1,11 @@
 <template>
-    <template v-if="watchState.isLoggedIn">
-        <div class="bv-main-shell flex flex-col flex-1 h-full min-h-0 min-w-0 overflow-hidden">
+    <div v-if="watchState.isLoggedIn" class="bv-main-layout-root flex flex-col flex-1 h-full w-full min-h-0 min-w-0 overflow-hidden">
+        <div class="bv-main-shell flex flex-col flex-1 h-full w-full min-h-0 min-w-0 overflow-hidden">
             <SidebarProvider
                 :open="sidebarOpen"
                 :width="navWidth"
                 :width-icon="60"
-                class="bv-left-rail relative flex-1 h-full min-w-0 min-h-0"
+                class="bv-left-rail relative flex-1 h-full w-full min-w-0 min-h-0"
                 data-shell-region="left-rail"
                 @update:open="handleSidebarOpenChange">
                 <NavMenu />
@@ -17,21 +17,23 @@
                     aria-label="Resize navigation"
                     @pointerdown.prevent="startNavResize" />
 
-                <SidebarInset class="bv-center-frame min-w-0">
+                <SidebarInset class="bv-center-frame flex-1 h-full w-full min-w-0 min-h-0">
                     <ResizablePanelGroup
                         direction="horizontal"
                         :class="[
-                            'group/main-layout flex-1 h-full min-w-0',
+                            'group/main-layout flex-1 h-full w-full min-w-0',
                             { 'aside-collapsed': isAsideCollapsedStatic }
                         ]"
                         @layout="handleAsideLayout">
                         <template #default>
-                            <ResizablePanel id="main-content-panel" :order="1">
-                                <div class="bv-route-content" data-shell-region="content">
-                                    <RouterView v-slot="{ Component }">
-                                        <KeepAlive exclude="ChartsInstance, ChartsMutual">
-                                            <component :is="Component" />
-                                        </KeepAlive>
+                            <ResizablePanel id="main-content-panel" :order="1" :size-unit="asideSizeUnit" :min-size="300">
+                                <div class="bv-route-content w-full h-full" data-shell-region="content">
+                                    <RouterView v-slot="{ Component, route }">
+                                        <Transition :name="pageTransitionName" mode="out-in">
+                                            <KeepAlive exclude="ChartsInstance, ChartsMutual">
+                                                <component :is="Component" :key="route.name || route.path" />
+                                            </KeepAlive>
+                                        </Transition>
                                     </RouterView>
                                 </div>
                             </ResizablePanel>
@@ -94,13 +96,12 @@
         <WhatsNewDialog></WhatsNewDialog>
 
         <SpotlightDialog></SpotlightDialog>
-    </template>
+    </div>
 </template>
 
 <script setup>
     import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
-    import { useRouter } from 'vue-router';
 
     import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../../components/ui/resizable';
     import { SidebarInset, SidebarProvider } from '../../components/ui/sidebar';
@@ -124,10 +125,95 @@
     import Sidebar from '../Sidebar/Sidebar.vue';
     import VRChatConfigDialog from '../Settings/dialogs/VRChatConfigDialog.vue';
     import WorldImportDialog from '../Favorites/dialogs/WorldImportDialog.vue';
-    import WhatsNewDialog from '../../components/onboarding/WhatsNewDialog.vue';
     import SpotlightDialog from '../../components/onboarding/SpotlightDialog.vue';
+    import { useRoute, useRouter } from 'vue-router';
+    import { DASHBOARD_NAV_KEY_PREFIX } from '../../shared/constants';
+    import { navDefinitions } from '../../shared/constants/ui';
+    import { NAV_LAYOUT_UPDATED_EVENT } from '../../components/nav-menu/navLayoutEvents';
+    import { NAV_CONFIG_KEY } from '../../components/nav-menu/navConfigUtils';
+    import { createBaseDefaultNavLayout } from '../../components/nav-menu/navLayoutDefaults';
+    import configRepository from '../../services/config';
 
+    const route = useRoute();
     const router = useRouter();
+
+    const currentNavOrder = ref(['home']);
+    const pageTransitionName = ref('bv-page-slide-down');
+    let removeRouterHook = null;
+
+    async function updateNavOrder() {
+        let layout = [];
+        try {
+            const rawConfig = await configRepository.getString(NAV_CONFIG_KEY, '');
+            if (rawConfig) {
+                const parsed = JSON.parse(rawConfig);
+                if (Array.isArray(parsed)) {
+                    layout = parsed;
+                } else if (Array.isArray(parsed?.layout)) {
+                    layout = parsed.layout;
+                }
+            }
+        } catch (err) {
+            console.error('Failed to parse nav menu config for transitions', err);
+        }
+
+        if (!layout || !layout.length) {
+            layout = createBaseDefaultNavLayout((key) => key);
+        }
+
+        const order = ['home'];
+        const defMap = new Map(navDefinitions.map((d) => [d.key, d.routeName || d.key]));
+
+        layout.forEach((entry) => {
+            if (entry.type === 'item' && entry.key) {
+                const routeName = defMap.get(entry.key) || entry.key;
+                order.push(entry.key);
+                if (routeName !== entry.key) {
+                    order.push(routeName);
+                }
+            } else if (entry.type === 'folder' && Array.isArray(entry.items)) {
+                entry.items.forEach((key) => {
+                    const routeName = defMap.get(key) || key;
+                    order.push(key);
+                    if (routeName !== key) {
+                        order.push(routeName);
+                    }
+                });
+            }
+        });
+
+        currentNavOrder.value = order;
+    }
+
+    function getRouteNavIndex(targetRoute) {
+        if (!targetRoute) return 0;
+        if (
+            targetRoute.name === 'home' ||
+            targetRoute.path === '/' ||
+            targetRoute.path === '/home' ||
+            targetRoute.path === ''
+        ) {
+            return 0;
+        }
+        if (targetRoute.name === 'dashboard' && targetRoute.params?.id) {
+            const dashKey = `${DASHBOARD_NAV_KEY_PREFIX}${targetRoute.params.id}`;
+            const idx = currentNavOrder.value.indexOf(dashKey);
+            if (idx !== -1) return idx;
+        }
+
+        const candidateKeys = [
+            targetRoute.name,
+            targetRoute.meta?.navKey,
+            ...(Array.isArray(targetRoute.meta?.navKeys) ? targetRoute.meta.navKeys : [])
+        ].filter(Boolean);
+
+        for (const key of candidateKeys) {
+            const idx = currentNavOrder.value.indexOf(key);
+            if (idx !== -1) return idx;
+        }
+
+        return 999;
+    }
 
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const { navWidth, rightSidebarWidth, isNavCollapsed, isRightSidebarCollapsed } =
@@ -217,15 +303,6 @@
 
     const handleAsideLayout = (sizes) => {
         handleLayout(sizes);
-
-        if (isAsideDragging.value || isRightSidebarCollapsed.value || !isSideBarTabShow.value) {
-            return;
-        }
-
-        const asideSize = Array.isArray(sizes) ? sizes.at(-1) : null;
-        if (typeof asideSize === 'number' && Math.abs(asideSize - rightSidebarWidth.value) > 2) {
-            restoreAsideWidth(rightSidebarWidth.value);
-        }
     };
 
     watch(
@@ -256,10 +333,24 @@
         }
     };
 
-    onMounted(() => {
+    onMounted(async () => {
+        await updateNavOrder();
+        window.addEventListener(NAV_LAYOUT_UPDATED_EVENT, updateNavOrder);
         window.addEventListener('resize', restoreAsideWidth);
         window.addEventListener('focus', restoreAsideWidth);
         document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        removeRouterHook = router.beforeEach((to, from) => {
+            const fromIdx = getRouteNavIndex(from);
+            const toIdx = getRouteNavIndex(to);
+            if (toIdx > fromIdx) {
+                // Moving DOWN in sidebar -> New page slides UP into view
+                pageTransitionName.value = 'bv-page-slide-down';
+            } else if (toIdx < fromIdx) {
+                // Moving UP in sidebar -> New page slides DOWN into view
+                pageTransitionName.value = 'bv-page-slide-up';
+            }
+        });
     });
 
     watch(isSideBarTabShow, async (show) => {
@@ -286,11 +377,13 @@
     });
 
     onUnmounted(() => {
+        removeRouterHook?.();
         cleanupNavResize?.();
         if (resizeObserver) {
             resizeObserver.disconnect();
             resizeObserver = null;
         }
+        window.removeEventListener(NAV_LAYOUT_UPDATED_EVENT, updateNavOrder);
         window.removeEventListener('resize', restoreAsideWidth);
         window.removeEventListener('focus', restoreAsideWidth);
         document.removeEventListener('visibilitychange', handleVisibilityChange);

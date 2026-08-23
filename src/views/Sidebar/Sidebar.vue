@@ -7,7 +7,7 @@
             <div class="search-container p-2 pl-0" style="flex: 1">
                 <button
                     type="button"
-                    class="bv-surface bv-focus-ring flex h-9 w-full items-center gap-2 px-3 cursor-pointer overflow-hidden"
+                    class="bv-surface bv-focus-ring flex h-9 w-full items-center gap-2 px-3.5 cursor-pointer overflow-hidden rounded-full border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-200"
                     @click="openQuickSearch">
                     <Search class="size-4 shrink-0 opacity-50" />
                     <span class="search-text flex-1 min-w-0 text-left text-sm text-muted-foreground truncate">{{
@@ -20,7 +20,7 @@
             <div class="bv-right-sidebar-actions flex items-center mx-1 gap-1">
                 <TooltipWrapper side="bottom" :content="t('side_panel.refresh_tooltip')">
                     <Button
-                        class="rounded-full"
+                        class="rounded-full transition-transform duration-200 hover:scale-105 active:scale-95"
                         variant="ghost"
                         size="icon-sm"
                         :disabled="isRefreshFriendsLoading"

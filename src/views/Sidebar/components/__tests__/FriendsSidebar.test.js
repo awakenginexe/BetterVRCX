@@ -25,6 +25,10 @@ const mocks = vi.hoisted(() => ({
     },
     userStore: {
         showSendBoopDialog: vi.fn(),
+        showEditProfileDialog: vi.fn(),
+        editProfileDialog: {
+            value: { visible: false }
+        },
         currentUser: {
             value: {
                 id: 'usr_me',
@@ -58,6 +62,9 @@ const mocks = vi.hoisted(() => ({
     },
     instanceStore: {
         cachedInstances: new Map()
+    },
+    worldStore: {
+        cachedWorlds: new Map()
     },
     configRepository: {
         getBool: vi.fn(),
@@ -118,7 +125,16 @@ vi.mock('../../../../stores', () => ({
     useLaunchStore: () => mocks.launchStore,
     useLocationStore: () => mocks.locationStore,
     useInstanceStore: () => mocks.instanceStore,
+    useWorldStore: () => mocks.worldStore,
+    useAuthStore: () => ({}),
+    useModalStore: () => ({}),
+    useGalleryStore: () => ({ refreshGalleryTable: vi.fn() }),
+    useGeneralSettingsStore: () => ({ disableGpuAcceleration: { value: false } }),
     useUserStore: () => mocks.userStore
+}));
+
+vi.mock('@/stores/settings/general', () => ({
+    useGeneralSettingsStore: () => ({ disableGpuAcceleration: { value: false } })
 }));
 
 vi.mock('../../../../coordinators/userCoordinator', () => ({
@@ -131,6 +147,8 @@ vi.mock('../../../../shared/utils', () => ({
         typeof location === 'string' && location.startsWith('wrld_'),
     userImage: vi.fn(() => 'https://example.com/avatar.png'),
     userStatusClass: vi.fn(() => ''),
+    debounce: vi.fn((fn) => fn),
+    copyToClipboard: vi.fn(),
     parseLocation: vi.fn((location) => ({
         worldId: location?.split(':')[0] ?? '',
         instanceId: location?.split(':')[1] ?? '',

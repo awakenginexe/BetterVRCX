@@ -67,8 +67,8 @@ function initPositions(graph) {
     });
 }
 
-const LAYOUT_SPACING_MIN = 8;
-const LAYOUT_SPACING_MAX = 240;
+const LAYOUT_SPACING_MIN = 30;
+const LAYOUT_SPACING_MAX = 400;
 const LAYOUT_ITERATIONS_MIN = 300;
 const LAYOUT_ITERATIONS_MAX = 1500;
 
@@ -125,12 +125,13 @@ function runLayout(data) {
         : {};
     const fa2Settings = {
         ...inferred,
+        adjustSizes: true,
         barnesHutOptimize: true,
-        barnesHutTheta: 0.8,
-        strongGravityMode: true,
-        gravity: lerp(1.6, 0.6, clampedT),
-        scalingRatio: spacing,
-        slowDown: 2
+        barnesHutTheta: 0.7,
+        strongGravityMode: false,
+        gravity: lerp(0.35, 0.08, clampedT),
+        scalingRatio: spacing * 2.5,
+        slowDown: 3
     };
 
     if (Math.abs(deltaSpacing) >= 8) {
@@ -139,17 +140,18 @@ function runLayout(data) {
 
     forceAtlas2.assign(graph, { iterations, settings: fa2Settings });
 
-    // Noverlap
+    // Noverlap: guarantee no overlapping between circular avatar nodes
     const noverlapIterations = clampNumber(
-        Math.round(Math.sqrt(graph.order) * 6),
-        200,
-        600
+        Math.round(Math.sqrt(graph.order) * 8),
+        300,
+        800
     );
     noverlap.assign(graph, {
         maxIterations: noverlapIterations,
         settings: {
-            ratio: lerp(1.05, 1.35, clampedT),
-            margin: lerp(1, 8, clampedT)
+            ratio: lerp(1.5, 2.8, clampedT),
+            margin: lerp(12, 35, clampedT),
+            gridSize: 20
         }
     });
 

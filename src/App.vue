@@ -118,12 +118,17 @@
 
     .bv-route-frame {
         display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
         min-width: 0;
         min-height: 0;
         flex: 1;
     }
 
     .bv-route-frame > :deep(*) {
+        width: 100%;
+        height: 100%;
         min-width: 0;
         min-height: 0;
         flex: 1;

@@ -22,6 +22,11 @@ const mocks = vi.hoisted(() => ({
     toastSuccess: vi.fn()
 }));
 
+import { createPinia, setActivePinia } from 'pinia';
+
+const pinia = createPinia();
+setActivePinia(pinia);
+
 vi.mock('pinia', async (importOriginal) => {
     const actual = await importOriginal();
     return {
@@ -115,6 +120,12 @@ vi.mock('../../../../components/Location.vue', () => ({
     }
 }));
 
+vi.mock('../../../../components/UserContextMenu.vue', () => ({
+    default: {
+        template: '<div data-testid="user-context-menu"><slot /><slot name="append" /></div>'
+    }
+}));
+
 vi.mock('@/components/ui/item', () => ({
     Item: {
         emits: ['click'],
@@ -175,11 +186,12 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
     }
 }));
 
-vi.mock('lucide-vue-next', () => ({
-    MoreHorizontal: { template: '<i />' },
-    Trash2: { template: '<i />' },
-    User: { template: '<i />' }
-}));
+vi.mock('lucide-vue-next', async (importOriginal) => {
+    const actual = await importOriginal();
+    return new Proxy(actual, {
+        get: (target, prop) => target[prop] || { template: '<i />' }
+    });
+});
 
 import FavoritesFriendItem from '../FavoritesFriendItem.vue';
 

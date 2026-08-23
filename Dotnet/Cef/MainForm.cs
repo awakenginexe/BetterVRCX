@@ -111,7 +111,7 @@ namespace VRCX
             _saveTimer.Tick += SaveTimer_Tick;
             try
             {
-                var path = Path.GetDirectoryName(Environment.ProcessPath) ?? string.Empty;
+                var path = Program.BaseDirectory;
                 _appIcon = new Icon(Path.Combine(path, "BetterVRCX.ico"));
                 _appIconNoty = new Icon(Path.Combine(path, "BetterVRCX_notify.ico"));
                 Icon = _appIcon;

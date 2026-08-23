@@ -14,7 +14,9 @@
                         :class="['bv-nav-item bv-focus-ring', { 'bv-nav-item-active': isHomeActive }]"
                         data-nav-key="home"
                         @click="handleHomeClick">
-                        <i class="ri-home-5-line inline-flex size-6 items-center justify-center text-lg relative" />
+                        <span class="bv-nav-icon-box">
+                            <i class="ri-home-5-line text-lg relative" />
+                        </span>
                         <span v-show="!isCollapsed">{{ t('nav_tooltip.home') || 'Home' }}</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -40,17 +42,17 @@
                                                         { 'bv-nav-item-active': activeMenuIndex === item.index }
                                                     ]"
                                                     @click="handleMenuItemClick(item)">
-                                                    <i
-                                                        :class="item.icon"
-                                                        class="inline-flex size-6 items-center justify-center text-lg relative">
-                                                        <span
-                                                            v-if="isNavItemNotified(item)"
-                                                            class="bv-status-dot bv-nav-notify-dot"
-                                                            data-status="danger"
-                                                            role="img"
-                                                            :aria-label="t('nav_menu.mark_all_read')"
-                                                            :class="{ '-right-1!': isCollapsed }"></span>
-                                                    </i>
+                                                    <span class="bv-nav-icon-box">
+                                                        <i :class="item.icon" class="text-lg relative">
+                                                            <span
+                                                                v-if="isNavItemNotified(item)"
+                                                                class="bv-status-dot bv-nav-notify-dot"
+                                                                data-status="danger"
+                                                                role="img"
+                                                                :aria-label="t('nav_menu.mark_all_read')"
+                                                                :class="{ '-right-1!': isCollapsed }"></span>
+                                                        </i>
+                                                    </span>
                                                     <span v-show="!isCollapsed">{{
                                                         item.titleIsCustom ? item.title : t(item.title || '')
                                                     }}</span>

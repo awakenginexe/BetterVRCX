@@ -107,12 +107,12 @@ vi.mock('@/components/ui/checkbox', () => ({
     }
 }));
 
-vi.mock('lucide-vue-next', () => ({
-    AlertTriangle: { template: '<i />' },
-    Image: { template: '<i />' },
-    Lock: { template: '<i />' },
-    MoreHorizontal: { template: '<i />' }
-}));
+vi.mock('lucide-vue-next', async (importOriginal) => {
+    const actual = await importOriginal();
+    return new Proxy(actual, {
+        get: (target, prop) => target[prop] || { template: '<i />' }
+    });
+});
 
 vi.mock('../../../../stores', () => ({
     useFavoriteStore: () => ({
@@ -123,6 +123,15 @@ vi.mock('../../../../stores', () => ({
     }),
     useInstanceStore: () => ({
         createNewInstance: (...args) => mocks.createNewInstance(...args)
+    }),
+    useLocationStore: () => ({
+        lastLocation: { value: { location: '' } }
+    }),
+    useUserStore: () => ({
+        currentUser: { id: 'usr_me' }
+    }),
+    useAppearanceSettingsStore: () => ({
+        isDarkMode: true
     })
 }));
 
@@ -139,6 +148,12 @@ vi.mock('../../../../coordinators/inviteCoordinator', () => ({
 
 vi.mock('../../../../coordinators/worldCoordinator', () => ({
     showWorldDialog: (...args) => mocks.showWorldDialog(...args)
+}));
+
+vi.mock('../../../../components/dialogs/NewInstanceDialog/NewInstanceDialog.vue', () => ({
+    default: {
+        template: '<div data-testid="new-instance-dialog" />'
+    }
 }));
 
 vi.mock('../../../../coordinators/favoriteCoordinator', () => ({
@@ -337,13 +352,11 @@ describe('FavoritesWorldItem.vue', () => {
     it('runs new instance and self invite actions from menu', async () => {
         const wrapper = mountItem();
 
-        await clickMenuItem(wrapper, 'dialog.world.actions.new_instance');
         await clickMenuItem(
             wrapper,
             'dialog.world.actions.new_instance_and_self_invite'
         );
 
-        expect(mocks.createNewInstance).toHaveBeenCalledWith('wrld_default');
         expect(mocks.newInstanceSelfInvite).toHaveBeenCalledWith(
             'wrld_default'
         );

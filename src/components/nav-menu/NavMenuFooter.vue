@@ -15,7 +15,9 @@
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <SidebarMenuButton class="bv-nav-item bv-focus-ring" :tooltip="t('nav_tooltip.help_support')">
-                            <i class="ri-question-line inline-flex size-6 items-center justify-center text-lg" />
+                            <span class="bv-nav-icon-box">
+                                <i class="ri-question-line text-lg" />
+                            </span>
                             <span v-show="!isCollapsed">{{ t('nav_tooltip.help_support') }}</span>
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
@@ -47,11 +49,11 @@
                             class="bv-nav-item bv-focus-ring"
                             :tooltip="t('nav_tooltip.manage')"
                             :is-active="isSettingsRoute">
-                            <span class="relative inline-flex size-6 items-center justify-center">
+                            <span class="bv-nav-icon-box relative">
                                 <i class="ri-settings-3-line text-lg" />
                                 <span
                                     v-if="hasPendingUpdate || hasPendingInstall"
-                                    class="bv-status-dot absolute top-0.5 -right-1"
+                                    class="bv-status-dot absolute -top-1 -right-1"
                                     data-status="danger"
                                     role="img"
                                     :aria-label="t('nav_menu.update_available')"></span>
@@ -174,7 +176,9 @@
                     class="bv-nav-item bv-focus-ring"
                     :tooltip="isCollapsed ? t('nav_tooltip.expand_menu') : t('nav_tooltip.collapse_menu')"
                     @click="emit('toggle-nav-collapse')">
-                    <i class="ri-side-bar-line inline-flex size-6 items-center justify-center text-[19px]" />
+                    <span class="bv-nav-icon-box">
+                        <i class="ri-side-bar-line text-lg" />
+                    </span>
                     <span v-show="!isCollapsed">{{ t('nav_tooltip.collapse_menu') }}</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>

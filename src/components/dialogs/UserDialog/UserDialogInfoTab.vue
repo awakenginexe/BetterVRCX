@@ -61,7 +61,7 @@
                         <img
                             v-if="!userDialog.loading"
                             :src="userDialog.instance?.ref?.world?.thumbnailImageUrl"
-                            class="cursor-pointer border border-(--bv-border-default)"
+                            class="cursor-pointer border border-(--bv-border-default) transition-transform duration-200 hover:scale-105 object-cover"
                             style="width: 80px; height: 60px; border-radius: var(--radius-xl)"
                             @click="showFullscreenImageDialog(userDialog.instance?.ref?.world?.imageUrl)"
                             loading="lazy" />

@@ -336,10 +336,22 @@ function createWindow() {
     });
     applyWindowState();
     const indexPath = path.join(rootDir, 'build/html/index.html');
-    mainWindow.loadFile(indexPath);
     if (debug) {
-        mainWindow.loadURL('http://localhost:9000/index.html');
+        mainWindow.loadURL('http://localhost:9000/index.html').catch(() => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.loadFile(indexPath);
+            }
+        });
+        mainWindow.webContents.on('did-fail-load', (event, errorCode) => {
+            if (errorCode === -102 /* ERR_CONNECTION_REFUSED */) {
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.loadFile(indexPath);
+                }
+            }
+        });
         mainWindow.webContents.openDevTools();
+    } else {
+        mainWindow.loadFile(indexPath);
     }
 
     // add proxy config, doesn't work, thanks electron
