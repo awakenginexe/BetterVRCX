@@ -16,17 +16,28 @@ async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function generateSvgBadge(label, flaggedCount, totalEngines) {
+async function generateSvgBadge(label, flaggedCount, totalEngines) {
     const isClean = flaggedCount === 0;
-    const color = isClean ? '#4c1' : (flaggedCount <= 2 ? '#bf8700' : '#e05d44');
+    const color = isClean ? '4c1' : (flaggedCount <= 2 ? 'bf8700' : 'e05d44');
     const text = `${flaggedCount} flagged / ${totalEngines} engines`;
-    const labelWidth = Math.max(90, label.length * 8 + 10);
+    const shieldsUrl = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(text)}-${color}?logo=virustotal&logoColor=white`;
+
+    try {
+        const res = await fetch(shieldsUrl);
+        if (res.ok) {
+            return await res.text();
+        }
+    } catch {
+        // Fallback to local template with embedded VirusTotal logo
+    }
+
+    const labelWidth = Math.max(114, label.length * 8 + 30);
     const valueWidth = Math.max(140, text.length * 7 + 20);
     const totalWidth = labelWidth + valueWidth;
-    const labelCenter = Math.round(labelWidth / 2) * 10;
+    const labelCenter = Math.round(15 + (labelWidth - 15) / 2) * 10;
     const valueCenter = Math.round(labelWidth + valueWidth / 2) * 10;
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="20" role="img" aria-label="${label}: ${text}"><title>${label}: ${text}</title><linearGradient id="a" x2="0" y2="100%"><stop offset="0" stop-opacity=".1" stop-color="#fff"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="${totalWidth}" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><path fill="#555" d="M0 0h${labelWidth}v20H0z"/><path fill="${color}" d="M${labelWidth} 0h${valueWidth}v20H${labelWidth}z"/><path fill="url(#a)" d="M0 0h${totalWidth}v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="${labelCenter}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${labelWidth * 8}">${label}</text><text x="${labelCenter}" y="140" transform="scale(.1)" fill="#fff" textLength="${labelWidth * 8}">${label}</text><text aria-hidden="true" x="${valueCenter}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${valueWidth * 7}">${text}</text><text x="${valueCenter}" y="140" transform="scale(.1)" fill="#fff" textLength="${valueWidth * 7}">${text}</text></g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="20" role="img" aria-label="${label}: ${text}"><title>${label}: ${text}</title><filter id="blur"><feGaussianBlur stdDeviation="16"/></filter><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="${totalWidth}" height="20" rx="3"/></clipPath><g clip-path="url(#r)"><rect width="${labelWidth}" height="20" fill="#555"/><rect x="${labelWidth}" width="${valueWidth}" height="20" fill="#${color}"/><rect width="${totalWidth}" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSJ3aGl0ZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlZpcnVzVG90YWw8L3RpdGxlPjxwYXRoIGQ9Ik0xMC44NyAxMkwwIDIyLjY4aDI0VjEuMzJIMHptMTAuNzMgOC41Mkg1LjI4bDguNjM3LTguNDQ4TDUuMjggMy40OEgyMS42eiIvPjwvc3ZnPg=="/><g transform="scale(.1)"><g aria-hidden="true" fill="#010101"><text x="${labelCenter}" y="150" fill-opacity=".8" filter="url(#blur)" textLength="${(labelWidth - 30) * 8}">${label}</text><text x="${labelCenter}" y="150" fill-opacity=".3" textLength="${(labelWidth - 30) * 8}">${label}</text></g><text x="${labelCenter}" y="140" textLength="${(labelWidth - 30) * 8}">${label}</text></g><g transform="scale(.1)"><g aria-hidden="true" fill="#010101"><text x="${valueCenter}" y="150" fill-opacity=".8" filter="url(#blur)" textLength="${valueWidth * 7}">${text}</text><text x="${valueCenter}" y="150" fill-opacity=".3" textLength="${valueWidth * 7}">${text}</text></g><text x="${valueCenter}" y="140" textLength="${valueWidth * 7}">${text}</text></g></g></svg>`;
 }
 
 async function uploadToVirusTotal(filePath, apiKey) {
@@ -190,7 +201,7 @@ async function main() {
     const result = await uploadToVirusTotal(targetFile, apiKey);
 
     // Write SVG badge
-    const badgeSvg = generateSvgBadge('BetterVRCX.exe', result.flaggedCount, result.totalEngines);
+    const badgeSvg = await generateSvgBadge('BetterVRCX.exe', result.flaggedCount, result.totalEngines);
     const badgePath = path.join(rootDir, 'README/VirusTotal-BetterVRCX.svg');
     fs.writeFileSync(badgePath, badgeSvg, 'utf8');
     console.log(`[VirusTotal] Generated badge at ${path.relative(rootDir, badgePath)}`);
