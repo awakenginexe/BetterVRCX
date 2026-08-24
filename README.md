@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/4f934214b570fdacce91db7c5996996721b40bf2587ff3a7cb68678a8d9db2ab">
+  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/74aedf43ffc812f8fa563818705e619c04235b591ac295d443fb231f96c3e8b0">
     <img alt="VirusTotal scan for BetterVRCX.exe" src="README/VirusTotal-BetterVRCX.svg" />
   </a>
 </p>
@@ -67,6 +67,10 @@ For macOS and Linux check [here](https://github.com/awakenginexe/BetterVRCX/rele
 - See [Building from source](https://github.com/vrcx-team/VRCX/wiki/Building-from-source) for instructions on how to build BetterVRCX from source.
 - For a guide on how to run BetterVRCX on Linux, see [here](https://github.com/vrcx-team/VRCX/wiki/Running-VRCX-on-Linux)
 - Interested in contributing? See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
+
+## Security
+
+Every `v*` release tag runs the [BetterVRCX release workflow](https://github.com/awakenginexe/BetterVRCX/actions/workflows/github_actions.yml), which scans the Windows `BetterVRCX.exe` build with [VirusTotal](https://www.virustotal.com/). The badge above links to the latest report and is refreshed automatically in this README and the translated READMEs.
 
 # Screenshots
 

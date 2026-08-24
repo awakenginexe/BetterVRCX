@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/4f934214b570fdacce91db7c5996996721b40bf2587ff3a7cb68678a8d9db2ab">
+  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/74aedf43ffc812f8fa563818705e619c04235b591ac295d443fb231f96c3e8b0">
     <img alt="VirusTotal scan for BetterVRCX.exe" src="./VirusTotal-BetterVRCX.svg" />
   </a>
 </p>
