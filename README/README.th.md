@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -77,10 +77,6 @@ BetterVRCX คือโปรแกรมคู่หูสำหรับ VRCha
 
 <img src="../images/Preview/Feed.png" alt="feed">
 
-<h3>ประวัติเกม</h3>
-
-<img src="../images/Preview/GameLog.png" alt="gamelog">
-
 <h3>ข้อมูลผู้ใช้</h3>
 
 <h4>ฉัน</h4>
@@ -91,10 +87,6 @@ BetterVRCX คือโปรแกรมคู่หูสำหรับ VRCha
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="friend">
 
-<h4>เพื่อน VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="friend vrc+">
-
 <h3>โลก</h3>
 
 <h4>Instance</h4>
@@ -104,6 +96,20 @@ BetterVRCX คือโปรแกรมคู่หูสำหรับ VRCha
 <h4>ข้อมูล</h4>
 
 <img src="../images/Preview/World-Info.png" alt="info">
+
+<h3>ส่วนเสริม</h3>
+
+<h4>วอลเปเปอร์หน้าหลัก</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="วอลเปเปอร์หน้าหลัก">
+
+<h4>พื้นหลังโปรไฟล์</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="พื้นหลังโปรไฟล์">
+
+<h4>สำรองข้อมูล Google Drive</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="สำรองข้อมูล Google Drive">
 
 </div>
 

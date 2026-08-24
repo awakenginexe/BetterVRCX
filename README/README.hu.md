@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -77,10 +77,6 @@ Töltsd le és telepítsd a legfrissebb telepítőt (`BetterVRCX_Setup.exe`) [in
 
 <img src="../images/Preview/Feed.png" alt="hírfolyam">
 
-<h3>Játéknapló</h3>
-
-<img src="../images/Preview/GameLog.png" alt="játéknapló">
-
 <h3>Felhasználói adatok</h3>
 
 <h4>Én</h4>
@@ -91,10 +87,6 @@ Töltsd le és telepítsd a legfrissebb telepítőt (`BetterVRCX_Setup.exe`) [in
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="barát">
 
-<h4>Barát VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="barát VRC+">
-
 <h3>Világ</h3>
 
 <h4>Szoba</h4>
@@ -104,6 +96,20 @@ Töltsd le és telepítsd a legfrissebb telepítőt (`BetterVRCX_Setup.exe`) [in
 <h4>Infó</h4>
 
 <img src="../images/Preview/World-Info.png" alt="infó">
+
+<h3>Kiegészítők</h3>
+
+<h4>Kezdőlap háttérképe</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="kezdőlap háttérképe">
+
+<h4>Profil háttere</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="profil háttere">
+
+<h4>Google Drive biztonsági mentés</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="Google Drive biztonsági mentés">
 
 </div>
 

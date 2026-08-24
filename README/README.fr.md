@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -77,10 +77,6 @@ Téléchargez et exécutez le dernier programme d'installation (`BetterVRCX_Setu
 
 <img src="../images/Preview/Feed.png" alt="flux">
 
-<h3>Logs du Jeu</h3>
-
-<img src="../images/Preview/GameLog.png" alt="logs du jeu">
-
 <h3>Infos Utilisateur</h3>
 
 <h4>Moi</h4>
@@ -91,10 +87,6 @@ Téléchargez et exécutez le dernier programme d'installation (`BetterVRCX_Setu
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="ami">
 
-<h4>Ami VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="ami VRC+">
-
 <h3>Monde</h3>
 
 <h4>Instance</h4>
@@ -104,6 +96,20 @@ Téléchargez et exécutez le dernier programme d'installation (`BetterVRCX_Setu
 <h4>Infos</h4>
 
 <img src="../images/Preview/World-Info.png" alt="infos">
+
+<h3>Modules complémentaires</h3>
+
+<h4>Fond d'écran d'accueil</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="fond d'écran d'accueil">
+
+<h4>Arrière-plan du profil</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="arrière-plan du profil">
+
+<h4>Sauvegarde Google Drive</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="sauvegarde Google Drive">
 
 </div>
 

@@ -81,7 +81,7 @@ namespace VRCX
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to read version file");
-                Version = "BetterVRCX v3.3.0 B 2026.08.23";
+                Version = "BetterVRCX v3.3.1 B 2026.08.24";
             }
         }
 

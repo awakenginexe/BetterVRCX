@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -77,10 +77,6 @@ Scarica e installa l'ultimo installer (`BetterVRCX_Setup.exe`) da [qui](https://
 
 <img src="../images/Preview/Feed.png" alt="feed">
 
-<h3>GameLog</h3>
-
-<img src="../images/Preview/GameLog.png" alt="gamelog">
-
 <h3>UserInfo</h3>
 
 <h4>Me</h4>
@@ -91,10 +87,6 @@ Scarica e installa l'ultimo installer (`BetterVRCX_Setup.exe`) da [qui](https://
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="friend">
 
-<h4>Friend VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="friend vrc+">
-
 <h3>World</h3>
 
 <h4>Instance</h4>
@@ -104,6 +96,20 @@ Scarica e installa l'ultimo installer (`BetterVRCX_Setup.exe`) da [qui](https://
 <h4>Info</h4>
 
 <img src="../images/Preview/World-Info.png" alt="info">
+
+<h3>Add-on</h3>
+
+<h4>Sfondo della home</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="sfondo della home">
+
+<h4>Sfondo del profilo</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="sfondo del profilo">
+
+<h4>Backup Google Drive</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="backup Google Drive">
 
 </div>
 

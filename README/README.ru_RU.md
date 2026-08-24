@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -77,10 +77,6 @@ BetterVRCX является ассистентом/компаньоном при
 
 <img src="../images/Preview/Feed.png" alt="лента новостей">
 
-<h3>Журнал игры</h3>
-
-<img src="../images/Preview/GameLog.png" alt="журнал игры">
-
 <h3>Информация о пользователе</h3>
 
 <h4>Я</h4>
@@ -91,10 +87,6 @@ BetterVRCX является ассистентом/компаньоном при
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="друг">
 
-<h4>Друг VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="друг VRC+">
-
 <h3>Мир</h3>
 
 <h4>Инстанс</h4>
@@ -104,6 +96,20 @@ BetterVRCX является ассистентом/компаньоном при
 <h4>Информация</h4>
 
 <img src="../images/Preview/World-Info.png" alt="информация">
+
+<h3>Дополнения</h3>
+
+<h4>Обои главной страницы</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="обои главной страницы">
+
+<h4>Фон профиля</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="фон профиля">
+
+<h4>Резервное копирование Google Drive</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="резервное копирование Google Drive">
 
 </div>
 

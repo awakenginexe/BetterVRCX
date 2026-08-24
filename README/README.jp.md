@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -78,10 +78,6 @@ BetterVRCX は VRChat クライアント (デスクトップ & VR) や Web サ�
 
 <img src="../images/Preview/Feed.png" alt="フィード">
 
-<h3>ゲームログ</h3>
-
-<img src="../images/Preview/GameLog.png" alt="ゲームログ">
-
 <h3>ユーザー情報</h3>
 
 <h4>自分</h4>
@@ -92,10 +88,6 @@ BetterVRCX は VRChat クライアント (デスクトップ & VR) や Web サ�
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="フレンド">
 
-<h4>フレンド VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="フレンド VRC+">
-
 <h3>ワールド</h3>
 
 <h4>インスタンス</h4>
@@ -105,6 +97,20 @@ BetterVRCX は VRChat クライアント (デスクトップ & VR) や Web サ�
 <h4>情報</h4>
 
 <img src="../images/Preview/World-Info.png" alt="情報">
+
+<h3>アドオン</h3>
+
+<h4>ホーム壁紙</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="ホーム壁紙">
+
+<h4>プロフィール背景</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="プロフィール背景">
+
+<h4>Google Drive バックアップ</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="Google Drive バックアップ">
 
 </div>
 

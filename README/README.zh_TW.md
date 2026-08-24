@@ -3,7 +3,7 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -80,10 +80,6 @@ BetterVRCX 是一款專為 VRChat 設計的桌面小幫手，協助你管理社�
 
 <img src="../images/Preview/Feed.png" alt="好友動態">
 
-<h3>遊戲日誌</h3>
-
-<img src="../images/Preview/GameLog.png" alt="遊戲日誌">
-
 <h3>使用者資訊</h3>
 
 <h4>個人</h4>
@@ -94,10 +90,6 @@ BetterVRCX 是一款專為 VRChat 設計的桌面小幫手，協助你管理社�
 
 <img src="../images/Preview/Userinfo-Friend.png" alt="好友資訊">
 
-<h4>好友 VRC+</h4>
-
-<img src="../images/Preview/Userinfo-Friend-VRC+.png" alt="好友 VRC+">
-
 <h3>世界資訊</h3>
 
 <h4>房間</h4>
@@ -107,6 +99,20 @@ BetterVRCX 是一款專為 VRChat 設計的桌面小幫手，協助你管理社�
 <h4>詳細資訊</h4>
 
 <img src="../images/Preview/World-Info.png" alt="詳細資訊">
+
+<h3>附加元件</h3>
+
+<h4>首頁桌布</h4>
+
+<img src="../images/Preview/Addon-Home.png" alt="首頁桌布">
+
+<h4>個人檔案背景</h4>
+
+<img src="../images/Preview/Addon-Profile.png" alt="個人檔案背景">
+
+<h4>Google Drive 備份</h4>
+
+<img src="../images/Preview/Addon-GDrive.png" alt="Google Drive 備份">
 
 </div>
 

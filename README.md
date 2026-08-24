@@ -3,7 +3,7 @@
 # <img src="./images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-3.3.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-3.3.1-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
@@ -88,10 +88,6 @@ Every `v*` release tag runs the [BetterVRCX release workflow](https://github.com
 
 <img src="./images/Preview/Feed.png" alt="Feed">
 
-<h3>GameLog</h3>
-
-<img src="./images/Preview/GameLog.png" alt="GameLog">
-
 <h3>UserInfo</h3>
 
 <h4>Me</h4>
@@ -102,10 +98,6 @@ Every `v*` release tag runs the [BetterVRCX release workflow](https://github.com
 
 <img src="./images/Preview/Userinfo-Friend.png" alt="Friend">
 
-<h4>Friend VRC+</h4>
-
-<img src="./images/Preview/Userinfo-Friend-VRC+.png" alt="Friend VRC+">
-
 <h3>World</h3>
 
 <h4>Instance</h4>
@@ -115,6 +107,20 @@ Every `v*` release tag runs the [BetterVRCX release workflow](https://github.com
 <h4>Info</h4>
 
 <img src="./images/Preview/World-Info.png" alt="Info">
+
+<h3>Addons</h3>
+
+<h4>Home Wallpaper</h4>
+
+<img src="./images/Preview/Addon-Home.png" alt="Home Wallpaper">
+
+<h4>Profile Backdrop</h4>
+
+<img src="./images/Preview/Addon-Profile.png" alt="Profile Backdrop">
+
+<h4>Google Drive Backup</h4>
+
+<img src="./images/Preview/Addon-GDrive.png" alt="Google Drive Backup">
 
 </div>
 
