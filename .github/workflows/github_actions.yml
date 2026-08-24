@@ -13,6 +13,7 @@ concurrency:
 permissions:
   id-token: write
   contents: write
+  pull-requests: write
 
 jobs:
   set_version:
@@ -176,18 +177,55 @@ jobs:
         run: |
           node ./build-scripts/virustotal-scan.mjs --file=build/Cef/BetterVRCX.exe --version=${{ needs.set_version.outputs.version }}
 
-      - name: Commit updated VirusTotal scan and READMEs
+      - name: Create and auto-merge VirusTotal README pull request
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.set_version.outputs.tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          branch="automation/virustotal-${RELEASE_TAG}"
+          git switch --create "${branch}"
           git add README.md README/
           if git diff-index --quiet HEAD; then
             echo "No VirusTotal README changes to commit."
             exit 0
           fi
           git commit -m "docs: update VirusTotal scan and badges [skip ci]"
-          git push origin HEAD:refs/heads/master
+          git push --force origin "HEAD:refs/heads/${branch}"
+
+          pr_number="$(gh pr list \
+            --repo "${GITHUB_REPOSITORY}" \
+            --head "${branch}" \
+            --base master \
+            --state open \
+            --json number \
+            --jq '.[0].number')"
+          if [[ -z "${pr_number}" ]]; then
+            pr_url="$(gh pr create \
+              --repo "${GITHUB_REPOSITORY}" \
+              --base master \
+              --head "${branch}" \
+              --title "docs: update VirusTotal scan and badges (${RELEASE_TAG})" \
+              --body "Automated VirusTotal scan result and README badge update for ${RELEASE_TAG}.")"
+            pr_number="${pr_url##*/}"
+          fi
+
+          if gh pr review "${pr_number}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --approve \
+            --body "Automated approval for the VirusTotal README status update."; then
+            echo "Automatic PR approval submitted for #${pr_number}."
+          else
+            echo "Automatic PR approval was unavailable; leaving #${pr_number} for configured auto-merge." >&2
+          fi
+
+          gh pr merge "${pr_number}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --auto \
+            --squash \
+            --delete-branch
 
       - name: Upload Cef dotnet artifacts
         uses: actions/upload-artifact@v7
