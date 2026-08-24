@@ -188,7 +188,7 @@ jobs:
           branch="automation/virustotal-${RELEASE_TAG}"
           git switch --create "${branch}"
           git add README.md README/
-          if git diff-index --quiet HEAD; then
+          if git diff --cached --quiet; then
             echo "No VirusTotal README changes to commit."
             exit 0
           fi
