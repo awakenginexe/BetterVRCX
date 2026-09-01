@@ -19,11 +19,12 @@
         as: { type: null, required: false },
         name: { type: String, required: false },
         required: { type: Boolean, required: false },
+        thumbIcon: { type: [Object, Function], required: false },
         class: { type: null, required: false }
     });
     const emits = defineEmits(['update:modelValue', 'valueCommit']);
 
-    const delegatedProps = reactiveOmit(props, 'class');
+    const delegatedProps = reactiveOmit(props, 'class', 'thumbIcon');
 
     const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
@@ -51,6 +52,12 @@
             v-for="(_, key) in modelValue"
             :key="key"
             data-slot="slider-thumb"
-            class="bg-white border-primary ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
+            class="bg-white border-primary ring-ring/50 flex size-4 shrink-0 items-center justify-center rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50">
+            <component
+                :is="props.thumbIcon"
+                v-if="props.thumbIcon"
+                aria-hidden="true"
+                class="pointer-events-none size-4" />
+        </SliderThumb>
     </SliderRoot>
 </template>

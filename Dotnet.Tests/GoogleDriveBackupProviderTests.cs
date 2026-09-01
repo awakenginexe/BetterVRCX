@@ -12,6 +12,51 @@ namespace BetterVRCX.Tests;
 public sealed class GoogleDriveBackupProviderTests
 {
     [Fact]
+    public async Task TrashBackup_moves_a_managed_backup_to_google_drive_trash()
+    {
+        var handler = new RecordingHandler(request =>
+        {
+            if (request.Method == HttpMethod.Patch)
+                return Json("{\"id\":\"backup-1\",\"trashed\":true}");
+
+            if (request.RequestUri!.AbsolutePath.EndsWith("/files/backup-1", StringComparison.Ordinal))
+            {
+                return Json("{\"id\":\"backup-1\",\"trashed\":false,\"parents\":[\"backup-folder\"],\"appProperties\":{\"bettervrcx_backup\":\"1\"}}");
+            }
+
+            return Json("{\"files\":[{\"id\":\"backup-folder\",\"name\":\"BetterVRCX\",\"mimeType\":\"application/vnd.google-apps.folder\"}]}");
+        });
+        using var httpClient = new HttpClient(handler);
+        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client", "test-secret"), httpClient);
+        var provider = new GoogleDriveBackupProvider(httpClient, auth, new FakeTokenStore("refresh"), new GoogleTokenSet("access", "refresh", DateTimeOffset.UtcNow.AddHours(1)));
+
+        await InvokeTrashBackupAsync(provider, "backup-1");
+
+        var request = Assert.Single(handler.Requests.FindAll(request => request.Method == HttpMethod.Patch));
+        Assert.Contains("/files/backup-1", request.Uri, StringComparison.Ordinal);
+        Assert.Equal("{\"trashed\":true}", request.Content);
+    }
+
+    [Fact]
+    public async Task TrashBackup_rejects_a_file_that_is_not_a_managed_backup()
+    {
+        var handler = new RecordingHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/files/not-a-backup", StringComparison.Ordinal))
+                return Json("{\"id\":\"not-a-backup\",\"trashed\":false,\"parents\":[\"backup-folder\"],\"appProperties\":{}}");
+
+            return Json("{\"files\":[{\"id\":\"backup-folder\",\"name\":\"BetterVRCX\",\"mimeType\":\"application/vnd.google-apps.folder\"}]}");
+        });
+        using var httpClient = new HttpClient(handler);
+        var auth = new GoogleDriveAuthService(new GoogleDriveOAuthOptions("client", "test-secret"), httpClient);
+        var provider = new GoogleDriveBackupProvider(httpClient, auth, new FakeTokenStore("refresh"), new GoogleTokenSet("access", "refresh", DateTimeOffset.UtcNow.AddHours(1)));
+
+        await Assert.ThrowsAsync<GoogleDriveApiException>(() => InvokeTrashBackupAsync(provider, "not-a-backup"));
+
+        Assert.DoesNotContain(handler.Requests, request => request.Method == HttpMethod.Patch);
+    }
+
+    [Fact]
     public async Task ListBackups_reads_only_the_app_owned_backup_metadata()
     {
         var handler = new RecordingHandler(request =>
@@ -79,10 +124,25 @@ public sealed class GoogleDriveBackupProviderTests
         public void Clear() { }
     }
 
+    private static Task InvokeTrashBackupAsync(GoogleDriveBackupProvider provider, string fileId)
+    {
+        var method = typeof(GoogleDriveBackupProvider).GetMethod("TrashBackupAsync");
+        Assert.NotNull(method);
+        return Assert.IsAssignableFrom<Task>(method!.Invoke(provider, [fileId, CancellationToken.None]));
+    }
+
+    private sealed record RecordedRequest(HttpMethod Method, string Uri, string? Content);
+
     private sealed class RecordingHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
+        public List<RecordedRequest> Requests { get; } = [];
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            Requests.Add(new RecordedRequest(
+                request.Method,
+                request.RequestUri?.AbsoluteUri ?? string.Empty,
+                request.Content?.ReadAsStringAsync().GetAwaiter().GetResult()));
             return Task.FromResult(responder(request));
         }
     }

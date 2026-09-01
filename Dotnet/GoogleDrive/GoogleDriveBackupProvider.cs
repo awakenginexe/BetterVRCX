@@ -184,6 +184,51 @@ public sealed class GoogleDriveBackupProvider
         return Path.GetFullPath(destinationPath);
     }
 
+    public async Task TrashBackupAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(fileId))
+            throw new ArgumentException("A backup file id is required.", nameof(fileId));
+
+        var backupFolderId = await EnsureBackupFolderAsync(cancellationToken);
+        var fileUri = BuildDriveUri($"files/{Uri.EscapeDataString(fileId)}", new Dictionary<string, string>
+        {
+            ["fields"] = "id,trashed,parents,appProperties"
+        });
+        using (var response = await SendAuthorizedAsync(token => new HttpRequestMessage(HttpMethod.Get, fileUri), cancellationToken))
+        using (var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken))
+        {
+            var file = document.RootElement;
+            var isManagedBackup = file.TryGetProperty("appProperties", out var properties) &&
+                                  ReadProperty(properties, "bettervrcx_backup") == "1";
+            var isInBackupFolder = false;
+            if (file.TryGetProperty("parents", out var parents) && parents.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var parent in parents.EnumerateArray())
+                {
+                    if (parent.ValueKind == JsonValueKind.String && parent.GetString() == backupFolderId)
+                    {
+                        isInBackupFolder = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isManagedBackup || !isInBackupFolder)
+                throw new GoogleDriveApiException("Only BetterVRCX cloud backups can be moved to Google Drive Trash.", HttpStatusCode.Forbidden);
+            if (file.TryGetProperty("trashed", out var trashed) && trashed.ValueKind == JsonValueKind.True)
+                throw new GoogleDriveApiException("This cloud backup is already in Google Drive Trash.", HttpStatusCode.Conflict);
+        }
+
+        var trashUri = BuildDriveUri($"files/{Uri.EscapeDataString(fileId)}", new Dictionary<string, string>
+        {
+            ["fields"] = "id,trashed"
+        });
+        using var trashResponse = await SendAuthorizedAsync(token => new HttpRequestMessage(HttpMethod.Patch, trashUri)
+        {
+            Content = new StringContent("{\"trashed\":true}", Encoding.UTF8, "application/json")
+        }, cancellationToken);
+    }
+
     public async Task<string?> GetAccountEmailAsync(CancellationToken cancellationToken = default)
     {
         var uri = BuildDriveUri("about", new Dictionary<string, string>

@@ -9,7 +9,8 @@ describe('cloudBackup service', () => {
         DisconnectGoogleDrive: vi.fn(),
         BackupNow: vi.fn(),
         ListBackups: vi.fn(),
-        RestoreBackup: vi.fn()
+        RestoreBackup: vi.fn(),
+        DeleteBackup: vi.fn()
     };
 
     beforeEach(() => {
@@ -42,6 +43,19 @@ describe('cloudBackup service', () => {
         await cloudBackup.restoreBackup('backup-1', 'replace');
 
         expect(api.RestoreBackup).toHaveBeenCalledWith('backup-1', 'replace');
+    });
+
+    test('passes the selected backup id to the native trash boundary', async () => {
+        api.DeleteBackup.mockResolvedValue(
+            JSON.stringify({ success: true, state: 'backup_deleted' })
+        );
+
+        await expect(cloudBackup.deleteBackup('backup-1')).resolves.toEqual({
+            success: true,
+            state: 'backup_deleted'
+        });
+
+        expect(api.DeleteBackup).toHaveBeenCalledWith('backup-1');
     });
 
     test('surfaces native backup-list failures instead of treating them as empty', async () => {

@@ -270,6 +270,35 @@ public sealed class DatabaseBackupApi
         }
     }
 
+    public async Task<string> DeleteBackup(string fileId)
+    {
+        if (!await _operationLock.WaitAsync(0))
+            return SerializeFailure("busy", "Another Google Drive operation is already running.");
+        if (!_provider.IsConnected)
+        {
+            _operationLock.Release();
+            return SerializeFailure("not_connected", "Connect Google Drive before deleting a backup.");
+        }
+
+        try
+        {
+            SetStatus("deleting", connected: true, error: null);
+            await _provider.TrashBackupAsync(fileId);
+            SetStatus("backup_deleted", connected: true, error: null);
+            return Serialize(new CloudBackupOperationResult(true, "backup_deleted", null, false, null));
+        }
+        catch (Exception ex)
+        {
+            var state = ex is GoogleDriveOAuthException ? "auth_expired" : "error";
+            SetStatus(state, connected: _provider.IsConnected, error: GetSafeError(ex));
+            return Serialize(new CloudBackupOperationResult(false, state, _status.Error, false, null));
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
+    }
+
     private void SetStatus(string state, bool connected, string? email = null, string? error = null)
     {
         _status = _status with
