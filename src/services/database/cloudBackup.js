@@ -41,6 +41,10 @@ const cloudBackup = {
         return parseNativeResult(
             await getNativeApi().RestoreBackup(fileId, mode)
         );
+    },
+
+    async deleteBackup(fileId) {
+        return parseNativeResult(await getNativeApi().DeleteBackup(fileId));
     }
 };
 

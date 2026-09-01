@@ -5,7 +5,7 @@
 ;https://nsis.sourceforge.io/NsProcess_plugin
 ;https://nsis.sourceforge.io/Inetc_plug-in
 
-!addplugindir "Plugins\x86-unicode"
+!addplugindir /x86-unicode "${__FILEDIR__}\Plugins\x86-unicode"
 
 ;--------------------------------
 ;Version

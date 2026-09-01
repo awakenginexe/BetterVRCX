@@ -12,6 +12,7 @@ const DEFAULT_STATUS = {
     lastBackupSize: 0,
     error: null
 };
+const RESTORE_STATUS_POLL_INTERVAL_MS = 1000;
 
 export const useGoogleDriveBackupStore = defineStore(
     'GoogleDriveBackup',
@@ -30,7 +31,8 @@ export const useGoogleDriveBackupStore = defineStore(
                     'backing_up',
                     'downloading',
                     'merging',
-                    'restoring'
+                    'restoring',
+                    'deleting'
                 ].includes(status.value.state)
         );
 
@@ -111,7 +113,8 @@ export const useGoogleDriveBackupStore = defineStore(
                     'backing_up',
                     'downloading',
                     'merging',
-                    'restoring'
+                    'restoring',
+                    'deleting'
                 ].includes(status.value.state)
             )
                 return [];
@@ -127,6 +130,16 @@ export const useGoogleDriveBackupStore = defineStore(
         async function restoreBackup(fileId, mode) {
             if (busy.value || !connected.value) return null;
             loading.value = true;
+            applyStatus({ state: 'downloading', error: null });
+            let acceptsRestoreStatus = true;
+            const statusPoll = setInterval(() => {
+                cloudBackup
+                    .getStatus()
+                    .then((nextStatus) => {
+                        if (acceptsRestoreStatus) applyStatus(nextStatus);
+                    })
+                    .catch(() => {});
+            }, RESTORE_STATUS_POLL_INTERVAL_MS);
             try {
                 const result = await cloudBackup.restoreBackup(fileId, mode);
                 if (result?.state) {
@@ -137,6 +150,29 @@ export const useGoogleDriveBackupStore = defineStore(
                     };
                 }
                 if (result?.success) await loadBackups();
+                return result;
+            } finally {
+                acceptsRestoreStatus = false;
+                clearInterval(statusPoll);
+                loading.value = false;
+            }
+        }
+
+        async function deleteBackup(fileId) {
+            if (busy.value || !connected.value) return null;
+            loading.value = true;
+            applyStatus({ state: 'deleting', error: null });
+            try {
+                const result = await cloudBackup.deleteBackup(fileId);
+                if (result?.state) {
+                    applyStatus({
+                        state: result.state,
+                        error: result.error || null
+                    });
+                }
+                if (result?.success) {
+                    backups.value = await cloudBackup.listBackups();
+                }
                 return result;
             } finally {
                 loading.value = false;
@@ -154,7 +190,8 @@ export const useGoogleDriveBackupStore = defineStore(
             disconnect,
             backupNow,
             loadBackups,
-            restoreBackup
+            restoreBackup,
+            deleteBackup
         };
     }
 );

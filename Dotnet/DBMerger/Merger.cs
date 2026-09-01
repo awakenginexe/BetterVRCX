@@ -493,38 +493,25 @@ public partial class Merger(SQLiteConnection dbConn, string oldDBName, string ne
         if (insertColumns.Count == 0)
             return;
 
-        var primaryKeyColumns = GetPrimaryKeyColumnNames(dbConn, newDBName, table);
-        var matchColumns = insertColumns.Where(column => !primaryKeyColumns.Contains(column)).ToList();
-        if (matchColumns.Count == 0)
-            matchColumns = insertColumns;
-
         var insertClause = string.Join(", ", insertColumns.Select(QuoteIdentifier));
         var selectClause = string.Join(", ", insertColumns.Select(column => $"source.{QuoteIdentifier(column)}"));
-        var duplicateClause = string.Join(
-            " AND ",
-            matchColumns.Select(column =>
-                $"target.{QuoteIdentifier(column)} IS source.{QuoteIdentifier(column)}"));
-
-        var query = $"INSERT INTO {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} ({insertClause}) " +
-                    $"SELECT {selectClause} FROM {QuoteIdentifier(oldDBName)}.{QuoteIdentifier(table)} source " +
-                    $"WHERE NOT EXISTS (SELECT 1 FROM {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} target WHERE {duplicateClause});";
+        var query = $"INSERT OR IGNORE INTO {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} ({insertClause}) " +
+                      $"SELECT {selectClause} FROM {QuoteIdentifier(oldDBName)}.{QuoteIdentifier(table)} source " +
+                      $"EXCEPT SELECT {string.Join(", ", insertColumns.Select(column => $"target.{QuoteIdentifier(column)}"))} " +
+                      $"FROM {QuoteIdentifier(newDBName)}.{QuoteIdentifier(table)} target;";
         try
         {
             SqliteExtensions.ExecuteNonQuery(dbConn, query);
         }
         catch (SQLiteException ex)
         {
-            // A unique constraint can represent a logical conflict that has
-            // no safe automatic winner (for example a cache row with the same
-            // key but different payload). Abort the transaction instead of
-            // silently deleting either side.
+            // Preserve the existing catch so unexpected SQLite failures still
+            // roll back the entire merge. Expected natural-key conflicts use
+            // INSERT OR IGNORE above, retaining this PC's logical record.
             logger.Error(ex, $"Could not preserve both sides of table `{table}`.");
             throw;
         }
     }
-
-    private static List<string> GetPrimaryKeyColumnNames(SQLiteConnection conn, string db, string table)
-        => SqliteExtensions.ReadStrings(conn, $"SELECT name FROM pragma_table_info(@p0, @p1) WHERE pk > 0 ORDER BY pk;", table, db);
 
     private static List<string> GetGeneratedPrimaryKeyColumnNames(SQLiteConnection conn, string db, string table)
         => SqliteExtensions.ReadStrings(conn, $"SELECT name FROM pragma_table_info(@p0, @p1) WHERE pk > 0 AND upper(type) = 'INTEGER' ORDER BY pk;", table, db);

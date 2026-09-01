@@ -34,6 +34,45 @@ public sealed class DatabaseMergeServiceTests
         Assert.Equal(1, TestDatabase.ScalarInt(current.DatabasePath, "SELECT COUNT(*) FROM usr1234567890_feed_gps WHERE location = 'wrld_backup'"));
     }
 
+    [Fact]
+    public void Merge_keeps_one_copy_of_repeated_backup_history()
+    {
+        using var current = TestDatabase.Create("Current World", "local note", "2026-08-19T10:00:00.000+00:00");
+        using var backup = TestDatabase.Create("Backup World", "backup note", "2026-08-19T11:00:00.000+00:00");
+
+        const string duplicateHistory = "INSERT INTO usr1234567890_feed_gps (created_at, user_id, location) VALUES ('2026-08-19T10:00:00.000+00:00', 'usr_friend', 'wrld_backup')";
+        TestDatabase.Insert(backup.Connection, duplicateHistory);
+        TestDatabase.Insert(backup.Connection, duplicateHistory);
+        current.Connection.Close();
+        backup.Connection.Close();
+
+        var result = DatabaseMergeService.Merge(current.DatabasePath, backup.DatabasePath, supportedSchemaVersion: 16);
+
+        Assert.True(result.Success, result.Error);
+        Assert.Equal(1, TestDatabase.ScalarInt(current.DatabasePath, "SELECT COUNT(*) FROM usr1234567890_feed_gps WHERE location = 'wrld_backup'"));
+    }
+
+    [Fact]
+    public void Merge_keeps_current_natural_key_row_and_imports_backup_only_row()
+    {
+        using var current = TestDatabase.Create("Current World", "local note", "2026-08-19T10:00:00.000+00:00");
+        using var backup = TestDatabase.Create("Backup World", "backup note", "2026-08-19T11:00:00.000+00:00");
+
+        TestDatabase.Insert(current.Connection, "CREATE TABLE usr1234567890_activity_sync_state_v2 (user_id TEXT PRIMARY KEY, updated_at TEXT NOT NULL DEFAULT '')");
+        TestDatabase.Insert(backup.Connection, "CREATE TABLE usr1234567890_activity_sync_state_v2 (user_id TEXT PRIMARY KEY, updated_at TEXT NOT NULL DEFAULT '')");
+        TestDatabase.Insert(current.Connection, "INSERT INTO usr1234567890_activity_sync_state_v2 (user_id, updated_at) VALUES ('usr_shared', '2026-09-01T10:00:00Z')");
+        TestDatabase.Insert(backup.Connection, "INSERT INTO usr1234567890_activity_sync_state_v2 (user_id, updated_at) VALUES ('usr_shared', '2026-08-01T10:00:00Z')");
+        TestDatabase.Insert(backup.Connection, "INSERT INTO usr1234567890_activity_sync_state_v2 (user_id, updated_at) VALUES ('usr_backup_only', '2026-08-01T10:00:00Z')");
+        current.Connection.Close();
+        backup.Connection.Close();
+
+        var result = DatabaseMergeService.Merge(current.DatabasePath, backup.DatabasePath, supportedSchemaVersion: 16);
+
+        Assert.True(result.Success, result.Error);
+        Assert.Equal("2026-09-01T10:00:00Z", TestDatabase.ScalarText(current.DatabasePath, "SELECT updated_at FROM usr1234567890_activity_sync_state_v2 WHERE user_id = 'usr_shared'"));
+        Assert.Equal(1, TestDatabase.ScalarInt(current.DatabasePath, "SELECT COUNT(*) FROM usr1234567890_activity_sync_state_v2 WHERE user_id = 'usr_backup_only'"));
+    }
+
     private sealed class TestDatabase : IDisposable
     {
         private TestDatabase(string directoryPath, string databasePath, SQLiteConnection connection)
