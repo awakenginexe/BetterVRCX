@@ -40,7 +40,8 @@
         "help_support": "Aide & Support",
         "expand_menu": "Agrandire le Menu",
         "collapse_menu": "Collapse Menu",
-        "toggle_theme": "Changer le theme"
+        "toggle_theme": "Changer le theme",
+        "home": "Accueil"
     },
     "side_panel": {
         "search_placeholder": "Rechercher",
@@ -607,7 +608,10 @@
                         "use_memo_nicknames": "Utiliser les surnoms dans les mémos",
                         "play": "Jouer",
                         "tts_test_placeholder": "Cliquez pour tester"
-                    }
+                    },
+                    "non_friend_instance_types": "Types d'instances pour les notifications de non-amis",
+                    "non_friend_instance_types_description": "Sélectionnez les types d'instances où les notifications d'arrivée/départ des non-amis s'afficheront (exclut public par défaut pour éviter le spam).",
+                    "non_friend_instance_types_placeholder": "Sélectionner les types d'instances"
                 }
             },
             "wrist_overlay": {
@@ -921,6 +925,14 @@
             },
             "json": {
                 "header": "JSON"
+            },
+            "mutual_friends": {
+                "user_opted_out": "Cet utilisateur a désactivé le partage d'amis en commun.",
+                "user_opted_out_title": "Amis en commun masqués",
+                "user_opted_out_desc": "Cet utilisateur a désactivé le partage d'amis en commun.",
+                "no_mutual_friends": "Aucun ami commun trouvé ou cet utilisateur a désactivé le partage d'amis communs",
+                "mark_opted_out": "Marquer comme désactivé",
+                "unmark_opted_out": "Retirer le marquage"
             }
         },
         "world": {
@@ -1500,7 +1512,8 @@
             "friends": "Amis",
             "everyone": "Tout le monde",
             "reset": "Réinitialiser",
-            "close": "Fermer"
+            "close": "Fermer",
+            "non_friends": "Non-amis"
         },
         "previous_instances": {
             "header": "Instances précédentes",
@@ -1945,7 +1958,8 @@
             "lastActivity": "Dernière activité",
             "lastLogin": "Dernière connexion",
             "dateJoined": "Date d'inscription",
-            "unfriend": "Plus amis depuis"
+            "unfriend": "Plus amis depuis",
+            "mutualOptedOut": "Cet utilisateur a désactivé le partage d'amis en commun. Affichage des données en cache."
         },
         "profile": {
             "invite_messages": {
@@ -2075,5 +2089,32 @@
         "back_to_top": "Retour en haut",
         "toggle_password": "Afficher le mto de passe",
         "clear_input": "Effacer la saisie"
+    },
+    "nav_desc": {
+        "home": "Tableau de bord et vue d'ensemble",
+        "feed": "Événements récents et flux d'amis",
+        "friends_locations": "Amis en direct dans les instances",
+        "game_log": "Historique des joueurs et rencontres",
+        "player_list": "Joueurs de l'instance actuelle",
+        "search": "Explorer utilisateurs, mondes et avatars",
+        "favorites": "Amis, mondes et avatars enregistrés",
+        "favorite_friends": "Amis enregistrés et organisés",
+        "favorite_worlds": "Liste des mondes favoris",
+        "favorite_avatars": "Collection d'avatars favoris",
+        "friend_log": "Ajouts et suppressions d'amis",
+        "friend_list": "Amis en ligne et hors ligne",
+        "social": "Journaux d'amis et modération",
+        "moderation": "Blocages, mutes et permissions",
+        "notification": "Invitations et alertes",
+        "my_avatars": "Gérer et porter des avatars",
+        "charts": "Graphiques d'activité et statistiques",
+        "charts_instance": "Analyse d'activité des instances",
+        "charts_mutual": "Visualisation des amis communs",
+        "charts_hot_worlds": "Statistiques des mondes populaires",
+        "tools": "Utilitaires et raccourcis d'outils",
+        "direct_access": "Rejoindre via ID ou lien direct",
+        "custom_dashboard": "Tableau de bord personnalisé",
+        "folder_page": "1 page",
+        "folder_pages": "{count} pages"
     }
 }

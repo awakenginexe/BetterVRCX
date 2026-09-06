@@ -31,12 +31,12 @@ export function useAvatarCardGrid(options = {}) {
 
     const baseCardWidth = options.baseCardWidth ?? 200;
     const baseGap = options.baseGap ?? 12;
-    const baseCardHeight = options.baseCardHeight ?? 200;
+    const baseCardHeight = options.baseCardHeight ?? 290;
     const scaleConfigKey = options.scaleConfigKey ?? 'VRCX_MyAvatarsCardScale';
     const spacingConfigKey =
         options.spacingConfigKey ?? 'VRCX_MyAvatarsCardSpacing';
 
-    const cardScaleBase = ref(0.6);
+    const cardScaleBase = ref(options.defaultScale ?? 0.6);
     const cardSpacingBase = ref(1);
     const gridContainerRef = ref(null);
     const containerWidth = ref(0);
@@ -209,7 +209,10 @@ export function useAvatarCardGrid(options = {}) {
     onBeforeMount(async () => {
         try {
             const [storedScale, storedSpacing] = await Promise.all([
-                configRepository.getString(scaleConfigKey, '0.6'),
+                configRepository.getString(
+                    scaleConfigKey,
+                    String(options.defaultScale ?? 0.6)
+                ),
                 configRepository.getString(spacingConfigKey, '1')
             ]);
 

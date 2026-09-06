@@ -123,6 +123,24 @@
                 </PopoverContent>
             </Popover>
 
+            <Select v-if="viewMode === 'grid'" v-model="sortBy">
+                <SelectTrigger size="sm" class="h-8 w-44">
+                    <ArrowUpDown class="size-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue :placeholder="t('dialog.user.avatars.sort_by')" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="updated">{{ t('dialog.user.avatars.sort_by_update') }}</SelectItem>
+                    <SelectItem value="uploaded">{{ t('dialog.user.avatars.sort_by_uploaded') }}</SelectItem>
+                    <SelectItem value="nameAsc">{{ t('dialog.user.avatars.sort_by_name') }} (A → Z)</SelectItem>
+                    <SelectItem value="nameDesc">{{ t('dialog.user.avatars.sort_by_name') }} (Z → A)</SelectItem>
+                    <SelectItem value="timeSpent">{{ t('dialog.avatar.info.time_spent') }}</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <span class="text-xs text-muted-foreground font-medium whitespace-nowrap ml-1">
+                {{ t('dialog.user.avatars.total_count', { count: filteredAvatars.length }) }}
+            </span>
+
             <div class="flex-1" />
 
             <span v-if="isLoading" class="text-muted-foreground text-sm">
@@ -249,7 +267,7 @@
         </DataTableLayout>
 
         <!-- Grid View -->
-        <div v-else-if="viewMode === 'grid'" ref="gridScrollRef" class="overflow-auto min-h-0 py-2">
+        <div v-else-if="viewMode === 'grid'" ref="gridScrollRef" class="overflow-auto min-h-0 pt-2 pb-14 px-2">
             <div
                 v-if="gridRows.length"
                 ref="gridContainerRefEl"
@@ -258,14 +276,14 @@
                 <div
                     v-for="vItem in virtualItems"
                     :key="vItem.row?.key ?? String(vItem.virtualItem.index)"
-                    class="absolute left-0 top-0 w-full box-border pb-2"
+                    class="absolute left-0 top-0 w-full box-border pb-2 hover:z-30"
                     :data-index="vItem.virtualItem.index"
                     :ref="virtualizer.measureElement"
                     :style="{ transform: `translateY(${vItem.virtualItem.start}px)` }">
                     <div
-                        class="grid gap-(--avatar-card-gap,12px) p-0.5"
+                        class="grid gap-(--avatar-card-gap,16px) p-1"
                         :style="{
-                            gridTemplateColumns: `repeat(var(--avatar-grid-columns, 1), minmax(var(--avatar-card-min-width, 200px), var(--avatar-card-target-width, 1fr)))`,
+                            gridTemplateColumns: `repeat(var(--avatar-grid-columns, 1), minmax(var(--avatar-card-min-width, 240px), var(--avatar-card-target-width, 1fr)))`,
                             ...gridStyle(filteredAvatars.length)
                         }">
                         <MyAvatarCard
@@ -275,6 +293,8 @@
                             :current-avatar-id="currentAvatarId"
                             :card-scale="cardScale"
                             @click="handleWearAvatar(avatar.id)"
+                            @details="handleShowAvatarDialog(avatar.id)"
+                            @wear="handleWearAvatar(avatar.id)"
                             @context-action="handleContextMenuAction" />
                     </div>
                 </div>
@@ -308,6 +328,7 @@
 
 <script setup>
     import {
+        ArrowUpDown,
         Check,
         Eye,
         Image as ImageIcon,
@@ -329,6 +350,7 @@
     import { useAppearanceSettingsStore, useModalStore, useUserStore } from '../../stores';
     import { ContextMenuContent, ContextMenuItem, ContextMenuSeparator } from '../../components/ui/context-menu';
     import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
+    import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
     import { Field, FieldContent, FieldLabel } from '../../components/ui/field';
     import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
     import {
@@ -344,6 +366,7 @@
     import { DataTableEmpty, DataTableLayout } from '../../components/ui/data-table';
     import { ToggleGroup, ToggleGroupItem } from '../../components/ui/toggle-group';
     import { readFileAsBase64, withUploadTimeout } from '../../shared/utils/imageUpload';
+    import { copyToClipboard } from '../../shared/utils/appActions';
     import { Badge } from '../../components/ui/badge';
     import { Button } from '../../components/ui/button';
     import { Input } from '../../components/ui/input';
@@ -376,6 +399,7 @@
     const releaseStatusFilter = ref('all');
     const tagFilters = ref(new Set());
     const platformFilter = ref('all');
+    const sortBy = ref('updated');
     const isLoading = ref(false);
     const avatars = ref([]);
     const avatarTagsMap = ref(new Map());
@@ -466,6 +490,27 @@
                 (a) =>
                     a.name?.toLowerCase().includes(query) || a.$tags?.some((t) => t.tag.toLowerCase().includes(query))
             );
+        }
+
+        if (viewMode.value === 'grid') {
+            switch (sortBy.value) {
+                case 'nameAsc':
+                    list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    break;
+                case 'nameDesc':
+                    list = [...list].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                    break;
+                case 'uploaded':
+                    list = [...list].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                    break;
+                case 'timeSpent':
+                    list = [...list].sort((a, b) => (b.$timeSpent || 0) - (a.$timeSpent || 0));
+                    break;
+                case 'updated':
+                default:
+                    list = [...list].sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+                    break;
+            }
         }
 
         return list;
@@ -610,6 +655,9 @@
                 manageTagsAvatar.value = avatarRef;
                 manageTagsOpen.value = true;
                 break;
+            case 'copyId':
+                copyToClipboard(avatarRef.id, 'Avatar ID copied to clipboard');
+                break;
             case 'changeTags':
             case 'changeStyles':
                 showAvatarDialog(avatarRef.id);
@@ -726,7 +774,14 @@
         chunkIntoRows,
         estimateRowHeight,
         updateContainerWidth
-    } = useAvatarCardGrid();
+    } = useAvatarCardGrid({
+        baseCardWidth: 260,
+        baseCardHeight: 360,
+        scaleMin: 0.5,
+        scaleMax: 1.6,
+        scaleStep: 0.05,
+        defaultScale: 1.0
+    });
 
     const gridRows = computed(() => chunkIntoRows(filteredAvatars.value, 'avatar-row'));
 
@@ -878,11 +933,19 @@
         });
     }
 
+    watch(sortBy, (newVal) => {
+        configRepository.setString('VRCX_MyAvatarsSortBy', newVal);
+    });
+
     onBeforeMount(async () => {
         try {
             const storedMode = await configRepository.getString('VRCX_MyAvatarsViewMode', 'grid');
             if (storedMode === 'grid' || storedMode === 'table') {
                 viewMode.value = storedMode;
+            }
+            const storedSort = await configRepository.getString('VRCX_MyAvatarsSortBy', 'updated');
+            if (storedSort) {
+                sortBy.value = storedSort;
             }
         } catch (error) {
             console.error('Failed to load view mode preference', error);

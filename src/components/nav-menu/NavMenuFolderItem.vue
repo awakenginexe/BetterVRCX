@@ -20,7 +20,7 @@
                                     }
                                 ]"
                                 :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
-                                <span class="bv-nav-icon-box">
+                                <div class="bv-nav-icon-box">
                                     <i :class="item.icon" class="text-lg relative">
                                         <span
                                             v-if="isNavItemNotified(item)"
@@ -29,7 +29,7 @@
                                             role="img"
                                             :aria-label="t('nav_menu.mark_all_read')"></span>
                                     </i>
-                                </span>
+                                </div>
                                 <span v-show="!isCollapsed">{{
                                     item.titleIsCustom ? item.title : t(item.title || '')
                                 }}</span>
@@ -73,7 +73,7 @@
                                             { 'is-expanded': open }
                                         ]"
                                         :tooltip="item.titleIsCustom ? item.title : t(item.title || '')">
-                                        <span class="bv-nav-icon-box">
+                                        <div class="bv-nav-icon-box">
                                             <i :class="item.icon" class="text-lg relative">
                                                 <span
                                                     v-if="isNavItemNotified(item)"
@@ -82,10 +82,15 @@
                                                     role="img"
                                                     :aria-label="t('nav_menu.mark_all_read')"></span>
                                             </i>
-                                        </span>
-                                        <span v-show="!isCollapsed" class="truncate">{{
-                                            item.titleIsCustom ? item.title : t(item.title || '')
-                                        }}</span>
+                                        </div>
+                                        <div v-show="!isCollapsed" class="bv-nav-content-box flex flex-col min-w-0 flex-1">
+                                            <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
+                                                item.titleIsCustom ? item.title : t(item.title || '')
+                                            }}</span>
+                                            <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
+                                                getFolderDescription(item)
+                                            }}</span>
+                                        </div>
 
                                         <ChevronRight
                                             v-show="!isCollapsed"
@@ -250,6 +255,42 @@
         'open-custom-nav'
     ]);
     const { t } = useI18n();
+
+    const FOLDER_DESC_KEYS = {
+        'default-folder-favorites': 'nav_desc.favorites',
+        'default-folder-social': 'nav_desc.social',
+        'default-folder-charts': 'nav_desc.charts',
+        'default-folder-tools': 'nav_desc.tools'
+    };
+
+    const FOLDER_FALLBACKS = {
+        'default-folder-favorites': 'Saved friends, worlds & avatars',
+        'default-folder-social': 'Friend logs & moderation',
+        'default-folder-charts': 'Activity & analytics charts',
+        'default-folder-tools': 'Utilities & tool shortcuts'
+    };
+
+    function getFolderDescription(item) {
+        if (!item) return '';
+        const folderKey = item.id || item.index;
+        const descKey = FOLDER_DESC_KEYS[folderKey];
+        if (descKey) {
+            const translated = t(descKey);
+            if (translated && translated !== descKey) {
+                return translated;
+            }
+            if (FOLDER_FALLBACKS[folderKey]) {
+                return FOLDER_FALLBACKS[folderKey];
+            }
+        }
+        const count = item.children?.length || 0;
+        if (count === 1) {
+            const single = t('nav_desc.folder_page');
+            return single && single !== 'nav_desc.folder_page' ? single : '1 page';
+        }
+        const plural = t('nav_desc.folder_pages', { count });
+        return plural && plural !== 'nav_desc.folder_pages' ? plural : `${count} pages`;
+    }
 </script>
 
 <style scoped>

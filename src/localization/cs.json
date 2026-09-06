@@ -11,7 +11,8 @@
         "moderation": "Moderace",
         "notification": "Upozornění",
         "friend_list": "Seznam přátel",
-        "settings": "Nastavení"
+        "settings": "Nastavení",
+        "home": "Domů"
     },
     "side_panel": {
         "search_placeholder": "Search",
@@ -357,7 +358,10 @@
                         "use_memo_nicknames": "Use Memo Nicknames",
                         "play": "Play",
                         "tts_test_placeholder": "Test TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Typy instancí pro oznámení ne-přátel",
+                    "non_friend_instance_types_description": "Vyberte typy instancí, kde se mají zobrazovat oznámení o příchodu/odchodu osob mimo seznam přátel (veřejné jsou ve výchozím nastavení vyloučeny pro zamezení spamu).",
+                    "non_friend_instance_types_placeholder": "Vyberte typy instancí"
                 }
             },
             "wrist_overlay": {
@@ -671,6 +675,14 @@
             },
             "json": {
                 "header": "JSON"
+            },
+            "mutual_friends": {
+                "user_opted_out": "Tento uživatel zakázal sdílení společných přátel.",
+                "user_opted_out_title": "Společní přátelé skryti",
+                "user_opted_out_desc": "Tento uživatel zakázal sdílení společných přátel.",
+                "no_mutual_friends": "Nebyli nalezeni žádní společní přátelé, nebo má tento uživatel sdílení vypnuto",
+                "mark_opted_out": "Označit jako zakázané",
+                "unmark_opted_out": "Odebrat označení"
             }
         },
         "world": {
@@ -1248,7 +1260,8 @@
             "friends": "Friends",
             "everyone": "Everyone",
             "reset": "Reset",
-            "close": "Close"
+            "close": "Close",
+            "non_friends": "Ne-přátelé"
         },
         "previous_instances": {
             "header": "Previous Instances",
@@ -1647,7 +1660,8 @@
             "lastActivity": "Last Activity",
             "lastLogin": "Last Login",
             "dateJoined": "Date Joined",
-            "unfriend": "Unfriend"
+            "unfriend": "Unfriend",
+            "mutualOptedOut": "Tento uživatel zakázal sdílení společných přátel. Zobrazují se data z mezipaměti."
         },
         "profile": {
             "invite_messages": {
@@ -1770,5 +1784,32 @@
                 "403_404_bailing_request": "Bailing request due to recent 404/403"
             }
         }
+    },
+    "nav_desc": {
+        "home": "Přehled a rychlý souhrn",
+        "feed": "Nedávné události a přehled přátel",
+        "friends_locations": "Živí přátelé v instancích",
+        "game_log": "Historie hráčů a setkání",
+        "player_list": "Hráči v aktuální instanci",
+        "search": "Hledat uživatele, světy a avatary",
+        "favorites": "Uložení přátelé, světy a avataři",
+        "favorite_friends": "Uložení a organizovaní přátelé",
+        "favorite_worlds": "Seznam oblíbených světů",
+        "favorite_avatars": "Sbírka oblíbených avatarů",
+        "friend_log": "Historie přidání a odebrání přátel",
+        "friend_list": "Přátelé online a offline",
+        "social": "Záznam přátel a moderace",
+        "moderation": "Blokování, ztišení a oprávnění",
+        "notification": "Pozvánky a upozornění",
+        "my_avatars": "Správa a nošení avatarů",
+        "charts": "Grafy aktivity a statistiky",
+        "charts_instance": "Analýza aktivity v instancích",
+        "charts_mutual": "Vizualizace společných přátel",
+        "charts_hot_worlds": "Statistiky populárních světů",
+        "tools": "Nástroje a zkratky",
+        "direct_access": "Rychlý přechod přes ID nebo odkaz",
+        "custom_dashboard": "Vlastní přehled",
+        "folder_page": "1 stránka",
+        "folder_pages": "{count} stránek"
     }
 }

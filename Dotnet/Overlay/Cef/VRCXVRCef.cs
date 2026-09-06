@@ -631,7 +631,7 @@ namespace VRCX
                     }
 
                     overlayVisible = false;
-                    err = overlay.CreateOverlay("VRCX1", "VRCX1", ref overlayHandle);
+                    err = overlay.CreateOverlay("VRCX1", "BetterVRCX", ref overlayHandle);
                     if (err != EVROverlayError.None)
                     {
                         return err;
@@ -743,7 +743,7 @@ namespace VRCX
                     }
 
                     overlayVisible = false;
-                    err = overlay.CreateOverlay("VRCX2", "VRCX2", ref overlayHandle);
+                    err = overlay.CreateOverlay("VRCX2", "BetterVRCX Wrist", ref overlayHandle);
                     if (err != EVROverlayError.None)
                     {
                         return err;

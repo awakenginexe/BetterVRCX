@@ -1,7 +1,7 @@
 <template>
     <div class="bv-entity-card flex h-full min-h-0 flex-col overflow-hidden p-2">
         <div class="shrink-0" style="display: flex; align-items: center; justify-content: space-between">
-            <div style="display: flex; align-items: center">
+            <div style="display: flex; align-items: center; gap: 6px">
                 <Button
                     class="rounded-full"
                     variant="ghost"
@@ -11,7 +11,7 @@
                     <Spinner v-if="userDialog.isMutualFriendsLoading" />
                     <RefreshCw v-else />
                 </Button>
-                <span class="inline-flex items-center gap-1 ml-1.5 text-sm">
+                <span class="inline-flex items-center gap-1 text-sm">
                     <Users class="size-3.5 text-muted-foreground" />
                     {{ t('dialog.user.groups.total_count', { count: userDialog.mutualFriends.length }) }}
                 </span>
@@ -38,7 +38,18 @@
             </div>
         </div>
         <div class="min-h-0 flex-1 overflow-auto">
-            <ul class="flex flex-wrap items-start" style="margin-top: 8px; min-width: 130px">
+            <div v-if="userDialog.isMutualFriendsLoading" class="flex flex-1 h-full items-center justify-center p-8 text-muted-foreground">
+                <Spinner class="size-6" />
+            </div>
+            <div v-else-if="filteredMutualFriends.length === 0" class="flex flex-1 h-full flex-col items-center justify-center p-8 text-center">
+                <div class="rounded-full bg-muted/50 p-3 mb-3">
+                    <Users class="size-6 text-muted-foreground" />
+                </div>
+                <p class="text-sm font-semibold text-foreground">
+                    {{ t('dialog.user.mutual_friends.no_mutual_friends') }}
+                </p>
+            </div>
+            <ul v-else class="flex flex-wrap items-start" style="margin-top: 8px; min-width: 130px">
                 <li
                     v-for="user in filteredMutualFriends"
                     :key="user.id"
@@ -71,7 +82,7 @@
     import { RefreshCw, User, Users } from 'lucide-vue-next';
     import { Spinner } from '@/components/ui/spinner';
     import { Input } from '@/components/ui/input';
-    import { computed, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
 
@@ -106,10 +117,32 @@
         if (!query) return friends;
         return friends.filter((u) => (u.displayName || '').toLowerCase().includes(query));
     });
+
+    onMounted(() => {
+        const userId = userDialog.value.id;
+        if (
+            userId &&
+            userId !== currentUser.value.id &&
+            (userDialog.value.activeTab === 'mutual' || userDialog.value.lastActiveTab === 'mutual')
+        ) {
+            getUserMutualFriends(userId);
+        }
+    });
+
     watch(
         () => userDialog.value.id,
-        () => {
+        (newId, oldId) => {
             searchQuery.value = '';
+            if (newId && newId !== oldId) {
+                userDialog.value.mutualFriends = [];
+                userDialog.value.isMutualFriendsLoading = false;
+                if (
+                    (userDialog.value.activeTab === 'mutual' || userDialog.value.lastActiveTab === 'mutual') &&
+                    newId !== currentUser.value.id
+                ) {
+                    getUserMutualFriends(newId);
+                }
+            }
         }
     );
 
@@ -138,13 +171,17 @@
      * @param userId
      */
     async function getUserMutualFriends(userId) {
-        userDialog.value.mutualFriends = [];
-        if (currentUser.value.hasSharedConnectionsOptOut) {
+        if (!userId || currentUser.value.hasSharedConnectionsOptOut) {
             return;
         }
+        if (userDialog.value.isMutualFriendsLoading && userDialog.value.id === userId && userDialog.value.mutualFriends.length > 0) {
+            return;
+        }
+        userDialog.value.mutualFriends = [];
         userDialog.value.isMutualFriendsLoading = true;
+        const targetUserId = userId;
         const params = {
-            userId,
+            userId: targetUserId,
             n: 100,
             offset: 0
         };
@@ -153,6 +190,9 @@
             N: -1,
             params,
             handle: (args) => {
+                if (userDialog.value.id !== targetUserId) {
+                    return;
+                }
                 for (const json of args.json) {
                     if (userDialog.value.mutualFriends.some((u) => u.id === json.id)) {
                         continue;
@@ -167,10 +207,12 @@
                 setUserDialogMutualFriendSorting(userDialog.value.mutualFriendSorting);
             },
             done: (success) => {
-                userDialog.value.isMutualFriendsLoading = false;
+                if (userDialog.value.id === targetUserId) {
+                    userDialog.value.isMutualFriendsLoading = false;
+                }
                 if (success) {
                     const mutualIds = userDialog.value.mutualFriends.map((u) => u.id);
-                    database.updateMutualsForFriend(userId, mutualIds);
+                    database.updateMutualsForFriend(targetUserId, mutualIds);
                 }
             }
         });

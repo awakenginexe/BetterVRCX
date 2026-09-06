@@ -79,7 +79,8 @@
         "help_support": "協助與支援",
         "expand_menu": "展開選單",
         "collapse_menu": "收起選單",
-        "toggle_theme": "切換主題"
+        "toggle_theme": "切換主題",
+        "home": "首頁"
     },
     "nav_menu": {
         "resources": "資源",
@@ -1059,7 +1060,10 @@
                         "use_memo_nicknames": "使用備忘錄暱稱",
                         "play": "播放",
                         "tts_test_placeholder": "測試文字轉語音"
-                    }
+                    },
+                    "non_friend_instance_types": "非好友通知實例類型",
+                    "non_friend_instance_types_description": "選擇觸發非好友進出房間通知的實例類型（預設排除公開實例以防洗版）。",
+                    "non_friend_instance_types_placeholder": "選擇實例類型"
                 }
             },
             "wrist_overlay": {
@@ -1508,7 +1512,13 @@
                     "alphabetical": "按字母排序",
                     "last_active": "最後上線",
                     "friend_order": "好友列表順序"
-                }
+                },
+                "user_opted_out": "此用戶已停用共同好友分享功能。",
+                "user_opted_out_title": "共同好友已隱藏",
+                "user_opted_out_desc": "此用戶已停用共同好友分享功能。",
+                "no_mutual_friends": "未找到共同好友，或該用戶已停用共同好友",
+                "mark_opted_out": "標記為已停用共同好友",
+                "unmark_opted_out": "取消標記"
             },
             "activity": {
                 "header": "活動",
@@ -2299,7 +2309,8 @@
             "friends": "好友",
             "everyone": "所有人",
             "reset": "重設",
-            "close": "關閉"
+            "close": "關閉",
+            "non_friends": "非好友"
         },
         "previous_instances": {
             "header": "過去的房間",
@@ -3206,5 +3217,32 @@
         "clocks_label": "時鐘",
         "clocks_none": "無",
         "timezone": "時區"
+    },
+    "nav_desc": {
+        "home": "儀表板與概覽",
+        "feed": "近期活動與好友動態",
+        "friends_locations": "實例中的在線好友",
+        "game_log": "玩家記錄與相遇日誌",
+        "player_list": "當前實例玩家列表",
+        "search": "探索使用者、世界與虛擬化身",
+        "favorites": "已收藏的好友、世界與虛擬化身",
+        "favorite_friends": "收藏的好友列表",
+        "favorite_worlds": "收藏的世界列表",
+        "favorite_avatars": "收藏的虛擬化身列表",
+        "friend_log": "好友增刪歷史記錄",
+        "friend_list": "線上與離線好友",
+        "social": "好友日誌與管理",
+        "moderation": "封鎖、靜音與權限管理",
+        "notification": "邀請與通知提醒",
+        "my_avatars": "管理與穿戴我的虛擬化身",
+        "charts": "活動與統計圖表",
+        "charts_instance": "實例活動分析",
+        "charts_mutual": "共同好友關係圖",
+        "charts_hot_worlds": "熱門世界趨勢統計",
+        "tools": "實用工具與捷徑",
+        "direct_access": "透過ID或連結快速加入",
+        "custom_dashboard": "自訂儀表板",
+        "folder_page": "1 個頁面",
+        "folder_pages": "{count} 個頁面"
     }
 }

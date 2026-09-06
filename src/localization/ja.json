@@ -79,7 +79,8 @@
         "help_support": "ヘルプ & サポート",
         "expand_menu": "メニューを展開",
         "collapse_menu": "メニューを折りたたむ",
-        "toggle_theme": "テーマを切り替える"
+        "toggle_theme": "テーマを切り替える",
+        "home": "ホーム"
     },
     "nav_menu": {
         "resources": "お役立ちリンク",
@@ -1066,7 +1067,10 @@
                         "use_memo_nicknames": "メモのニックネームを使用",
                         "play": "再生",
                         "tts_test_placeholder": "TTS のテスト"
-                    }
+                    },
+                    "non_friend_instance_types": "フレンド以外の通知対象インスタンス",
+                    "non_friend_instance_types_description": "フレンド以外の参加/退出通知を有効にするインスタンスタイプを選択します（スパム防止のためデフォルトではパブリック除外）。",
+                    "non_friend_instance_types_placeholder": "インスタンスタイプを選択"
                 }
             },
             "wrist_overlay": {
@@ -1517,7 +1521,13 @@
                     "alphabetical": "アルファベット順",
                     "last_active": "最終活動時間順",
                     "friend_order": "フレンド追加順"
-                }
+                },
+                "user_opted_out": "このユーザーは共通のフレンド共有を無効にしています。",
+                "user_opted_out_title": "共通のフレンドが非公開です",
+                "user_opted_out_desc": "このユーザーは共通のフレンド共有を無効にしています。",
+                "no_mutual_friends": "共通のフレンドが見つからないか、このユーザーが共通のフレンドを非公開にしています",
+                "mark_opted_out": "共通フレンド無効としてマーク",
+                "unmark_opted_out": "無効マークを解除"
             },
             "activity": {
                 "header": "アクティビティ",
@@ -2315,7 +2325,8 @@
             "friends": "フレンド",
             "everyone": "全員",
             "reset": "リセット",
-            "close": "閉じる"
+            "close": "閉じる",
+            "non_friends": "フレンド以外"
         },
         "previous_instances": {
             "header": "以前のインスタンス",
@@ -3225,5 +3236,32 @@
         "clocks_none": "なし",
         "timezone": "タイムゾーン",
         "now_playing": "再生中"
+    },
+    "nav_desc": {
+        "home": "ダッシュボードと概要",
+        "feed": "最近のアクティビティとフィード",
+        "friends_locations": "現在インスタンスにいるフレンド",
+        "game_log": "プレイヤー履歴と遭遇ログ",
+        "player_list": "現在インスタンスのプレイヤー一覧",
+        "search": "ユーザー・ワールド・アバター検索",
+        "favorites": "保存したフレンド・ワールド・アバター",
+        "favorite_friends": "お気に入りフレンド一覧",
+        "favorite_worlds": "ブックマークしたワールド",
+        "favorite_avatars": "お気に入りアバターコレクション",
+        "friend_log": "フレンド追加・解除履歴",
+        "friend_list": "オンライン・オフラインのフレンド",
+        "social": "フレンドログとモデレーション",
+        "moderation": "ブロック・ミュート・権限管理",
+        "notification": "招待・リクエスト・通知",
+        "my_avatars": "アバターの管理と着替え",
+        "charts": "アクティビティと分析チャート",
+        "charts_instance": "インスタンス滞在分析",
+        "charts_mutual": "共通フレンドの可視化",
+        "charts_hot_worlds": "人気ワールドのトレンド統計",
+        "tools": "ユーティリティと各種ツール",
+        "direct_access": "IDやURLから直接インスタンスへ移動",
+        "custom_dashboard": "カスタムダッシュボード",
+        "folder_page": "1 ページ",
+        "folder_pages": "{count} ページ"
     }
 }

@@ -123,9 +123,13 @@ vi.mock('../../../shared/utils/avatar', () => ({
     getPlatformInfo: () => ({})
 }));
 
-vi.mock('../../../shared/constants', () => ({
-    getTagColor: () => ({ bg: '#000', text: '#fff' })
-}));
+vi.mock('../../../shared/constants', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        getTagColor: () => ({ bg: '#000', text: '#fff' })
+    };
+});
 
 vi.mock('../../../services/request', () => ({
     processBulk: (...args) => mocks.processBulk(...args)
@@ -256,7 +260,20 @@ vi.mock('../components/MyAvatarCard.vue', () => ({
     }
 }));
 
+vi.mock('../../../components/ui/select', () => ({
+    Select: {
+        props: ['modelValue'],
+        emits: ['update:modelValue'],
+        template: '<div><slot /></div>'
+    },
+    SelectContent: { template: '<div><slot /></div>' },
+    SelectItem: { template: '<div><slot /></div>' },
+    SelectTrigger: { template: '<div><slot /></div>' },
+    SelectValue: { template: '<div><slot /></div>' }
+}));
+
 vi.mock('lucide-vue-next', () => ({
+    ArrowUpDown: { template: '<i />' },
     Check: { template: '<i />' },
     Eye: { template: '<i />' },
     Image: { template: '<i />' },

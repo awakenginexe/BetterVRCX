@@ -11,7 +11,8 @@
         "moderation": "Quản lý kiểm duyệt",
         "notification": "Thông báo",
         "friend_list": "Danh sách bạn bè",
-        "settings": "Cài đặt"
+        "settings": "Cài đặt",
+        "home": "Trang chủ"
     },
     "side_panel": {
         "search_placeholder": "Tìm kiếm",
@@ -327,7 +328,10 @@
                         "header": "Text-To-Speech",
                         "when_to_play": "Thông báo TTS. khi nào báo",
                         "tts_voice": "Giọng TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Loại phiên thông báo người không phải bạn bè",
+                    "non_friend_instance_types_description": "Chọn các loại phiên sẽ kích hoạt thông báo vào/rời phòng của người không phải bạn bè (mặc định loại trừ phiên công khai để tránh spam).",
+                    "non_friend_instance_types_placeholder": "Chọn loại phiên"
                 }
             },
             "wrist_overlay": {
@@ -606,6 +610,14 @@
             },
             "json": {
                 "header": "JSON"
+            },
+            "mutual_friends": {
+                "user_opted_out": "Người dùng này đã tắt chia sẻ bạn chung.",
+                "user_opted_out_title": "Bạn chung bị ẩn",
+                "user_opted_out_desc": "Người dùng này đã tắt chia sẻ bạn chung.",
+                "no_mutual_friends": "Không tìm thấy bạn chung hoặc người dùng này đã tắt tính năng bạn chung",
+                "mark_opted_out": "Đánh dấu là đã tắt bạn chung",
+                "unmark_opted_out": "Bỏ đánh dấu"
             }
         },
         "world": {
@@ -1167,7 +1179,8 @@
             "friends": "Bạn bè",
             "everyone": "Tất cả",
             "reset": "Reset",
-            "close": "Đóng"
+            "close": "Đóng",
+            "non_friends": "Không phải bạn bè"
         },
         "previous_instances": {
             "header": "Instance trước",
@@ -1527,7 +1540,8 @@
             "lastActivity": "Lần cuối hoạt động",
             "lastLogin": "Lần cuối đăng nhập",
             "dateJoined": "Ngày tham gia",
-            "unfriend": "Bỏ bạn"
+            "unfriend": "Bỏ bạn",
+            "mutualOptedOut": "Người dùng này đã tắt chia sẻ bạn chung. Đang hiển thị dữ liệu đã lưu."
         },
         "profile": {
             "invite_messages": {
@@ -1564,5 +1578,32 @@
             "cpu": "CPU:",
             "online": "Online:"
         }
+    },
+    "nav_desc": {
+        "home": "Bảng điều khiển & tổng quan nhanh",
+        "feed": "Hoạt động gần đây & bảng tin bạn bè",
+        "friends_locations": "Bạn bè trực tiếp trong các phiên",
+        "game_log": "Lịch sử người chơi & gặp gỡ",
+        "player_list": "Người chơi trong phiên hiện tại",
+        "search": "Khám phá người dùng, thế giới & avatar",
+        "favorites": "Bạn bè, thế giới & avatar đã lưu",
+        "favorite_friends": "Danh sách bạn bè yêu thích",
+        "favorite_worlds": "Danh sách thế giới yêu thích",
+        "favorite_avatars": "Bộ sưu tập avatar đã lưu",
+        "friend_log": "Lịch sử kết bạn & hủy kết bạn",
+        "friend_list": "Bạn bè trực tuyến & ngoại tuyến",
+        "social": "Nhật ký bạn bè & kiểm duyệt",
+        "moderation": "Chặn, tắt tiếng & phân quyền",
+        "notification": "Lời mời & thông báo",
+        "my_avatars": "Quản lý & mặc avatar",
+        "charts": "Biểu đồ hoạt động & thống kê",
+        "charts_instance": "Phân tích hoạt động phiên",
+        "charts_mutual": "Trực quan hóa bạn chung",
+        "charts_hot_worlds": "Thống kê thế giới thịnh hành",
+        "tools": "Tiện ích & phím tắt công cụ",
+        "direct_access": "Chuyển nhanh theo ID hoặc liên kết",
+        "custom_dashboard": "Bảng điều khiển tùy chỉnh",
+        "folder_page": "1 trang",
+        "folder_pages": "{count} trang"
     }
 }

@@ -27,6 +27,14 @@ export const useNotificationsSettingsStore = defineStore(
         const afkDesktopToast = ref(false);
         const notificationTTS = ref('Never');
         const notificationTTSNickName = ref(false);
+        const nonFriendNotificationInstanceTypes = ref([
+            'friends',
+            'friends+',
+            'invite',
+            'invite+',
+            'group',
+            'group+'
+        ]);
         const sharedFeedFilters = ref({
             noty: {
                 Location: 'Off',
@@ -142,7 +150,8 @@ export const useNotificationsSettingsStore = defineStore(
                 notificationTTSVoiceConfig,
                 notificationPositionConfig,
                 notificationTimeoutConfig,
-                notificationLayoutConfig
+                notificationLayoutConfig,
+                nonFriendNotificationInstanceTypesConfig
             ] = await Promise.all([
                 configRepository.getString('VRCX_overlayToast', 'Game Running'),
                 configRepository.getBool('VRCX_overlayNotifications', true),
@@ -168,6 +177,16 @@ export const useNotificationsSettingsStore = defineStore(
                 configRepository.getString(
                     'VRCX_notificationLayout',
                     'notification-center'
+                ),
+                configRepository.getString(
+                    'VRCX_nonFriendNotificationInstanceTypes',
+                    JSON.stringify([
+                        'friends',
+                        'friends+',
+                        'invite',
+                        'invite+',
+                        'group'
+                    ])
                 )
             ]);
 
@@ -183,6 +202,20 @@ export const useNotificationsSettingsStore = defineStore(
             notificationTTS.value = notificationTTSConfig;
             notificationTTSNickName.value = notificationTTSNickNameConfig;
             sharedFeedFilters.value = JSON.parse(sharedFeedFiltersConfig);
+            try {
+                nonFriendNotificationInstanceTypes.value = JSON.parse(
+                    nonFriendNotificationInstanceTypesConfig
+                );
+            } catch {
+                nonFriendNotificationInstanceTypes.value = [
+                    'friends',
+                    'friends+',
+                    'invite',
+                    'invite+',
+                    'group',
+                    'group+'
+                ];
+            }
             notificationTTSVoice.value = Number(notificationTTSVoiceConfig);
             TTSvoices.value = speechSynthesis.getVoices();
             notificationPosition.value = notificationPositionConfig;
@@ -480,6 +513,17 @@ export const useNotificationsSettingsStore = defineStore(
                 .catch(() => {});
         }
 
+        /**
+         * @param {string[]} types
+         */
+        function setNonFriendNotificationInstanceTypes(types) {
+            nonFriendNotificationInstanceTypes.value = types;
+            configRepository.setString(
+                'VRCX_nonFriendNotificationInstanceTypes',
+                JSON.stringify(types)
+            );
+        }
+
         return {
             overlayToast,
             openVR,
@@ -492,6 +536,7 @@ export const useNotificationsSettingsStore = defineStore(
             afkDesktopToast,
             notificationTTS,
             notificationTTSNickName,
+            nonFriendNotificationInstanceTypes,
             sharedFeedFilters,
             isTestTTSVisible,
             notificationTTSVoice,
@@ -512,6 +557,7 @@ export const useNotificationsSettingsStore = defineStore(
             setAfkDesktopToast,
             setNotificationTTS,
             setNotificationTTSNickName,
+            setNonFriendNotificationInstanceTypes,
             getTTSVoiceName,
             changeTTSVoice,
             saveNotificationTTS,

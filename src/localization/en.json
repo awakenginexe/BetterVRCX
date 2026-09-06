@@ -1130,7 +1130,10 @@
                         "use_memo_nicknames": "Use Memo Nicknames for TTS",
                         "play": "Play",
                         "tts_test_placeholder": "Play Test TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Non-Friend Notification Instance Types",
+                    "non_friend_instance_types_description": "Select instance types where non-friend join and leave notifications will trigger (excludes public by default to prevent spam).",
+                    "non_friend_instance_types_placeholder": "Select instance types"
                 }
             },
             "wrist_overlay": {
@@ -1582,7 +1585,13 @@
                     "alphabetical": "Alphabetical",
                     "last_active": "Last Active",
                     "friend_order": "Friend Order"
-                }
+                },
+                "user_opted_out": "This user has disabled mutual friends sharing.",
+                "user_opted_out_title": "Mutual Friends Hidden",
+                "user_opted_out_desc": "This user has disabled mutual friends sharing.",
+                "no_mutual_friends": "No mutual friends found, or this user has disabled mutual friends",
+                "mark_opted_out": "Mark as Mutuals Disabled",
+                "unmark_opted_out": "Remove Opt-Out Mark"
             },
             "activity": {
                 "header": "Activity",
@@ -2385,7 +2394,8 @@
             "friends": "Friends",
             "everyone": "Everyone",
             "reset": "Reset",
-            "close": "Close"
+            "close": "Close",
+            "non_friends": "Non-Friends"
         },
         "previous_instances": {
             "header": "Previous Instances",
@@ -3298,5 +3308,32 @@
         "clocks_none": "None",
         "timezone": "Timezone",
         "now_playing": "Now Playing"
+    },
+    "nav_desc": {
+        "home": "Dashboard & quick overview",
+        "feed": "Recent events & friend feed",
+        "friends_locations": "Live friends in instances",
+        "game_log": "Player history & encounters",
+        "player_list": "Players in current instance",
+        "search": "Explore users, worlds & avatars",
+        "favorites": "Saved friends, worlds & avatars",
+        "favorite_friends": "Saved & organized friends",
+        "favorite_worlds": "Bookmarked worlds list",
+        "favorite_avatars": "Saved avatar collection",
+        "friend_log": "Friendship adds & removals",
+        "friend_list": "Online & offline friends",
+        "social": "Friend logs & moderation",
+        "moderation": "Blocks, mutes & permissions",
+        "notification": "Invites & notifications",
+        "my_avatars": "Manage & wear avatars",
+        "charts": "Activity & analytics charts",
+        "charts_instance": "Instance activity analytics",
+        "charts_mutual": "Mutual friends visualization",
+        "charts_hot_worlds": "Trending world statistics",
+        "tools": "Utilities & tool shortcuts",
+        "direct_access": "Jump to ID or launch link",
+        "custom_dashboard": "Custom dashboard",
+        "folder_page": "1 page",
+        "folder_pages": "{count} pages"
     }
 }

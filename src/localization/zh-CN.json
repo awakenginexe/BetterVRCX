@@ -79,7 +79,8 @@
         "help_support": "帮助 & 支持",
         "expand_menu": "展开菜单",
         "collapse_menu": "折叠菜单",
-        "toggle_theme": "切换日/夜间模式"
+        "toggle_theme": "切换日/夜间模式",
+        "home": "首页"
     },
     "nav_menu": {
         "resources": "帮助资源",
@@ -1069,7 +1070,10 @@
                         "use_memo_nicknames": "使用备注昵称",
                         "play": "播放",
                         "tts_test_placeholder": "测试 TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "非好友通知实例类型",
+                    "non_friend_instance_types_description": "选择触发非好友进出房间通知的实例类型（默认排除公开实例以防刷屏）。",
+                    "non_friend_instance_types_placeholder": "选择实例类型"
                 }
             },
             "wrist_overlay": {
@@ -1520,7 +1524,13 @@
                     "alphabetical": "字母顺序",
                     "last_active": "最后活跃",
                     "friend_order": "添加顺序"
-                }
+                },
+                "user_opted_out": "该用户已关闭共同好友功能。",
+                "user_opted_out_title": "共同好友已隐藏",
+                "user_opted_out_desc": "该用户已关闭共同好友功能。",
+                "no_mutual_friends": "未找到共同好友，或该用户已禁用共同好友",
+                "mark_opted_out": "标记为已关闭共同好友",
+                "unmark_opted_out": "取消标记"
             },
             "activity": {
                 "header": "活动记录",
@@ -2318,7 +2328,8 @@
             "friends": "好友",
             "everyone": "所有人",
             "reset": "重置为默认",
-            "close": "关闭并保存"
+            "close": "关闭并保存",
+            "non_friends": "非好友"
         },
         "previous_instances": {
             "header": "曾加入的房间",
@@ -3228,5 +3239,32 @@
         "clocks_none": "无",
         "timezone": "时区",
         "now_playing": "正在游玩"
+    },
+    "nav_desc": {
+        "home": "仪表板与概览",
+        "feed": "近期活动与好友动态",
+        "friends_locations": "实例中的在线好友",
+        "game_log": "玩家记录与相遇日志",
+        "player_list": "当前实例玩家列表",
+        "search": "探索用户、世界与头像",
+        "favorites": "已收藏的好友、世界与头像",
+        "favorite_friends": "收藏的好友列表",
+        "favorite_worlds": "收藏的世界列表",
+        "favorite_avatars": "收藏的头像列表",
+        "friend_log": "好友增删历史记录",
+        "friend_list": "在线与离线好友",
+        "social": "好友日志与管理",
+        "moderation": "屏蔽、静音与权限管理",
+        "notification": "邀请与通知提醒",
+        "my_avatars": "管理与穿戴我的头像",
+        "charts": "活动与统计图表",
+        "charts_instance": "实例活动分析",
+        "charts_mutual": "共同好友关系图",
+        "charts_hot_worlds": "热门世界趋势统计",
+        "tools": "实用工具与快捷方式",
+        "direct_access": "通过ID或链接快速进入",
+        "custom_dashboard": "自定义仪表板",
+        "folder_page": "1 个页面",
+        "folder_pages": "{count} 个页面"
     }
 }

@@ -461,7 +461,7 @@ export async function processBulk(options) {
     } catch (err) {
         console.error('Bulk processing error:', err);
         if (typeof done === 'function') {
-            done(false);
+            done(false, err);
         }
     }
 }

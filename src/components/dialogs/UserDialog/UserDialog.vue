@@ -31,7 +31,16 @@
                     <UserDialogInfoTab ref="infoTabRef" />
                 </template>
 
-                <template v-if="userDialog.id !== currentUser.id && !currentUser.hasSharedConnectionsOptOut" #mutual>
+                <template #label-mutual>
+                    <div class="inline-flex items-center gap-1.5">
+                        <span>{{ t('dialog.user.mutual_friends.header') }}</span>
+                        <Badge v-if="userDialog.mutualFriendCount" variant="secondary" class="px-1.5 py-0 text-xs">
+                            {{ userDialog.mutualFriendCount }}
+                        </Badge>
+                    </div>
+                </template>
+
+                <template #mutual>
                     <UserDialogMutualFriendsTab ref="mutualFriendsTabRef" />
                 </template>
 
@@ -79,9 +88,10 @@
 </template>
 
 <script setup>
-    import { computed, ref, watch } from 'vue';
+    import { computed, nextTick, ref, watch } from 'vue';
     import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
     import { TabsUnderline } from '@/components/ui/tabs';
+    import { Badge } from '@/components/ui/badge';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
@@ -238,6 +248,17 @@
         }
     );
 
+    watch(
+        () => userDialog.value.id,
+        (newId, oldId) => {
+            if (newId && newId !== oldId && userDialog.value.visible) {
+                if (!userDialog.value.loading) {
+                    loadLastActiveTab();
+                }
+            }
+        }
+    );
+
     const treeData = ref({});
 
     /**
@@ -315,7 +336,9 @@
             }
             if (props.previousIds.mutualFriend !== userId) {
                 props.updatePreviousId('mutualFriend', userId);
-                mutualFriendsTabRef.value?.getUserMutualFriends(userId);
+                nextTick(() => {
+                    mutualFriendsTabRef.value?.getUserMutualFriends(userId);
+                });
             }
         } else if (tabName === 'Groups') {
             if (props.previousIds.group !== userId) {

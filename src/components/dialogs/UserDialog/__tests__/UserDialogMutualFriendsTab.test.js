@@ -41,17 +41,23 @@ vi.mock('vue-router', async (importOriginal) => {
     };
 });
 vi.mock('../../../../plugins/interopApi', () => ({ initInteropApi: vi.fn() }));
-vi.mock('../../../../services/database', () => ({
-    database: new Proxy(
-        {},
-        {
-            get: (_target, prop) => {
-                if (prop === '__esModule') return false;
-                return vi.fn().mockResolvedValue(null);
+vi.mock('../../../../services/database', () => {
+    const fnCache = {};
+    return {
+        database: new Proxy(
+            {},
+            {
+                get: (_target, prop) => {
+                    if (prop === '__esModule') return false;
+                    if (!fnCache[prop]) {
+                        fnCache[prop] = vi.fn().mockResolvedValue(null);
+                    }
+                    return fnCache[prop];
+                }
             }
-        }
-    )
-}));
+        )
+    };
+});
 vi.mock('../../../../services/config', () => ({
     default: {
         init: vi.fn(),
@@ -93,6 +99,8 @@ vi.mock('../../../../coordinators/userCoordinator', async (importOriginal) => {
 import UserDialogMutualFriendsTab from '../UserDialogMutualFriendsTab.vue';
 import { useUserStore } from '../../../../stores';
 import { userDialogMutualFriendSortingOptions } from '../../../../shared/constants';
+import { database } from '../../../../services/database';
+import { processBulk } from '../../../../services/request';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -148,7 +156,8 @@ function mountComponent(overrides = {}) {
         global: {
             plugins: [pinia],
             stubs: {
-                RefreshCw: { template: '<svg class="refresh-icon" />' }
+                RefreshCw: { template: '<svg class="refresh-icon" />' },
+                TooltipWrapper: { template: '<div><slot /></div>' }
             }
         }
     });
@@ -237,7 +246,8 @@ describe('UserDialogMutualFriendsTab.vue', () => {
                 global: {
                     plugins: [pinia],
                     stubs: {
-                        RefreshCw: { template: '<svg class="refresh-icon" />' }
+                        RefreshCw: { template: '<svg class="refresh-icon" />' },
+                        TooltipWrapper: { template: '<div><slot /></div>' }
                     }
                 }
             });
@@ -245,6 +255,89 @@ describe('UserDialogMutualFriendsTab.vue', () => {
             const firstItem = wrapper.findAll('li')[0];
             await firstItem.trigger('click');
             expect(showUserDialogSpy).toHaveBeenCalledWith('usr_1');
+        });
+    });
+
+    describe('empty state and data caching', () => {
+        test('renders unified empty state message when no mutual friends', () => {
+            const wrapper = mountComponent({
+                mutualFriends: []
+            });
+            expect(wrapper.text()).toContain('dialog.user.mutual_friends.no_mutual_friends');
+            expect(wrapper.text()).not.toContain('dialog.user.mutual_friends.mark_opted_out');
+            expect(wrapper.text()).not.toContain('dialog.user.mutual_friends.user_opted_out_title');
+        });
+
+        test('updates mutuals in database on successful fetch', async () => {
+            let capturedDone;
+            processBulk.mockImplementationOnce(({ handle, done }) => {
+                handle({ json: [{ id: 'usr_friend_1' }] });
+                capturedDone = done;
+            });
+
+            const pinia = createTestingPinia({ stubActions: false });
+            const userStore = useUserStore(pinia);
+            userStore.$patch({
+                userDialog: {
+                    id: 'usr_target',
+                    ref: { id: 'usr_target' },
+                    mutualFriends: [],
+                    isMutualFriendsLoading: false
+                },
+                currentUser: { id: 'usr_me' }
+            });
+            const wrapper = mount(UserDialogMutualFriendsTab, {
+                global: {
+                    plugins: [pinia],
+                    stubs: {
+                        RefreshCw: { template: '<svg class="refresh-icon" />' },
+                        TooltipWrapper: { template: '<div><slot /></div>' }
+                    }
+                }
+            });
+
+            await wrapper.vm.getUserMutualFriends('usr_target');
+            capturedDone(true);
+
+            expect(database.updateMutualsForFriend).toHaveBeenCalledWith('usr_target', ['usr_friend_1']);
+        });
+    });
+
+    describe('auto-fetching on navigation', () => {
+        test('triggers getUserMutualFriends when userDialog.id changes while on mutual tab', async () => {
+            const pinia = createTestingPinia({ stubActions: false });
+            const userStore = useUserStore(pinia);
+            userStore.$patch({
+                userDialog: {
+                    id: 'usr_initial',
+                    ref: { id: 'usr_initial' },
+                    activeTab: 'mutual',
+                    mutualFriends: [...MOCK_MUTUAL_FRIENDS],
+                    isMutualFriendsLoading: false
+                },
+                currentUser: { id: 'usr_me', hasSharedConnectionsOptOut: false }
+            });
+
+            const wrapper = mount(UserDialogMutualFriendsTab, {
+                global: {
+                    plugins: [pinia],
+                    stubs: {
+                        RefreshCw: { template: '<svg class="refresh-icon" />' },
+                        TooltipWrapper: { template: '<div><slot /></div>' }
+                    }
+                }
+            });
+
+            userStore.userDialog.id = 'usr_new';
+            await wrapper.vm.$nextTick();
+
+            expect(processBulk).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: expect.objectContaining({
+                        userId: 'usr_new'
+                    })
+                })
+            );
         });
     });
 });

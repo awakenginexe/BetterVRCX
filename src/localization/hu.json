@@ -67,7 +67,8 @@
         "help_support": "Súgó & Támogatás",
         "expand_menu": "Menü kibontása",
         "collapse_menu": "Menü összecsukása",
-        "toggle_theme": "Téma váltása"
+        "toggle_theme": "Téma váltása",
+        "home": "Kezdőlap"
     },
     "nav_menu": {
         "resources": "ERŐFORRÁSOK",
@@ -1051,7 +1052,10 @@
                         "use_memo_nicknames": "Memo becenevek használata TTS-hez",
                         "play": "Lejátszás",
                         "tts_test_placeholder": "Teszt TTS lejátszása"
-                    }
+                    },
+                    "non_friend_instance_types": "Nem ismerősök értesítési példánytípusai",
+                    "non_friend_instance_types_description": "Válassza ki a példánytípusokat, ahol a nem ismerősök csatlakozási/távozási értesítései megjelennek (alapértelmezés szerint kizárja a nyilvánosakat a spamelés elkerülése végett).",
+                    "non_friend_instance_types_placeholder": "Válasszon példánytípusokat"
                 }
             },
             "wrist_overlay": {
@@ -1497,7 +1501,13 @@
                     "alphabetical": "Betűrend",
                     "last_active": "Utolsó aktivitás",
                     "friend_order": "Barát sorrend"
-                }
+                },
+                "user_opted_out": "Ez a felhasználó letiltotta a közös barátok megosztását.",
+                "user_opted_out_title": "Rejtett közös barátok",
+                "user_opted_out_desc": "Ez a felhasználó letiltotta a közös barátok megosztását.",
+                "no_mutual_friends": "Nem találhatók közös barátok, vagy ez a felhasználó letiltotta a közös ismerősök megosztását",
+                "mark_opted_out": "Megjelölés letiltottként",
+                "unmark_opted_out": "Megjelölés eltávolítása"
             },
             "activity": {
                 "header": "Aktivitás",
@@ -2274,7 +2284,8 @@
             "friends": "Barátok",
             "everyone": "Mindenki",
             "reset": "Visszaállítás",
-            "close": "Bezárás"
+            "close": "Bezárás",
+            "non_friends": "Nem ismerősök"
         },
         "previous_instances": {
             "header": "Korábbi helyzetek",
@@ -3180,5 +3191,32 @@
         "clocks_none": "Nincs",
         "timezone": "Időzóna",
         "now_playing": "Most játszik"
+    },
+    "nav_desc": {
+        "home": "Vezérlőpult és gyors áttekintés",
+        "feed": "Legutóbbi események és barátok hírfolyama",
+        "friends_locations": "Élő barátok a példányokban",
+        "game_log": "Játékostörténet és találkozások",
+        "player_list": "Játékosok a jelenlegi példányban",
+        "search": "Felhasználók, világok és avatárok keresése",
+        "favorites": "Mentett barátok, világok és avatárok",
+        "favorite_friends": "Mentett és rendszerezett barátok",
+        "favorite_worlds": "Könyvjelzővel ellátott világok",
+        "favorite_avatars": "Mentett avatárgyűjtemény",
+        "friend_log": "Barátok hozzáadása és eltávolítása",
+        "friend_list": "Online és offline barátok",
+        "social": "Barátnapló és moderáció",
+        "moderation": "Letiltások, némítások és jogosultságok",
+        "notification": "Meghívók és értesítések",
+        "my_avatars": "Avatárok kezelése és viselése",
+        "charts": "Tevékenységi grafikonok és statisztikák",
+        "charts_instance": "Példánytevékenység elemzése",
+        "charts_mutual": "Közös barátok vizualizációja",
+        "charts_hot_worlds": "Népszerű világok statisztikái",
+        "tools": "Segédprogramok és eszközhivatkozások",
+        "direct_access": "Ugrás azonosító vagy hivatkozás alapján",
+        "custom_dashboard": "Egyéni vezérlőpult",
+        "folder_page": "1 oldal",
+        "folder_pages": "{count} oldal"
     }
 }

@@ -57,7 +57,8 @@
         "help_support": "Ajuda e Suporte",
         "expand_menu": "Expandir Menu",
         "collapse_menu": "Recolher Menu",
-        "toggle_theme": "Alternar Tema"
+        "toggle_theme": "Alternar Tema",
+        "home": "Início"
     },
     "nav_menu": {
         "resources": "RECURSOS",
@@ -995,7 +996,10 @@
                         "use_memo_nicknames": "Usar Apelidos de Memo",
                         "play": "Reproduzir",
                         "tts_test_placeholder": "Testar TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Tipos de instâncias para notificações de não amigos",
+                    "non_friend_instance_types_description": "Selecione os tipos de instâncias onde as notificações de entrada/saída de não amigos serão ativadas (exclui públicas por padrão para evitar spam).",
+                    "non_friend_instance_types_placeholder": "Selecionar tipos de instâncias"
                 }
             },
             "wrist_overlay": {
@@ -1439,7 +1443,13 @@
                     "alphabetical": "Ordem Alfabética",
                     "last_active": "Último Ativo",
                     "friend_order": "Ordem de Amizade"
-                }
+                },
+                "user_opted_out": "Este usuário desativou o compartilhamento de amigos em comum.",
+                "user_opted_out_title": "Amigos em comum ocultos",
+                "user_opted_out_desc": "Este usuário desativou o compartilhamento de amigos em comum.",
+                "no_mutual_friends": "Nenhum amigo em comum encontrado ou este usuário desativou os amigos em comum",
+                "mark_opted_out": "Marcar como desativado",
+                "unmark_opted_out": "Desmarcar"
             },
             "activity": {
                 "header": "Atividade",
@@ -2194,7 +2204,8 @@
             "friends": "Amigos",
             "everyone": "Todos",
             "reset": "Redefinir",
-            "close": "Fechar"
+            "close": "Fechar",
+            "non_friends": "Não amigos"
         },
         "previous_instances": {
             "header": "Instâncias Anteriores",
@@ -2837,7 +2848,8 @@
             "lastLogin": "Último Login",
             "dateJoined": "Data de Entrada",
             "unfriend": "Desfazer Amizade",
-            "mutualFriends": "Amigos Mútuos"
+            "mutualFriends": "Amigos Mútuos",
+            "mutualOptedOut": "Este usuário desativou o compartilhamento de amigos em comum. Exibindo dados em cache."
         },
         "profile": {
             "invite_messages": {
@@ -3025,5 +3037,32 @@
         "clocks_label": "Relógios",
         "clocks_none": "Nenhum",
         "timezone": "Fuso Horário"
+    },
+    "nav_desc": {
+        "home": "Painel de controle e visão geral",
+        "feed": "Eventos recentes e feed de amigos",
+        "friends_locations": "Amigos ao vivo em instâncias",
+        "game_log": "Histórico de jogadores e encontros",
+        "player_list": "Jogadores na instância atual",
+        "search": "Explorar usuários, mundos e avatares",
+        "favorites": "Amigos, mundos e avatares salvos",
+        "favorite_friends": "Amigos salvos e organizados",
+        "favorite_worlds": "Lista de mundos favoritados",
+        "favorite_avatars": "Coleção de avatares salvos",
+        "friend_log": "Histórico de adições e remoções de amigos",
+        "friend_list": "Amigos online e offline",
+        "social": "Registro de amigos e moderação",
+        "moderation": "Bloqueios, silenciamentos e permissões",
+        "notification": "Convites e notificações",
+        "my_avatars": "Gerenciar e vestir avatares",
+        "charts": "Gráficos de atividade e estatísticas",
+        "charts_instance": "Análise de atividade de instâncias",
+        "charts_mutual": "Visualização de amigos mútuos",
+        "charts_hot_worlds": "Estatísticas de mundos em alta",
+        "tools": "Utilitários e atalhos de ferramentas",
+        "direct_access": "Entrar por ID ou link direto",
+        "custom_dashboard": "Painel personalizado",
+        "folder_page": "1 página",
+        "folder_pages": "{count} páginas"
     }
 }

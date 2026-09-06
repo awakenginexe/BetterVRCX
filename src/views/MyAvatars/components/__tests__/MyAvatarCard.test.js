@@ -1,11 +1,14 @@
 import { describe, expect, test, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 
 vi.mock('vue-i18n', () => ({
     useI18n: () => ({
         t: (key) => key
     })
 }));
+
+const showFullscreenImageDialogMock = vi.fn();
+const openFolderGenericMock = vi.fn();
 
 vi.mock('../../../../shared/utils', () => ({
     formatDateFilter: () => 'formatted-date',
@@ -15,7 +18,23 @@ vi.mock('../../../../shared/utils', () => ({
         android: { performanceRating: 'Medium' },
         ios: { performanceRating: '' }
     }),
-    timeToText: () => '1h'
+    timeToText: () => '1h',
+    checkVRChatCache: vi.fn().mockResolvedValue({
+        Item1: 26214400, // 25.0 MB
+        Item2: false,
+        Item3: 'C:\\VRChat\\Cache\\item'
+    }),
+    openFolderGeneric: (...args) => openFolderGenericMock(...args)
+}));
+
+vi.mock('@/stores', () => ({
+    useGalleryStore: () => ({
+        showFullscreenImageDialog: showFullscreenImageDialogMock
+    })
+}));
+
+vi.mock('@/coordinators/gameCoordinator', () => ({
+    runDeleteVRChatCacheFlow: vi.fn()
 }));
 
 vi.mock('../../../../shared/constants', () => ({
@@ -65,6 +84,18 @@ vi.mock('@/components/ui/card', () => ({
     Card: { template: '<div data-testid="card"><slot /></div>' }
 }));
 
+vi.mock('@/components/ui/tooltip', () => ({
+    TooltipWrapper: { template: '<div><slot /></div>' }
+}));
+
+vi.mock('@/components/ui/dropdown-menu', () => ({
+    DropdownMenu: { template: '<div><slot /></div>' },
+    DropdownMenuTrigger: { template: '<div><slot /></div>' },
+    DropdownMenuContent: { template: '<div><slot /></div>' },
+    DropdownMenuItem: { template: '<div><slot /></div>' },
+    DropdownMenuSeparator: { template: '<hr />' }
+}));
+
 vi.mock('@/components/ui/separator', () => ({
     Separator: { template: '<hr />' }
 }));
@@ -72,15 +103,22 @@ vi.mock('@/components/ui/separator', () => ({
 vi.mock('lucide-vue-next', () => ({
     Apple: { template: '<i />' },
     Check: { template: '<i />' },
+    Clock: { template: '<i />' },
+    Copy: { template: '<i />' },
     ExternalLink: { template: '<i />' },
     Eye: { template: '<i />' },
+    HardDrive: { template: '<i />' },
     Image: { template: '<i />' },
+    Lock: { template: '<i />' },
     Monitor: { template: '<i />' },
+    MoreVertical: { template: '<i />' },
     Pencil: { template: '<i />' },
     RefreshCw: { template: '<i />' },
     Smartphone: { template: '<i />' },
     Tag: { template: '<i />' },
-    User: { template: '<i />' }
+    Trash2: { template: '<i />' },
+    User: { template: '<i />' },
+    ZoomIn: { template: '<i />' }
 }));
 
 import MyAvatarCard from '../MyAvatarCard.vue';
@@ -151,5 +189,32 @@ describe('MyAvatarCard.vue', () => {
             );
 
         expect(wearItem.attributes('disabled')).toBeDefined();
+    });
+
+    test('renders cache badge and opens cache folder when clicked', async () => {
+        const wrapper = mountCard();
+        await flushPromises();
+
+        const cacheBadge = wrapper.find('[data-testid="cache-badge"]');
+        expect(cacheBadge.exists()).toBe(true);
+        expect(cacheBadge.text()).toContain('25.0 MB');
+
+        await cacheBadge.trigger('click');
+        expect(openFolderGenericMock).toHaveBeenCalledWith(
+            'C:\\VRChat\\Cache\\item'
+        );
+    });
+
+    test('opens fullscreen image dialog when thumbnail is clicked', async () => {
+        const wrapper = mountCard({
+            avatar: {
+                imageUrl: 'https://example.com/full.png'
+            }
+        });
+
+        await wrapper.find('.aspect-4\\/3').trigger('click');
+        expect(showFullscreenImageDialogMock).toHaveBeenCalledWith(
+            'https://example.com/full.png'
+        );
     });
 });

@@ -352,6 +352,8 @@ export function showUserDialog(userId) {
 
     D.avatars = [];
     D.worlds = [];
+    D.mutualFriends = [];
+    D.isMutualFriendsLoading = false;
     D.instance = {
         id: '',
         tag: '',
@@ -454,6 +456,9 @@ export function showUserDialog(userId) {
                 );
                 D.friend = friendStore.friends.get(D.id);
                 D.isFriend = Boolean(D.friend);
+                if (D.friend?.ref?.$mutualOptedOut !== undefined) {
+                    D.ref.$mutualOptedOut = D.friend.ref.$mutualOptedOut;
+                }
                 D.note = String(D.ref.note || '');
                 D.incomingRequest = false;
                 D.outgoingRequest = false;

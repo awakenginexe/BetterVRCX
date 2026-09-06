@@ -1093,12 +1093,41 @@ export const useNotificationStore = defineStore('Notification', () => {
                 noty.isFavorite = friendStore.localFavoriteFriends.has(ref.id);
             }
         }
+        if (
+            (noty.type === 'OnPlayerJoined' || noty.type === 'OnPlayerLeft') &&
+            !noty.isFriend
+        ) {
+            const currentLoc = locationStore.lastLocation.location;
+            if (currentLoc) {
+                const parsed = parseLocation(currentLoc);
+                let accessType = parsed.accessType;
+                if (parsed.groupId) {
+                    if (parsed.groupAccessType === 'plus') {
+                        accessType = 'group+';
+                    } else if (parsed.groupAccessType === 'public') {
+                        accessType = 'groupPublic';
+                    } else {
+                        accessType = 'group';
+                    }
+                }
+                const allowedTypes =
+                    notificationsSettingsStore.nonFriendNotificationInstanceTypes || [];
+                const isAllowed =
+                    allowedTypes.includes(accessType) ||
+                    (accessType === 'group+' && allowedTypes.includes('groupPlus')) ||
+                    (accessType === 'group' && allowedTypes.includes('groupOnly'));
+                if (!isAllowed) {
+                    return;
+                }
+            }
+        }
         const notyFilter = notificationsSettingsStore.sharedFeedFilters.noty;
         if (
             notyFilter[noty.type] &&
             (notyFilter[noty.type] === 'On' ||
                 notyFilter[noty.type] === 'Everyone' ||
                 (notyFilter[noty.type] === 'Friends' && noty.isFriend) ||
+                (notyFilter[noty.type] === 'Non-Friends' && !noty.isFriend) ||
                 (notyFilter[noty.type] === 'VIP' && noty.isFavorite))
         ) {
             playNoty(noty);

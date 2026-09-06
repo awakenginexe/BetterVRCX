@@ -179,7 +179,7 @@ function updateReadmeFiles(version, sha256, vtUrl) {
 async function main() {
     const args = process.argv.slice(2);
     let targetFile = path.join(rootDir, 'build/Cef/BetterVRCX.exe');
-    let version = '3.4.0';
+    let version = '3.5.0';
     let updateReadmes = true;
 
     for (const arg of args) {

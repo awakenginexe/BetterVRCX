@@ -12,7 +12,8 @@
         "notification": "Notificación",
         "friend_list": "Lista de Amigos",
         "charts": "Gráficos",
-        "settings": "Configuración"
+        "settings": "Configuración",
+        "home": "Inicio"
     },
     "side_panel": {
         "search_placeholder": "Buscar",
@@ -451,7 +452,10 @@
                         "use_memo_nicknames": "Usar Apodos de Memo",
                         "play": "Reproducir",
                         "tts_test_placeholder": "Probar TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Tipos de instancias para notificaciones de no amigos",
+                    "non_friend_instance_types_description": "Selecciona los tipos de instancias donde se activarán las notificaciones de entrada/salida de no amigos (excluye públicas por defecto para evitar spam).",
+                    "non_friend_instance_types_placeholder": "Seleccionar tipos de instancias"
                 }
             },
             "wrist_overlay": {
@@ -780,6 +784,14 @@
             },
             "json": {
                 "header": "JSON"
+            },
+            "mutual_friends": {
+                "user_opted_out": "Este usuario ha desactivado compartir amigos en común.",
+                "user_opted_out_title": "Amigos en común ocultos",
+                "user_opted_out_desc": "Este usuario ha desactivado compartir amigos en común.",
+                "no_mutual_friends": "No se encontraron amigos en común o este usuario ha desactivado los amigos en común",
+                "mark_opted_out": "Marcar como desactivado",
+                "unmark_opted_out": "Desmarcar"
             }
         },
         "world": {
@@ -1360,7 +1372,8 @@
             "friends": "Amigos",
             "everyone": "Todos",
             "reset": "Restablecer",
-            "close": "Cerrar"
+            "close": "Cerrar",
+            "non_friends": "No amigos"
         },
         "previous_instances": {
             "header": "Instancias Anteriores",
@@ -1763,7 +1776,8 @@
             "lastActivity": "Última Actividad",
             "lastLogin": "Último Inicio de Sesión",
             "dateJoined": "Fecha de Unión",
-            "unfriend": "Eliminar Amigo"
+            "unfriend": "Eliminar Amigo",
+            "mutualOptedOut": "Este usuario ha desactivado compartir amigos en común. Mostrando datos en caché."
         },
         "profile": {
             "invite_messages": {
@@ -1886,5 +1900,32 @@
                 "403_404_bailing_request": "Solicitud cancelada debido a un reciente 404/403"
             }
         }
+    },
+    "nav_desc": {
+        "home": "Panel de control y vista general",
+        "feed": "Eventos recientes y feed de amigos",
+        "friends_locations": "Amigos en directo en instancias",
+        "game_log": "Historial de jugadores y encuentros",
+        "player_list": "Jugadores en la instancia actual",
+        "search": "Explorar usuarios, mundos y avatares",
+        "favorites": "Amigos, mundos y avatares guardados",
+        "favorite_friends": "Amigos guardados y organizados",
+        "favorite_worlds": "Lista de mundos guardados",
+        "favorite_avatars": "Colección de avatares guardados",
+        "friend_log": "Historial de adición y eliminación de amigos",
+        "friend_list": "Amigos conectados y desconectados",
+        "social": "Registro de amigos y moderación",
+        "moderation": "Bloqueos, silencios y permisos",
+        "notification": "Invitaciones y alertas",
+        "my_avatars": "Gestionar y vestir avatares",
+        "charts": "Gráficos de actividad y estadísticas",
+        "charts_instance": "Análisis de actividad de instancias",
+        "charts_mutual": "Visualización de amigos mutuos",
+        "charts_hot_worlds": "Estadísticas de mundos populares",
+        "tools": "Utilidades y atajos de herramientas",
+        "direct_access": "Unirse mediante ID o enlace directo",
+        "custom_dashboard": "Panel personalizado",
+        "folder_page": "1 página",
+        "folder_pages": "{count} páginas"
     }
 }

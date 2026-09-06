@@ -1,13 +1,15 @@
 <template>
-    <SidebarFooter class="bv-nav-footer px-2 py-3">
+    <SidebarFooter class="bv-nav-footer px-2 py-2">
         <SidebarMenu>
             <SidebarMenuItem v-if="showNewDashboardButton">
                 <SidebarMenuButton
                     :tooltip="t('dashboard.new_dashboard')"
-                    class="bv-nav-item bv-new-dashboard-btn mb-1"
+                    class="bv-nav-item bv-new-dashboard-btn mb-1.5"
                     @click="emit('quick-create-dashboard')">
-                    <Plus class="size-4" />
-                    <span v-show="!isCollapsed">{{ t('dashboard.new_dashboard') }}</span>
+                    <div class="bv-nav-icon-box bg-transparent border-transparent">
+                        <Plus class="size-4" />
+                    </div>
+                    <span v-show="!isCollapsed" class="truncate">{{ t('dashboard.new_dashboard') }}</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
 
@@ -15,10 +17,10 @@
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <SidebarMenuButton class="bv-nav-item bv-focus-ring" :tooltip="t('nav_tooltip.help_support')">
-                            <span class="bv-nav-icon-box">
+                            <div class="bv-nav-icon-box">
                                 <i class="ri-question-line text-lg" />
-                            </span>
-                            <span v-show="!isCollapsed">{{ t('nav_tooltip.help_support') }}</span>
+                            </div>
+                            <span v-show="!isCollapsed" class="truncate">{{ t('nav_tooltip.help_support') }}</span>
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start" class="w-56">
@@ -49,7 +51,7 @@
                             class="bv-nav-item bv-focus-ring"
                             :tooltip="t('nav_tooltip.manage')"
                             :is-active="isSettingsRoute">
-                            <span class="bv-nav-icon-box relative">
+                            <div class="bv-nav-icon-box relative">
                                 <i class="ri-settings-3-line text-lg" />
                                 <span
                                     v-if="hasPendingUpdate || hasPendingInstall"
@@ -57,8 +59,8 @@
                                     data-status="danger"
                                     role="img"
                                     :aria-label="t('nav_menu.update_available')"></span>
-                            </span>
-                            <span v-show="!isCollapsed">{{ t('nav_tooltip.manage') }}</span>
+                            </div>
+                            <span v-show="!isCollapsed" class="truncate">{{ t('nav_tooltip.manage') }}</span>
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start" class="w-54">
@@ -176,10 +178,10 @@
                     class="bv-nav-item bv-focus-ring"
                     :tooltip="isCollapsed ? t('nav_tooltip.expand_menu') : t('nav_tooltip.collapse_menu')"
                     @click="emit('toggle-nav-collapse')">
-                    <span class="bv-nav-icon-box">
-                        <i class="ri-side-bar-line text-lg" />
-                    </span>
-                    <span v-show="!isCollapsed">{{ t('nav_tooltip.collapse_menu') }}</span>
+                    <div class="bv-nav-icon-box">
+                        <i class="ri-side-bar-line text-lg transition-transform duration-200" :class="{ 'rotate-180': isCollapsed }" />
+                    </div>
+                    <span v-show="!isCollapsed" class="truncate">{{ t('nav_tooltip.collapse_menu') }}</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
@@ -305,13 +307,16 @@
     }
 
     .bv-new-dashboard-btn {
-        border: 1px dashed var(--bv-border-strong);
-        color: var(--bv-accent-primary);
+        border: 1px dashed transparent;
+        color: var(--bv-text-muted);
         background: transparent;
+        border-radius: 8px;
         transition:
             background-color var(--bv-duration-fast) var(--bv-ease-out),
             border-color var(--bv-duration-fast) var(--bv-ease-out),
-            color var(--bv-duration-fast) var(--bv-ease-out);
+            color var(--bv-duration-fast) var(--bv-ease-out),
+            box-shadow var(--bv-duration-fast) var(--bv-ease-out),
+            transform var(--bv-duration-fast) var(--bv-ease-out);
     }
 
     .bv-new-dashboard-btn:hover {

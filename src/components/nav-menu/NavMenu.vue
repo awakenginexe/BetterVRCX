@@ -5,19 +5,27 @@
         collapsible="icon"
         class="bv-left-navigation"
         aria-label="BetterVRCX navigation">
-        <SidebarHeader class="px-2 py-2">
+        <SidebarHeader class="px-2 pt-2 pb-1 space-y-1">
+            <!-- Home Hub Navigation Item -->
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
-                        :tooltip="t('nav_tooltip.home') || 'Home'"
+                        :tooltip="t('nav_tooltip.home') || t('view.home.title') || 'Home'"
                         :is-active="isHomeActive"
                         :class="['bv-nav-item bv-focus-ring', { 'bv-nav-item-active': isHomeActive }]"
                         data-nav-key="home"
                         @click="handleHomeClick">
-                        <span class="bv-nav-icon-box">
+                        <div class="bv-nav-icon-box">
                             <i class="ri-home-5-line text-lg relative" />
-                        </span>
-                        <span v-show="!isCollapsed">{{ t('nav_tooltip.home') || 'Home' }}</span>
+                        </div>
+                        <div v-show="!isCollapsed" class="bv-nav-content-box flex flex-col min-w-0 flex-1">
+                            <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
+                                t('nav_tooltip.home') || t('view.home.title') || 'Home'
+                            }}</span>
+                            <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
+                                getNavItemDescription({ key: 'home' })
+                            }}</span>
+                        </div>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
@@ -25,8 +33,8 @@
 
         <ContextMenu>
             <ContextMenuTrigger as-child>
-                <SidebarContent class="pt-2" style="container-type: inline-size">
-                    <SidebarGroup>
+                <SidebarContent class="pt-0.5 px-2" style="container-type: inline-size">
+                    <SidebarGroup class="p-0">
                         <SidebarGroupContent>
                             <SidebarMenu v-if="navLayoutReady">
                                 <template v-for="item in menuItems" :key="item.index">
@@ -42,7 +50,7 @@
                                                         { 'bv-nav-item-active': activeMenuIndex === item.index }
                                                     ]"
                                                     @click="handleMenuItemClick(item)">
-                                                    <span class="bv-nav-icon-box">
+                                                    <div class="bv-nav-icon-box">
                                                         <i :class="item.icon" class="text-lg relative">
                                                             <span
                                                                 v-if="isNavItemNotified(item)"
@@ -52,13 +60,18 @@
                                                                 :aria-label="t('nav_menu.mark_all_read')"
                                                                 :class="{ '-right-1!': isCollapsed }"></span>
                                                         </i>
-                                                    </span>
-                                                    <span v-show="!isCollapsed">{{
-                                                        item.titleIsCustom ? item.title : t(item.title || '')
-                                                    }}</span>
+                                                    </div>
+                                                    <div v-show="!isCollapsed" class="bv-nav-content-box flex flex-col min-w-0 flex-1">
+                                                        <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
+                                                            item.titleIsCustom ? item.title : t(item.title || '')
+                                                        }}</span>
+                                                        <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
+                                                            getNavItemDescription(item)
+                                                        }}</span>
+                                                    </div>
                                                     <span
                                                         v-if="item.action === 'direct-access' && !isCollapsed"
-                                                        class="nav-shortcut-hint ml-auto inline-flex items-center gap-2">
+                                                        class="nav-shortcut-hint ml-auto inline-flex items-center gap-1 shrink-0">
                                                         <Kbd>{{ isMac ? '⌘' : 'Ctrl' }}</Kbd>
                                                         <Kbd>D</Kbd>
                                                     </span>
@@ -301,6 +314,93 @@
     const version = computed(() => appVersion.value?.split('VRCX ')?.[1] || '-');
     const vrcxLogo = new URL('../../../images/BetterVRCX.png', import.meta.url).href;
 
+    const NAV_ITEM_DESC_KEYS = {
+        home: 'nav_desc.home',
+        feed: 'nav_desc.feed',
+        'friends-locations': 'nav_desc.friends_locations',
+        'game-log': 'nav_desc.game_log',
+        'player-list': 'nav_desc.player_list',
+        search: 'nav_desc.search',
+        favorites: 'nav_desc.favorites',
+        'favorite-friends': 'nav_desc.favorite_friends',
+        'favorite-worlds': 'nav_desc.favorite_worlds',
+        'favorite-avatars': 'nav_desc.favorite_avatars',
+        'friend-log': 'nav_desc.friend_log',
+        'friend-list': 'nav_desc.friend_list',
+        social: 'nav_desc.social',
+        moderation: 'nav_desc.moderation',
+        notification: 'nav_desc.notification',
+        'my-avatars': 'nav_desc.my_avatars',
+        charts: 'nav_desc.charts',
+        'charts-instance': 'nav_desc.charts_instance',
+        'charts-mutual': 'nav_desc.charts_mutual',
+        'charts-hot-worlds': 'nav_desc.charts_hot_worlds',
+        tools: 'nav_desc.tools',
+        'direct-access': 'nav_desc.direct_access'
+    };
+
+    const NAV_ITEM_FALLBACKS = {
+        home: 'Dashboard & quick overview',
+        feed: 'Recent events & friend feed',
+        'friends-locations': 'Live friends in instances',
+        'game-log': 'Player history & encounters',
+        'player-list': 'Players in current instance',
+        search: 'Explore users, worlds & avatars',
+        favorites: 'Saved friends, worlds & avatars',
+        'favorite-friends': 'Saved & organized friends',
+        'favorite-worlds': 'Bookmarked worlds list',
+        'favorite-avatars': 'Saved avatar collection',
+        'friend-log': 'Friendship adds & removals',
+        'friend-list': 'Online & offline friends',
+        social: 'Friend logs & moderation',
+        moderation: 'Blocks, mutes & permissions',
+        notification: 'Invites & notifications',
+        'my-avatars': 'Manage & wear avatars',
+        charts: 'Activity & analytics charts',
+        'charts-instance': 'Instance activity analytics',
+        'charts-mutual': 'Mutual friends visualization',
+        'charts-hot-worlds': 'Trending world statistics',
+        tools: 'Utilities & tool shortcuts',
+        'direct-access': 'Jump to ID or launch link'
+    };
+
+    function getNavItemDescription(item) {
+        if (!item) return '';
+        const key = item.key || item.index || item.id;
+        const descKey = NAV_ITEM_DESC_KEYS[key];
+        if (descKey) {
+            const translated = t(descKey);
+            if (translated && translated !== descKey) {
+                return translated;
+            }
+            if (NAV_ITEM_FALLBACKS[key]) {
+                return NAV_ITEM_FALLBACKS[key];
+            }
+        }
+        if (item.children?.length) {
+            const count = item.children.length;
+            if (count === 1) {
+                const single = t('nav_desc.folder_page');
+                return single && single !== 'nav_desc.folder_page' ? single : '1 page';
+            }
+            const plural = t('nav_desc.folder_pages', { count });
+            return plural && plural !== 'nav_desc.folder_pages' ? plural : `${count} pages`;
+        }
+        if (isDashboardItem(item)) {
+            const customDashboard = t('nav_desc.custom_dashboard');
+            return customDashboard && customDashboard !== 'nav_desc.custom_dashboard'
+                ? customDashboard
+                : 'Custom dashboard';
+        }
+        if (isToolItem(item)) {
+            const toolShortcut = t('nav_desc.tools');
+            return toolShortcut && toolShortcut !== 'nav_desc.tools'
+                ? toolShortcut
+                : 'Tool shortcut';
+        }
+        return '';
+    }
+
     const isEntryNotified = (entry) => checkEntryNotified(entry, notifiedMenus.value);
 
     const getItemTooltip = (item) => {
@@ -502,13 +602,16 @@
     }
 
     .bv-new-dashboard-btn {
-        border: 1px dashed var(--bv-border-strong);
-        color: var(--bv-accent-primary);
+        border: 1px dashed transparent;
+        color: var(--bv-text-muted);
         background: transparent;
+        border-radius: 8px;
         transition:
             background-color var(--bv-duration-fast) var(--bv-ease-out),
             border-color var(--bv-duration-fast) var(--bv-ease-out),
-            color var(--bv-duration-fast) var(--bv-ease-out);
+            color var(--bv-duration-fast) var(--bv-ease-out),
+            box-shadow var(--bv-duration-fast) var(--bv-ease-out),
+            transform var(--bv-duration-fast) var(--bv-ease-out);
     }
 
     .bv-new-dashboard-btn:hover {

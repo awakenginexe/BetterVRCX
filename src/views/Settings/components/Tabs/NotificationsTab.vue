@@ -23,6 +23,29 @@
                 }}</Button>
             </SettingsItem>
 
+            <SettingsItem
+                :label="t('view.settings.notifications.notifications.non_friend_instance_types')"
+                :description="t('view.settings.notifications.notifications.non_friend_instance_types_description')">
+                <Select
+                    :model-value="nonFriendNotificationInstanceTypes"
+                    multiple
+                    class="w-64"
+                    @update:modelValue="setNonFriendNotificationInstanceTypes">
+                    <SelectTrigger size="sm">
+                        <SelectValue
+                            :placeholder="t('view.settings.notifications.notifications.non_friend_instance_types_placeholder')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="item in availableInstanceTypes"
+                            :key="item.value"
+                            :value="item.value">
+                            {{ item.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </SettingsItem>
+
             <SettingsItem :label="t('view.settings.notifications.notifications.test_notification')">
                 <Button size="sm" variant="outline" @click="testNotification"
                     ><Play />{{ t('view.settings.notifications.notifications.test_notification') }}</Button
@@ -184,19 +207,35 @@
         isTestTTSVisible,
         notificationTTSTest,
         TTSvoices,
-        notificationLayout
+        notificationLayout,
+        nonFriendNotificationInstanceTypes
     } = storeToRefs(notificationsSettingsStore);
 
     const {
         setDesktopToast,
         setAfkDesktopToast,
         setNotificationTTSNickName,
+        setNonFriendNotificationInstanceTypes,
         getTTSVoiceName,
         changeTTSVoice,
         saveNotificationTTS,
         testNotificationTTS,
         setNotificationLayout
     } = notificationsSettingsStore;
+
+    const availableInstanceTypes = computed(() => [
+        { value: 'friends', label: t('dialog.new_instance.access_type_friend') },
+        { value: 'friends+', label: t('dialog.new_instance.access_type_friend_plus') },
+        { value: 'invite', label: t('dialog.new_instance.access_type_invite') },
+        { value: 'invite+', label: t('dialog.new_instance.access_type_invite_plus') },
+        { value: 'group', label: t('dialog.new_instance.access_type_group') },
+        { value: 'group+', label: `${t('dialog.new_instance.access_type_group')}+` },
+        {
+            value: 'groupPublic',
+            label: `${t('dialog.new_instance.access_type_group')} (${t('dialog.new_instance.group_access_type_public')})`
+        },
+        { value: 'public', label: t('dialog.new_instance.access_type_public') }
+    ]);
 
     const { testNotification } = useNotificationStore();
 

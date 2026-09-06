@@ -11,7 +11,8 @@
         "moderation": "음소거 및 차단",
         "notification": "알림",
         "friend_list": "친구 목록",
-        "settings": "설정"
+        "settings": "설정",
+        "home": "홈"
     },
     "side_panel": {
         "search_placeholder": "검색",
@@ -338,7 +339,10 @@
                         "header": "Text-To-Speech",
                         "when_to_play": "알림 TTS 재생 조건",
                         "tts_voice": "TTS 목소리"
-                    }
+                    },
+                    "non_friend_instance_types": "친구가 아닌 사용자 알림 인스턴스 유형",
+                    "non_friend_instance_types_description": "친구가 아닌 사용자의 입장/퇴장 알림을 표시할 인스턴스 유형을 선택합니다(도배 방지를 위해 기본적으로 공개 인스턴스는 제외됨).",
+                    "non_friend_instance_types_placeholder": "인스턴스 유형 선택"
                 }
             },
             "wrist_overlay": {
@@ -617,6 +621,14 @@
             },
             "json": {
                 "header": "JSON"
+            },
+            "mutual_friends": {
+                "user_opted_out": "이 사용자는 공통 친구 공유를 비활성화했습니다.",
+                "user_opted_out_title": "공통 친구 숨김",
+                "user_opted_out_desc": "이 사용자는 공통 친구 공유를 비활성화했습니다.",
+                "no_mutual_friends": "함께 아는 친구를 찾을 수 없거나 이 사용자가 공유를 비활성화했습니다",
+                "mark_opted_out": "공통 친구 비활성화로 표시",
+                "unmark_opted_out": "표시 해제"
             }
         },
         "world": {
@@ -1178,7 +1190,8 @@
             "friends": "친구",
             "everyone": "모두",
             "reset": "Reset",
-            "close": "닫기"
+            "close": "닫기",
+            "non_friends": "친구가 아닌 사용자"
         },
         "previous_instances": {
             "header": "이전 인스턴스",
@@ -1538,7 +1551,8 @@
             "lastActivity": "마지막 활동",
             "lastLogin": "마지막 로그인",
             "dateJoined": "계정 생성일",
-            "unfriend": "친구 끊기"
+            "unfriend": "친구 끊기",
+            "mutualOptedOut": "이 사용자는 공통 친구 공유를 비활성화했습니다. 캐시된 데이터를 표시합니다."
         },
         "profile": {
             "invite_messages": {
@@ -1575,5 +1589,32 @@
             "cpu": "CPU:",
             "online": "온라인:"
         }
+    },
+    "nav_desc": {
+        "home": "대시보드 및 빠른 개요",
+        "feed": "최근 활동 및 친구 피드",
+        "friends_locations": "인스턴스에 있는 친구 목록",
+        "game_log": "플레이어 기록 및 만남 로그",
+        "player_list": "현재 인스턴스 플레이어 목록",
+        "search": "유저, 월드 및 아바타 검색",
+        "favorites": "저장된 친구, 월드 및 아바타",
+        "favorite_friends": "즐겨찾는 친구 목록",
+        "favorite_worlds": "즐겨찾는 월드 목록",
+        "favorite_avatars": "즐겨찾는 아바타 컬렉션",
+        "friend_log": "친구 추가 및 삭제 기록",
+        "friend_list": "온라인 및 오프라인 친구",
+        "social": "친구 로그 및 관리",
+        "moderation": "차단, 뮤트 및 권한 설정",
+        "notification": "초대 및 알림 목록",
+        "my_avatars": "내 아바타 관리 및 착용",
+        "charts": "활동 및 통계 차트",
+        "charts_instance": "인스턴스 활동 분석",
+        "charts_mutual": "공통 친구 시각화",
+        "charts_hot_worlds": "인기 월드 트렌드 통계",
+        "tools": "유틸리티 및 도구 단축키",
+        "direct_access": "ID 또는 링크로 바로 이동",
+        "custom_dashboard": "사용자 지정 대시보드",
+        "folder_page": "1개 페이지",
+        "folder_pages": "{count}개 페이지"
     }
 }

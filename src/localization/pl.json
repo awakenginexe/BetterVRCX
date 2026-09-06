@@ -19,7 +19,8 @@
         "charts": "Wykresy",
         "tools": "Narzędzia",
         "settings": "Ustawienia",
-        "help_support": "Pomoc i wsparcie"
+        "help_support": "Pomoc i wsparcie",
+        "home": "Strona główna"
     },
     "nav_menu": {
         "resources": "ZASOBY",
@@ -585,7 +586,10 @@
                         "use_memo_nicknames": "Używaj notatek nazw",
                         "play": "Odtwórz",
                         "tts_test_placeholder": "Testuj TTS"
-                    }
+                    },
+                    "non_friend_instance_types": "Typy instancji powiadomień o nieznajomych",
+                    "non_friend_instance_types_description": "Wybierz typy instancji, w których mają być wyświetlane powiadomienia o dołączeniu/opuszczeniu przez nieznajomych (domyślnie wyklucza publiczne, aby uniknąć spamu).",
+                    "non_friend_instance_types_placeholder": "Wybierz typy instancji"
                 }
             },
             "wrist_overlay": {
@@ -968,7 +972,13 @@
                     "alphabetical": "Alfabetycznie",
                     "last_active": "Ostatnia aktywność",
                     "friend_order": "Kolejność znajomych"
-                }
+                },
+                "user_opted_out": "Ten użytkownik wyłączył udostępnianie wspólnych znajomych.",
+                "user_opted_out_title": "Wspólni znajomi ukryci",
+                "user_opted_out_desc": "Ten użytkownik wyłączył udostępnianie wspólnych znajomych.",
+                "no_mutual_friends": "Nie znaleziono wspólnych znajomych lub ten użytkownik wyłączył wspólnych znajomych",
+                "mark_opted_out": "Oznacz jako wyłączone",
+                "unmark_opted_out": "Usuń oznaczenie"
             }
         },
         "world": {
@@ -1623,7 +1633,8 @@
             "friends": "Znajomi",
             "everyone": "Wszyscy",
             "reset": "Resetuj",
-            "close": "Zamknij"
+            "close": "Zamknij",
+            "non_friends": "Nieznajomi"
         },
         "previous_instances": {
             "header": "Poprzednie instancje",
@@ -2066,7 +2077,8 @@
             "lastLogin": "Ostatnie logowanie",
             "dateJoined": "Data dołączenia",
             "unfriend": "Usuń ze znajomych",
-            "mutualFriends": "Wspólni znajomi"
+            "mutualFriends": "Wspólni znajomi",
+            "mutualOptedOut": "Ten użytkownik wyłączył udostępnianie wspólnych znajomych. Wyświetlanie danych z pamięci podręcznej."
         },
         "profile": {
             "invite_messages": {
@@ -2190,5 +2202,32 @@
                 "unavailable": "Usługa może być niedostępna z powodu problemów wewnętrznych VRChat"
             }
         }
+    },
+    "nav_desc": {
+        "home": "Pulpit i szybki przegląd",
+        "feed": "Ostatnie wydarzenia i kanał znajomych",
+        "friends_locations": "Znajomi na żywo w instancjach",
+        "game_log": "Historia graczy i spotkań",
+        "player_list": "Gracze w bieżącej instancji",
+        "search": "Wyszukuj użytkowników, światy i awatary",
+        "favorites": "Zapisani znajomi, światy i awatary",
+        "favorite_friends": "Zapisani i zorganizowani znajomi",
+        "favorite_worlds": "Lista ulubionych światów",
+        "favorite_avatars": "Kolekcja ulubionych awatarów",
+        "friend_log": "Historia dodawania i usuwania znajomych",
+        "friend_list": "Znajomi online i offline",
+        "social": "Dziennik znajomych i moderacja",
+        "moderation": "Blokady, wyciszenia i uprawnienia",
+        "notification": "Zaproszenia i powiadomienia",
+        "my_avatars": "Zarządzaj i noś awatary",
+        "charts": "Wykresy aktywności i statystyki",
+        "charts_instance": "Analiza aktywności w instancjach",
+        "charts_mutual": "Wizualizacja wspólnych znajomych",
+        "charts_hot_worlds": "Statystyki popularnych światów",
+        "tools": "Narzędzia i skróty",
+        "direct_access": "Przejdź do ID lub linku",
+        "custom_dashboard": "Własny pulpit",
+        "folder_page": "1 strona",
+        "folder_pages": "{count} stron"
     }
 }
