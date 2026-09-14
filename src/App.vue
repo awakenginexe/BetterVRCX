@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-    import { computed, onBeforeMount, onMounted } from 'vue';
+    import { computed, onBeforeMount, onMounted, watch } from 'vue';
 
     import { addGameLogEvent, getGameLogTable } from './coordinators/gameLogCoordinator';
     import {
@@ -66,6 +66,16 @@
     const isCefWindows = computed(() => {
         return WINDOWS && typeof window !== 'undefined' && !window.electron;
     });
+
+    watch(
+        [isCefWindows, isMacOS],
+        ([cef, mac]) => {
+            if (typeof document === 'undefined') return;
+            const height = cef ? '32px' : mac ? '28px' : '0px';
+            document.documentElement.style.setProperty('--bv-titlebar-height', height);
+        },
+        { immediate: true }
+    );
 
     const theme = computed(() => {
         return store.appearanceSettings.isDarkMode ? 'dark' : 'light';

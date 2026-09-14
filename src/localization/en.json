@@ -477,6 +477,25 @@
                 "delete_log": "Delete log",
                 "decline_with_message": "Decline with message"
             },
+            "bulk": {
+                "select_all": "Select all",
+                "select_item": "Select notification",
+                "selected": "{count} selected",
+                "accept": "Accept",
+                "decline": "Decline",
+                "mark_as_read": "Mark as read",
+                "delete": "Delete",
+                "clear": "Clear selection",
+                "confirm_accept_title": "Accept {count} notifications?",
+                "confirm_accept_desc": "Are you sure you want to accept {count} notifications? Unsupported items will be skipped.",
+                "confirm_decline_title": "Decline {count} notifications?",
+                "confirm_decline_desc": "Are you sure you want to decline {count} notifications? Unsupported items will be skipped.",
+                "confirm_delete_title": "Delete {count} notifications?",
+                "confirm_delete_desc": "Are you sure you want to delete {count} notifications from your history?",
+                "success_all": "Processed {count} notifications.",
+                "partial_failure": "Completed {succeeded} notifications ({failed} failed).",
+                "all_failed": "Failed to process {count} notifications."
+            },
             "filters": {
                 "requestInvite": "Request Invite",
                 "invite": "Invite",

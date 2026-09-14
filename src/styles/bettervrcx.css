@@ -1,4 +1,6 @@
 :root {
+    --bv-titlebar-height: 0px;
+
     /* Primary Accent HSL Core (Default: VRCX Blue #5c76ff) */
     --bv-accent-h: 228;
     --bv-accent-s: 100%;

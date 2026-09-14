@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
+import { nextTick, ref } from 'vue';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -15,7 +15,33 @@ const mocks = vi.hoisted(() => ({
     clearInviteImageUpload: vi.fn(),
     showFullscreenImageDialog: vi.fn(),
     configSetString: vi.fn(),
-    translate: vi.fn()
+    translate: vi.fn(),
+    modalConfirm: vi.fn().mockResolvedValue({ ok: true }),
+    handleNotificationAccept: vi.fn(),
+    handleNotificationHide: vi.fn(),
+    handleNotificationV2Hide: vi.fn(),
+    handleNotificationSee: vi.fn(),
+    handleNotificationV2Update: vi.fn(),
+    deleteNotificationLog: vi.fn(),
+    friendRequestApi: {
+        deleteHiddenFriendRequest: vi.fn().mockResolvedValue({})
+    },
+    notificationRequestApi: {
+        acceptFriendRequestNotification: vi.fn().mockResolvedValue({}),
+        hideNotification: vi.fn().mockResolvedValue({}),
+        sendInvite: vi.fn().mockResolvedValue({}),
+        sendNotificationResponse: vi.fn().mockResolvedValue({}),
+        seeNotification: vi.fn().mockResolvedValue({}),
+        seeNotificationV2: vi.fn().mockResolvedValue({ json: {} })
+    },
+    queryRequestApi: {
+        fetch: vi.fn().mockResolvedValue({ ref: { name: 'World Name' } })
+    },
+    toast: {
+        success: vi.fn(),
+        warning: vi.fn(),
+        error: vi.fn()
+    }
 }));
 
 vi.mock('pinia', async (importOriginal) => {
@@ -31,6 +57,10 @@ vi.mock('vue-i18n', () => ({
         t: (...args) => mocks.translate(...args),
         locale: ref('en')
     })
+}));
+
+vi.mock('vue-sonner', () => ({
+    toast: mocks.toast
 }));
 
 vi.mock('../../../stores', () => ({
@@ -58,11 +88,37 @@ vi.mock('../../../stores', () => ({
         hideNotificationPrompt: vi.fn(),
         acceptRequestInvite: vi.fn(),
         sendNotificationResponse: vi.fn(),
-        deleteNotificationLog: vi.fn(),
+        deleteNotificationLog: (...args) => mocks.deleteNotificationLog(...args),
         deleteNotificationLogPrompt: vi.fn(),
-        openNotificationLink: vi.fn()
+        openNotificationLink: vi.fn(),
+        isNotificationExpired: vi.fn((row) => Boolean(row?.$isExpired)),
+        handleNotificationAccept: (...args) =>
+            mocks.handleNotificationAccept(...args),
+        handleNotificationHide: (...args) =>
+            mocks.handleNotificationHide(...args),
+        handleNotificationV2Hide: (...args) =>
+            mocks.handleNotificationV2Hide(...args),
+        handleNotificationSee: (...args) => mocks.handleNotificationSee(...args),
+        handleNotificationV2Update: (...args) =>
+            mocks.handleNotificationV2Update(...args)
     }),
-    useVrcxStore: () => ({ maxTableSize: 100 })
+    useVrcxStore: () => ({ maxTableSize: 100 }),
+    useUserStore: () => ({
+        currentUser: ref({ id: 'user-self' })
+    }),
+    useLocationStore: () => ({
+        lastLocation: ref({ location: 'wrld_123:456' }),
+        lastLocationDestination: ''
+    }),
+    useGameStore: () => ({
+        isGameRunning: ref(true)
+    }),
+    useInstanceStore: () => ({
+        cachedInstances: new Map()
+    }),
+    useModalStore: () => ({
+        confirm: (...args) => mocks.modalConfirm(...args)
+    })
 }));
 
 vi.mock('../../../services/config', () => ({
@@ -72,7 +128,22 @@ vi.mock('../../../services/config', () => ({
 }));
 
 vi.mock('../../../shared/utils', () => ({
-    convertFileUrlToImageUrl: (url) => `image:${url}`
+    convertFileUrlToImageUrl: (url) => `image:${url}`,
+    executeWithBackoff: async (fn) => fn(),
+    parseLocation: (loc) => ({
+        worldId: loc?.split(':')[0] || '',
+        tag: loc || ''
+    })
+}));
+
+vi.mock('../../../shared/utils/invite', () => ({
+    checkCanInvite: () => true
+}));
+
+vi.mock('../../../api', () => ({
+    friendRequest: mocks.friendRequestApi,
+    notificationRequest: mocks.notificationRequestApi,
+    queryRequest: mocks.queryRequestApi
 }));
 
 vi.mock('../../../lib/table/useVrcxVueTable', () => ({
@@ -133,16 +204,23 @@ vi.mock('@/components/ui/input-group', () => ({
 
 vi.mock('@/components/ui/button', () => ({
     Button: {
+        props: ['disabled'],
         emits: ['click'],
         template:
-            '<button :class="$attrs.class" :aria-label="$attrs.ariaLabel" @click="$emit(\'click\')"><slot /></button>'
+            '<button :disabled="disabled" :class="$attrs.class" :aria-label="$attrs.ariaLabel" @click="$emit(\'click\')"><slot /></button>'
     }
 }));
 
 vi.mock('@/components/ui/spinner', () => ({
-    Spinner: { template: '<span />' }
+    Spinner: { template: '<span data-testid="spinner" />' }
 }));
-vi.mock('lucide-vue-next', () => ({ RefreshCw: { template: '<span />' } }));
+vi.mock('lucide-vue-next', () => ({
+    RefreshCw: { template: '<span />' },
+    Check: { template: '<span />' },
+    CheckCheck: { template: '<span />' },
+    Trash2: { template: '<span />' },
+    X: { template: '<span />' }
+}));
 vi.mock('@/components/ui/tooltip', () => ({
     TooltipWrapper: { template: '<div><slot /></div>' }
 }));
@@ -197,10 +275,48 @@ describe('Notification.vue', () => {
         mocks.clearInviteImageUpload.mockReset();
         mocks.showFullscreenImageDialog.mockReset();
         mocks.configSetString.mockReset();
-        mocks.translate.mockImplementation((key) => {
+        mocks.modalConfirm.mockReset().mockResolvedValue({ ok: true });
+        mocks.handleNotificationAccept.mockReset();
+        mocks.handleNotificationHide.mockReset();
+        mocks.handleNotificationV2Hide.mockReset();
+        mocks.handleNotificationSee.mockReset();
+        mocks.handleNotificationV2Update.mockReset();
+        mocks.deleteNotificationLog.mockReset();
+        mocks.friendRequestApi.deleteHiddenFriendRequest
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.acceptFriendRequestNotification
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.hideNotification
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.sendInvite
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.sendNotificationResponse
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.seeNotification
+            .mockReset()
+            .mockResolvedValue({});
+        mocks.notificationRequestApi.seeNotificationV2
+            .mockReset()
+            .mockResolvedValue({ json: {} });
+        mocks.toast.success.mockReset();
+        mocks.toast.warning.mockReset();
+        mocks.toast.error.mockReset();
+
+        mocks.translate.mockImplementation((key, params) => {
             const translations = {
                 'view.notification.visible': 'Visible',
-                'view.notification.unread': 'Unread'
+                'view.notification.unread': 'Unread',
+                'view.notification.bulk.selected': `${params?.count} selected`,
+                'view.notification.bulk.accept': 'Accept',
+                'view.notification.bulk.decline': 'Decline',
+                'view.notification.bulk.mark_as_read': 'Mark as read',
+                'view.notification.bulk.delete': 'Delete',
+                'view.notification.bulk.clear': 'Clear selection'
             };
             return translations[key] ?? key;
         });
@@ -304,6 +420,214 @@ describe('Notification.vue', () => {
         );
         expect(mocks.clearInviteImageUpload).toHaveBeenCalledTimes(2);
         expect(wrapper.vm).toBeTruthy();
+    });
+
+    test('provides bulk selection handlers to createColumns', () => {
+        mountNotification();
+
+        expect(mocks.columnHandlers.selectedNotificationIds).toBeDefined();
+        expect(
+            mocks.columnHandlers.onToggleNotificationSelection
+        ).toBeTypeOf('function');
+        expect(mocks.columnHandlers.isAllSelected).toBeDefined();
+        expect(mocks.columnHandlers.isSomeSelected).toBeDefined();
+        expect(mocks.columnHandlers.onToggleSelectAll).toBeTypeOf('function');
+    });
+
+    test('manages selection state and Select All correctly', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'n1', type: 'friendRequest', senderUserId: 'u1' },
+            { id: 'n2', type: 'invite', senderUserId: 'u2' }
+        ];
+
+        const wrapper = mountNotification();
+        expect(wrapper.find('.notification__bulk-surface').exists()).toBe(false);
+
+        mocks.columnHandlers.onToggleNotificationSelection('n1');
+        await nextTick();
+
+        expect(
+            mocks.columnHandlers.selectedNotificationIds.value.has('n1')
+        ).toBe(true);
+        expect(mocks.columnHandlers.isAllSelected.value).toBe(false);
+        expect(mocks.columnHandlers.isSomeSelected.value).toBe(true);
+        expect(wrapper.find('.notification__bulk-surface').exists()).toBe(true);
+        expect(wrapper.find('.notification__bulk-count').text()).toContain(
+            '1 selected'
+        );
+
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        expect(mocks.columnHandlers.isAllSelected.value).toBe(true);
+        expect(mocks.columnHandlers.selectedNotificationIds.value.size).toBe(2);
+        expect(wrapper.find('.notification__bulk-count').text()).toContain(
+            '2 selected'
+        );
+
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        expect(mocks.columnHandlers.selectedNotificationIds.value.size).toBe(0);
+        expect(wrapper.find('.notification__bulk-surface').exists()).toBe(false);
+    });
+
+    test('computes applicable action counts and handles bulk accept', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'fr-1', type: 'friendRequest', senderUserId: 'u1' },
+            { id: 'req-1', type: 'requestInvite', senderUserId: 'u2' },
+            {
+                id: 'grp-1',
+                type: 'group.invite',
+                senderUserId: 'u3',
+                responses: [{ type: 'accept', data: 'join' }]
+            },
+            { id: 'msg-1', type: 'message', senderUserId: 'u4' }
+        ];
+
+        const wrapper = mountNotification();
+
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        const buttons = wrapper.findAll('.notification__bulk-actions button');
+        const acceptBtn = buttons[0];
+        expect(acceptBtn.text()).toContain('Accept (3)');
+        // Trigger Accept
+        await acceptBtn.trigger('click');
+        expect(mocks.modalConfirm).toHaveBeenCalled();
+
+        await flushPromises();
+        expect(
+            mocks.notificationRequestApi.acceptFriendRequestNotification
+        ).toHaveBeenCalledWith({ notificationId: 'fr-1' });
+        expect(mocks.notificationRequestApi.sendInvite).toHaveBeenCalled();
+        expect(
+            mocks.notificationRequestApi.sendNotificationResponse
+        ).toHaveBeenCalledWith({
+            notificationId: 'grp-1',
+            responseType: 'accept',
+            responseData: 'join'
+        });
+        expect(mocks.toast.success).toHaveBeenCalled();
+    });
+
+    test('computes declinable counts and handles bulk decline', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'inv-1', type: 'invite', senderUserId: 'u1' },
+            { id: 'ign-1', type: 'ignoredFriendRequest', senderUserId: 'u2' },
+            {
+                id: 'grp-1',
+                type: 'group.invite',
+                senderUserId: 'u3',
+                responses: [{ type: 'decline', data: 'no' }]
+            },
+            { id: 'msg-1', type: 'message', senderUserId: 'u4' }
+        ];
+
+        const wrapper = mountNotification();
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        const buttons = wrapper.findAll('.notification__bulk-actions button');
+        const declineBtn = buttons[1];
+        expect(declineBtn.text()).toContain('Decline (3)');
+
+        await declineBtn.trigger('click');
+        await flushPromises();
+
+        expect(
+            mocks.notificationRequestApi.hideNotification
+        ).toHaveBeenCalledWith({ notificationId: 'inv-1' });
+        expect(
+            mocks.friendRequestApi.deleteHiddenFriendRequest
+        ).toHaveBeenCalledWith({ notificationId: 'ign-1' }, 'u2');
+        expect(
+            mocks.notificationRequestApi.sendNotificationResponse
+        ).toHaveBeenCalledWith({
+            notificationId: 'grp-1',
+            responseType: 'decline',
+            responseData: 'no'
+        });
+        expect(mocks.toast.success).toHaveBeenCalled();
+    });
+
+    test('handles bulk mark as read for unread items', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'n1', type: 'message', seen: false, version: 1 },
+            { id: 'n2', type: 'boop', seen: false, version: 2 },
+            { id: 'n3', type: 'message', seen: true }
+        ];
+        mocks.unseenNotifications.value = ['n1', 'n2'];
+
+        const wrapper = mountNotification();
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        const buttons = wrapper.findAll('.notification__bulk-actions button');
+        const markReadBtn = buttons[2];
+        expect(markReadBtn.text()).toContain('Mark as read (2)');
+
+        await markReadBtn.trigger('click');
+        await flushPromises();
+
+        expect(mocks.notificationRequestApi.seeNotification).toHaveBeenCalledWith(
+            { notificationId: 'n1' }
+        );
+        expect(
+            mocks.notificationRequestApi.seeNotificationV2
+        ).toHaveBeenCalledWith({ notificationId: 'n2' });
+        expect(mocks.toast.success).toHaveBeenCalled();
+    });
+
+    test('handles bulk delete for eligible notification logs', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'n1', type: 'message' },
+            { id: 'n2', type: 'friendRequest' }
+        ];
+
+        const wrapper = mountNotification();
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        const buttons = wrapper.findAll('.notification__bulk-actions button');
+        const deleteBtn = buttons[3];
+        expect(deleteBtn.text()).toContain('Delete (1)');
+
+        await deleteBtn.trigger('click');
+        await flushPromises();
+
+        expect(mocks.deleteNotificationLog).toHaveBeenCalledWith(
+            expect.objectContaining({ id: 'n1' })
+        );
+        expect(mocks.toast.success).toHaveBeenCalled();
+    });
+
+    test('handles partial failure and reports warning toast', async () => {
+        mocks.notificationTable.value.data = [
+            { id: 'fr-1', type: 'friendRequest', senderUserId: 'u1' },
+            { id: 'fr-2', type: 'friendRequest', senderUserId: 'u2' }
+        ];
+
+        mocks.notificationRequestApi.acceptFriendRequestNotification
+            .mockResolvedValueOnce({})
+            .mockRejectedValueOnce(new Error('Network error'));
+
+        const wrapper = mountNotification();
+        mocks.columnHandlers.onToggleSelectAll();
+        await nextTick();
+
+        const buttons = wrapper.findAll('.notification__bulk-actions button');
+        await buttons[0].trigger('click');
+        await flushPromises();
+
+        expect(mocks.toast.warning).toHaveBeenCalled();
+        expect(
+            mocks.columnHandlers.selectedNotificationIds.value.has('fr-2')
+        ).toBe(true);
+        expect(
+            mocks.columnHandlers.selectedNotificationIds.value.has('fr-1')
+        ).toBe(false);
     });
 });
 

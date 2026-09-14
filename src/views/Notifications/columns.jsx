@@ -6,6 +6,7 @@ import {
 } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
+import { Checkbox } from '../../components/ui/checkbox';
 import {
     Tooltip,
     TooltipContent,
@@ -62,7 +63,12 @@ export const createColumns = ({
     hideNotification,
     hideNotificationPrompt,
     deleteNotificationLog,
-    deleteNotificationLogPrompt
+    deleteNotificationLogPrompt,
+    selectedNotificationIds,
+    onToggleNotificationSelection,
+    isAllSelected,
+    isSomeSelected,
+    onToggleSelectAll
 }) => {
     const { showSendBoopDialog } = useUserStore();
 
@@ -112,10 +118,60 @@ export const createColumns = ({
             id: 'spacer',
             header: () => null,
             enableSorting: false,
-            size: 20,
+            size: 16,
             minSize: 0,
-            maxSize: 20,
+            maxSize: 16,
             cell: () => null
+        },
+        {
+            id: 'bulkSelect',
+            size: 40,
+            minSize: 40,
+            maxSize: 40,
+            enableSorting: false,
+            enableResizing: false,
+            meta: {
+                thClass: 'p-0 text-center',
+                tdClass: 'p-0 text-center'
+            },
+            header: () => (
+                <div
+                    class="flex items-center justify-center"
+                    onClick={(event) => event.stopPropagation()}
+                >
+                    <Checkbox
+                        modelValue={
+                            isAllSelected?.value
+                                ? true
+                                : isSomeSelected?.value
+                                  ? 'indeterminate'
+                                  : false
+                        }
+                        onUpdate:modelValue={() => onToggleSelectAll?.()}
+                        aria-label={t('view.notification.bulk.select_all')}
+                    />
+                </div>
+            ),
+            cell: ({ row }) => {
+                const id = row.original?.id;
+                const checked = Boolean(
+                    selectedNotificationIds?.value?.has?.(id)
+                );
+                return (
+                    <div
+                        class="flex items-center justify-center"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <Checkbox
+                            modelValue={checked}
+                            onUpdate:modelValue={() =>
+                                onToggleNotificationSelection?.(id)
+                            }
+                            aria-label={t('view.notification.bulk.select_item')}
+                        />
+                    </div>
+                );
+            }
         },
         {
             accessorFn: (row) => getNotificationCreatedAtTs(row),
