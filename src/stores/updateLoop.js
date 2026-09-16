@@ -1,8 +1,9 @@
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { defineStore } from 'pinia';
 import { watch } from 'vue';
 
 import { database } from '../services/database';
-import { groupRequest } from '../api';
+import { groupRequest, instanceRequest } from '../api';
 import { runRefreshFriendsListFlow } from '../coordinators/friendSyncCoordinator';
 import { runUpdateIsGameRunningFlow } from '../coordinators/gameCoordinator';
 import { addGameLogEvent } from '../coordinators/gameLogCoordinator';
@@ -73,6 +74,9 @@ export const useUpdateLoopStore = defineStore('UpdateLoop', () => {
                 if (--state.nextCurrentUserRefresh <= 0) {
                     state.nextCurrentUserRefresh = 300; // 5min
                     getCurrentUser();
+                    useLastKnownPresenceStore()
+                        .verifyInstances(instanceRequest.getInstance)
+                        .catch(console.error);
                 }
                 if (--state.nextFriendsRefresh <= 0) {
                     state.nextFriendsRefresh = 3600; // 1hour

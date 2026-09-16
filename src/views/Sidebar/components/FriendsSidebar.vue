@@ -141,25 +141,43 @@
                                     <div
                                         v-if="getInstanceWorldImage(item.row.location)"
                                         class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity duration-300 pointer-events-none scale-105"
-                                        :style="{ backgroundImage: `url(${getInstanceWorldImage(item.row.location)})` }" />
+                                        :style="{
+                                            backgroundImage: `url(${getInstanceWorldImage(item.row.location)})`
+                                        }" />
                                     <div
                                         v-if="getInstanceWorldImage(item.row.location)"
                                         class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30 pointer-events-none" />
 
                                     <div class="relative z-10 space-y-1">
                                         <!-- Header with location & count -->
-                                        <div class="flex items-center justify-between pb-1.5 mb-1 border-b border-white/15 px-1">
-                                            <Location class="inline text-xs truncate max-w-[200px] drop-shadow-sm font-medium" :location="item.row.location" />
-                                            <span class="text-xs font-bold font-mono text-white/90 drop-shadow-sm shrink-0">({{ item.row.count }})</span>
+                                        <div
+                                            class="flex items-center justify-between pb-1.5 mb-1 border-b border-white/15 px-1">
+                                            <Location
+                                                class="inline text-xs truncate max-w-[200px] drop-shadow-sm font-medium"
+                                                :location="item.row.location" />
+                                            <span
+                                                class="text-xs font-bold font-mono text-white/90 drop-shadow-sm shrink-0"
+                                                >({{ item.row.count }})</span
+                                            >
                                         </div>
+                                        <span
+                                            v-if="item.row.remembered?.length"
+                                            class="block text-xs text-muted-foreground">
+                                            ◌
+                                            {{
+                                                t('last_known_presence.last_seen_count', {
+                                                    count: item.row.remembered.length
+                                                })
+                                            }}
+                                        </span>
 
                                         <!-- List of friends inside this instance -->
                                         <div class="space-y-0.5">
-                                            <ContextMenu v-for="(friend, idx) in item.row.friends" :key="friend.id || idx">
+                                            <ContextMenu
+                                                v-for="(friend, idx) in item.row.friends"
+                                                :key="friend.id || idx">
                                                 <ContextMenuTrigger as-child>
-                                                    <FriendItem
-                                                        :friend="friend"
-                                                        :is-group-by-instance="true" />
+                                                    <FriendItem :friend="friend" :is-group-by-instance="true" />
                                                 </ContextMenuTrigger>
                                                 <ContextMenuContent>
                                                     <ContextMenuItem
@@ -201,6 +219,78 @@
                                                     </ContextMenuItem>
                                                 </ContextMenuContent>
                                             </ContextMenu>
+                                            <FriendItem
+                                                v-for="remembered in item.row.remembered"
+                                                :key="`remembered:${remembered.friend.id}`"
+                                                :friend="remembered.friend"
+                                                :observation="remembered.observation"
+                                                :is-group-by-instance="true" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template v-else-if="item.row.type === 'last-known-group'">
+                                <div
+                                    class="relative overflow-hidden mb-2.5 p-2 rounded-xl border border-white/15 bg-black/20 group shadow-md hover:border-white/25 transition-all">
+                                    <!-- Historical World Image Background (grayscale, transitions to color on hover) -->
+                                    <div
+                                        v-if="
+                                            getInstanceWorldImage(
+                                                item.row.locationTag,
+                                                item.row.remembered?.[0]?.observation?.worldId
+                                            )
+                                        "
+                                        class="absolute inset-0 z-0 bg-cover bg-center grayscale saturate-0 opacity-65 group-hover:grayscale-0 group-hover:saturate-100 group-hover:opacity-85 transition-all duration-300 pointer-events-none scale-105"
+                                        :style="{
+                                            backgroundImage: `url(${getInstanceWorldImage(
+                                                item.row.locationTag,
+                                                item.row.remembered?.[0]?.observation?.worldId
+                                            )})`
+                                        }" />
+                                    <div
+                                        v-if="
+                                            getInstanceWorldImage(
+                                                item.row.locationTag,
+                                                item.row.remembered?.[0]?.observation?.worldId
+                                            )
+                                        "
+                                        class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30 pointer-events-none" />
+
+                                    <div class="relative z-10 space-y-1">
+                                        <button
+                                            type="button"
+                                            class="block text-xs truncate font-medium mb-1 text-left hover:underline drop-shadow-sm"
+                                            :title="t('last_known_presence.uncertain')"
+                                            @click="showWorldDialog(item.row.remembered[0].observation.worldId)">
+                                            ◌
+                                            {{
+                                                item.row.remembered[0].observation.worldName ||
+                                                item.row.remembered[0].observation.worldId
+                                            }}
+                                            #{{ parseLocation(item.row.locationTag).instanceName }}
+                                        </button>
+                                        <span class="block text-xs text-muted-foreground mb-1">
+                                            {{
+                                                t(
+                                                    item.row.historicalOnly
+                                                        ? 'last_known_presence.last_known_instance'
+                                                        : 'last_known_presence.might_be_here'
+                                                )
+                                            }}
+                                        </span>
+                                        <div class="space-y-0.5">
+                                            <FriendItem
+                                                v-for="friend in item.row.confirmed"
+                                                :key="`confirmed:${friend.id}`"
+                                                :friend="friend"
+                                                :is-group-by-instance="true" />
+                                            <FriendItem
+                                                v-for="remembered in item.row.remembered"
+                                                :key="`remembered:${remembered.friend.id}`"
+                                                :friend="remembered.friend"
+                                                :observation="remembered.observation"
+                                                :is-group-by-instance="true" />
                                         </div>
                                     </div>
                                 </div>
@@ -213,14 +303,21 @@
                                     <div
                                         v-if="getInstanceWorldImage(item.row.location)"
                                         class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity pointer-events-none scale-105"
-                                        :style="{ backgroundImage: `url(${getInstanceWorldImage(item.row.location)})` }" />
+                                        :style="{
+                                            backgroundImage: `url(${getInstanceWorldImage(item.row.location)})`
+                                        }" />
                                     <div
                                         v-if="getInstanceWorldImage(item.row.location)"
                                         class="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35 pointer-events-none" />
 
                                     <div class="relative z-10 flex items-center min-w-0 flex-1">
-                                        <Location class="inline text-xs truncate drop-shadow-sm font-medium" :location="item.row.location" />
-                                        <span class="text-xs ml-1.5 font-bold font-mono text-white/90 drop-shadow-sm shrink-0">{{ `(${item.row.count})` }}</span>
+                                        <Location
+                                            class="inline text-xs truncate drop-shadow-sm font-medium"
+                                            :location="item.row.location" />
+                                        <span
+                                            class="text-xs ml-1.5 font-bold font-mono text-white/90 drop-shadow-sm shrink-0"
+                                            >{{ `(${item.row.count})` }}</span
+                                        >
                                     </div>
                                 </div>
                             </template>
@@ -326,6 +423,7 @@
         buildFriendRow,
         buildInstanceGroupRow,
         buildInstanceHeaderRow,
+        buildLastKnownPresenceGroups,
         buildToggleRow,
         estimateRowSize
     } from '../friendsSidebarUtils';
@@ -346,6 +444,9 @@
 
     import '@/styles/status-icon.css';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
+    import { useLastKnownPresenceStore } from '../../../addons/lastKnownPresence/store';
+    import { getPresenceHints, resolveWorldArtwork } from '../../../addons/lastKnownPresence/presentation';
+    import { showWorldDialog } from '../../../coordinators/worldCoordinator';
 
     const { t } = useI18n();
 
@@ -358,6 +459,9 @@
         offlineFriends,
         friendsInSameInstance
     } = storeToRefs(friendStore);
+    const lastKnownPresenceStore = useLastKnownPresenceStore();
+    const { enabled: lastKnownPresenceEnabled, observations: lastKnownPresenceObservations } =
+        storeToRefs(lastKnownPresenceStore);
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const {
         isSidebarGroupByInstance,
@@ -378,16 +482,8 @@
     const { isGameRunning } = storeToRefs(useGameStore());
     const worldStore = useWorldStore();
 
-    function getInstanceWorldImage(loc) {
-        if (!loc) return null;
-        const L = parseLocation(loc);
-        if (!L.isRealInstance || !L.worldId) return null;
-        const cached = worldStore.cachedWorlds.get(L.worldId);
-        if (!cached) {
-            queryRequest.fetch('world.dialog', { worldId: L.worldId }).catch(() => {});
-            return null;
-        }
-        return cached.thumbnailImageUrl || cached.imageUrl || null;
+    function getInstanceWorldImage(loc, worldIdFallback) {
+        return resolveWorldArtwork(worldStore, worldIdFallback, loc, queryRequest);
     }
     const { currentUser, editProfileDialog } = storeToRefs(userStore);
     const { checkCanInvite, checkCanInviteSelf } = useInviteChecks();
@@ -413,6 +509,10 @@
                     ids.add(friend.id);
                 }
             }
+        }
+        for (const group of lastKnownPresenceGroups.value) {
+            for (const friend of group.confirmed) ids.add(friend.id);
+            for (const { friend } of group.remembered) ids.add(friend.id);
         }
         return ids;
     });
@@ -606,18 +706,73 @@
             if (!isSidebarGroupByInstanceCollapsed.value) {
                 friendsInSameInstance.value.forEach((friendArr, groupIndex) => {
                     if (!friendArr || !friendArr.length) return;
-                    const groupKey = friendArr?.[0]?.ref?.$location?.tag ?? `group-${groupIndex}`;
                     const location = getFriendsLocations(friendArr, lastLocation.value);
-                    rows.push(
-                        buildInstanceGroupRow(
-                            location,
-                            friendArr,
-                            `instance-group:${groupKey}`
-                        )
-                    );
+                    const groupKey = location || `group-${groupIndex}`;
+                    const row = buildInstanceGroupRow(location, friendArr, `instance-group:${groupKey}`);
+                    row.remembered = lastKnownPresenceGroups.value.find(
+                        (group) => group.locationTag === groupKey
+                    )?.remembered;
+                    rows.push(row);
                 });
             }
         }
+    }
+
+    const lastKnownPresenceGroups = computed(() => {
+        if (!lastKnownPresenceEnabled.value || !lastKnownPresenceObservations.value.size) {
+            return [];
+        }
+
+        const liveGroupsByTag = new Map();
+        for (const friend of friendStore.friends.values()) {
+            if (friend.state !== 'online') continue;
+            const locationTag = friend.ref?.$location?.tag;
+            if (!isRealInstance(locationTag)) continue;
+            const group = liveGroupsByTag.get(locationTag) ?? [];
+            group.push(friend);
+            liveGroupsByTag.set(locationTag, group);
+        }
+
+        return buildLastKnownPresenceGroups({
+            observations: new Map(
+                getPresenceHints(
+                    true,
+                    lastKnownPresenceObservations.value,
+                    friendStore.friends,
+                    lastLocation.value.friendList
+                ).map((observation) => [observation.userId, observation])
+            ),
+            friendsById: friendStore.friends,
+            liveGroups: [...liveGroupsByTag.values()],
+            locallyPresentIds: new Set(lastLocation.value.friendList.keys())
+        });
+    });
+
+    function buildLastKnownPresenceRows(rows) {
+        const mergedTags = isSidebarGroupByInstance.value
+            ? new Set(
+                  friendsInSameInstance.value
+                      .map((group) => getFriendsLocations(group, lastLocation.value))
+                      .filter(Boolean)
+              )
+            : new Set();
+        const unmergedGroups = lastKnownPresenceGroups.value.filter((group) => !mergedTags.has(group.locationTag));
+        if (!unmergedGroups.length) return;
+        rows.push(
+            buildToggleRow({
+                key: 'last-known-presence-header',
+                label: t('last_known_presence.last_seen_friends'),
+                count: unmergedGroups.reduce((count, group) => count + group.remembered.length, 0)
+            })
+        );
+        unmergedGroups.forEach((group) => {
+            rows.push({
+                type: 'last-known-group',
+                key: `last-known-group:${group.locationTag}`,
+                ...group,
+                confirmed: isSidebarGroupByInstance.value ? group.confirmed : []
+            });
+        });
     }
 
     const virtualRows = computed(() => {
@@ -644,6 +799,8 @@
             buildFavoriteRows(rows);
             buildSameInstanceRows(rows);
         }
+
+        buildLastKnownPresenceRows(rows);
 
         if (onlineFriendsByGroupStatus.value.length) {
             rows.push(

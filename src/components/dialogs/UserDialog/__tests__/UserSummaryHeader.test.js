@@ -52,6 +52,9 @@ const getUserStateTextMock = vi.fn(() => 'Online');
 const toggleBadgeVisibilityMock = vi.fn();
 const toggleBadgeShowcasedMock = vi.fn();
 const userDialogCommandMock = vi.fn();
+const userImageMock = vi.fn(
+    (user) => user?.iconUrl || 'https://example.com/avatar.png'
+);
 const getInventoryItemsMock = vi.fn();
 const getInventoryTemplateMock = vi.fn();
 
@@ -87,7 +90,7 @@ vi.mock('@/api', () => ({
 
 vi.mock('../../../../composables/useUserDisplay', () => ({
     useUserDisplay: () => ({
-        userImage: () => 'https://example.com/avatar.png',
+        userImage: (...args) => userImageMock(...args),
         userStatusClass: () => 'status-online'
     })
 }));
@@ -159,6 +162,7 @@ describe('UserSummaryHeader.vue', () => {
         copyUserDisplayNameMock.mockReset();
         getInventoryItemsMock.mockReset();
         getInventoryTemplateMock.mockReset().mockResolvedValue({ json: {} });
+        userImageMock.mockClear();
     });
 
     test('renders VRC+ badge with md size when userDialog.ref.$isVRCPlus is true', () => {
@@ -181,6 +185,38 @@ describe('UserSummaryHeader.vue', () => {
         const badge = wrapper.findComponent({ name: 'VrcPlusBadge' });
         expect(badge.exists()).toBe(true);
         expect(badge.props('size')).toBe('md');
+    });
+
+    test('renders the remote icon and badges from publicProfileRef', () => {
+        userDialogMock.value.ref.iconUrl =
+            'https://example.com/stale-user-icon.png';
+        userDialogMock.value.ref.badges = [
+            {
+                badgeId: 'bdg_stale',
+                badgeName: 'Stale badge',
+                badgeImageUrl: 'https://example.com/stale-badge.png'
+            }
+        ];
+        userDialogMock.value.publicProfileRef.iconUrl =
+            'https://example.com/public-icon.png';
+        userDialogMock.value.publicProfileRef.badges = [
+            {
+                badgeId: 'bdg_public',
+                badgeName: 'Public badge',
+                badgeDescription: 'From profile',
+                badgeImageUrl: 'https://example.com/public-badge.png'
+            }
+        ];
+
+        const wrapper = mountHeader();
+
+        expect(
+            wrapper
+                .find('img[src="https://example.com/public-icon.png"]')
+                .exists()
+        ).toBe(true);
+        expect(wrapper.html()).toContain('public-badge.png');
+        expect(wrapper.html()).not.toContain('stale-badge.png');
     });
 
     test('renders VRC+ badge for self profile when isLocalUserVrcPlusSupporter is true', () => {

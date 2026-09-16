@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { toast } from 'vue-sonner';
 
 import {
@@ -280,6 +281,7 @@ function handlePipeline(args) {
             break;
 
         case 'friend-delete':
+            useLastKnownPresenceStore().invalidate(content.userId);
             handleFriendDelete({
                 params: {
                     userId: content.userId
@@ -317,6 +319,7 @@ function handlePipeline(args) {
             break;
 
         case 'friend-active':
+            useLastKnownPresenceStore().invalidate(content.userId);
             if (content?.user?.id) {
                 const activeJson = {
                     id: content.userId,
@@ -340,6 +343,7 @@ function handlePipeline(args) {
             break;
 
         case 'friend-offline':
+            useLastKnownPresenceStore().invalidate(content.userId);
             // more JANK, hell yeah
             const offlineJson = {
                 id: content.userId,

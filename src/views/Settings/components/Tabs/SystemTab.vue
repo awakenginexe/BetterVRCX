@@ -44,6 +44,8 @@
             </div>
         </SettingsGroup>
 
+        <AnalyticsSettings />
+
         <SettingsGroup :title="t('view.settings.general.vrcx_updater.header')">
             <div class="flex gap-2">
                 <Button size="sm" variant="outline" @click="showChangeLogDialog">{{
@@ -199,6 +201,7 @@
 </template>
 
 <script setup>
+    import AnalyticsSettings from '../../../../services/appAnalytics/AnalyticsSettings.vue';
     import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Switch } from '@/components/ui/switch';

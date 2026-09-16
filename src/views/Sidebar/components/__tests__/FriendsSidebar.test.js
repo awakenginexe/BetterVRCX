@@ -83,10 +83,17 @@ const mocks = vi.hoisted(() => ({
     userRequest: {
         saveCurrentUser: vi.fn().mockResolvedValue({})
     },
+    queryRequest: {
+        fetch: vi.fn().mockResolvedValue({})
+    },
     toast: {
         success: vi.fn(),
         error: vi.fn(),
         warning: vi.fn()
+    },
+    lastKnownPresenceStore: {
+        enabled: require('vue').ref(false),
+        observations: require('vue').ref(new Map())
     }
 }));
 
@@ -129,12 +136,16 @@ vi.mock('../../../../stores', () => ({
     useAuthStore: () => ({}),
     useModalStore: () => ({}),
     useGalleryStore: () => ({ refreshGalleryTable: vi.fn() }),
-    useGeneralSettingsStore: () => ({ disableGpuAcceleration: { value: false } }),
+    useGeneralSettingsStore: () => ({
+        disableGpuAcceleration: { value: false }
+    }),
     useUserStore: () => mocks.userStore
 }));
 
 vi.mock('@/stores/settings/general', () => ({
-    useGeneralSettingsStore: () => ({ disableGpuAcceleration: { value: false } })
+    useGeneralSettingsStore: () => ({
+        disableGpuAcceleration: { value: false }
+    })
 }));
 
 vi.mock('../../../../coordinators/userCoordinator', () => ({
@@ -169,11 +180,16 @@ vi.mock('../../../../services/config', () => ({
     default: mocks.configRepository
 }));
 
+vi.mock('../../../../addons/lastKnownPresence/store', () => ({
+    useLastKnownPresenceStore: () => mocks.lastKnownPresenceStore
+}));
+
 vi.mock('../../../../api', () => ({
     notificationRequest: mocks.notificationRequest,
     worldRequest: mocks.worldRequest,
     instanceRequest: mocks.instanceRequest,
-    userRequest: mocks.userRequest
+    userRequest: mocks.userRequest,
+    queryRequest: mocks.queryRequest
 }));
 
 vi.mock('vue-sonner', () => ({
@@ -222,8 +238,9 @@ vi.mock('../../../../components/Location.vue', () => ({
 
 vi.mock('../FriendItem.vue', () => ({
     default: {
-        props: ['friend'],
-        template: '<div data-testid="friend-item">{{ friend.id }}</div>'
+        props: ['friend', 'observation'],
+        template:
+            '<div data-testid="friend-item">{{ friend.id }}{{ observation ? ":last-seen" : "" }}</div>'
     }
 }));
 
@@ -251,6 +268,7 @@ function makeFriend(id, location = 'wrld_online:1') {
         pendingOffline: false,
         ref: {
             location,
+            status: location === 'private' ? 'busy' : 'active',
             $location: {
                 tag: location
             }
@@ -266,6 +284,9 @@ describe('FriendsSidebar.vue', () => {
         mocks.friendStore.activeFriends.value = [];
         mocks.friendStore.offlineFriends.value = [];
         mocks.friendStore.friendsInSameInstance.value = [];
+        mocks.friendStore.friends = new Map();
+        mocks.lastKnownPresenceStore.enabled.value = false;
+        mocks.lastKnownPresenceStore.observations.value = new Map();
         mocks.instanceStore.cachedInstances = new Map();
 
         mocks.appearanceStore.isSidebarGroupByInstance.value = false;
@@ -334,5 +355,192 @@ describe('FriendsSidebar.vue', () => {
         expect(wrapper.text()).toContain('side_panel.same_instance');
         expect(wrapper.findAll('[data-testid="friend-item"]').length).toBe(2);
         expect(wrapper.text()).toContain('(2)');
+    });
+
+    test('adds session-only last-seen rows only while the addon is enabled', async () => {
+        const remembered = makeFriend('usr_remembered', 'private');
+        mocks.friendStore.friends = new Map([[remembered.id, remembered]]);
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                remembered.id,
+                {
+                    userId: remembered.id,
+                    locationTag: 'wrld_history:9~private',
+                    worldId: 'wrld_history',
+                    observedAt: 100
+                }
+            ]
+        ]);
+
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        await nextTick();
+
+        expect(wrapper.text()).toContain(
+            'last_known_presence.last_seen_friends'
+        );
+        expect(wrapper.text()).toContain('usr_remembered:last-seen');
+        mocks.lastKnownPresenceStore.enabled.value = false;
+        await nextTick();
+        expect(wrapper.text()).not.toContain('usr_remembered:last-seen');
+        expect(wrapper.text()).not.toContain(
+            'last_known_presence.last_seen_friends'
+        );
+    });
+
+    test('grouping off never duplicates confirmed friends inside historical groups', async () => {
+        const live = makeFriend('usr_live', 'wrld_history:9');
+        const hidden = makeFriend('usr_hidden', 'private');
+        hidden.ref.status = 'busy';
+        mocks.friendStore.friends = new Map([
+            [live.id, live],
+            [hidden.id, hidden]
+        ]);
+        mocks.friendStore.onlineFriends.value = [live, hidden];
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                hidden.id,
+                {
+                    userId: hidden.id,
+                    worldId: 'wrld_history',
+                    worldName: 'Historical World',
+                    locationTag: 'wrld_history:9',
+                    observedAt: 100
+                }
+            ]
+        ]);
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        const liveRows = wrapper
+            .findAll('[data-testid="friend-item"]')
+            .filter((row) => row.text() === 'usr_live');
+        expect(liveRows).toHaveLength(1);
+    });
+
+    test('historic-only sidebar groups are explicitly uncertain', async () => {
+        const hidden = makeFriend('usr_hidden', 'private');
+        hidden.ref.status = 'ask me';
+        mocks.friendStore.friends = new Map([[hidden.id, hidden]]);
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                hidden.id,
+                {
+                    userId: hidden.id,
+                    worldId: 'wrld_history',
+                    worldName: 'Historical World',
+                    locationTag: 'wrld_history:9',
+                    observedAt: 100
+                }
+            ]
+        ]);
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        expect(wrapper.text()).toContain(
+            'last_known_presence.last_known_instance'
+        );
+        expect(wrapper.text()).toContain('Historical World');
+    });
+
+    test('merges hints after confirmed members in the same card without changing the live count', async () => {
+        const a = makeFriend('usr_a', 'wrld_same:1');
+        const b = makeFriend('usr_b', 'wrld_same:1');
+        const hidden = makeFriend('usr_hidden', 'private');
+        mocks.friendStore.friends = new Map([
+            [a.id, a],
+            [b.id, b],
+            [hidden.id, hidden]
+        ]);
+        mocks.friendStore.onlineFriends.value = [a, b, hidden];
+        mocks.friendStore.friendsInSameInstance.value = [[a, b]];
+        mocks.appearanceStore.isSidebarGroupByInstance.value = true;
+        mocks.appearanceStore.isHideFriendsInSameInstance.value = true;
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                hidden.id,
+                {
+                    userId: hidden.id,
+                    worldId: 'wrld_same',
+                    worldName: 'Same World',
+                    locationTag: 'wrld_same:1',
+                    observedAt: 100
+                }
+            ]
+        ]);
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        expect(
+            wrapper
+                .findAll('[data-testid="friend-item"]')
+                .map((row) => row.text())
+        ).toEqual(['usr_a', 'usr_b', 'usr_hidden:last-seen']);
+        expect(wrapper.text()).toContain('(2)');
+        expect(wrapper.text()).not.toContain('(3)');
+        expect(wrapper.text()).not.toContain(
+            'last_known_presence.last_seen_friends'
+        );
+        expect(mocks.friendStore.friendsInSameInstance.value[0]).toHaveLength(
+            2
+        );
+    });
+
+    test('displays world artwork with grayscale styling on last-known groups when cached', async () => {
+        const hidden = makeFriend('usr_hidden', 'private');
+        hidden.ref.status = 'ask me';
+        mocks.friendStore.friends = new Map([[hidden.id, hidden]]);
+        mocks.worldStore.cachedWorlds.set('wrld_history', {
+            thumbnailImageUrl: 'https://example.com/sidebar-historical.png'
+        });
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                hidden.id,
+                {
+                    userId: hidden.id,
+                    worldId: 'wrld_history',
+                    worldName: 'Historical World',
+                    locationTag: 'wrld_history:9',
+                    observedAt: 100
+                }
+            ]
+        ]);
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        const bg = wrapper.find('.grayscale');
+        expect(bg.exists()).toBe(true);
+        expect(bg.attributes('style')).toContain(
+            'https://example.com/sidebar-historical.png'
+        );
+        expect(bg.classes()).toContain('saturate-0');
+        expect(bg.classes()).toContain('group-hover:grayscale-0');
+    });
+
+    test('last-known groups render without error when world metadata is uncached', async () => {
+        const hidden = makeFriend('usr_hidden', 'private');
+        hidden.ref.status = 'ask me';
+        mocks.friendStore.friends = new Map([[hidden.id, hidden]]);
+        mocks.worldStore.cachedWorlds.clear();
+        mocks.lastKnownPresenceStore.enabled.value = true;
+        mocks.lastKnownPresenceStore.observations.value = new Map([
+            [
+                hidden.id,
+                {
+                    userId: hidden.id,
+                    worldId: 'wrld_uncached',
+                    worldName: 'Uncached World',
+                    locationTag: 'wrld_uncached:9',
+                    observedAt: 100
+                }
+            ]
+        ]);
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        expect(wrapper.text()).toContain('Uncached World');
+        expect(mocks.queryRequest.fetch).toHaveBeenCalledWith('world.dialog', {
+            worldId: 'wrld_uncached'
+        });
     });
 });

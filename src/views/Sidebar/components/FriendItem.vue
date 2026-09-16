@@ -11,7 +11,7 @@
                     </AvatarFallback>
                 </Avatar>
             </div>
-            <div class="flex-1 overflow-hidden h-9 flex flex-col justify-between">
+            <div class="flex-1 overflow-hidden min-h-9 flex flex-col justify-between">
                 <div class="flex items-center min-w-0 font-medium leading-[18px]">
                     <span
                         v-if="!hideNicknames && friend.$nickName"
@@ -26,7 +26,15 @@
                     <VrcPlusBadge v-if="friend.ref?.$isVRCPlus" size="sm" class="ml-1 flex-none shrink-0" />
                 </div>
 
-                <span v-if="isFriendActiveOrOffline" class="block truncate text-xs">{{
+                <span
+                    v-if="observation"
+                    class="block truncate text-xs text-muted-foreground"
+                    :title="t('last_known_presence.uncertain')">
+                    <span aria-hidden="true">◌</span>
+                    {{ t(isGroupByInstance ? 'last_known_presence.last_seen_here' : 'last_known_presence.last_seen') }}
+                    · <Timer :epoch="observation.observedAt" />
+                </span>
+                <span v-else-if="isFriendActiveOrOffline" class="block truncate text-xs">{{
                     friend.ref.statusDescription
                 }}</span>
                 <template v-else>
@@ -89,7 +97,8 @@
 
     const props = defineProps({
         friend: { type: Object, required: true },
-        isGroupByInstance: Boolean
+        isGroupByInstance: Boolean,
+        observation: { type: Object, default: null }
     });
 
     const { hideNicknames } = storeToRefs(useAppearanceSettingsStore());

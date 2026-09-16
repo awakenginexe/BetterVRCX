@@ -11,7 +11,7 @@ export {
  *
  * @param {Array} friendsArr
  * @param {object} lastLocation - last location from location store
- * @param {Set} lastLocation.friendList
+ * @param {Map<string, object>} lastLocation.friendList
  * @param {string} lastLocation.location
  */
 function getFriendsLocations(friendsArr, lastLocation) {

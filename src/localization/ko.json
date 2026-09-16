@@ -12,7 +12,8 @@
         "notification": "알림",
         "friend_list": "친구 목록",
         "settings": "설정",
-        "home": "홈"
+        "home": "홈",
+        "world": "월드"
     },
     "side_panel": {
         "search_placeholder": "검색",
@@ -1615,6 +1616,39 @@
         "direct_access": "ID 또는 링크로 바로 이동",
         "custom_dashboard": "사용자 지정 대시보드",
         "folder_page": "1개 페이지",
-        "folder_pages": "{count}개 페이지"
+        "folder_pages": "{count}개 페이지",
+        "world": "개인 월드, 기록 및 즐겨찾기"
+    },
+    "world_hub": {
+        "description": "개인 월드 기록 및 즐겨찾기.",
+        "recent": "최근 방문",
+        "updated": "업데이트된 즐겨찾기",
+        "library": "즐겨찾기 / 라이브러리",
+        "refresh": "새로 고침",
+        "unavailable": "일부 정보를 새로 고치지 못했습니다. 캐시된 정보는 계속 사용할 수 있습니다.",
+        "loading": "로드 중…",
+        "empty_recent": "최근 방문한 월드가 없습니다.",
+        "empty_updated": "즐겨찾기 업데이트가 감지되지 않았습니다. 초기 메타데이터가 기준으로 설정됩니다.",
+        "empty_library": "아직 즐겨찾기한 월드가 없습니다.",
+        "visits": "{count}회 방문",
+        "hours": "{count}시간",
+        "last_visit": "최근 방문:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "마지막 확인 위치",
+        "description": "Ask Me 또는 방해 금지 사용 중 VRChat 위치가 비공개로 바뀐 친구의 마지막 확인 위치를 임시로 기억합니다. 정보는 메모리에만 저장되며 BetterVRCX를 닫으면 삭제됩니다. 마지막 확인 위치는 친구가 아직 그곳에 있다는 뜻이 아닙니다.",
+        "last_seen": "마지막 확인",
+        "last_seen_here": "여기에서 마지막 확인",
+        "might_be_here": "여기에 있을 수 있음",
+        "last_known_instance": "마지막으로 확인된 인스턴스",
+        "last_seen_friends": "마지막으로 확인된 친구",
+        "uncertain": "이번 BetterVRCX 세션에서 확인된 마지막 위치입니다. 사용자가 더 이상 여기에 없을 수 있습니다.",
+        "empty": "마지막 확인 위치 없음",
+        "instance": "인스턴스: {instance}",
+        "last_seen_count": "마지막으로 확인됨 {count}명"
     }
 }

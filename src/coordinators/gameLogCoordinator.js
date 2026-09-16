@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 
 import {
     createJoinLeaveEntry,
@@ -137,7 +138,7 @@ export async function tryLoadPlayerList() {
  * @param {object} gameLog
  * @param {string} location
  */
-export function addGameLogEntry(gameLog, location) {
+export function addGameLogEntry(gameLog, location, { live = false } = {}) {
     const gameLogStore = useGameLogStore();
     const locationStore = useLocationStore();
     const instanceStore = useInstanceStore();
@@ -174,7 +175,7 @@ export function addGameLogEntry(gameLog, location) {
                     type: 'LocationDestination',
                     location: gameLog.location
                 });
-                runLastLocationResetFlow(gameLog.dt);
+                runLastLocationResetFlow(gameLog.dt, { capturePresence: live });
                 locationStore.setLastLocationLocation('traveling');
                 locationStore.setLastLocationDestination(gameLog.location);
                 locationStore.setLastLocationDestinationTime(
@@ -197,7 +198,7 @@ export function addGameLogEntry(gameLog, location) {
             );
             const worldName = replaceBioSymbols(gameLog.worldName);
             if (gameStore.isGameRunning) {
-                runLastLocationResetFlow(gameLog.dt);
+                runLastLocationResetFlow(gameLog.dt, { capturePresence: live });
                 gameLogStore.clearNowPlaying();
                 locationStore.setLastLocation({
                     date: Date.parse(gameLog.dt),
@@ -237,6 +238,19 @@ export function addGameLogEntry(gameLog, location) {
             };
             locationStore.lastLocation.playerList.set(userId, userMap);
             const ref = userStore.cachedUsers.get(userId);
+            if (live) {
+                const presence = useLastKnownPresenceStore();
+                if (presence.enabled) {
+                    presence.playerJoined(
+                        ref || { id: userId },
+                        locationStore.lastLocation,
+                        {
+                            isFriend: friendStore.friends.has(userId),
+                            observedAt: joinTime
+                        }
+                    );
+                }
+            }
             if (!userId) {
                 console.error('Missing userId:', gameLog.displayName);
             } else if (userId === userStore.currentUser.id) {
@@ -273,6 +287,10 @@ export function addGameLogEntry(gameLog, location) {
             database.addGamelogJoinLeaveToDatabase(entry);
             break;
         case 'player-left':
+            if (live) {
+                const presence = useLastKnownPresenceStore();
+                if (presence.enabled) presence.playerLeft(userId, location);
+            }
             const ref1 = locationStore.lastLocation.playerList.get(userId);
             if (typeof ref1 === 'undefined') {
                 break;
@@ -517,7 +535,9 @@ export function addGameLogEvent(json) {
     ) {
         console.log('gameLog:', gameLog);
     }
-    addGameLogEntry(gameLog, locationStore.lastLocation.location);
+    addGameLogEntry(gameLog, locationStore.lastLocation.location, {
+        live: true
+    });
 }
 
 /**

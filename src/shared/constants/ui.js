@@ -2,6 +2,27 @@ import { toolNavDefinitions } from './tools';
 
 const navDefinitions = [
     {
+        key: 'world-recent',
+        icon: 'ri-history-line',
+        tooltip: 'world_hub.recent',
+        labelKey: 'world_hub.recent',
+        routeName: 'world-recent'
+    },
+    {
+        key: 'world-updated',
+        icon: 'ri-refresh-line',
+        tooltip: 'world_hub.updated',
+        labelKey: 'world_hub.updated',
+        routeName: 'world-updated'
+    },
+    {
+        key: 'world-library',
+        icon: 'ri-bookmark-line',
+        tooltip: 'world_hub.library',
+        labelKey: 'world_hub.library',
+        routeName: 'world-library'
+    },
+    {
         key: 'feed',
         icon: 'ri-rss-line',
         tooltip: 'nav_tooltip.feed',

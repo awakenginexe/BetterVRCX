@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     buildFriendRow,
     buildInstanceHeaderRow,
+    buildLastKnownPresenceGroups,
     buildToggleRow,
     estimateRowSize
 } from '../friendsSidebarUtils';
@@ -141,5 +142,152 @@ describe('estimateRowSize', () => {
         expect(estimateRowSize({ type: 'friend-item', paddingBottom: 6 })).toBe(
             58
         );
+    });
+});
+
+describe('buildLastKnownPresenceGroups', () => {
+    const observation = (userId, locationTag, observedAt = 1) => ({
+        userId,
+        locationTag,
+        worldId: locationTag.split(':')[0],
+        observedAt
+    });
+
+    test('includes remembered rows in an instance-group virtual height', () => {
+        expect(
+            estimateRowSize({
+                type: 'instance-group',
+                friends: [{ id: 'usr_live' }],
+                remembered: [{ friend: { id: 'usr_hint' } }]
+            })
+        ).toBe(122);
+    });
+
+    test('merges remembered friends into the matching live tag, including a lone confirmed friend', () => {
+        const groups = buildLastKnownPresenceGroups({
+            observations: new Map([
+                [
+                    'usr_confirmed',
+                    observation('usr_confirmed', 'wrld_a:1~private')
+                ],
+                [
+                    'usr_remembered',
+                    observation('usr_remembered', 'wrld_a:1~private')
+                ]
+            ]),
+            friendsById: new Map([
+                [
+                    'usr_confirmed',
+                    { id: 'usr_confirmed', ref: { displayName: 'Confirmed' } }
+                ],
+                [
+                    'usr_remembered',
+                    { id: 'usr_remembered', ref: { displayName: 'Remembered' } }
+                ]
+            ]),
+            liveGroups: [
+                [
+                    {
+                        id: 'usr_confirmed',
+                        ref: { $location: { tag: 'wrld_a:1~private' } }
+                    }
+                ]
+            ],
+            locallyPresentIds: new Set()
+        });
+
+        expect(groups).toEqual([
+            {
+                locationTag: 'wrld_a:1~private',
+                confirmed: [
+                    { id: 'usr_confirmed', ref: { displayName: 'Confirmed' } }
+                ],
+                remembered: [
+                    {
+                        friend: {
+                            id: 'usr_remembered',
+                            ref: { displayName: 'Remembered' }
+                        },
+                        observation: observation(
+                            'usr_remembered',
+                            'wrld_a:1~private'
+                        )
+                    }
+                ],
+                historicalOnly: false
+            }
+        ]);
+    });
+
+    test('retains historical-only groups and excludes live or locally present users', () => {
+        const groups = buildLastKnownPresenceGroups({
+            observations: new Map([
+                ['usr_live', observation('usr_live', 'wrld_a:1')],
+                ['usr_local', observation('usr_local', 'wrld_b:2')],
+                ['usr_history', observation('usr_history', 'wrld_c:3')]
+            ]),
+            friendsById: new Map([
+                ['usr_live', { id: 'usr_live' }],
+                ['usr_local', { id: 'usr_local' }],
+                ['usr_history', { id: 'usr_history' }]
+            ]),
+            liveGroups: [
+                [{ id: 'usr_live', ref: { $location: { tag: 'wrld_a:1' } } }]
+            ],
+            locallyPresentIds: new Set(['usr_local'])
+        });
+
+        expect(groups).toEqual([
+            {
+                locationTag: 'wrld_c:3',
+                confirmed: [],
+                remembered: [
+                    {
+                        friend: { id: 'usr_history' },
+                        observation: observation('usr_history', 'wrld_c:3')
+                    }
+                ],
+                historicalOnly: true
+            }
+        ]);
+    });
+
+    test('keeps live-group order and puts confirmed members before remembered members', () => {
+        const groups = buildLastKnownPresenceGroups({
+            observations: new Map([
+                ['usr_b', observation('usr_b', 'wrld_b:2')],
+                ['usr_a', observation('usr_a', 'wrld_a:1')],
+                ['usr_c', observation('usr_c', 'wrld_a:1')],
+                ['usr_d', observation('usr_d', 'wrld_b:2')]
+            ]),
+            friendsById: new Map([
+                ['usr_a', { id: 'usr_a' }],
+                ['usr_b', { id: 'usr_b' }],
+                ['usr_c', { id: 'usr_c' }],
+                ['usr_d', { id: 'usr_d' }]
+            ]),
+            liveGroups: [
+                [{ id: 'usr_b', ref: { $location: { tag: 'wrld_b:2' } } }],
+                [{ id: 'usr_a', ref: { $location: { tag: 'wrld_a:1' } } }]
+            ],
+            locallyPresentIds: new Set()
+        });
+
+        expect(groups.map((group) => group.locationTag)).toEqual([
+            'wrld_b:2',
+            'wrld_a:1'
+        ]);
+        expect(groups[0].confirmed.map((friend) => friend.id)).toEqual([
+            'usr_b'
+        ]);
+        expect(groups[0].remembered.map(({ friend }) => friend.id)).toEqual([
+            'usr_d'
+        ]);
+        expect(groups[1].confirmed.map((friend) => friend.id)).toEqual([
+            'usr_a'
+        ]);
+        expect(groups[1].remembered.map(({ friend }) => friend.id)).toEqual([
+            'usr_c'
+        ]);
     });
 });

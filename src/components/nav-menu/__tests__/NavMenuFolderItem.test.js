@@ -3,7 +3,8 @@ import { mount } from '@vue/test-utils';
 
 vi.mock('vue-i18n', () => ({
     useI18n: () => ({
-        t: (key) => key
+        t: (key) =>
+            key === 'nav_desc.world' ? 'History, favorites & discovery' : key
     })
 }));
 
@@ -141,4 +142,21 @@ describe('NavMenuFolderItem', () => {
             });
         }
     });
+});
+
+it('shows the World purpose instead of its page count', () => {
+    const wrapper = mount(NavMenuFolderItem, {
+        props: {
+            item: { ...folderItem, id: 'default-folder-world' },
+            isCollapsed: false,
+            activeMenuIndex: '',
+            collapsedDropdownOpenId: null,
+            hasNotifications: false,
+            isEntryNotified: () => false,
+            isNavItemNotified: () => false,
+            isDashboardItem: () => false,
+            isToolItem: () => false
+        }
+    });
+    expect(wrapper.text()).toContain('History, favorites & discovery');
 });

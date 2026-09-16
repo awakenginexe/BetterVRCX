@@ -113,6 +113,7 @@ namespace VRCX
                 }
             };
             vrcxProcess.Start();
+            MainForm.Instance?.FlushAppUsageClosing();
             Environment.Exit(0);
         }
 

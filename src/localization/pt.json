@@ -58,7 +58,8 @@
         "expand_menu": "Expandir Menu",
         "collapse_menu": "Recolher Menu",
         "toggle_theme": "Alternar Tema",
-        "home": "Início"
+        "home": "Início",
+        "world": "Mundo"
     },
     "nav_menu": {
         "resources": "RECURSOS",
@@ -3063,6 +3064,39 @@
         "direct_access": "Entrar por ID ou link direto",
         "custom_dashboard": "Painel personalizado",
         "folder_page": "1 página",
-        "folder_pages": "{count} páginas"
+        "folder_pages": "{count} páginas",
+        "world": "Mundos pessoais, histórico e favoritos"
+    },
+    "world_hub": {
+        "description": "O seu histórico de mundos e favoritos.",
+        "recent": "Visitados recentemente",
+        "updated": "Favoritos atualizados",
+        "library": "Favoritos / Biblioteca",
+        "refresh": "Atualizar",
+        "unavailable": "Não foi possível atualizar algumas informações. As informações em cache continuam disponíveis.",
+        "loading": "A carregar…",
+        "empty_recent": "Não há mundos visitados recentemente.",
+        "empty_updated": "Não foram detetadas atualizações dos favoritos. Os metadados iniciais estabelecem uma referência.",
+        "empty_library": "Ainda não tem mundos favoritos.",
+        "visits": "{count} visitas",
+        "hours": "{count} h",
+        "last_visit": "Última visita:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Última presença conhecida",
+        "description": "Memoriza temporariamente a última localização conhecida dos amigos cuja localização no VRChat se torna privada ao usar Pergunte-me ou Não incomodar. A informação é guardada apenas na memória e apagada ao fechar o BetterVRCX. Uma última localização conhecida não confirma que o amigo ainda esteja lá.",
+        "last_seen": "Visto pela última vez",
+        "last_seen_here": "Visto pela última vez aqui",
+        "might_be_here": "Pode estar aqui",
+        "last_known_instance": "Última instância conhecida",
+        "last_seen_friends": "Amigos vistos pela última vez",
+        "uncertain": "Última localização conhecida durante esta sessão do BetterVRCX. O utilizador pode já não estar aqui.",
+        "empty": "Nenhuma última presença conhecida",
+        "instance": "Instância: {instance}",
+        "last_seen_count": "{count} vistos pela última vez"
     }
 }

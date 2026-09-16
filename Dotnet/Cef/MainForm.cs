@@ -396,6 +396,27 @@ namespace VRCX
             {
                 e.Cancel = true;
                 Hide();
+                return;
+            }
+
+            FlushAppUsageClosing();
+        }
+
+        public void FlushAppUsageClosing()
+        {
+            if (Browser == null || Browser.IsDisposed || Browser.IsLoading || !Browser.CanExecuteJavascriptInMainFrame)
+                return;
+
+            try
+            {
+                var flushTask = Browser.GetMainFrame().EvaluateScriptAsPromiseAsync(
+                    "return window.betterVrcxAppUsageClosing?.();",
+                    timeout: TimeSpan.FromSeconds(1));
+                flushTask.Wait(TimeSpan.FromSeconds(1));
+            }
+            catch (Exception ex)
+            {
+                logger.Debug(ex, "App usage close flush did not complete before shutdown");
             }
         }
 

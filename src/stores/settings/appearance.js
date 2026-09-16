@@ -60,7 +60,6 @@ export const useAppearanceSettingsStore = defineStore(
         const appFontFamily = ref('inter');
         const customFontFamily = ref('');
         const appCjkFontPack = ref(APP_CJK_FONT_PACK_DEFAULT_KEY);
-        const displayVRCPlusIconsAsAvatar = ref(false);
         const displayVRCProfileThemes = ref(false);
         const displayVRCProfileEffects = ref(true);
         const displayVRCProfileBackgrounds = ref(true);
@@ -155,7 +154,6 @@ export const useAppearanceSettingsStore = defineStore(
                     : 'dark';
             const [
                 appLanguageConfig,
-                displayVRCPlusIconsAsAvatarConfig,
                 displayVRCProfileThemesConfig,
                 displayVRCProfileEffectsConfig,
                 displayVRCProfileBackgroundsConfig,
@@ -198,7 +196,6 @@ export const useAppearanceSettingsStore = defineStore(
                 isRightSidebarCollapsedConfig
             ] = await Promise.all([
                 configRepository.getString('VRCX_appLanguage'),
-                configRepository.getBool('displayVRCPlusIconsAsAvatar', true),
                 configRepository.getBool('VRCX_displayVRCProfileThemes', true),
                 configRepository.getBool('VRCX_displayVRCProfileEffects', true),
                 configRepository.getBool(
@@ -323,8 +320,6 @@ export const useAppearanceSettingsStore = defineStore(
                 );
             }
 
-            displayVRCPlusIconsAsAvatar.value =
-                displayVRCPlusIconsAsAvatarConfig;
             displayVRCProfileThemes.value = displayVRCProfileThemesConfig;
             displayVRCProfileEffects.value = displayVRCProfileEffectsConfig;
             displayVRCProfileBackgrounds.value =
@@ -633,15 +628,6 @@ export const useAppearanceSettingsStore = defineStore(
         /**
          *
          */
-        function setDisplayVRCPlusIconsAsAvatar() {
-            displayVRCPlusIconsAsAvatar.value =
-                !displayVRCPlusIconsAsAvatar.value;
-            configRepository.setBool(
-                'displayVRCPlusIconsAsAvatar',
-                displayVRCPlusIconsAsAvatar.value
-            );
-        }
-
         /**
          *
          */
@@ -1284,7 +1270,6 @@ export const useAppearanceSettingsStore = defineStore(
             isDarkMode,
             appFontFamily,
             appCjkFontPack,
-            displayVRCPlusIconsAsAvatar,
             displayVRCProfileThemes,
             displayVRCProfileEffects,
             displayVRCProfileBackgrounds,
@@ -1332,7 +1317,6 @@ export const useAppearanceSettingsStore = defineStore(
             SEARCH_LIMIT_MAX,
 
             setAppLanguage,
-            setDisplayVRCPlusIconsAsAvatar,
             setDisplayVRCProfileThemes,
             setDisplayVRCProfileEffects,
             setDisplayVRCProfileBackgrounds,

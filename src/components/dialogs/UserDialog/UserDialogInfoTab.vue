@@ -131,6 +131,32 @@
         </div>
     </template>
 
+    <div v-if="lastKnownObservation" class="bv-entity-card p-3 mb-2.5">
+        <div class="bv-entity-card-header mb-2 pb-1">
+            <span
+                class="text-[10px] font-bold uppercase tracking-wide"
+                :style="{ color: userDialog.theme.subtextColor }">
+                {{ t('last_known_presence.last_seen') }}
+            </span>
+        </div>
+        <button
+            type="button"
+            class="text-sm text-foreground cursor-pointer block truncate text-left"
+            @click="showWorldDialog(lastKnownObservation.worldId)">
+            {{ lastKnownObservation.worldName || lastKnownObservation.worldId }}
+        </button>
+        <span class="block truncate text-xs text-muted-foreground">
+            {{
+                t('last_known_presence.instance', {
+                    instance: parseLocation(lastKnownObservation.locationTag).instanceName
+                })
+            }}
+            ·
+            <Timer :epoch="lastKnownObservation.observedAt" />
+        </span>
+        <span class="block text-xs text-muted-foreground mt-1">{{ t('last_known_presence.uncertain') }}</span>
+    </div>
+
     <div class="@container">
         <div class="grid gap-2.5 grid-cols-1 @[560px]:grid-cols-[minmax(0,1fr)_230px]" style="align-items: start">
             <div class="flex flex-col gap-2.5">
@@ -143,7 +169,7 @@
                         </span>
                         <div class="flex items-center gap-1">
                             <Button
-                                v-if="translationApi && userDialog.ref.bio"
+                                v-if="translationApi && userDialog.publicProfileRef?.bio"
                                 class="h-5 w-5"
                                 size="icon-sm"
                                 variant="ghost"
@@ -161,7 +187,7 @@
                             </Button>
                         </div>
                     </div>
-                    <template v-if="userDialog.loading && !userDialog.ref.bio && !bioCache.translated">
+                    <template v-if="userDialog.loading && !userDialog.publicProfileRef?.bio && !bioCache.translated">
                         <div class="space-y-2 py-1">
                             <Skeleton class="h-3.5 w-full rounded-md" />
                             <Skeleton class="h-3.5 w-4/5 rounded-md" />
@@ -172,11 +198,11 @@
                         <pre
                             class="text-xs font-[inherit] leading-relaxed text-muted-foreground"
                             style="white-space: pre-wrap; max-height: 210px; overflow-y: auto"
-                            >{{ bioCache.translated || userDialog.ref.bio || '—' }}</pre>
+                            >{{ bioCache.translated || userDialog.publicProfileRef?.bio || '—' }}</pre>
                         <div
-                            v-if="userDialog.ref.bioLinks && userDialog.ref.bioLinks.length"
+                            v-if="userDialog.publicProfileRef?.bioLinks && userDialog.publicProfileRef.bioLinks.length"
                             class="flex flex-wrap items-center gap-1.5 mt-2">
-                            <TooltipWrapper v-for="(link, index) in userDialog.ref.bioLinks" :key="index">
+                            <TooltipWrapper v-for="(link, index) in userDialog.publicProfileRef.bioLinks" :key="index">
                                 <template #content>
                                     <span v-text="link"></span>
                                 </template>
@@ -483,7 +509,7 @@
 <script setup>
     import { Info, Languages, Pencil, Trash2, User } from 'lucide-vue-next';
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-    import { ref, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Skeleton } from '@/components/ui/skeleton';
     import { Spinner } from '@/components/ui/spinner';
@@ -507,6 +533,7 @@
     import {
         useAdvancedSettingsStore,
         useAppearanceSettingsStore,
+        useFriendStore,
         useInstanceStore,
         useLocationStore,
         useModalStore,
@@ -518,6 +545,9 @@
 
     import InstanceActionBar from '../../InstanceActionBar.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
+    import { useLastKnownPresenceStore } from '../../../addons/lastKnownPresence/store';
+    import { getPresenceHints } from '../../../addons/lastKnownPresence/presentation';
+    import { parseLocation } from '../../../shared/utils/locationParser';
 
     import EditNoteAndMemoDialog from './EditNoteAndMemoDialog.vue';
 
@@ -535,6 +565,20 @@
 
     const { lastLocation } = storeToRefs(useLocationStore());
     const { userImage, userStatusClass } = useUserDisplay();
+    const { enabled: lastKnownPresenceEnabled, observations: lastKnownPresenceObservations } =
+        storeToRefs(useLastKnownPresenceStore());
+    const friendStore = useFriendStore();
+    const lastKnownObservation = computed(() => {
+        if (!lastKnownPresenceEnabled.value) return null;
+        return (
+            getPresenceHints(
+                true,
+                lastKnownPresenceObservations.value,
+                friendStore.friends,
+                lastLocation.value.friendList
+            ).find((observation) => observation.userId === userDialog.value.id) ?? null
+        );
+    });
 
     const bioCache = ref({
         userId: null,
@@ -582,7 +626,7 @@
         if (translateLoading.value) {
             return;
         }
-        const bio = userDialog.value.ref.bio;
+        const bio = userDialog.value.publicProfileRef?.bio;
         if (!bio) {
             return;
         }

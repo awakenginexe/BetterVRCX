@@ -47,6 +47,7 @@ if (!isDotNetInstalled()) {
 const VRCX_URI_PREFIX = 'vrcx';
 let isOverlayActive = false;
 let appIsQuitting = false;
+let appUsageClosingFlushed = false;
 const rootDir = app.getAppPath();
 
 let tray = null;
@@ -180,7 +181,9 @@ if (!gotTheLock) {
 ipcMain.handle('dialog:openFile', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
         properties: ['openFile'],
-        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp'] }]
+        filters: [
+            { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp'] }
+        ]
     });
 
     if (!result.canceled && result.filePaths.length > 0) {
@@ -954,9 +957,30 @@ function disposeOverlay() {
     }
 }
 
-app.on('before-quit', function () {
+app.on('before-quit', function (quitEvent) {
     // Mark it as a quitting state to make macOS Dock's "Quit" action take effect.
     appIsQuitting = true;
+
+    if (!appUsageClosingFlushed) {
+        quitEvent.preventDefault();
+        appUsageClosingFlushed = true;
+        const rendererClose =
+            mainWindow &&
+            !mainWindow.isDestroyed() &&
+            !mainWindow.webContents.isDestroyed()
+                ? mainWindow.webContents.executeJavaScript(
+                      'window.betterVrcxAppUsageClosing?.()'
+                  )
+                : Promise.resolve();
+        const closeTimeout = new Promise((resolve) =>
+            setTimeout(resolve, 1000)
+        );
+        Promise.race([rendererClose, closeTimeout])
+            .catch(() => {})
+            .finally(() => app.quit());
+        return;
+    }
+
     disposeOverlay();
     destroyTray();
 });

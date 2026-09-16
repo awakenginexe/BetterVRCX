@@ -80,7 +80,8 @@
         "expand_menu": "展開選單",
         "collapse_menu": "收起選單",
         "toggle_theme": "切換主題",
-        "home": "首頁"
+        "home": "首頁",
+        "world": "世界"
     },
     "nav_menu": {
         "resources": "資源",
@@ -3243,6 +3244,39 @@
         "direct_access": "透過ID或連結快速加入",
         "custom_dashboard": "自訂儀表板",
         "folder_page": "1 個頁面",
-        "folder_pages": "{count} 個頁面"
+        "folder_pages": "{count} 個頁面",
+        "world": "個人世界、歷史記錄與收藏"
+    },
+    "world_hub": {
+        "description": "你的個人世界歷史與收藏。",
+        "recent": "最近造訪",
+        "updated": "已更新的收藏",
+        "library": "收藏 / 收藏庫",
+        "refresh": "重新整理",
+        "unavailable": "部分資訊無法重新整理。快取資訊仍可使用。",
+        "loading": "載入中…",
+        "empty_recent": "目前沒有最近造訪的世界。",
+        "empty_updated": "未偵測到收藏更新。初始中繼資料會建立基準。",
+        "empty_library": "尚未收藏任何世界。",
+        "visits": "造訪 {count} 次",
+        "hours": "{count} 小時",
+        "last_visit": "上次造訪："
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "最後已知位置",
+        "description": "當好友在使用詢問我或請勿打擾時，VRChat 位置變為私人，本功能會暫時記住其最後已知位置。資訊只儲存在記憶體中，關閉 BetterVRCX 後會清除。最後已知位置不代表好友仍在那裡。",
+        "last_seen": "最後出現",
+        "last_seen_here": "最後在此出現",
+        "might_be_here": "可能在這裡",
+        "last_known_instance": "最後已知執行個體",
+        "last_seen_friends": "最後出現的好友",
+        "uncertain": "本次 BetterVRCX 工作階段中記錄的最後位置。使用者可能已經不在這裡。",
+        "empty": "沒有最後已知位置",
+        "instance": "執行個體：{instance}",
+        "last_seen_count": "最後出現：{count} 人"
     }
 }

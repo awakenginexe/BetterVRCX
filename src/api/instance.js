@@ -1,3 +1,4 @@
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { toast } from 'vue-sonner';
 
 import { i18n } from '../plugins/i18n';
@@ -17,6 +18,10 @@ const instanceReq = {
                 json,
                 params
             };
+            useLastKnownPresenceStore().onInstanceResponse(
+                `${params.worldId}:${params.instanceId}`,
+                json
+            );
             args.ref = instanceStore.applyInstance(json);
             return args;
         });

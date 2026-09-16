@@ -14,7 +14,8 @@
         "charts": "Диаграммы",
         "tools": "Инструменты",
         "settings": "Настройки",
-        "home": "Главная"
+        "home": "Главная",
+        "world": "Мир"
     },
     "side_panel": {
         "search_placeholder": "Поиск",
@@ -1923,6 +1924,39 @@
         "direct_access": "Быстрый переход по ID или ссылке",
         "custom_dashboard": "Пользовательская панель",
         "folder_page": "1 страница",
-        "folder_pages": "{count} стр."
+        "folder_pages": "{count} стр.",
+        "world": "Личные миры, история и избранное"
+    },
+    "world_hub": {
+        "description": "История личных миров и избранное.",
+        "recent": "Недавно посещённые",
+        "updated": "Обновлённое избранное",
+        "library": "Избранное / Библиотека",
+        "refresh": "Обновить",
+        "unavailable": "Не удалось обновить часть информации. Данные из кэша по-прежнему доступны.",
+        "loading": "Загрузка…",
+        "empty_recent": "Нет недавно посещённых миров.",
+        "empty_updated": "Обновлений избранного не обнаружено. Начальные метаданные создают базовую точку.",
+        "empty_library": "В избранном пока нет миров.",
+        "visits": "Посещений: {count}",
+        "hours": "{count} ч",
+        "last_visit": "Последнее посещение:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Последнее известное местоположение",
+        "description": "Временно запоминает последнее известное местоположение друзей, чьё местоположение в VRChat становится приватным при использовании «Спроси меня» или «Не беспокоить». Информация хранится только в памяти и удаляется при закрытии BetterVRCX. Последнее известное местоположение не подтверждает, что друг всё ещё там.",
+        "last_seen": "Последний раз замечен",
+        "last_seen_here": "Последний раз замечен здесь",
+        "might_be_here": "Возможно, здесь",
+        "last_known_instance": "Последний известный инстанс",
+        "last_seen_friends": "Друзья, замеченные в последний раз",
+        "uncertain": "Последнее известное местоположение в этом сеансе BetterVRCX. Пользователя может уже не быть здесь.",
+        "empty": "Нет последнего известного присутствия",
+        "instance": "Инстанс: {instance}",
+        "last_seen_count": "Замечены в последний раз: {count}"
     }
 }

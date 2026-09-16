@@ -83,13 +83,17 @@
                                                     :aria-label="t('nav_menu.mark_all_read')"></span>
                                             </i>
                                         </div>
-                                        <div v-show="!isCollapsed" class="bv-nav-content-box flex flex-col min-w-0 flex-1">
-                                            <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
-                                                item.titleIsCustom ? item.title : t(item.title || '')
-                                            }}</span>
-                                            <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
-                                                getFolderDescription(item)
-                                            }}</span>
+                                        <div
+                                            v-show="!isCollapsed"
+                                            class="bv-nav-content-box flex flex-col min-w-0 flex-1">
+                                            <span
+                                                class="bv-nav-item-title truncate font-medium text-xs leading-tight"
+                                                >{{ item.titleIsCustom ? item.title : t(item.title || '') }}</span
+                                            >
+                                            <span
+                                                class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5"
+                                                >{{ getFolderDescription(item) }}</span
+                                            >
                                         </div>
 
                                         <ChevronRight
@@ -257,6 +261,7 @@
     const { t } = useI18n();
 
     const FOLDER_DESC_KEYS = {
+        'default-folder-world': 'nav_desc.world',
         'default-folder-favorites': 'nav_desc.favorites',
         'default-folder-social': 'nav_desc.social',
         'default-folder-charts': 'nav_desc.charts',

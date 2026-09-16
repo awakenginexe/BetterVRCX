@@ -101,12 +101,12 @@
 
                     <div class="flex items-center gap-2">
                         <img
-                            :src="editProfileDialog.userIcon || currentUser.currentAvatarThumbnailImageUrl"
+                            :src="editProfileDialog.iconUrl || currentUser.currentAvatarThumbnailImageUrl"
                             class="inline-block h-16 aspect-square rounded-md object-cover"
                             :alt="t('dialog.edit_profile.icon')"
                             loading="lazy" />
                         <Button
-                            v-if="editProfileDialog.userIcon"
+                            v-if="editProfileDialog.iconUrl"
                             size="sm"
                             variant="outline"
                             :disabled="editProfileDialog.loading"
@@ -549,6 +549,7 @@
     import { useStatusPresets } from './composables/useStatusPresets';
     import GallerySelectDialog from '../GroupDialog/GallerySelectDialog.vue';
     import { updateUserDialogProfile } from '@/coordinators/userCoordinator';
+    import { getProfileIconUpdate } from './editProfilePayload';
     import { profileBackgrounds } from '@/shared/constants/backgrounds';
 
     const { t } = useI18n();
@@ -928,7 +929,7 @@
     function handleGalleryImageSelect({ imageUrl }) {
         const D = props.editProfileDialog;
         if (gallerySelectDialog.value.isIconGallerySelectDialog) {
-            D.userIcon = imageUrl;
+            D.iconUrl = imageUrl;
         } else {
             if (!imageUrl) {
                 D.bannerType = 'color';
@@ -941,7 +942,7 @@
 
     function clearUserIcon() {
         const D = props.editProfileDialog;
-        D.userIcon = '';
+        D.iconUrl = '';
     }
 
     function handleAddUserLanguage(language) {
@@ -1024,9 +1025,7 @@
                 profilePayload.bannerColor = undefined;
             }
         }
-        if (D.userIcon !== D.selfProfileRef.userIcon) {
-            profilePayload.userIcon = D.userIcon;
-        }
+        Object.assign(profilePayload, getProfileIconUpdate(D.iconUrl, D.selfProfileRef));
         if (D.themeId !== D.selfProfileRef.themeId) {
             profilePayload.themeId = D.themeId;
         }

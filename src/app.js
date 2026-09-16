@@ -1,3 +1,4 @@
+import { useAppAnalyticsStore } from './services/appAnalytics/store';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import { createApp } from 'vue';
 
@@ -26,3 +27,5 @@ initRouter(app);
 await initSentry(app);
 
 app.mount('#root');
+
+void useAppAnalyticsStore(pinia).boot();

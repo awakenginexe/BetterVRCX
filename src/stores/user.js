@@ -299,6 +299,7 @@ export const useUserStore = defineStore('User', () => {
         bannerUrl: '',
         bannerType: '',
         userIcon: '',
+        iconUrl: '',
         themes: [],
         themeId: '',
         themeName: '',
@@ -828,6 +829,7 @@ export const useUserStore = defineStore('User', () => {
         D.bannerUrl = currentUser.value.bannerUrl;
         D.bannerType = currentUser.value.bannerType;
         D.userIcon = currentUser.value.userIcon;
+        D.iconUrl = currentUser.value.iconUrl;
 
         D.themeId = '';
         D.themes = [];
@@ -849,6 +851,7 @@ export const useUserStore = defineStore('User', () => {
             D.bannerUrl = ref.bannerUrl;
             D.bannerType = ref.bannerType || 'color';
             D.userIcon = ref.userIcon;
+            D.iconUrl = ref.iconUrl;
 
             D.themes = ref.themes;
             D.themeId = ref.themeId;

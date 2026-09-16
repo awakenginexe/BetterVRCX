@@ -100,9 +100,18 @@
                             </div>
                         </div>
                     </div>
+                    <LastKnownPresenceGroup
+                        v-if="lastKnownHints(room).length"
+                        :observations="lastKnownHints(room)"
+                        :historical-only="false"
+                        :show-world="false" />
                 </div>
             </template>
         </div>
+        <LastKnownPresenceGroup
+            v-for="group in historicalGroups"
+            :key="group.locationTag"
+            :observations="group.observations" />
     </div>
 </template>
 
@@ -112,11 +121,13 @@
     import { Spinner } from '@/components/ui/spinner';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
+    import { computed } from 'vue';
 
     import { refreshInstancePlayerCount } from '../../../coordinators/instanceCoordinator';
     import { useUserDisplay } from '../../../composables/useUserDisplay';
     import {
         useAppearanceSettingsStore,
+        useFriendStore,
         useInstanceStore,
         useLocationStore,
         useUserStore,
@@ -125,15 +136,47 @@
 
     import InstanceActionBar from '../../InstanceActionBar.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
+    import { useLastKnownPresenceStore } from '../../../addons/lastKnownPresence/store';
+    import { getPresenceHints, groupPresenceHints } from '../../../addons/lastKnownPresence/presentation';
+    import LastKnownPresenceGroup from '../../../addons/lastKnownPresence/LastKnownPresenceGroup.vue';
 
     const { t } = useI18n();
     const { userImage, userStatusClass } = useUserDisplay();
 
     const { isAgeGatedInstancesVisible } = storeToRefs(useAppearanceSettingsStore());
 
-    const { currentUser } = storeToRefs(useUserStore());
+    const userStore = useUserStore();
+    const { currentUser } = storeToRefs(userStore);
     const { worldDialog } = storeToRefs(useWorldStore());
     const { lastLocation } = storeToRefs(useLocationStore());
     const { showPreviousInstancesInfoDialog } = useInstanceStore();
     const { instanceJoinHistory } = storeToRefs(useInstanceStore());
+    const { enabled: lastKnownPresenceEnabled, observations: lastKnownPresenceObservations } =
+        storeToRefs(useLastKnownPresenceStore());
+    const friendStore = useFriendStore();
+    const hints = computed(() =>
+        getPresenceHints(
+            lastKnownPresenceEnabled.value,
+            lastKnownPresenceObservations.value,
+            friendStore.friends,
+            lastLocation.value.friendList
+        ).filter((observation) => observation.worldId === worldDialog.value.id)
+    );
+    const historicalGroups = computed(() => {
+        const liveTags = new Set(worldDialog.value.rooms.map((room) => room.$location.tag));
+        return groupPresenceHints(hints.value).filter(
+            (group) =>
+                !liveTags.has(group.locationTag) &&
+                (isAgeGatedInstancesVisible.value || !group.locationTag.includes('~ageGate'))
+        );
+    });
+
+    function lastKnownHints(room) {
+        if (!lastKnownPresenceEnabled.value) return [];
+        const presentIds = new Set(room.users.map((user) => user.id));
+        if (room.$location.userId) presentIds.add(room.$location.userId);
+        return hints.value.filter(
+            (observation) => observation.locationTag === room.$location.tag && !presentIds.has(observation.userId)
+        );
+    }
 </script>
