@@ -12,7 +12,8 @@
         "notification": "Upozornění",
         "friend_list": "Seznam přátel",
         "settings": "Nastavení",
-        "home": "Domů"
+        "home": "Domů",
+        "world": "Svět"
     },
     "side_panel": {
         "search_placeholder": "Search",
@@ -1810,6 +1811,39 @@
         "direct_access": "Rychlý přechod přes ID nebo odkaz",
         "custom_dashboard": "Vlastní přehled",
         "folder_page": "1 stránka",
-        "folder_pages": "{count} stránek"
+        "folder_pages": "{count} stránek",
+        "world": "Osobní světy, historie a oblíbené"
+    },
+    "world_hub": {
+        "description": "Historie vašich světů a oblíbené.",
+        "recent": "Nedávno navštívené",
+        "updated": "Aktualizované oblíbené",
+        "library": "Oblíbené / Knihovna",
+        "refresh": "Obnovit",
+        "unavailable": "Některé informace se nepodařilo obnovit. Informace z mezipaměti jsou stále dostupné.",
+        "loading": "Načítání…",
+        "empty_recent": "Žádné nedávno navštívené světy.",
+        "empty_updated": "Nebyly zjištěny žádné aktualizace oblíbených. Počáteční metadata vytvoří základ.",
+        "empty_library": "Zatím nemáte žádné oblíbené světy.",
+        "visits": "{count} návštěv",
+        "hours": "{count} h",
+        "last_visit": "Poslední návštěva:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Poslední známá přítomnost",
+        "description": "Dočasně si pamatuje poslední známou polohu přátel, jejichž poloha ve VRChat se při použití Ask Me nebo Nerušit stane soukromou. Informace se ukládají pouze do paměti a po zavření BetterVRCX se vymažou. Poslední známá poloha nepotvrzuje, že tam přítel stále je.",
+        "last_seen": "Naposledy spatřen",
+        "last_seen_here": "Naposledy spatřen zde",
+        "might_be_here": "Možná je zde",
+        "last_known_instance": "Poslední známá instance",
+        "last_seen_friends": "Přátelé naposledy spatření",
+        "uncertain": "Poslední známá poloha během této relace BetterVRCX. Uživatel už zde nemusí být.",
+        "empty": "Žádná poslední známá přítomnost",
+        "instance": "Instance: {instance}",
+        "last_seen_count": "Naposledy spatření: {count}"
     }
 }

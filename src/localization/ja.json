@@ -80,7 +80,8 @@
         "expand_menu": "メニューを展開",
         "collapse_menu": "メニューを折りたたむ",
         "toggle_theme": "テーマを切り替える",
-        "home": "ホーム"
+        "home": "ホーム",
+        "world": "ワールド"
     },
     "nav_menu": {
         "resources": "お役立ちリンク",
@@ -3262,6 +3263,39 @@
         "direct_access": "IDやURLから直接インスタンスへ移動",
         "custom_dashboard": "カスタムダッシュボード",
         "folder_page": "1 ページ",
-        "folder_pages": "{count} ページ"
+        "folder_pages": "{count} ページ",
+        "world": "自分のワールド、履歴、お気に入り"
+    },
+    "world_hub": {
+        "description": "自分のワールド履歴とお気に入り。",
+        "recent": "最近訪れたワールド",
+        "updated": "更新されたお気に入り",
+        "library": "お気に入り / ライブラリ",
+        "refresh": "更新",
+        "unavailable": "一部の情報を更新できませんでした。キャッシュ済みの情報は利用できます。",
+        "loading": "読み込み中…",
+        "empty_recent": "最近訪れたワールドはありません。",
+        "empty_updated": "お気に入りの更新はありません。初期メタデータを基準として記録しました。",
+        "empty_library": "お気に入りのワールドはまだありません。",
+        "visits": "{count} 回訪問",
+        "hours": "{count} 時間",
+        "last_visit": "最終訪問："
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "最後に確認された居場所",
+        "description": "Ask Me または取り込み中の使用中に VRChat の場所が非公開になったフレンドの、最後に確認された場所を一時的に記録します。情報はメモリにのみ保存され、BetterVRCX を閉じると消去されます。最後に確認された場所は、フレンドがまだそこにいることを保証しません。",
+        "last_seen": "最後に確認",
+        "last_seen_here": "最後にここで確認",
+        "might_be_here": "ここにいる可能性あり",
+        "last_known_instance": "最後に確認されたインスタンス",
+        "last_seen_friends": "最後に確認されたフレンド",
+        "uncertain": "この BetterVRCX セッション中に確認された最後の場所です。ユーザーはすでにここにいない可能性があります。",
+        "empty": "最後に確認された居場所はありません",
+        "instance": "インスタンス: {instance}",
+        "last_seen_count": "最後に確認: {count}人"
     }
 }

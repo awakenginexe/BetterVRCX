@@ -41,13 +41,14 @@ export function handleFriendStatus(args) {
 export function handleFriendDelete(args) {
     const userStore = useUserStore();
     const friendStore = useFriendStore();
+    // Friendship removal applies even when its profile dialog is closed.
+    friendStore.deleteFriend(args.params.userId);
     const D = userStore.userDialog;
     if (D.visible === false || D.id !== args.params.userId) {
         return;
     }
     D.isFriend = false;
     runDeleteFriendshipFlow(args.params.userId);
-    friendStore.deleteFriend(args.params.userId);
     removeFriendSearchIndex(args.params.userId);
 }
 

@@ -12,7 +12,8 @@
         "notification": "Thông báo",
         "friend_list": "Danh sách bạn bè",
         "settings": "Cài đặt",
-        "home": "Trang chủ"
+        "home": "Trang chủ",
+        "world": "Thế giới"
     },
     "side_panel": {
         "search_placeholder": "Tìm kiếm",
@@ -1604,6 +1605,39 @@
         "direct_access": "Chuyển nhanh theo ID hoặc liên kết",
         "custom_dashboard": "Bảng điều khiển tùy chỉnh",
         "folder_page": "1 trang",
-        "folder_pages": "{count} trang"
+        "folder_pages": "{count} trang",
+        "world": "Thế giới cá nhân, lịch sử và yêu thích"
+    },
+    "world_hub": {
+        "description": "Lịch sử thế giới cá nhân và mục yêu thích của bạn.",
+        "recent": "Đã ghé thăm gần đây",
+        "updated": "Mục yêu thích đã cập nhật",
+        "library": "Yêu thích / Thư viện",
+        "refresh": "Làm mới",
+        "unavailable": "Không thể làm mới một số thông tin. Thông tin đã lưu trong bộ nhớ đệm vẫn khả dụng.",
+        "loading": "Đang tải…",
+        "empty_recent": "Chưa có thế giới nào được ghé thăm gần đây.",
+        "empty_updated": "Không phát hiện cập nhật mục yêu thích. Siêu dữ liệu ban đầu sẽ tạo mốc cơ sở.",
+        "empty_library": "Bạn chưa có thế giới yêu thích nào.",
+        "visits": "{count} lượt ghé thăm",
+        "hours": "{count} giờ",
+        "last_visit": "Lần ghé thăm gần nhất:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Vị trí được biết gần đây nhất",
+        "description": "Tạm thời ghi nhớ vị trí được biết gần đây nhất của những người bạn có vị trí trên VRChat chuyển thành riêng tư khi dùng Hỏi tôi hoặc Không làm phiền. Thông tin chỉ được lưu trong bộ nhớ và bị xóa khi đóng BetterVRCX. Vị trí được biết gần đây nhất không xác nhận người bạn đó vẫn còn ở đó.",
+        "last_seen": "Lần cuối nhìn thấy",
+        "last_seen_here": "Lần cuối nhìn thấy ở đây",
+        "might_be_here": "Có thể đang ở đây",
+        "last_known_instance": "Instance được biết gần đây nhất",
+        "last_seen_friends": "Bạn bè lần cuối được thấy",
+        "uncertain": "Vị trí được biết gần đây nhất trong phiên BetterVRCX này. Người dùng có thể không còn ở đây.",
+        "empty": "Không có vị trí hiện diện được biết gần đây",
+        "instance": "Instance: {instance}",
+        "last_seen_count": "{count} lần cuối được thấy"
     }
 }

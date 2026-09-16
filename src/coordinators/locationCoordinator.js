@@ -5,6 +5,7 @@ import {
     parseLocation
 } from '../shared/utils';
 import { database } from '../services/database';
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { useAdvancedSettingsStore } from '../stores/settings/advanced';
 import { useGameLogStore } from '../stores/gameLog';
 import { useGameStore } from '../stores/game';
@@ -136,7 +137,10 @@ export async function runSetCurrentUserLocationFlow(
     }
 }
 
-export function runLastLocationResetFlow(gameLogDate) {
+export function runLastLocationResetFlow(
+    gameLogDate,
+    { capturePresence = true } = {}
+) {
     const photonStore = usePhotonStore();
     const instanceStore = useInstanceStore();
     const gameLogStore = useGameLogStore();
@@ -149,6 +153,16 @@ export function runLastLocationResetFlow(gameLogDate) {
         dateTime = new Date().toJSON();
     }
     const dateTimeStamp = Date.parse(dateTime);
+    if (capturePresence) {
+        const presence = useLastKnownPresenceStore();
+        if (presence.enabled) {
+            presence.leaveLocation(
+                locationStore.lastLocation,
+                userStore.cachedUsers,
+                dateTimeStamp
+            );
+        }
+    }
     photonStore.resetLocationPhotonState();
     const playerList = Array.from(
         locationStore.lastLocation.playerList.values()

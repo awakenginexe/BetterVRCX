@@ -1,5 +1,6 @@
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
 import { defineStore } from 'pinia';
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { useRouter } from 'vue-router';
 
 import { i18n } from '../plugins/i18n';
@@ -39,6 +40,7 @@ import configRepository from '../services/config';
 import * as workerTimers from 'worker-timers';
 
 export const useFriendStore = defineStore('Friend', () => {
+    const lastKnownPresenceStore = useLastKnownPresenceStore();
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const generalSettingsStore = useGeneralSettingsStore();
     const userStore = useUserStore();
@@ -382,6 +384,7 @@ export const useFriendStore = defineStore('Friend', () => {
     watch(
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
+            if (lastKnownPresenceStore.enabled) lastKnownPresenceStore.clear();
             friends.clear();
             sortedFriends.value = [];
             pendingSortedFriendsRebuild = false;
@@ -494,6 +497,7 @@ export const useFriendStore = defineStore('Friend', () => {
      * @param {string} id
      */
     function deleteFriend(id) {
+        lastKnownPresenceStore.invalidate(id);
         const ctx = friends.get(id);
         if (typeof ctx === 'undefined') {
             return;

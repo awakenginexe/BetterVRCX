@@ -28,9 +28,6 @@ function makeDeps(overrides = {}) {
         advancedSettingsStore: {
             notificationOpacity: 80
         },
-        appearanceSettingsStore: {
-            displayVRCPlusIconsAsAvatar: false
-        },
         ...overrides
     };
 }
@@ -92,12 +89,12 @@ describe('notyGetImage', () => {
         expect(result).toBe('https://profile.jpg');
     });
 
-    test('returns userIcon when displayVRCPlusIconsAsAvatar is enabled', async () => {
+    test('prefers iconUrl from the remote user response', async () => {
         deps.getUserIdFromNoty.mockReturnValue('usr_abc');
-        deps.appearanceSettingsStore.displayVRCPlusIconsAsAvatar = true;
         deps.queryRequest.fetch.mockResolvedValue({
             json: {
-                userIcon: 'https://icon.jpg',
+                iconUrl: 'https://icon.jpg',
+                userIcon: 'https://legacy-icon.jpg',
                 profilePicOverride: 'https://profile.jpg',
                 currentAvatarThumbnailImageUrl: 'https://avatar.jpg'
             }

@@ -14,6 +14,13 @@ namespace VRCX
     public partial class AppApi
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly string appUsageSessionId = Guid.NewGuid().ToString();
+        private static readonly long appUsageStartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        private static readonly string appUsagePlatform = OperatingSystem.IsWindows()
+            ? "win32"
+            : OperatingSystem.IsMacOS()
+                ? "darwin"
+                : "linux";
 
         public void Init()
         {
@@ -134,6 +141,16 @@ namespace VRCX
         public string GetVersion()
         {
             return Program.Version;
+        }
+
+        public object GetAppUsageSession()
+        {
+            return new
+            {
+                sessionId = appUsageSessionId,
+                startedAt = appUsageStartedAt,
+                platform = appUsagePlatform
+            };
         }
 
         public bool VrcClosedGracefully()

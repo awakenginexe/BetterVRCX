@@ -1,3 +1,4 @@
+const WORLD_KEYS = ['world-recent', 'world-updated', 'world-library'];
 const DEFAULT_FOLDER_ICON = 'ri-folder-line';
 
 /**
@@ -12,13 +13,15 @@ export function normalizeHiddenKeys(hiddenKeys, definitionMap) {
     }
     const seen = new Set();
     const normalized = [];
-    hiddenKeys.forEach((key) => {
-        if (!key || seen.has(key) || !definitionMap.has(key)) {
-            return;
-        }
-        seen.add(key);
-        normalized.push(key);
-    });
+    hiddenKeys
+        .flatMap((key) => (key === 'world' ? WORLD_KEYS : [key]))
+        .forEach((key) => {
+            if (!key || seen.has(key) || !definitionMap.has(key)) {
+                return;
+            }
+            seen.add(key);
+            normalized.push(key);
+        });
     return normalized;
 }
 
@@ -76,9 +79,32 @@ export function sanitizeLayout(
         });
     };
 
+    const appendWorldFolder = () => {
+        if (
+            !WORLD_KEYS.every((key) => definitionMap.has(key)) ||
+            WORLD_KEYS.some((key) => usedKeys.has(key))
+        )
+            return;
+        const items = WORLD_KEYS.filter((key) => !hiddenSet.has(key));
+        if (!items.length) return;
+        items.forEach((key) => usedKeys.add(key));
+        normalized.push({
+            type: 'folder',
+            id: 'default-folder-world',
+            nameKey: 'nav_tooltip.world',
+            name: t('nav_tooltip.world'),
+            icon: 'ri-earth-line',
+            items
+        });
+    };
+
     if (Array.isArray(layout)) {
         layout.forEach((entry) => {
             if (entry?.type === 'item') {
+                if (entry.key === 'world') {
+                    appendWorldFolder();
+                    return;
+                }
                 if (entry.key === 'charts') {
                     appendChartsFolder();
                     return;
@@ -89,13 +115,23 @@ export function sanitizeLayout(
 
             if (entry?.type === 'folder') {
                 const folderItems = [];
-                (entry.items || []).forEach((key) => {
-                    if (!key || usedKeys.has(key) || !definitionMap.has(key)) {
-                        return;
-                    }
-                    folderItems.push(key);
-                    usedKeys.add(key);
-                });
+                (entry.items || [])
+                    .flatMap((key) =>
+                        key === 'world'
+                            ? WORLD_KEYS.filter((k) => !hiddenSet.has(k))
+                            : [key]
+                    )
+                    .forEach((key) => {
+                        if (
+                            !key ||
+                            usedKeys.has(key) ||
+                            !definitionMap.has(key)
+                        ) {
+                            return;
+                        }
+                        folderItems.push(key);
+                        usedKeys.add(key);
+                    });
 
                 if (folderItems.length >= 1) {
                     const folderNameKey = entry.nameKey || null;
@@ -114,6 +150,8 @@ export function sanitizeLayout(
             }
         });
     }
+
+    if (!WORLD_KEYS.some((key) => usedKeys.has(key))) appendWorldFolder();
 
     allDefinitions.forEach((item) => {
         if (!usedKeys.has(item.key) && !hiddenSet.has(item.key)) {

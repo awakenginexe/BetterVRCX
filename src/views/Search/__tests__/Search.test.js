@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => {
     const { ref } = require('vue');
     return {
         randomUserColours: ref(false),
-        displayVRCPlusIconsAsAvatar: ref(false),
         currentUser: ref({ id: 'usr_me' }),
         avatarRemoteDatabaseProviderList: ref(['provider-a']),
         avatarRemoteDatabaseProvider: ref('provider-a'),
@@ -101,8 +100,7 @@ vi.mock('@vueuse/core', async (importOriginal) => {
 
 vi.mock('../../../stores', () => ({
     useAppearanceSettingsStore: () => ({
-        randomUserColours: mocks.randomUserColours,
-        displayVRCPlusIconsAsAvatar: mocks.displayVRCPlusIconsAsAvatar
+        randomUserColours: mocks.randomUserColours
     }),
     useUserStore: () => ({
         currentUser: mocks.currentUser

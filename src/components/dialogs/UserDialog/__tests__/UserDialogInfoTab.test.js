@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import { flushPromises, shallowMount } from '@vue/test-utils';
+import { nextTick } from 'vue';
+import { useLastKnownPresenceStore } from '../../../../addons/lastKnownPresence/store';
+import { useFriendStore } from '../../../../stores/friend';
 
 vi.mock('vue-i18n', () => ({
     useI18n: () => {
@@ -106,7 +109,7 @@ import {
  */
 function mountComponent(overrides = {}) {
     const pinia = createTestingPinia({
-        stubActions: true
+        stubActions: (_action, store) => store.$id !== 'LastKnownPresence'
     });
 
     const appearanceSettingsStore = useAppearanceSettingsStore(pinia);
@@ -128,6 +131,10 @@ function mountComponent(overrides = {}) {
     userStore.$patch({
         userDialog: {
             id: 'usr_target',
+            publicProfileRef: {
+                bio: '',
+                bioLinks: []
+            },
             friend: {
                 state: 'online',
                 ref: {
@@ -204,6 +211,16 @@ function mountComponent(overrides = {}) {
 
     const modal = useModalStore(pinia);
     modal.confirm = vi.fn().mockResolvedValue({ ok: false });
+    if (overrides.presence) {
+        const presence = useLastKnownPresenceStore(pinia);
+        presence.setEnabled(true);
+        presence.observations.set('usr_target', overrides.presence);
+        useFriendStore(pinia).friends.set('usr_target', {
+            id: 'usr_target',
+            state: 'online',
+            ref: { id: 'usr_target', status: 'busy', location: 'private' }
+        });
+    }
 
     return shallowMount(UserDialogInfoTab, {
         global: {
@@ -211,7 +228,10 @@ function mountComponent(overrides = {}) {
             stubs: {
                 Location: true,
                 Timer: true,
-                TooltipWrapper: true,
+                TooltipWrapper: {
+                    template:
+                        '<div data-testid="tooltip-wrapper"><slot name="content" /><slot /></div>'
+                },
                 AvatarInfo: true
             }
         }
@@ -240,6 +260,51 @@ describe('UserDialogInfoTab.vue', () => {
     });
 
     describe('dom rendering', () => {
+        test('keeps Private and shows Last Seen separately, then removes hints when disabled', async () => {
+            const wrapper = mountComponent({
+                userDialog: {
+                    $location: { tag: 'private', isPrivate: true },
+                    users: []
+                },
+                presence: {
+                    userId: 'usr_target',
+                    worldId: 'wrld_history',
+                    worldName: 'Historical Rooftop',
+                    instanceId: '7~friends(usr_owner)',
+                    locationTag: 'wrld_history:7~friends(usr_owner)',
+                    observedAt: 1000
+                }
+            });
+            expect(wrapper.text()).toContain('location.private');
+            expect(wrapper.text()).toContain('last_known_presence.last_seen');
+            expect(wrapper.text()).toContain('Historical Rooftop');
+            expect(wrapper.find('instance-action-bar-stub').exists()).toBe(
+                false
+            );
+            useLastKnownPresenceStore().enabled = false;
+            await nextTick();
+            expect(wrapper.text()).toContain('location.private');
+            expect(wrapper.text()).not.toContain('Historical Rooftop');
+        });
+
+        test('does not show a historical hint alongside directly confirmed local presence', () => {
+            const wrapper = mountComponent({
+                presence: {
+                    userId: 'usr_target',
+                    worldId: 'wrld_history',
+                    worldName: 'Historical Rooftop',
+                    locationTag: 'wrld_history:7',
+                    observedAt: 1000
+                }
+            });
+            useLocationStore().lastLocation.friendList.set('usr_target', {
+                userId: 'usr_target'
+            });
+            return nextTick().then(() =>
+                expect(wrapper.text()).not.toContain('Historical Rooftop')
+            );
+        });
+
         test('renders imported InstanceActionBar and Spinner components when conditions are met', () => {
             const wrapper = mountComponent();
 
@@ -247,6 +312,28 @@ describe('UserDialogInfoTab.vue', () => {
                 true
             );
             expect(wrapper.find('spinner-stub').exists()).toBe(true);
+        });
+
+        test('renders bio and bio links from the public profile instead of the remote user response', () => {
+            const wrapper = mountComponent({
+                userDialog: {
+                    ref: {
+                        id: 'usr_target',
+                        displayName: 'Target',
+                        bio: 'stale users bio',
+                        bioLinks: ['https://stale.example']
+                    },
+                    publicProfileRef: {
+                        bio: 'fresh profile bio',
+                        bioLinks: ['https://fresh.example']
+                    }
+                }
+            });
+
+            expect(wrapper.text()).toContain('fresh profile bio');
+            expect(wrapper.text()).not.toContain('stale users bio');
+            expect(wrapper.html()).toContain('fresh.example');
+            expect(wrapper.html()).not.toContain('stale.example');
         });
     });
 });

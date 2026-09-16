@@ -9,6 +9,7 @@ declare global {
     const LINUX: boolean;
 
     interface Window {
+        betterVrcxAppUsageClosing?: () => Promise<void> | undefined;
         $pinia: any;
         $vr: any;
         $debug: AppDebug;
@@ -174,6 +175,11 @@ declare global {
 
     const AppApi: {
         // Basic App Functions
+        GetAppUsageSession(): Promise<{
+            sessionId: string;
+            startedAt: number;
+            platform: 'win32' | 'linux' | 'darwin';
+        }>;
         ShowDevTools(): Promise<void>;
         SetVR(
             active: boolean,

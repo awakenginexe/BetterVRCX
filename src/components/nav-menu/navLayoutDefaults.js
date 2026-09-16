@@ -23,6 +23,14 @@ export function createBaseDefaultNavLayout(t) {
             icon: 'ri-group-line',
             items: ['friend-log', 'friend-list', 'moderation']
         },
+        {
+            type: 'folder',
+            id: 'default-folder-world',
+            nameKey: 'nav_tooltip.world',
+            name: t('nav_tooltip.world'),
+            icon: 'ri-earth-line',
+            items: ['world-recent', 'world-updated', 'world-library']
+        },
         { type: 'item', key: 'notification' },
         { type: 'item', key: 'my-avatars' },
         {

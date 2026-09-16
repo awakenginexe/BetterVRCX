@@ -1450,6 +1450,30 @@ const gameLog = {
         return data;
     },
 
+    /** Aggregate the user's own visits across every instance access type.
+     * @param {number} [limit=24]
+     */
+    async getRecentWorlds(limit = 24) {
+        const results = [];
+        await sqliteService.execute(
+            (row) =>
+                results.push({
+                    worldId: row[0],
+                    worldName: row[1] || row[0],
+                    visitCount: row[2],
+                    totalTime: row[3] || 0,
+                    lastVisit: row[4]
+                }),
+            `SELECT world_id, world_name, COUNT(*) AS visit_count,
+            SUM(time) AS total_time, MAX(created_at) AS last_visit
+            FROM gamelog_location
+            WHERE world_id IS NOT NULL AND world_id LIKE 'wrld_%'
+            GROUP BY world_id ORDER BY last_visit DESC LIMIT @limit`,
+            { '@limit': limit }
+        );
+        return results;
+    },
+
     /**
      * Get current user's top visited worlds from gamelog_location.
      * Groups by world_id and aggregates visit count and total time.

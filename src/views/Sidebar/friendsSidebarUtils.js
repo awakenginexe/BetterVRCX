@@ -84,6 +84,74 @@ export function buildInstanceGroupRow(location, friends, key) {
 }
 
 /**
+ * Combines session-only observations with the existing live instance groups.
+ * Confirmed friends remain separate from remembered friends so callers can
+ * preserve live counts, ordering, and controls.
+ *
+ * @param {object} options
+ * @param {Map<string, object>} options.observations
+ * @param {Map<string, object>} options.friendsById
+ * @param {Array<Array<object>>} options.liveGroups
+ * @param {Set<string>} options.locallyPresentIds
+ * @returns {Array<{locationTag: string, confirmed: Array<object>, remembered: Array<object>, historicalOnly: boolean}>}
+ */
+export function buildLastKnownPresenceGroups({
+    observations,
+    friendsById,
+    liveGroups,
+    locallyPresentIds
+}) {
+    const groupsByTag = new Map();
+    const liveIds = new Set();
+    const confirmedByTag = new Map();
+    const liveGroupOrder = new Map();
+
+    for (const [index, liveGroup] of liveGroups.entries()) {
+        const locationTag = liveGroup?.[0]?.ref?.$location?.tag;
+        if (!locationTag) continue;
+        const confirmed = liveGroup.map((friend) => {
+            liveIds.add(friend.id);
+            return friendsById.get(friend.id) ?? friend;
+        });
+        if (confirmed.length) {
+            confirmedByTag.set(locationTag, confirmed);
+            liveGroupOrder.set(locationTag, index);
+        }
+    }
+
+    for (const observation of observations.values()) {
+        if (!observation?.userId || !observation.locationTag) continue;
+        if (locallyPresentIds.has(observation.userId)) continue;
+        const friend = friendsById.get(observation.userId);
+        if (!friend || liveIds.has(observation.userId)) continue;
+
+        let group = groupsByTag.get(observation.locationTag);
+        if (!group) {
+            const confirmed = confirmedByTag.get(observation.locationTag) ?? [];
+            group = {
+                locationTag: observation.locationTag,
+                confirmed,
+                remembered: [],
+                historicalOnly: confirmed.length === 0
+            };
+            groupsByTag.set(observation.locationTag, group);
+        }
+        group.remembered.push({ friend, observation });
+    }
+
+    return [...groupsByTag.values()]
+        .filter((group) => group.confirmed.length || group.remembered.length)
+        .sort((left, right) => {
+            const leftIndex = liveGroupOrder.get(left.locationTag);
+            const rightIndex = liveGroupOrder.get(right.locationTag);
+            if (leftIndex === undefined && rightIndex === undefined) return 0;
+            if (leftIndex === undefined) return 1;
+            if (rightIndex === undefined) return -1;
+            return leftIndex - rightIndex;
+        });
+}
+
+/**
  * Estimate pixel height for a virtual row.
  * @param {object} row - Row object with type property
  * @returns {number} Estimated height in pixels
@@ -102,7 +170,17 @@ export function estimateRowSize(row) {
         return 26 + (row.paddingBottom || 0);
     }
     if (row.type === 'instance-group') {
-        return 34 + (row.friends?.length || 1) * 44 + (row.paddingBottom || 0);
+        return (
+            34 +
+            ((row.friends?.length || 1) + (row.remembered?.length || 0)) * 44 +
+            (row.paddingBottom || 0)
+        );
+    }
+    if (row.type === 'last-known-group') {
+        return (
+            52 +
+            ((row.confirmed?.length || 0) + (row.remembered?.length || 0)) * 44
+        );
     }
     return 52 + (row.paddingBottom || 0);
 }

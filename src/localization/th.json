@@ -25,7 +25,8 @@
         "expand_menu": "ขยายเมนู",
         "collapse_menu": "ย่อเมนู",
         "toggle_theme": "สลับธีม",
-        "home": "หน้าหลัก"
+        "home": "หน้าหลัก",
+        "world": "โลก"
     },
     "side_panel": {
         "search_placeholder": "ค้นหาเร็ว",
@@ -3280,6 +3281,39 @@
         "direct_access": "ไปยังอินสแตนซ์ผ่าน ID หรือลิงก์",
         "custom_dashboard": "แดชบอร์ดที่กำหนดเอง",
         "folder_page": "1 หน้า",
-        "folder_pages": "{count} หน้า"
+        "folder_pages": "{count} หน้า",
+        "world": "โลกส่วนตัว ประวัติ และรายการโปรด"
+    },
+    "world_hub": {
+        "description": "ประวัติโลกส่วนตัวและรายการโปรดของคุณ",
+        "recent": "เข้าชมล่าสุด",
+        "updated": "รายการโปรดที่อัปเดต",
+        "library": "รายการโปรด / คลัง",
+        "refresh": "รีเฟรช",
+        "unavailable": "ไม่สามารถรีเฟรชข้อมูลบางส่วนได้ ข้อมูลที่แคชไว้ยังใช้งานได้",
+        "loading": "กำลังโหลด…",
+        "empty_recent": "ยังไม่มีโลกที่เข้าชมล่าสุด",
+        "empty_updated": "ไม่พบการอัปเดตรายการโปรด เมทาดาทาเริ่มต้นจะใช้เป็นข้อมูลอ้างอิง",
+        "empty_library": "ยังไม่มีโลกในรายการโปรด",
+        "visits": "เข้าชม {count} ครั้ง",
+        "hours": "{count} ชม.",
+        "last_visit": "เข้าชมล่าสุด:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "ตำแหน่งล่าสุดที่ทราบ",
+        "description": "จดจำตำแหน่งล่าสุดที่ทราบของเพื่อนชั่วคราว เมื่อสถานะตำแหน่งใน VRChat กลายเป็นส่วนตัวขณะใช้ Ask Me หรือห้ามรบกวน ข้อมูลจะเก็บไว้ในหน่วยความจำเท่านั้นและล้างเมื่อปิด BetterVRCX ตำแหน่งล่าสุดที่ทราบไม่ได้ยืนยันว่าเพื่อนยังอยู่ที่นั่น",
+        "last_seen": "พบเห็นล่าสุด",
+        "last_seen_here": "พบเห็นที่นี่ล่าสุด",
+        "might_be_here": "อาจอยู่ที่นี่",
+        "last_known_instance": "อินสแตนซ์ล่าสุดที่ทราบ",
+        "last_seen_friends": "เพื่อนที่พบเห็นล่าสุด",
+        "uncertain": "ตำแหน่งล่าสุดที่ทราบในเซสชัน BetterVRCX นี้ ผู้ใช้อาจไม่ได้อยู่ที่นี่แล้ว",
+        "empty": "ไม่มีตำแหน่งล่าสุดที่ทราบ",
+        "instance": "อินสแตนซ์: {instance}",
+        "last_seen_count": "พบเห็นล่าสุด {count} คน"
     }
 }

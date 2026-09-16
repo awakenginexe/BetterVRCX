@@ -1,4 +1,6 @@
 import { reactive } from 'vue';
+import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
+import { useWorldStore } from '../stores/world';
 import { toast } from 'vue-sonner';
 import { i18n } from '../plugins/i18n';
 
@@ -91,6 +93,16 @@ export function applyUser(json) {
     } = userStore;
 
     let ref = cachedUsers.get(json.id);
+    const presence = useLastKnownPresenceStore();
+    if (presence.enabled) {
+        const worldId = parseLocation(json.location).worldId;
+        presence.onUserUpdate(ref, json, {
+            isFriend: friendStore.friends.has(json.id),
+            worldName: worldId
+                ? useWorldStore().cachedWorlds.get(worldId)?.name
+                : ''
+        });
+    }
     let previousDisplayName;
     let hasPropChanged = false;
     let changedProps = {};

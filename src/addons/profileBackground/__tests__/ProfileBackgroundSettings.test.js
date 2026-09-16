@@ -3,14 +3,10 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ProfileBackgroundSettings from '../ProfileBackgroundSettings.vue';
 
-const displayVRCPlusIconsAsAvatar = ref(false);
 const displayVRCProfileThemes = ref(false);
 const displayVRCProfileEffects = ref(true);
 const displayVRCProfileBackgrounds = ref(true);
 const profileBackgroundOpacity = ref(0.5);
-const setDisplayVRCPlusIconsAsAvatar = vi.fn(() => {
-    displayVRCPlusIconsAsAvatar.value = !displayVRCPlusIconsAsAvatar.value;
-});
 const setDisplayVRCProfileThemes = vi.fn(() => {
     displayVRCProfileThemes.value = !displayVRCProfileThemes.value;
 });
@@ -32,12 +28,10 @@ vi.mock('vue-i18n', () => ({
 vi.mock('pinia', async (i) => ({ ...(await i()), storeToRefs: (s) => s }));
 vi.mock('@/stores', () => ({
     useAppearanceSettingsStore: () => ({
-        displayVRCPlusIconsAsAvatar,
         displayVRCProfileThemes,
         displayVRCProfileEffects,
         displayVRCProfileBackgrounds,
         profileBackgroundOpacity,
-        setDisplayVRCPlusIconsAsAvatar,
         setDisplayVRCProfileThemes,
         setDisplayVRCProfileEffects,
         setDisplayVRCProfileBackgrounds,
@@ -93,7 +87,8 @@ describe('ProfileBackgroundSettings.vue', () => {
         expect(wrapper.text()).toContain('VRChat Profile Backdrops');
         expect(wrapper.text()).toContain('VRChat Profile Backgrounds');
         expect(wrapper.text()).toContain('VRChat Profile Effects');
-        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(4);
+        expect(wrapper.text()).not.toContain('vrcplus_profile_icons');
+        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(3);
         expect(wrapper.find('[data-testid="number-field"]').exists()).toBe(
             true
         );
@@ -103,21 +98,18 @@ describe('ProfileBackgroundSettings.vue', () => {
         displayVRCProfileBackgrounds.value = true;
         const wrapper = mount(ProfileBackgroundSettings);
         const switches = wrapper.findAll('[data-testid="switch"]');
-        await switches[3].trigger('click');
+        await switches[2].trigger('click');
         expect(setDisplayVRCProfileBackgrounds).toHaveBeenCalled();
     });
 
-    it('toggles VRChat+ profile icons and themes settings when switches are clicked', async () => {
+    it('toggles profile themes and effects without an obsolete remote icon setting', async () => {
         const wrapper = mount(ProfileBackgroundSettings);
         const switches = wrapper.findAll('[data-testid="switch"]');
         await switches[0].trigger('click');
-        expect(setDisplayVRCPlusIconsAsAvatar).toHaveBeenCalled();
+        expect(setDisplayVRCProfileThemes).toHaveBeenCalled();
         expect(saveOpenVROption).toHaveBeenCalled();
 
         await switches[1].trigger('click');
-        expect(setDisplayVRCProfileThemes).toHaveBeenCalled();
-
-        await switches[2].trigger('click');
         expect(setDisplayVRCProfileEffects).toHaveBeenCalled();
     });
 

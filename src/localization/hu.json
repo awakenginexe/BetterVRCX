@@ -68,7 +68,8 @@
         "expand_menu": "Menü kibontása",
         "collapse_menu": "Menü összecsukása",
         "toggle_theme": "Téma váltása",
-        "home": "Kezdőlap"
+        "home": "Kezdőlap",
+        "world": "Világ"
     },
     "nav_menu": {
         "resources": "ERŐFORRÁSOK",
@@ -3217,6 +3218,39 @@
         "direct_access": "Ugrás azonosító vagy hivatkozás alapján",
         "custom_dashboard": "Egyéni vezérlőpult",
         "folder_page": "1 oldal",
-        "folder_pages": "{count} oldal"
+        "folder_pages": "{count} oldal",
+        "world": "Saját világok, előzmények és kedvencek"
+    },
+    "world_hub": {
+        "description": "Saját világelőzmények és kedvencek.",
+        "recent": "Legutóbb meglátogatott",
+        "updated": "Frissített kedvencek",
+        "library": "Kedvencek / Könyvtár",
+        "refresh": "Frissítés",
+        "unavailable": "Néhány információt nem sikerült frissíteni. A gyorsítótárban lévő információk továbbra is elérhetők.",
+        "loading": "Betöltés…",
+        "empty_recent": "Nincsenek nemrég meglátogatott világok.",
+        "empty_updated": "Nem észlelhetők kedvencfrissítések. A kezdeti metaadatok létrehozzák az alapot.",
+        "empty_library": "Még nincsenek kedvenc világaid.",
+        "visits": "{count} látogatás",
+        "hours": "{count} ó",
+        "last_visit": "Legutóbbi látogatás:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Legutóbbi ismert jelenlét",
+        "description": "Ideiglenesen megjegyzi azoknak a barátoknak a legutóbbi ismert helyét, akiknek a VRChat-helyzete az Ask Me vagy a Ne zavarjanak használatakor priváttá válik. Az információ csak a memóriában tárolódik, és a BetterVRCX bezárásakor törlődik. A legutóbbi ismert hely nem igazolja, hogy a barát még mindig ott van.",
+        "last_seen": "Utoljára látva",
+        "last_seen_here": "Utoljára itt látva",
+        "might_be_here": "Lehet, hogy itt van",
+        "last_known_instance": "Legutóbbi ismert példány",
+        "last_seen_friends": "Utoljára látott barátok",
+        "uncertain": "Legutóbbi ismert hely a BetterVRCX-munkamenetben. Lehet, hogy a felhasználó már nincs itt.",
+        "empty": "Nincs ismert korábbi jelenlét",
+        "instance": "Példány: {instance}",
+        "last_seen_count": "Utoljára látva: {count}"
     }
 }

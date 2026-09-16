@@ -80,7 +80,8 @@
         "help_support": "Help & Support",
         "expand_menu": "Expand Menu",
         "collapse_menu": "Collapse Menu",
-        "toggle_theme": "Toggle Theme"
+        "toggle_theme": "Toggle Theme",
+        "world": "World"
     },
     "nav_menu": {
         "resources": "RESOURCES",
@@ -3353,6 +3354,39 @@
         "direct_access": "Jump to ID or launch link",
         "custom_dashboard": "Custom dashboard",
         "folder_page": "1 page",
-        "folder_pages": "{count} pages"
+        "folder_pages": "{count} pages",
+        "world": "Personal worlds, history, and favorites"
+    },
+    "world_hub": {
+        "description": "Your personal world history and favorites.",
+        "recent": "Recently Visited",
+        "updated": "Updated Favorites",
+        "library": "Favorites / Library",
+        "refresh": "Refresh",
+        "unavailable": "Some information could not be refreshed. Cached information remains available.",
+        "loading": "Loading…",
+        "empty_recent": "No recently visited worlds.",
+        "empty_updated": "No favorite updates detected. Initial metadata establishes a baseline.",
+        "empty_library": "No favorite worlds yet.",
+        "visits": "{count} visits",
+        "hours": "{count} h",
+        "last_visit": "Last visit:"
+    },
+    "app_analytics": {
+        "title": "App usage analytics",
+        "description": "Sends app starts, a heartbeat every 10 minutes, and session duration to Amplitude (EU), using a random installation ID. Does not send your VRChat account, friends, locations, messages, or screen contents. Turn off to stop sending usage events."
+    },
+    "last_known_presence": {
+        "title": "Last Known Presence",
+        "description": "Temporarily remembers the last known location of friends whose VRChat location becomes private while using Ask Me or Do Not Disturb. Information is stored in memory only and is cleared when BetterVRCX closes. A last-known location does not confirm that the friend is still there.",
+        "last_seen": "Last seen",
+        "last_seen_here": "Last seen here",
+        "might_be_here": "Might be here",
+        "last_known_instance": "Last known instance",
+        "last_seen_friends": "Last seen friends",
+        "uncertain": "Last known location during this BetterVRCX session. The user may no longer be here.",
+        "empty": "No last known presence",
+        "instance": "Instance: {instance}",
+        "last_seen_count": "{count} last seen"
     }
 }

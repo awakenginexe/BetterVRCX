@@ -84,6 +84,16 @@ vi.mock(
         }
     })
 );
+vi.mock(
+    '../../../addons/lastKnownPresence/LastKnownPresenceSettings.vue',
+    () => ({
+        default: {
+            name: 'LastKnownPresenceSettings',
+            template:
+                '<div data-settings-body="last-known-presence">last-known-presence</div>'
+        }
+    })
+);
 
 import Settings from '../Settings.vue';
 import { i18n } from '@/plugins/i18n';
@@ -99,7 +109,8 @@ const tabKeys = [
     'advanced',
     'home-background',
     'profile-background',
-    'google-drive-backup'
+    'google-drive-backup',
+    'last-known-presence'
 ];
 
 describe('Settings.vue', () => {
@@ -113,8 +124,8 @@ describe('Settings.vue', () => {
                 .findAll('[data-settings-tab]')
                 .map((node) => node.attributes('data-settings-tab'))
         ).toEqual(tabKeys);
-        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(11);
-        expect(wrapper.findAll('[data-settings-panel]')).toHaveLength(11);
+        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(12);
+        expect(wrapper.findAll('[data-settings-panel]')).toHaveLength(12);
 
         await wrapper.get('[data-settings-tab="media"]').trigger('click');
 
@@ -129,7 +140,7 @@ describe('Settings.vue', () => {
         expect(wrapper.get('[data-settings-panel="system"]').isVisible()).toBe(
             false
         );
-        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(11);
+        expect(wrapper.findAll('[data-settings-body]')).toHaveLength(12);
     });
 
     test('can switch to profile backdrop addon tab', async () => {
@@ -168,6 +179,21 @@ describe('Settings.vue', () => {
         expect(
             wrapper
                 .get('[data-settings-panel="google-drive-backup"]')
+                .isVisible()
+        ).toBe(true);
+    });
+
+    test('can switch to the Last Known Presence addon tab', async () => {
+        const wrapper = mount(Settings, {
+            global: { plugins: [i18n] }
+        });
+        await wrapper
+            .get('[data-settings-tab="last-known-presence"]')
+            .trigger('click');
+
+        expect(
+            wrapper
+                .get('[data-settings-panel="last-known-presence"]')
                 .isVisible()
         ).toBe(true);
     });

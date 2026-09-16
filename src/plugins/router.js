@@ -38,6 +38,29 @@ const routes = [
         children: [
             { path: '', redirect: { name: 'home' } },
             { path: 'home', name: 'home', component: Home },
+            {
+                path: 'world',
+                name: 'world',
+                redirect: { name: 'world-recent' }
+            },
+            {
+                path: 'world/recent',
+                name: 'world-recent',
+                component: () => import('../views/WorldHub/WorldHub.vue'),
+                props: { section: 'recent' }
+            },
+            {
+                path: 'world/updated',
+                name: 'world-updated',
+                component: () => import('../views/WorldHub/WorldHub.vue'),
+                props: { section: 'updated' }
+            },
+            {
+                path: 'world/library',
+                name: 'world-library',
+                component: () => import('../views/WorldHub/WorldHub.vue'),
+                props: { section: 'library' }
+            },
             { path: 'feed', name: 'feed', component: Feed },
             {
                 path: 'friends-locations',

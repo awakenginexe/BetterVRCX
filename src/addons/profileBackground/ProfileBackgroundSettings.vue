@@ -1,18 +1,6 @@
 <template>
     <div class="space-y-6">
         <SettingsGroup title="VRChat+ Profile Customization">
-            <SettingsItem
-                :label="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
-                :description="t('view.settings.appearance.appearance.vrcplus_profile_icons_description')">
-                <Switch
-                    :model-value="displayVRCPlusIconsAsAvatar"
-                    :aria-label="t('view.settings.appearance.appearance.vrcplus_profile_icons')"
-                    @update:model-value="
-                        setDisplayVRCPlusIconsAsAvatar();
-                        saveOpenVROption();
-                    " />
-            </SettingsItem>
-
             <SettingsItem :label="t('view.settings.appearance.appearance.vrc_profile_themes')">
                 <Switch
                     :model-value="displayVRCProfileThemes"
@@ -93,14 +81,12 @@
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const { saveOpenVROption } = useVrStore();
     const {
-        displayVRCPlusIconsAsAvatar,
         displayVRCProfileThemes,
         displayVRCProfileEffects,
         displayVRCProfileBackgrounds,
         profileBackgroundOpacity
     } = storeToRefs(appearanceSettingsStore);
     const {
-        setDisplayVRCPlusIconsAsAvatar,
         setDisplayVRCProfileThemes,
         setDisplayVRCProfileEffects,
         setDisplayVRCProfileBackgrounds,

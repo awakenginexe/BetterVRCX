@@ -256,4 +256,20 @@ describe('FriendItem.vue', () => {
         expect(nameContainer.exists()).toBe(true);
         expect(nameContainer.classes()).toContain('min-w-0');
     });
+
+    test('renders a separate last-seen hint without changing the live friend status', () => {
+        const wrapper = mountItem({
+            isGroupByInstance: true,
+            friend: makeFriend({ state: 'online' }),
+            observation: {
+                locationTag: 'wrld_old:7~private',
+                observedAt: 456
+            }
+        });
+
+        expect(wrapper.text()).toContain('Alice');
+        expect(wrapper.text()).toContain('last_known_presence.last_seen');
+        expect(wrapper.get('[data-testid="timer"]').text()).toBe('456');
+        expect(wrapper.findAll('[data-testid="timer"]')).toHaveLength(1);
+    });
 });

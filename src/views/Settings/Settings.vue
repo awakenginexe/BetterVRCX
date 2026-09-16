@@ -58,6 +58,7 @@
     import HomeBackgroundSettings from '../../addons/homeBackground/HomeBackgroundSettings.vue';
     import ProfileBackgroundSettings from '../../addons/profileBackground/ProfileBackgroundSettings.vue';
     import GoogleDriveBackupSettings from '../../addons/googleDriveBackup/GoogleDriveBackupSettings.vue';
+    import LastKnownPresenceSettings from '../../addons/lastKnownPresence/LastKnownPresenceSettings.vue';
 
     const { t } = useI18n();
     const activeTab = ref('system');
@@ -117,6 +118,12 @@
             label: t('view.settings.category.google_drive_backup'),
             icon: 'ri-google-fill',
             component: GoogleDriveBackupSettings
+        },
+        {
+            key: 'last-known-presence',
+            label: t('last_known_presence.title'),
+            icon: 'ri-map-pin-time-line',
+            component: LastKnownPresenceSettings
         }
     ]);
     const settingsSections = computed(() => {
@@ -139,7 +146,7 @@
             {
                 key: 'addons',
                 label: t('view.settings.category.addons'),
-                tabKeys: ['home-background', 'profile-background', 'google-drive-backup']
+                tabKeys: ['home-background', 'profile-background', 'google-drive-backup', 'last-known-presence']
             }
         ];
 
