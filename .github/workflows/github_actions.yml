@@ -580,13 +580,64 @@ jobs:
           name: Electron-MacDmg-arm64
           path: assets/
 
-      - name: Create Release
+      - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
           name: '${{ needs.set_version.outputs.display_version }}'
           tag_name: ${{ needs.set_version.outputs.tag }}
           draft: false
           prerelease: false
-          generate_release_notes: true
-          files: |
-            assets/*
+          generate_release_notes: ${{ github.event_name == 'push' }}
+
+      - name: Upload release assets safely
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.set_version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          asset_exists() {
+            gh release view "${RELEASE_TAG}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --json assets \
+              --jq '.assets[].name' | grep -Fxq "$1"
+          }
+
+          existing_assets="$(gh release view "${RELEASE_TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --json assets \
+            --jq '.assets[].name')"
+
+          for asset in assets/*; do
+            asset_name="$(basename "${asset}")"
+
+            if grep -Fxq "${asset_name}" <<< "${existing_assets}"; then
+              echo "Asset already uploaded; keeping ${asset_name}"
+              continue
+            fi
+
+            uploaded=false
+            for attempt in 1 2 3; do
+              echo "Uploading ${asset_name} (attempt ${attempt}/3)"
+              if gh release upload "${RELEASE_TAG}" "${asset}" \
+                --repo "${GITHUB_REPOSITORY}"; then
+                uploaded=true
+                break
+              fi
+
+              if asset_exists "${asset_name}"; then
+                echo "GitHub reports ${asset_name} as uploaded after the client error"
+                uploaded=true
+                break
+              fi
+
+              if [[ "${attempt}" -lt 3 ]]; then
+                sleep $((attempt * 15))
+              fi
+            done
+
+            if [[ "${uploaded}" != true ]]; then
+              echo "Failed to upload ${asset_name} after 3 attempts" >&2
+              exit 1
+            fi
+          done
