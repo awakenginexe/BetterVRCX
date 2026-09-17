@@ -13,7 +13,7 @@ import {
     replaceBioSymbols
 } from '../shared/utils';
 import { getAllUserMemos } from '../coordinators/memoCoordinator';
-import { instanceRequest, userRequest } from '../api';
+import { cosmeticsRequest, instanceRequest, userRequest } from '../api';
 import { AppDebug } from '../services/appConfig';
 import { database } from '../services/database';
 import { runUpdateCurrentUserLocationFlow } from '../coordinators/locationCoordinator';
@@ -330,6 +330,9 @@ export const useUserStore = defineStore('User', () => {
 
     const cachedUsers = shallowReactive(new Map());
     const cachedUserIdsByDisplayName = shallowReactive(new Map());
+    const cachedProfileEffects = shallowReactive(new Map());
+    const cachedIconFrames = shallowReactive(new Map());
+    const cachedNameplateEffects = shallowReactive(new Map());
 
     function addCachedUserDisplayNameEntry(displayName, userId) {
         if (!displayName || !userId) {
@@ -409,7 +412,9 @@ export const useUserStore = defineStore('User', () => {
     watch(
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
-            if (!isLoggedIn) {
+            if (isLoggedIn) {
+                loadCosmeticIndexes();
+            } else {
                 currentTravelers.clear();
                 showUserDialogHistory.clear();
                 state.instancePlayerCount.clear();
@@ -421,6 +426,47 @@ export const useUserStore = defineStore('User', () => {
         },
         { flush: 'sync' }
     );
+
+    function cacheCosmeticIndex(response, cache) {
+        const payload = response?.json ?? response;
+        const cosmetics = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.data)
+              ? payload.data
+              : [];
+
+        cache.clear();
+        for (const cosmetic of cosmetics) {
+            if (cosmetic?.id) {
+                cache.set(cosmetic.id, cosmetic);
+            }
+        }
+    }
+
+    function loadCosmeticIndexes() {
+        cosmeticsRequest
+            .getProfileEffects()
+            .then((response) =>
+                cacheCosmeticIndex(response, cachedProfileEffects)
+            )
+            .catch((error) =>
+                console.error('Failed to load profile effect index:', error)
+            );
+        cosmeticsRequest
+            .getIconFrames()
+            .then((response) => cacheCosmeticIndex(response, cachedIconFrames))
+            .catch((error) =>
+                console.error('Failed to load icon frame index:', error)
+            );
+        cosmeticsRequest
+            .getNameplateEffects()
+            .then((response) =>
+                cacheCosmeticIndex(response, cachedNameplateEffects)
+            )
+            .catch((error) =>
+                console.error('Failed to load nameplate effect index:', error)
+            );
+    }
 
     watch(
         () => watchState.isFriendsLoaded,
@@ -996,6 +1042,9 @@ export const useUserStore = defineStore('User', () => {
         customUserTags,
         cachedUsers,
         cachedUserIdsByDisplayName,
+        cachedProfileEffects,
+        cachedIconFrames,
+        cachedNameplateEffects,
         isLocalUserVrcPlusSupporter,
         applyUserLanguage,
         applyPresenceLocation,

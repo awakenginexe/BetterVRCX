@@ -111,6 +111,7 @@
         <LastKnownPresenceGroup
             v-for="group in historicalGroups"
             :key="group.locationTag"
+            :show-launch="true"
             :observations="group.observations" />
     </div>
 </template>

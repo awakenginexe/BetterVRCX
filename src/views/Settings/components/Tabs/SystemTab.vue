@@ -44,8 +44,6 @@
             </div>
         </SettingsGroup>
 
-        <AnalyticsSettings />
-
         <SettingsGroup :title="t('view.settings.general.vrcx_updater.header')">
             <div class="flex gap-2">
                 <Button size="sm" variant="outline" @click="showChangeLogDialog">{{
@@ -195,6 +193,8 @@
                 }}</Button>
             </SettingsItem>
         </SettingsGroup>
+
+        <AnalyticsSettings />
 
         <OpenSourceSoftwareNoticeDialog v-if="ossDialog" v-model:ossDialog="ossDialog" />
     </div>

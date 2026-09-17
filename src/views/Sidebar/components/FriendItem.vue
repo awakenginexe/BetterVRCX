@@ -1,17 +1,21 @@
 <template>
     <div
-        class="box-border flex items-center p-1.5 text-[13px] cursor-pointer hover:bg-muted/50 hover:rounded-lg"
+        class="relative isolate overflow-hidden rounded-lg box-border flex items-center p-1.5 text-[13px] cursor-pointer hover:bg-muted/50"
         @click="showUserDialog(friend.id)">
         <template v-if="friend.ref">
-            <div class="relative inline-block flex-none size-9 mr-2.5" :class="friendStatusClass">
+            <NameplateEffect variant="sidebar" :nameplate-effect="friend.ref.nameplateEffect" />
+            <div class="relative z-10 inline-block flex-none size-9 mr-2.5" :class="friendStatusClass">
                 <Avatar class="size-full rounded-full">
                     <AvatarImage :src="userImage(friend.ref, true)" class="object-cover" />
                     <AvatarFallback>
                         <User class="size-5 text-muted-foreground" />
                     </AvatarFallback>
                 </Avatar>
+                <IconFrame :icon-frame="friend.ref.iconFrame" />
             </div>
-            <div class="flex-1 overflow-hidden min-h-9 flex flex-col justify-between">
+            <div
+                data-friend-row-content
+                class="relative z-10 flex-1 overflow-hidden min-h-9 flex flex-col justify-between">
                 <div class="flex items-center min-w-0 font-medium leading-[18px]">
                     <span
                         v-if="!hideNicknames && friend.$nickName"
@@ -87,6 +91,8 @@
     import Location from '@/components/Location.vue';
     import Timer from '@/components/Timer.vue';
     import VrcPlusBadge from '@/components/common/VrcPlusBadge.vue';
+    import IconFrame from '@/components/IconFrame.vue';
+    import NameplateEffect from '@/components/NameplateEffect.vue';
 
     import { useAppearanceSettingsStore, useFriendStore } from '../../../stores';
     import { useUserDisplay } from '../../../composables/useUserDisplay';

@@ -1,14 +1,6 @@
 <template>
     <div class="relative bv-entity-card overflow-hidden flex flex-col">
-        <img
-            v-if="profileEffectAssetUrl"
-            class="pointer-events-none absolute inset-0 z-30 w-full object-cover"
-            data-profile-effect-asset
-            alt=""
-            aria-hidden="true"
-            :src="profileEffectAssetUrl"
-            draggable="false"
-            @error="profileEffectAssetError = true" />
+        <ProfileEffect :profile-effect="profileEffectId" class="z-30" />
         <div class="relative w-full aspect-17/6">
             <div
                 v-if="
@@ -75,19 +67,11 @@
                         @error="userIconError = true"
                         loading="lazy" />
                 </div>
-                <img
-                    v-if="profileIconFrameUrl"
-                    class="pointer-events-none absolute inset-0 h-full w-full object-contain scale-[1.3]"
-                    data-profile-effect-avatar
-                    alt=""
-                    aria-hidden="true"
-                    :src="profileIconFrameUrl"
-                    draggable="false"
-                    @error="profileIconFrameError = true" />
+                <IconFrame :icon-frame="profileIconFrameId" />
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 px-3 pb-3 pt-15">
+        <div class="relative isolate z-10 flex flex-col gap-2 px-3 pb-3 pt-15">
             <template v-if="userDialog.loading && !userDialog.ref.displayName">
                 <div class="flex items-start justify-between gap-1.5">
                     <div class="flex-1 min-w-0 space-y-1.5 py-0.5">
@@ -539,18 +523,13 @@
     import { copyToClipboard, formatDateFilter, languageClass, openDiscordProfile } from '../../../shared/utils';
     import { useUserDisplay } from '../../../composables/useUserDisplay';
     import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
-    import { useAppearanceSettingsStore, useGalleryStore, useUserStore } from '../../../stores';
-    import { inventoryRequest } from '../../../api';
+    import { useGalleryStore, useUserStore } from '../../../stores';
     import { Badge } from '../../ui/badge';
     import { Checkbox } from '../../ui/checkbox';
     import { Skeleton } from '@/components/ui/skeleton';
     import VrcPlusBadge from '@/components/common/VrcPlusBadge.vue';
-    import {
-        getProfileEffectAssetUrl,
-        getProfileEffectPresentation,
-        resolveProfileIconFrameAssetUrl,
-        resolveProfileEffectAssetUrl
-    } from '../../../shared/utils/profileEffect';
+    import IconFrame from '../../IconFrame.vue';
+    import ProfileEffect from '../../ProfileEffect.vue';
 
     import UserActionDropdown from './UserActionDropdown.vue';
 
@@ -582,7 +561,6 @@
     const { t } = useI18n();
 
     const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
-    const { displayVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
     const { toggleSharedConnectionsOptOut, toggleDiscordFriendsOptOut, toggleAvatarCopying, toggleAllowBooping } =
         useUserStore();
 
@@ -594,28 +572,11 @@
         )
     );
 
-    const profileEffect = computed(() =>
-        getProfileEffectPresentation(
-            userDialog.value.publicProfileRef?.profileEffect || userDialog.value.ref?.profileEffect
-        )
+    const profileEffectId = computed(
+        () => userDialog.value.publicProfileRef?.profileEffect ?? userDialog.value.ref?.profileEffect ?? ''
     );
     const profileIconFrameId = computed(
-        () => userDialog.value.publicProfileRef?.iconFrame || userDialog.value.ref?.iconFrame || ''
-    );
-
-    const resolvedProfileEffectAssetUrl = ref('');
-    const resolvedProfileIconFrameAssetUrl = ref('');
-    const profileEffectAssetError = ref(false);
-    const profileIconFrameError = ref(false);
-    const profileEffectAssetUrl = computed(() =>
-        !displayVRCProfileEffects.value || profileEffectAssetError.value
-            ? ''
-            : profileEffect.value.assetUrl || resolvedProfileEffectAssetUrl.value
-    );
-    const profileIconFrameUrl = computed(() =>
-        !displayVRCProfileEffects.value || profileIconFrameError.value
-            ? ''
-            : getProfileEffectAssetUrl(profileIconFrameId.value) || resolvedProfileIconFrameAssetUrl.value
+        () => userDialog.value.publicProfileRef?.iconFrame ?? userDialog.value.ref?.iconFrame ?? ''
     );
     const { showFullscreenImageDialog } = useGalleryStore();
     const { userImage, userStatusClass } = useUserDisplay();
@@ -623,40 +584,12 @@
 
     const profileImageError = ref(false);
     const userIconError = ref(false);
-    let profileEffectResolutionId = 0;
 
     watch(
-        () => [userDialog.value.id, profileEffect.value.id, profileIconFrameId.value, displayVRCProfileEffects.value],
-        ([, profileEffectId, iconFrameId, profileEffectsEnabled]) => {
-            const currentResolutionId = ++profileEffectResolutionId;
+        () => userDialog.value.id,
+        () => {
             profileImageError.value = false;
             userIconError.value = false;
-            profileEffectAssetError.value = false;
-            profileIconFrameError.value = false;
-            resolvedProfileEffectAssetUrl.value = '';
-            resolvedProfileIconFrameAssetUrl.value = '';
-
-            if (!profileEffectsEnabled) {
-                return;
-            }
-
-            if (profileEffectId && !profileEffect.value.assetUrl) {
-                resolveProfileEffectAssetUrl(profileEffectId, inventoryRequest.getInventoryTemplate).then(
-                    (assetUrl) => {
-                        if (currentResolutionId === profileEffectResolutionId) {
-                            resolvedProfileEffectAssetUrl.value = assetUrl;
-                        }
-                    }
-                );
-            }
-
-            if (iconFrameId) {
-                resolveProfileIconFrameAssetUrl(iconFrameId, inventoryRequest.getInventoryTemplate).then((assetUrl) => {
-                    if (currentResolutionId === profileEffectResolutionId) {
-                        resolvedProfileIconFrameAssetUrl.value = assetUrl;
-                    }
-                });
-            }
         },
         { immediate: true }
     );

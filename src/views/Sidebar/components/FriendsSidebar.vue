@@ -31,10 +31,13 @@
                                 <ContextMenu>
                                     <ContextMenuTrigger as-child>
                                         <div
-                                            class="friend-row box-border flex items-center p-1.5 text-[13px] cursor-pointer hover:bg-muted/50 hover:rounded-lg"
+                                            class="friend-row relative isolate overflow-hidden rounded-lg box-border flex items-center p-1.5 text-[13px] cursor-pointer hover:bg-muted/50"
                                             @click="showUserDialog(currentUser.id)">
+                                            <NameplateEffect
+                                                variant="sidebar"
+                                                :nameplate-effect="currentUser.nameplateEffect" />
                                             <div
-                                                class="relative inline-block flex-none size-9 mr-2.5"
+                                                class="relative z-10 inline-block flex-none size-9 mr-2.5"
                                                 :class="userStatusClass(currentUser)">
                                                 <Avatar class="size-full rounded-full">
                                                     <AvatarImage :src="userImage(currentUser)" class="object-cover" />
@@ -42,8 +45,10 @@
                                                         <User class="size-5 text-muted-foreground" />
                                                     </AvatarFallback>
                                                 </Avatar>
+                                                <IconFrame :icon-frame="currentUser.iconFrame" />
                                             </div>
-                                            <div class="flex-1 overflow-hidden h-9 flex flex-col justify-between">
+                                            <div
+                                                class="relative z-10 flex-1 overflow-hidden h-9 flex flex-col justify-between">
                                                 <span
                                                     class="block truncate font-medium leading-[18px]"
                                                     :style="{ color: currentUser.$userColour }"
@@ -436,6 +441,8 @@
     import { parseLocation } from '../../../shared/utils';
 
     import BackToTop from '../../../components/BackToTop.vue';
+    import IconFrame from '../../../components/IconFrame.vue';
+    import NameplateEffect from '../../../components/NameplateEffect.vue';
     import FriendItem from './FriendItem.vue';
     import Location from '../../../components/Location.vue';
     import EditProfileDialog from '../../../components/dialogs/UserDialog/EditProfileDialog.vue';

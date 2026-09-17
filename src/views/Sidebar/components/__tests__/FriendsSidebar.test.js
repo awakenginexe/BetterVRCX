@@ -18,30 +18,31 @@ const mocks = vi.hoisted(() => ({
         isSidebarDivideByFriendGroup: { value: false },
         sidebarFavoriteGroups: { value: [] },
         sidebarFavoriteGroupOrder: { value: [] },
-        sidebarSortMethods: { value: [] }
+        sidebarSortMethods: { value: [] },
+        displayVRCProfileEffects: require('vue').ref(true)
     },
     advancedStore: {
         gameLogDisabled: { value: false }
     },
     userStore: {
+        cachedIconFrames: require('vue').ref(new Map()),
+        cachedNameplateEffects: require('vue').ref(new Map()),
         showSendBoopDialog: vi.fn(),
         showEditProfileDialog: vi.fn(),
         editProfileDialog: {
             value: { visible: false }
         },
-        currentUser: {
-            value: {
-                id: 'usr_me',
-                displayName: 'Me',
-                $userColour: '#fff',
-                statusDescription: 'Ready',
-                status: 'active',
-                statusHistory: [],
-                isBoopingEnabled: true,
-                $locationTag: 'wrld_me:123',
-                $travelingToLocation: ''
-            }
-        }
+        currentUser: require('vue').ref({
+            id: 'usr_me',
+            displayName: 'Me',
+            $userColour: '#fff',
+            statusDescription: 'Ready',
+            status: 'active',
+            statusHistory: [],
+            isBoopingEnabled: true,
+            $locationTag: 'wrld_me:123',
+            $travelingToLocation: ''
+        })
     },
     launchStore: {
         showLaunchDialog: vi.fn()
@@ -295,6 +296,11 @@ describe('FriendsSidebar.vue', () => {
         mocks.appearanceStore.sidebarFavoriteGroups.value = [];
         mocks.appearanceStore.sidebarFavoriteGroupOrder.value = [];
         mocks.appearanceStore.sidebarSortMethods.value = [];
+        mocks.appearanceStore.displayVRCProfileEffects.value = true;
+        mocks.userStore.cachedIconFrames.value = new Map();
+        mocks.userStore.cachedNameplateEffects.value = new Map();
+        mocks.userStore.currentUser.value.iconFrame = '';
+        mocks.userStore.currentUser.value.nameplateEffect = '';
 
         mocks.configRepository.getBool.mockImplementation(
             (_key, defaultValue) => Promise.resolve(defaultValue ?? false)
@@ -315,6 +321,44 @@ describe('FriendsSidebar.vue', () => {
         expect(wrapper.text()).toContain('side_panel.online');
         expect(wrapper.findAll('[data-testid="friend-item"]').length).toBe(1);
         expect(wrapper.text()).toContain('usr_online');
+    });
+
+    test('renders current user nameplate and icon frame from cached cosmetics', async () => {
+        mocks.userStore.currentUser.value.nameplateEffect = 'cos_me_nameplate';
+        mocks.userStore.currentUser.value.iconFrame = 'cos_me_frame';
+        mocks.userStore.cachedNameplateEffects.value.set('cos_me_nameplate', {
+            id: 'cos_me_nameplate',
+            metadata: {
+                assets: [
+                    {
+                        type: 'mainAnimation',
+                        url: 'https://example.com/me-nameplate.webp'
+                    }
+                ]
+            }
+        });
+        mocks.userStore.cachedIconFrames.value.set('cos_me_frame', {
+            id: 'cos_me_frame',
+            metadata: {
+                assets: [
+                    {
+                        type: 'mainAnimation',
+                        url: 'https://example.com/me-frame.webp'
+                    }
+                ]
+            }
+        });
+
+        const wrapper = mount(FriendsSidebar);
+        await flushPromises();
+        await nextTick();
+
+        expect(
+            wrapper.get('[data-nameplate-effect-main]').attributes('src')
+        ).toBe('https://example.com/me-nameplate.webp');
+        expect(wrapper.get('[data-icon-frame-main]').attributes('src')).toBe(
+            'https://example.com/me-frame.webp'
+        );
     });
 
     test('clicking online header collapses online rows and persists state', async () => {

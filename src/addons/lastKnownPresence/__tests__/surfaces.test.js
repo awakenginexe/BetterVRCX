@@ -8,7 +8,9 @@ const mocks = vi.hoisted(() => {
     return {
         user: reactive({
             currentUser: { id: 'usr_me' },
-            cachedUsers: new Map()
+            cachedUsers: new Map(),
+            cachedIconFrames: new Map(),
+            cachedNameplateEffects: new Map()
         }),
         friends: reactive({
             friends: new Map(),
@@ -17,7 +19,8 @@ const mocks = vi.hoisted(() => {
         }),
         appearance: reactive({
             isAgeGatedInstancesVisible: true,
-            hideNicknames: false
+            hideNicknames: false,
+            displayVRCProfileEffects: true
         }),
         location: reactive({
             lastLocation: { location: '', friendList: new Map() }
@@ -39,8 +42,17 @@ const mocks = vi.hoisted(() => {
         }),
         instance: reactive({
             instanceJoinHistory: new Map(),
+            cachedInstances: new Map(),
             showPreviousInstancesInfoDialog: () => {}
         }),
+        group: reactive({ cachedGroups: new Map() }),
+        invite: reactive({ canOpenInstanceInGame: false }),
+        launch: reactive({
+            isOpeningInstance: false,
+            showLaunchDialog: vi.fn(),
+            tryOpenInstanceInVrc: vi.fn()
+        }),
+        modal: reactive({ confirm: vi.fn() }),
         showWorld: vi.fn(),
         showUser: vi.fn()
     };
@@ -60,7 +72,16 @@ vi.mock('../../../stores', () => ({
     useAppearanceSettingsStore: () => mocks.appearance,
     useLocationStore: () => mocks.location,
     useWorldStore: () => mocks.world,
-    useInstanceStore: () => mocks.instance
+    useInstanceStore: () => mocks.instance,
+    useGroupStore: () => mocks.group,
+    useInviteStore: () => mocks.invite,
+    useLaunchStore: () => mocks.launch,
+    useModalStore: () => mocks.modal
+}));
+vi.mock('../../../api', () => ({
+    queryRequest: { fetch: vi.fn().mockResolvedValue({}) },
+    instanceRequest: { selfInvite: vi.fn().mockResolvedValue({}) },
+    miscRequest: { closeInstance: vi.fn().mockResolvedValue({}) }
 }));
 vi.mock('../../../services/config', () => ({
     default: {
@@ -92,7 +113,7 @@ import { useLastKnownPresenceStore } from '../store';
 
 let presence;
 let wrappers;
-const tag = 'wrld_a:4582~friends(usr_owner)';
+const tag = 'wrld_a:4582~hidden(usr_a)';
 const hidden = {
     id: 'usr_a',
     displayName: 'Hidden Alice',
@@ -107,28 +128,31 @@ const live = {
     state: 'online',
     location: tag
 };
-function mountSurface(component) {
+function mountSurface(component, { useRealInstanceActionBar = false } = {}) {
+    const stubs = {
+        LocationWorld: { template: '<span>Live instance</span>' },
+        Avatar: { template: '<span><slot /></span>' },
+        AvatarImage: true,
+        AvatarFallback: { template: '<span><slot /></span>' },
+        VrcPlusBadge: true,
+        Switch: {
+            props: ['modelValue'],
+            emits: ['update:modelValue'],
+            template:
+                '<button role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)">toggle</button>'
+        }
+    };
+    if (!useRealInstanceActionBar) {
+        stubs.InstanceActionBar = {
+            props: ['friendcount', 'launchLocation'],
+            template:
+                '<span data-live-actions :data-launch-location="launchLocation">{{ friendcount }} confirmed</span>'
+        };
+    }
     const wrapper = mount(component, {
         global: {
             components: { Timer },
-            stubs: {
-                InstanceActionBar: {
-                    props: ['friendcount'],
-                    template:
-                        '<span data-live-actions>{{ friendcount }} confirmed</span>'
-                },
-                LocationWorld: { template: '<span>Live instance</span>' },
-                Avatar: { template: '<span><slot /></span>' },
-                AvatarImage: true,
-                AvatarFallback: { template: '<span><slot /></span>' },
-                VrcPlusBadge: true,
-                Switch: {
-                    props: ['modelValue'],
-                    emits: ['update:modelValue'],
-                    template:
-                        '<button role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)">toggle</button>'
-                }
-            }
+            stubs
         }
     });
     wrappers.push(wrapper);
@@ -159,6 +183,7 @@ beforeEach(async () => {
     );
     wrappers = [];
     mocks.showWorld.mockClear();
+    mocks.launch.showLaunchDialog.mockClear();
 });
 afterEach(() => {
     wrappers.forEach((w) => w.unmount());
@@ -166,18 +191,37 @@ afterEach(() => {
 });
 
 describe('World instance hints', () => {
-    it('retains a historical-only exact instance with separate named friends and no live actions', async () => {
+    it('retains a historical-only exact instance with separate named friends and its exact launch target', async () => {
         const wrapper = mountSurface(WorldInstances);
         expect(wrapper.text()).toContain('Last known instance');
         expect(wrapper.text()).toContain('Midnight Rooftop');
         expect(wrapper.text()).toContain('4582');
         expect(wrapper.text()).toContain('Hidden Alice');
-        expect(wrapper.find('[data-live-actions]').exists()).toBe(false);
+        expect(
+            wrapper
+                .get('[data-live-actions]')
+                .attributes('data-launch-location')
+        ).toBe(tag);
         expect(mocks.world.worldDialog.rooms).toHaveLength(0);
         presence.setEnabled(false);
         await nextTick();
         expect(wrapper.text()).not.toContain('Hidden Alice');
         expect(wrapper.text()).not.toContain('Last known instance');
+    });
+
+    it('launches the exact historical instance through the existing instance action', async () => {
+        const wrapper = mountSurface(WorldInstances, {
+            useRealInstanceActionBar: true
+        });
+        const launchButton = wrapper.get(
+            '.last-known-presence button[aria-label]'
+        );
+
+        await launchButton.trigger('click');
+
+        expect(mocks.launch.showLaunchDialog).toHaveBeenCalledWith(
+            'wrld_a:4582~hidden(usr_a)'
+        );
     });
 
     it('associates exact live room without changing users or counts', () => {
@@ -197,6 +241,7 @@ describe('World instance hints', () => {
         expect(wrapper.text()).toContain('Hidden Alice');
         expect(wrapper.text()).toContain('Live Bob');
         expect(wrapper.text()).toContain('1 confirmed');
+        expect(wrapper.findAll('[data-live-actions]')).toHaveLength(1);
         expect(wrapper.text()).not.toContain('Last known instance');
         expect(mocks.world.worldDialog.rooms[0].users.map((u) => u.id)).toEqual(
             ['usr_live']

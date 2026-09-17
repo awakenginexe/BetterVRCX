@@ -15,11 +15,26 @@
             class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40 pointer-events-none" />
 
         <div class="relative z-10">
-            <div class="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                <History class="size-3 shrink-0" aria-hidden="true" />
-                {{
-                    t(historicalOnly ? 'last_known_presence.last_known_instance' : 'last_known_presence.might_be_here')
-                }}
+            <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                    <History class="size-3 shrink-0" aria-hidden="true" />
+                    {{
+                        t(
+                            historicalOnly
+                                ? 'last_known_presence.last_known_instance'
+                                : 'last_known_presence.might_be_here'
+                        )
+                    }}
+                </div>
+                <InstanceActionBar
+                    v-if="showLaunch"
+                    :location="first.locationTag"
+                    :launch-location="first.locationTag"
+                    :show-invite="false"
+                    :show-refresh="false"
+                    :show-history="false"
+                    :show-last-join="false"
+                    :show-instance-info="false" />
             </div>
             <button
                 v-if="showWorld"
@@ -55,6 +70,7 @@
     import { useLastKnownPresenceStore } from './store';
     import { resolveWorldArtwork } from './presentation';
     import { queryRequest } from '../../api';
+    import InstanceActionBar from '../../components/InstanceActionBar.vue';
     import FriendItem from '../../views/Sidebar/components/FriendItem.vue';
 
     const props = defineProps({
@@ -63,7 +79,8 @@
             required: true
         },
         historicalOnly: { type: Boolean, default: true },
-        showWorld: { type: Boolean, default: true }
+        showWorld: { type: Boolean, default: true },
+        showLaunch: { type: Boolean, default: false }
     });
     const { t } = useI18n();
     const { enabled } = storeToRefs(useLastKnownPresenceStore());

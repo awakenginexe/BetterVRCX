@@ -8,6 +8,7 @@ import { request } from '../services/request';
 import authRequest from './auth';
 import avatarModerationRequest from './avatarModeration';
 import avatarRequest from './avatar';
+import cosmeticsRequest from './cosmetics';
 import favoriteRequest from './favorite';
 import friendRequest from './friend';
 import groupRequest from './group';
@@ -45,7 +46,8 @@ window.request = {
     inventoryRequest,
     propRequest,
     imageRequest,
-    queryRequest
+    queryRequest,
+    cosmeticsRequest
 };
 
 export {
@@ -68,5 +70,6 @@ export {
     inventoryRequest,
     propRequest,
     imageRequest,
-    queryRequest
+    queryRequest,
+    cosmeticsRequest
 };
