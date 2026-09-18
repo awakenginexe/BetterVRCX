@@ -4,7 +4,8 @@ import { mount } from '@vue/test-utils';
 const mocks = vi.hoisted(() => ({
     appearanceStore: {
         hideNicknames: false,
-        displayVRCProfileEffects: require('vue').ref(true)
+        displayVRCProfileEffects: require('vue').ref(true),
+        alwaysAnimateVRCProfileEffects: require('vue').ref(false)
     },
     friendStore: {
         isRefreshFriendsLoading: false,

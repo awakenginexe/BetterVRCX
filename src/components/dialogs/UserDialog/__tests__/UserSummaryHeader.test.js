@@ -41,6 +41,7 @@ const currentUserMock = ref({
 
 const isLocalUserVrcPlusSupporterMock = ref(false);
 const displayVRCProfileEffectsMock = ref(true);
+const alwaysAnimateVRCProfileEffectsMock = ref(false);
 const cachedProfileEffectsMock = ref(new Map());
 const cachedIconFramesMock = ref(new Map());
 const cachedNameplateEffectsMock = ref(new Map());
@@ -59,7 +60,8 @@ vi.mock('vue-i18n', () => ({
 }));
 vi.mock('../../../../stores', () => ({
     useAppearanceSettingsStore: () => ({
-        displayVRCProfileEffects: displayVRCProfileEffectsMock
+        displayVRCProfileEffects: displayVRCProfileEffectsMock,
+        alwaysAnimateVRCProfileEffects: alwaysAnimateVRCProfileEffectsMock
     }),
     useUserStore: () => ({
         userDialog: userDialogMock,
@@ -148,6 +150,7 @@ describe('UserSummaryHeader.vue', () => {
             isEconomyCreator: false
         };
         displayVRCProfileEffectsMock.value = true;
+        alwaysAnimateVRCProfileEffectsMock.value = false;
         cachedProfileEffectsMock.value = new Map();
         cachedIconFramesMock.value = new Map();
         cachedNameplateEffectsMock.value = new Map();
@@ -474,6 +477,7 @@ describe('UserSummaryHeader.vue', () => {
 
     test('transitions a cached cosmetic from intro animation to main animation', async () => {
         vi.useFakeTimers();
+        alwaysAnimateVRCProfileEffectsMock.value = true;
         userDialogMock.value.publicProfileRef.profileEffect =
             'cos_profile_intro';
         cachedProfileEffectsMock.value.set('cos_profile_intro', {
@@ -494,7 +498,10 @@ describe('UserSummaryHeader.vue', () => {
         });
 
         const wrapper = mountHeader();
-        await wrapper.find('[data-profile-effect-intro]').trigger('load');
+        const introImage = wrapper
+            .findAll('[data-profile-effect-intro]')
+            .find((asset) => asset.element.tagName === 'IMG');
+        await introImage.trigger('load');
         expect(wrapper.find('[data-profile-effect-intro]').isVisible()).toBe(
             true
         );
@@ -504,12 +511,16 @@ describe('UserSummaryHeader.vue', () => {
 
         await vi.runAllTimersAsync();
         await wrapper.vm.$nextTick();
-        expect(
-            wrapper.find('[data-profile-effect-intro]').attributes('style')
-        ).toContain('display: none');
-        expect(
-            wrapper.find('[data-profile-effect-main]').attributes('style') ?? ''
-        ).not.toContain('display: none');
+        const introImageAfter = wrapper
+            .findAll('[data-profile-effect-intro]')
+            .find((asset) => asset.element.tagName === 'IMG');
+        const mainImageAfter = wrapper
+            .findAll('[data-profile-effect-main]')
+            .find((asset) => asset.element.tagName === 'IMG');
+        expect(introImageAfter.attributes('style')).toContain('display: none');
+        expect(mainImageAfter.attributes('style') ?? '').not.toContain(
+            'display: none'
+        );
         vi.useRealTimers();
     });
 

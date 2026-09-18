@@ -11,15 +11,15 @@
             class="absolute inset-0"
             :class="{ 'opacity-55': variant === 'sidebar' }"
             :style="nameplateStyle"></div>
-        <img
+        <PausableAnimatedImage
             v-if="mainUrl && !mainAssetError"
-            v-show="!introActive"
+            :visible="!introActive"
+            :paused="animationsPaused"
+            :fit="variant === 'sidebar' ? 'cover' : 'contain'"
+            :position="variant === 'sidebar' ? 'center' : 'right'"
             data-nameplate-effect-asset
             data-nameplate-effect-main
-            alt=""
-            aria-hidden="true"
             :src="mainUrl"
-            draggable="false"
             class="absolute h-full"
             :class="
                 variant === 'sidebar'
@@ -27,15 +27,15 @@
                     : 'right-0 top-0 w-auto object-contain object-right'
             "
             @error="mainAssetError = true" />
-        <img
+        <PausableAnimatedImage
             v-if="introUrl && !introAssetError"
-            v-show="introActive"
+            :visible="introActive"
+            :paused="animationsPaused"
+            :fit="variant === 'sidebar' ? 'cover' : 'contain'"
+            :position="variant === 'sidebar' ? 'center' : 'right'"
             data-nameplate-effect-asset
             data-nameplate-effect-intro
-            alt=""
-            aria-hidden="true"
             :src="introUrl"
-            draggable="false"
             class="absolute h-full"
             :class="
                 variant === 'sidebar'
@@ -49,10 +49,13 @@
 </template>
 
 <script setup>
-    import { computed, onBeforeUnmount, ref, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
 
     import { useAppearanceSettingsStore, useUserStore } from '../stores';
+    import { useAppFocus } from '../composables/useAppFocus';
+    import { usePausableTimer } from '../composables/usePausableTimer';
+    import PausableAnimatedImage from './PausableAnimatedImage.vue';
 
     defineOptions({ inheritAttrs: false });
 
@@ -66,7 +69,8 @@
     });
 
     const { cachedNameplateEffects } = storeToRefs(useUserStore());
-    const { displayVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
+    const { displayVRCProfileEffects, alwaysAnimateVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
+    const { isAppFocused } = useAppFocus();
     const mainUrl = ref('');
     const introUrl = ref('');
     const introActive = ref(false);
@@ -80,7 +84,10 @@
             Boolean(mainUrl.value && !mainAssetError.value) ||
             Boolean(introUrl.value && !introAssetError.value)
     );
-    let introTimer;
+    const animationsPaused = computed(() => !isAppFocused.value && !alwaysAnimateVRCProfileEffects.value);
+    const introTimer = usePausableTimer(() => {
+        introActive.value = false;
+    }, animationsPaused);
 
     function normalizeGradientColor(value) {
         if (typeof value !== 'string') {
@@ -90,28 +97,20 @@
         return /^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(color) ? `#${color}` : '';
     }
 
-    function clearIntroTimer() {
-        clearTimeout(introTimer);
-        introTimer = undefined;
-    }
-
     function startIntroTimer() {
-        clearIntroTimer();
-        introTimer = setTimeout(() => {
-            introActive.value = false;
-        }, introDuration.value);
+        introTimer.start(introDuration.value);
     }
 
     function handleIntroError() {
         introAssetError.value = true;
         introActive.value = false;
-        clearIntroTimer();
+        introTimer.reset();
     }
 
     watch(
         () => [props.nameplateEffect, cachedNameplateEffects.value.get(props.nameplateEffect)],
         ([, effect]) => {
-            clearIntroTimer();
+            introTimer.reset();
             mainUrl.value = '';
             introUrl.value = '';
             introActive.value = false;
@@ -142,6 +141,4 @@
         },
         { immediate: true }
     );
-
-    onBeforeUnmount(clearIntroTimer);
 </script>

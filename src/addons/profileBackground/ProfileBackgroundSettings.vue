@@ -19,6 +19,16 @@
                     aria-label="VRChat Profile Effects"
                     @update:model-value="setDisplayVRCProfileEffects" />
             </SettingsItem>
+
+            <SettingsItem
+                v-if="displayVRCProfileEffects"
+                label="Always animate decorations when unfocused"
+                description="Keep profile effects, nameplates, and icon frames animated while BetterVRCX is in the background. This may increase resource usage.">
+                <Switch
+                    :model-value="alwaysAnimateVRCProfileEffects"
+                    aria-label="Always animate decorations when unfocused"
+                    @update:model-value="setAlwaysAnimateVRCProfileEffects" />
+            </SettingsItem>
         </SettingsGroup>
 
         <SettingsGroup title="VRChat Profile Backdrops">
@@ -83,12 +93,14 @@
     const {
         displayVRCProfileThemes,
         displayVRCProfileEffects,
+        alwaysAnimateVRCProfileEffects,
         displayVRCProfileBackgrounds,
         profileBackgroundOpacity
     } = storeToRefs(appearanceSettingsStore);
     const {
         setDisplayVRCProfileThemes,
         setDisplayVRCProfileEffects,
+        setAlwaysAnimateVRCProfileEffects,
         setDisplayVRCProfileBackgrounds,
         setProfileBackgroundOpacity
     } = appearanceSettingsStore;

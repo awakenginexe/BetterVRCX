@@ -20,7 +20,8 @@ const mocks = vi.hoisted(() => {
         appearance: reactive({
             isAgeGatedInstancesVisible: true,
             hideNicknames: false,
-            displayVRCProfileEffects: true
+            displayVRCProfileEffects: true,
+            alwaysAnimateVRCProfileEffects: false
         }),
         location: reactive({
             lastLocation: { location: '', friendList: new Map() }

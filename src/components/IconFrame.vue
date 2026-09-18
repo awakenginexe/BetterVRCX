@@ -1,27 +1,25 @@
 <template>
     <template v-if="displayVRCProfileEffects">
-        <img
+        <PausableAnimatedImage
             v-if="mainUrl && !mainAssetError"
-            v-show="!introActive"
+            :visible="!introActive"
+            :paused="animationsPaused"
+            fit="contain"
             v-bind="$attrs"
             data-icon-frame-asset
             data-icon-frame-main
-            alt=""
-            aria-hidden="true"
             :src="mainUrl"
-            draggable="false"
             class="pointer-events-none absolute inset-0 h-full w-full max-w-none object-contain scale-[1.3]"
             @error="mainAssetError = true" />
-        <img
+        <PausableAnimatedImage
             v-if="introUrl && !introAssetError"
-            v-show="introActive"
+            :visible="introActive"
+            :paused="animationsPaused"
+            fit="contain"
             v-bind="$attrs"
             data-icon-frame-asset
             data-icon-frame-intro
-            alt=""
-            aria-hidden="true"
             :src="introUrl"
-            draggable="false"
             class="pointer-events-none absolute inset-0 h-full w-full max-w-none object-contain scale-[1.3]"
             @load="startIntroTimer"
             @error="handleIntroError" />
@@ -29,10 +27,13 @@
 </template>
 
 <script setup>
-    import { onBeforeUnmount, ref, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
 
     import { useAppearanceSettingsStore, useUserStore } from '../stores';
+    import { useAppFocus } from '../composables/useAppFocus';
+    import { usePausableTimer } from '../composables/usePausableTimer';
+    import PausableAnimatedImage from './PausableAnimatedImage.vue';
 
     defineOptions({ inheritAttrs: false });
 
@@ -41,37 +42,33 @@
     });
 
     const { cachedIconFrames } = storeToRefs(useUserStore());
-    const { displayVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
+    const { displayVRCProfileEffects, alwaysAnimateVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
+    const { isAppFocused } = useAppFocus();
     const mainUrl = ref('');
     const introUrl = ref('');
     const introActive = ref(false);
     const introDuration = ref(0);
     const mainAssetError = ref(false);
     const introAssetError = ref(false);
-    let introTimer;
-
-    function clearIntroTimer() {
-        clearTimeout(introTimer);
-        introTimer = undefined;
-    }
+    const animationsPaused = computed(() => !isAppFocused.value && !alwaysAnimateVRCProfileEffects.value);
+    const introTimer = usePausableTimer(() => {
+        introActive.value = false;
+    }, animationsPaused);
 
     function startIntroTimer() {
-        clearIntroTimer();
-        introTimer = setTimeout(() => {
-            introActive.value = false;
-        }, introDuration.value);
+        introTimer.start(introDuration.value);
     }
 
     function handleIntroError() {
         introAssetError.value = true;
         introActive.value = false;
-        clearIntroTimer();
+        introTimer.reset();
     }
 
     watch(
         () => [props.iconFrame, cachedIconFrames.value.get(props.iconFrame)],
         ([, frame]) => {
-            clearIntroTimer();
+            introTimer.reset();
             mainUrl.value = '';
             introUrl.value = '';
             introActive.value = false;
@@ -93,6 +90,4 @@
         },
         { immediate: true }
     );
-
-    onBeforeUnmount(clearIntroTimer);
 </script>

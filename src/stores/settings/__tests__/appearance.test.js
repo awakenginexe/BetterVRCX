@@ -153,4 +153,24 @@ describe('appearance settings', () => {
             false
         );
     });
+
+    it('pauses decoration animations while unfocused by default and persists the override', async () => {
+        const store = useAppearanceSettingsStore();
+
+        await vi.waitFor(() =>
+            expect(store.alwaysAnimateVRCProfileEffects).toBe(false)
+        );
+        expect(configRepository.getBool).toHaveBeenCalledWith(
+            'VRCX_alwaysAnimateVRCProfileEffects',
+            false
+        );
+
+        store.setAlwaysAnimateVRCProfileEffects();
+
+        expect(store.alwaysAnimateVRCProfileEffects).toBe(true);
+        expect(configRepository.setBool).toHaveBeenCalledWith(
+            'VRCX_alwaysAnimateVRCProfileEffects',
+            true
+        );
+    });
 });

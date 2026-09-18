@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ProfileBackgroundSettings from '../ProfileBackgroundSettings.vue';
 
 const displayVRCProfileThemes = ref(false);
 const displayVRCProfileEffects = ref(true);
+const alwaysAnimateVRCProfileEffects = ref(false);
 const displayVRCProfileBackgrounds = ref(true);
 const profileBackgroundOpacity = ref(0.5);
 const setDisplayVRCProfileThemes = vi.fn(() => {
@@ -12,6 +13,10 @@ const setDisplayVRCProfileThemes = vi.fn(() => {
 });
 const setDisplayVRCProfileEffects = vi.fn(() => {
     displayVRCProfileEffects.value = !displayVRCProfileEffects.value;
+});
+const setAlwaysAnimateVRCProfileEffects = vi.fn(() => {
+    alwaysAnimateVRCProfileEffects.value =
+        !alwaysAnimateVRCProfileEffects.value;
 });
 const setDisplayVRCProfileBackgrounds = vi.fn(() => {
     displayVRCProfileBackgrounds.value = !displayVRCProfileBackgrounds.value;
@@ -30,10 +35,12 @@ vi.mock('@/stores', () => ({
     useAppearanceSettingsStore: () => ({
         displayVRCProfileThemes,
         displayVRCProfileEffects,
+        alwaysAnimateVRCProfileEffects,
         displayVRCProfileBackgrounds,
         profileBackgroundOpacity,
         setDisplayVRCProfileThemes,
         setDisplayVRCProfileEffects,
+        setAlwaysAnimateVRCProfileEffects,
         setDisplayVRCProfileBackgrounds,
         setProfileBackgroundOpacity
     }),
@@ -80,6 +87,14 @@ vi.mock('../../views/Settings/components/SettingsItem.vue', () => ({
 }));
 
 describe('ProfileBackgroundSettings.vue', () => {
+    beforeEach(() => {
+        displayVRCProfileThemes.value = false;
+        displayVRCProfileEffects.value = true;
+        alwaysAnimateVRCProfileEffects.value = false;
+        displayVRCProfileBackgrounds.value = true;
+        vi.clearAllMocks();
+    });
+
     it('renders profile customization and backdrop settings groups and switches', () => {
         displayVRCProfileBackgrounds.value = true;
         const wrapper = mount(ProfileBackgroundSettings);
@@ -88,7 +103,10 @@ describe('ProfileBackgroundSettings.vue', () => {
         expect(wrapper.text()).toContain('VRChat Profile Backgrounds');
         expect(wrapper.text()).toContain('VRChat Profile Effects');
         expect(wrapper.text()).not.toContain('vrcplus_profile_icons');
-        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(3);
+        expect(wrapper.text()).toContain(
+            'Always animate decorations when unfocused'
+        );
+        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(4);
         expect(wrapper.find('[data-testid="number-field"]').exists()).toBe(
             true
         );
@@ -98,7 +116,7 @@ describe('ProfileBackgroundSettings.vue', () => {
         displayVRCProfileBackgrounds.value = true;
         const wrapper = mount(ProfileBackgroundSettings);
         const switches = wrapper.findAll('[data-testid="switch"]');
-        await switches[2].trigger('click');
+        await switches[3].trigger('click');
         expect(setDisplayVRCProfileBackgrounds).toHaveBeenCalled();
     });
 
@@ -108,6 +126,9 @@ describe('ProfileBackgroundSettings.vue', () => {
         await switches[0].trigger('click');
         expect(setDisplayVRCProfileThemes).toHaveBeenCalled();
         expect(saveOpenVROption).toHaveBeenCalled();
+
+        await switches[2].trigger('click');
+        expect(setAlwaysAnimateVRCProfileEffects).toHaveBeenCalled();
 
         await switches[1].trigger('click');
         expect(setDisplayVRCProfileEffects).toHaveBeenCalled();

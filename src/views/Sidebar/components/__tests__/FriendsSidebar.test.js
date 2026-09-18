@@ -19,7 +19,8 @@ const mocks = vi.hoisted(() => ({
         sidebarFavoriteGroups: { value: [] },
         sidebarFavoriteGroupOrder: { value: [] },
         sidebarSortMethods: { value: [] },
-        displayVRCProfileEffects: require('vue').ref(true)
+        displayVRCProfileEffects: require('vue').ref(true),
+        alwaysAnimateVRCProfileEffects: require('vue').ref(false)
     },
     advancedStore: {
         gameLogDisabled: { value: false }

@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const displayVRCProfileEffects = ref(true);
+const alwaysAnimateVRCProfileEffects = ref(false);
 const cachedNameplateEffects = ref(new Map());
+const isAppFocused = ref(true);
 
 vi.mock('pinia', async (importOriginal) => ({
     ...(await importOriginal()),
@@ -11,8 +13,15 @@ vi.mock('pinia', async (importOriginal) => ({
 }));
 
 vi.mock('../../stores', () => ({
-    useAppearanceSettingsStore: () => ({ displayVRCProfileEffects }),
+    useAppearanceSettingsStore: () => ({
+        displayVRCProfileEffects,
+        alwaysAnimateVRCProfileEffects
+    }),
     useUserStore: () => ({ cachedNameplateEffects })
+}));
+
+vi.mock('../../composables/useAppFocus', () => ({
+    useAppFocus: () => ({ isAppFocused })
 }));
 
 import NameplateEffect from '../NameplateEffect.vue';
@@ -20,6 +29,8 @@ import NameplateEffect from '../NameplateEffect.vue';
 describe('NameplateEffect.vue', () => {
     beforeEach(() => {
         displayVRCProfileEffects.value = true;
+        alwaysAnimateVRCProfileEffects.value = false;
+        isAppFocused.value = true;
         cachedNameplateEffects.value = new Map();
     });
 
@@ -96,6 +107,52 @@ describe('NameplateEffect.vue', () => {
             wrapper.get('[data-nameplate-effect-main]').attributes('style') ??
                 ''
         ).not.toContain('display: none');
+        vi.useRealTimers();
+    });
+
+    test('pauses the intro countdown while the app is unfocused', async () => {
+        vi.useFakeTimers();
+        cachedNameplateEffects.value.set('cos_paused_intro', {
+            metadata: {
+                assets: [
+                    {
+                        type: 'introAnimation',
+                        url: 'https://example.com/intro.webp',
+                        totalDurationMs: 200
+                    },
+                    {
+                        type: 'mainAnimation',
+                        url: 'https://example.com/main.webp'
+                    }
+                ]
+            }
+        });
+        const wrapper = mount(NameplateEffect, {
+            props: {
+                nameplateEffect: 'cos_paused_intro',
+                variant: 'sidebar'
+            }
+        });
+        await wrapper.get('[data-nameplate-effect-intro]').trigger('load');
+        await vi.advanceTimersByTimeAsync(75);
+
+        isAppFocused.value = false;
+        await nextTick();
+        await vi.advanceTimersByTimeAsync(500);
+        expect(wrapper.get('[data-nameplate-effect-intro]').isVisible()).toBe(
+            true
+        );
+
+        isAppFocused.value = true;
+        await nextTick();
+        await vi.advanceTimersByTimeAsync(124);
+        expect(wrapper.get('[data-nameplate-effect-intro]').isVisible()).toBe(
+            true
+        );
+        await vi.advanceTimersByTimeAsync(1);
+        expect(wrapper.get('[data-nameplate-effect-main]').isVisible()).toBe(
+            true
+        );
         vi.useRealTimers();
     });
 
