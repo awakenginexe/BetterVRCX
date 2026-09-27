@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mockFetchWithEntityPolicy = vi.fn();
 const mockGetUser = vi.fn();
+const mockGetPublicProfile = vi.fn();
 const mockGetWorlds = vi.fn();
 const mockGetGroupCalendar = vi.fn();
 
@@ -13,6 +14,12 @@ vi.mock('../../queries', () => ({
         user: {
             staleTime: 20000,
             gcTime: 90000,
+            retry: 1,
+            refetchOnWindowFocus: false
+        },
+        publicProfile: {
+            staleTime: 60000,
+            gcTime: 300000,
             retry: 1,
             refetchOnWindowFocus: false
         },
@@ -146,6 +153,11 @@ vi.mock('../../queries', () => ({
     fetchWithEntityPolicy: (...args) => mockFetchWithEntityPolicy(...args),
     queryKeys: {
         user: (userId) => ['user', userId],
+        publicProfile: (accountId, userId) => [
+            'publicProfile',
+            accountId,
+            userId
+        ],
         avatars: (params) => ['avatar', 'list', params],
         worldsByUser: (params) => ['worlds', 'user', params.userId, params],
         groupCalendar: (groupId) => ['group', groupId, 'calendar'],
@@ -229,6 +241,7 @@ vi.mock('../../queries', () => ({
 vi.mock('../user', () => ({
     default: {
         getUser: (...args) => mockGetUser(...args),
+        getPublicProfile: (...args) => mockGetPublicProfile(...args),
         getMutualCounts: vi.fn()
     }
 }));
@@ -317,6 +330,32 @@ describe('queryRequest', () => {
         );
         expect(args.cache).toBe(true);
         expect(args.json.id).toBe('usr_1');
+    });
+
+    test('keeps public profile data separate by account and user', async () => {
+        mockGetPublicProfile.mockResolvedValue({
+            json: { bioLinks: ['https://example.com'] },
+            params: { userId: 'usr_1' }
+        });
+        mockFetchWithEntityPolicy.mockImplementation(async ({ queryFn }) => ({
+            data: await queryFn(),
+            cache: false
+        }));
+
+        await queryRequest.fetch('publicProfile', {
+            accountId: 'usr_self',
+            userId: 'usr_1'
+        });
+
+        expect(mockFetchWithEntityPolicy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                queryKey: ['publicProfile', 'usr_self', 'usr_1']
+            })
+        );
+        expect(mockGetPublicProfile).toHaveBeenCalledWith({
+            accountId: 'usr_self',
+            userId: 'usr_1'
+        });
     });
 
     test('uses same queryKey for user and user.dialog callers', async () => {

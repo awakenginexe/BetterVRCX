@@ -45,6 +45,8 @@ import { useUiStore } from './ui';
 import { useUserStore } from './user';
 import { useWorldStore } from './world';
 import { watchState } from '../services/watchState';
+import { queryClient, queryKeys } from '../queries';
+import { createPublicProfileQueue } from '../services/publicProfileQueue';
 
 import configRepository from '../services/config';
 
@@ -165,10 +167,19 @@ export const useInstanceStore = defineStore('Instance', () => {
     const instanceJoinHistory = reactive(new Map());
 
     const currentInstanceUsersData = ref([]);
+    const publicProfileQueue = createPublicProfileQueue({
+        fetchProfile: (userId, scope) =>
+            queryRequest.fetch('publicProfile', {
+                accountId: scope.split('\0')[0],
+                userId
+            }),
+        onSettled: () => getCurrentInstanceUserList()
+    });
 
     watch(
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
+            publicProfileQueue.setScope('');
             currentInstanceUsersData.value = [];
             instanceJoinHistory.clear();
             hidePreviousInstancesDialogs();
@@ -1292,6 +1303,13 @@ export const useInstanceStore = defineStore('Instance', () => {
      */
     function updatePlayerListDebounce() {
         const users = [];
+        const accountId = userStore.currentUser.id;
+        publicProfileQueue.setScope(
+            watchState.isLoggedIn && accountId
+                ? `${accountId}\0${locationStore.lastLocation.location || ''}`
+                : ''
+        );
+        const profilesToLoad = [];
         const pushUser = function (ref) {
             let photonId = -1;
             let isFriend = false;
@@ -1363,8 +1381,21 @@ export const useInstanceStore = defineStore('Instance', () => {
                 isChatBoxMuted = ref.$moderations.isChatBoxMuted;
                 ageVerified = ref.ageVerificationStatus === '18+';
             }
+            const profileKey =
+                ref.id && queryKeys.publicProfile(accountId, ref.id);
+            const profileState =
+                profileKey && queryClient.getQueryState(profileKey);
+            const publicProfileRef = profileState?.data?.json || {};
+            if (
+                ref.id &&
+                (!profileState?.dataUpdatedAt ||
+                    Date.now() - profileState.dataUpdatedAt >= 60_000)
+            ) {
+                profilesToLoad.push(ref.id);
+            }
             users.push({
                 ref,
+                publicProfileRef,
                 displayName: ref.displayName,
                 timer: ref.$location_at,
                 $trustSortNum: ref.$trustSortNum ?? 0,
@@ -1411,6 +1442,7 @@ export const useInstanceStore = defineStore('Instance', () => {
                         }
                         ref = {
                             // if userId is missing just push displayName
+                            id: player.userId || undefined,
                             displayName: player.displayName,
                             $location_at: joinTime,
                             $online_for: joinTime
@@ -1421,6 +1453,12 @@ export const useInstanceStore = defineStore('Instance', () => {
             }
         }
         currentInstanceUsersData.value = users;
+        publicProfileQueue.enqueue(profilesToLoad);
+    }
+
+    function refreshPlayerPublicProfile() {
+        publicProfileQueue.invalidate();
+        getCurrentInstanceUserList();
     }
 
     // $app.methods.instanceQueueClear = function () {
@@ -1463,6 +1501,7 @@ export const useInstanceStore = defineStore('Instance', () => {
         showPreviousInstancesListDialog,
         addInstanceJoinHistory,
         getCurrentInstanceUserList,
+        refreshPlayerPublicProfile,
         getInstanceJoinHistory,
         getInstanceName
     };

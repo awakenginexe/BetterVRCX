@@ -8,6 +8,12 @@ export const entityQueryPolicies = Object.freeze({
         retry: 1,
         refetchOnWindowFocus: false
     }),
+    publicProfile: Object.freeze({
+        staleTime: 60 * SECOND,
+        gcTime: 300 * SECOND,
+        retry: 1,
+        refetchOnWindowFocus: false
+    }),
     avatar: Object.freeze({
         staleTime: 60 * SECOND,
         gcTime: 300 * SECOND,

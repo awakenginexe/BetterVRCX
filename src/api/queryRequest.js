@@ -21,6 +21,12 @@ const registry = Object.freeze({
         policy: entityQueryPolicies.user,
         queryFn: (params) => userRequest.getUser(params)
     },
+    publicProfile: {
+        key: (params) =>
+            queryKeys.publicProfile(params.accountId, params.userId),
+        policy: entityQueryPolicies.publicProfile,
+        queryFn: (params) => userRequest.getPublicProfile(params)
+    },
     'user.dialog': {
         key: (params) => queryKeys.user(params.userId),
         policy: Object.freeze({
