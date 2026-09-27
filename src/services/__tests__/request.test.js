@@ -3,13 +3,22 @@ vi.mock('../../plugins/router.js', () => ({
     router: { beforeEach: vi.fn(), push: vi.fn() },
     initRouter: vi.fn()
 }));
+vi.mock('../../stores', () => ({
+    useAuthStore: () => ({}),
+    useModalStore: () => ({}),
+    useNotificationStore: () => ({}),
+    useUpdateLoopStore: () => ({}),
+    useUserStore: () => ({})
+}));
 
 import {
     buildRequestInit,
     parseResponse,
     processBulk,
-    shouldIgnoreError
+    shouldIgnoreError,
+    request
 } from '../request.js';
+import webApiService from '../webapi.js';
 
 describe('buildRequestInit', () => {
     test('builds GET request with default method', () => {
@@ -145,6 +154,21 @@ describe('parseResponse', () => {
         const result = parseResponse(response);
         expect(result).toEqual({ status: 200, data: null });
     });
+});
+
+test('preserves HTTP 429 when an API error body omits status_code', async () => {
+    const execute = vi.spyOn(webApiService, 'execute').mockResolvedValue({
+        status: 429,
+        data: JSON.stringify({ error: { message: 'Slow down' } }),
+        retryAfter: '120'
+    });
+    try {
+        await expect(
+            request('invite/usr_1', { method: 'POST' })
+        ).rejects.toMatchObject({ status: 429, retryAfter: '120' });
+    } finally {
+        execute.mockRestore();
+    }
 });
 
 describe('shouldIgnoreError', () => {

@@ -186,9 +186,10 @@ export function request(endpoint, options) {
                     }
                 }
                 $throw(
-                    parsed.data.error.status_code || 0,
+                    parsed.data.error.status_code || parsed.status || 0,
                     parsed.data.error.message,
-                    endpoint
+                    endpoint,
+                    parsed.retryAfter
                 );
             }
             if (parsed.parseError) {
@@ -217,7 +218,7 @@ export function request(endpoint, options) {
             }
             return parsed;
         })
-        .then(({ data, status }) => {
+        .then(({ data, status, retryAfter }) => {
             if (status === 200) {
                 if (!data) {
                     return data;
@@ -273,12 +274,13 @@ export function request(endpoint, options) {
                 $throw(
                     data.error.status_code || status,
                     data.error.message,
-                    endpoint
+                    endpoint,
+                    retryAfter
                 );
             } else if (data && typeof data.error === 'string') {
-                $throw(data.status_code || status, data.error, endpoint);
+                $throw(data.status_code || status, data.error, endpoint, retryAfter);
             }
-            $throw(status, data, endpoint);
+            $throw(status, data, endpoint, retryAfter);
         });
     if (init.method === 'GET') {
         req.finally(() => {
@@ -329,8 +331,9 @@ export function shouldIgnoreError(code, endpoint) {
  * @param {number} code
  * @param {string|object} [error]
  * @param {string} [endpoint]
+ * @param {string} [retryAfter]
  */
-export function $throw(code, error, endpoint) {
+export function $throw(code, error, endpoint, retryAfter) {
     let message = [];
     if (code > 0) {
         const status = statusCodes[code];
@@ -369,6 +372,7 @@ export function $throw(code, error, endpoint) {
     const e = new Error(text);
     e.status = code;
     e.endpoint = endpoint;
+    if (retryAfter) e.retryAfter = retryAfter;
     throw e;
 }
 

@@ -27,7 +27,9 @@
                 <Button variant="secondary" class="mr-2" @click="cancelEditAndSendInvite">
                     {{ t('dialog.edit_send_invite_message.cancel') }}
                 </Button>
-                <Button @click="saveEditAndSendInvite" :disabled="!editAndSendInviteDialog.newMessage">
+                <Button
+                    @click="saveEditAndSendInvite"
+                    :disabled="!editAndSendInviteDialog.newMessage || inviteBatch.status === 'running'">
                     {{ t('dialog.edit_send_invite_message.send') }}
                 </Button>
             </DialogFooter>
@@ -43,14 +45,14 @@
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
 
-    import { instanceRequest, inviteMessagesRequest, notificationRequest } from '../../../api';
-    import { useGalleryStore, useUserStore } from '../../../stores';
-    import { parseLocation } from '../../../shared/utils';
+    import { inviteMessagesRequest, notificationRequest } from '../../../api';
+    import { useGalleryStore, useInviteStore } from '../../../stores';
 
     const { t } = useI18n();
     const { uploadImage } = storeToRefs(useGalleryStore());
     const { clearInviteImageUpload } = useGalleryStore();
-    const { currentUser } = storeToRefs(useUserStore());
+    const inviteStore = useInviteStore();
+    const { inviteBatch } = storeToRefs(inviteStore);
 
     const props = defineProps({
         editAndSendInviteDialog: {
@@ -68,13 +70,14 @@
         }
     });
 
-    const emit = defineEmits(['update:editAndSendInviteDialog', 'closeInviteDialog']);
+    const emit = defineEmits(['update:editAndSendInviteDialog', 'closeInviteDialog', 'batchStarted']);
 
     function cancelEditAndSendInvite() {
         emit('update:editAndSendInviteDialog', { ...props.editAndSendInviteDialog, visible: false });
     }
 
     async function saveEditAndSendInvite() {
+        if (inviteBatch.value.status === 'running') return;
         const D = props.editAndSendInviteDialog;
         const I = props.sendInviteDialog;
         D.visible = false;
@@ -102,50 +105,15 @@
         }
         const J = props.inviteDialog;
         if (J?.visible) {
-            const inviteLoop = () => {
-                if (J.userIds.length > 0) {
-                    const receiverUserId = J.userIds.shift();
-                    if (receiverUserId === currentUser.value.id) {
-                        // can't invite self!?
-                        const L = parseLocation(J.worldId);
-                        instanceRequest
-                            .selfInvite({
-                                instanceId: L.instanceId,
-                                worldId: L.worldId
-                            })
-                            .finally(inviteLoop);
-                    } else if (uploadImage.value) {
-                        notificationRequest
-                            .sendInvitePhoto(
-                                {
-                                    instanceId: J.worldId,
-                                    worldId: J.worldId,
-                                    worldName: J.worldName,
-                                    messageSlot: slot
-                                },
-                                receiverUserId
-                            )
-                            .finally(inviteLoop);
-                    } else {
-                        notificationRequest
-                            .sendInvite(
-                                {
-                                    instanceId: J.worldId,
-                                    worldId: J.worldId,
-                                    worldName: J.worldName,
-                                    messageSlot: slot
-                                },
-                                receiverUserId
-                            )
-                            .finally(inviteLoop);
-                    }
-                } else {
-                    J.loading = false;
-                    J.visible = false;
-                    toast.success(t('message.invite.sent'));
-                }
-            };
-            inviteLoop();
+            inviteStore.startInviteBatch({
+                instanceId: J.worldId,
+                worldName: J.worldName,
+                recipients: J.userIds,
+                messageSlot: slot,
+                imageData: uploadImage.value
+            });
+            emit('batchStarted');
+            return;
         } else if (messageType === 'invite') {
             I.params.messageSlot = slot;
             if (uploadImage.value) {

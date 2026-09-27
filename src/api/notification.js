@@ -105,11 +105,11 @@ const notificationReq = {
             return args;
         });
     },
-    sendInvitePhoto(params, receiverUserId) {
+    sendInvitePhoto(params, receiverUserId, imageData) {
         return request(`invite/${receiverUserId}/photo`, {
             uploadImageLegacy: true,
             postData: JSON.stringify(params),
-            imageData: useGalleryStore().uploadImage
+            imageData: imageData ?? useGalleryStore().uploadImage
         }).then((json) => {
             const args = {
                 json,
