@@ -63,6 +63,10 @@ import { useUiStore } from '../stores/ui';
 import { useUserStore } from '../stores/user';
 
 const userPublicProfileRamCache = new Map();
+
+export function invalidateUserPublicProfile(userId) {
+    userPublicProfileRamCache.delete(userId);
+}
 const userRefRamCache = new Map();
 
 const getRobotUrl = () =>

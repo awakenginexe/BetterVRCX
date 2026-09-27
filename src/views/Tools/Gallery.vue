@@ -75,14 +75,6 @@
                             <Upload />
                             {{ t('dialog.gallery_icons.upload') }}
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="!currentUser.profilePicOverride"
-                            @click="setProfilePicOverride('')">
-                            <X />
-                            {{ t('dialog.gallery_icons.clear') }}
-                        </Button>
                     </ButtonGroup>
                     <ItemGroup
                         class="gallery-media-grid grid gap-3 mt-3"
@@ -93,7 +85,6 @@
                             variant="outline"
                             size="sm"
                             class="p-0 x-hover-card hover:bg-accent hover:shadow-sm"
-                            :class="compareCurrentProfilePic(image.id) ? 'x-highlight-ring' : ''"
                             as-child>
                             <div
                                 v-if="
@@ -119,13 +110,6 @@
                                         class="rounded-full text-destructive"
                                         @click="deleteGalleryImage(image.id)">
                                         <Trash2 />
-                                    </Button>
-                                    <Button
-                                        size="icon-sm"
-                                        class="rounded-full"
-                                        :variant="compareCurrentProfilePic(image.id) ? 'default' : 'ghost'"
-                                        @click="setProfilePicOverride(image.id)">
-                                        <Check />
                                     </Button>
                                 </ItemFooter>
                             </div>
@@ -158,8 +142,13 @@
                         <Button
                             variant="outline"
                             size="sm"
-                            :disabled="!currentUser.userIcon"
-                            @click="setVRCPlusIcon('')">
+                            :disabled="
+                                iconMutationPending ||
+                                !isLocalUserVrcPlusSupporter ||
+                                !currentUser.iconUrl ||
+                                currentUser.iconUrl === currentUser.currentAvatarImageUrl
+                            "
+                            @click="setUserIcon('')">
                             <X />
                             {{ t('dialog.gallery_icons.clear') }}
                         </Button>
@@ -204,7 +193,8 @@
                                         size="icon-sm"
                                         class="rounded-full"
                                         :variant="compareCurrentVRCPlusIcon(image.id) ? 'default' : 'ghost'"
-                                        @click="setVRCPlusIcon(image.id)">
+                                        :disabled="iconMutationPending || !isLocalUserVrcPlusSupporter"
+                                        @click="setUserIcon(image.id)">
                                         <Check />
                                     </Button>
                                 </ItemFooter>
@@ -639,6 +629,7 @@
     import { handleImageUploadInput } from '../../coordinators/imageUploadCoordinator';
     import { emojiAnimationStyleList, emojiAnimationStyleUrl } from '../../shared/constants';
     import { AppDebug } from '../../services/appConfig';
+    import { getCurrentUser, updateUserDialogProfile } from '../../coordinators/userCoordinator';
 
     import Emoji from '../../components/Emoji.vue';
     import ImageCropDialog from '../../components/dialogs/ImageCropDialog.vue';
@@ -672,7 +663,8 @@
 
     const { currentUserInventory } = storeToRefs(useAdvancedSettingsStore());
     const { showFullscreenImageDialog } = useGalleryStore();
-    const { currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
+    const userStore = useUserStore();
+    const { currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(userStore);
     const { cachedConfig } = storeToRefs(useAuthStore());
     const cachedConfigTyped = computed(
         () => /** @type {{ maxUserEmoji?: number, maxUserStickers?: number }} */ (cachedConfig.value ?? {})
@@ -708,6 +700,7 @@
 
     const pendingUploads = ref(0);
     const isUploading = computed(() => pendingUploads.value > 0);
+    const iconMutationPending = ref(false);
 
     const inventoryTypeOptions = computed(() => {
         const optionsByType = new Set();
@@ -922,40 +915,6 @@
      *
      * @param fileId
      */
-    function setProfilePicOverride(fileId) {
-        if (!isLocalUserVrcPlusSupporter.value) {
-            toast.error(t('message.vrcplus.required'));
-            return;
-        }
-        let profilePicOverride = '';
-        if (fileId) {
-            profilePicOverride = `${AppDebug.endpointDomain}/file/${fileId}/1`;
-        }
-        if (profilePicOverride === currentUser.value.profilePicOverride) {
-            return;
-        }
-        userRequest
-            .saveCurrentUser({
-                profilePicOverride
-            })
-            .then((args) => {
-                toast.success(t('message.gallery.profile_pic_changed'));
-                return args;
-            });
-    }
-
-    /**
-     *
-     * @param fileId
-     */
-    function compareCurrentProfilePic(fileId) {
-        return isCurrentFile(currentUser.value.profilePicOverride, fileId);
-    }
-
-    /**
-     *
-     * @param fileId
-     */
     function deleteGalleryImage(fileId) {
         deleteFileAndRemove(fileId, galleryTable.value);
     }
@@ -992,34 +951,47 @@
      *
      * @param fileId
      */
-    function setVRCPlusIcon(fileId) {
+    async function setUserIcon(fileId) {
         if (!isLocalUserVrcPlusSupporter.value) {
             toast.error(t('message.vrcplus.required'));
             return;
         }
+        if (iconMutationPending.value) return;
         let userIcon = '';
         if (fileId) {
             userIcon = `${AppDebug.endpointDomain}/file/${fileId}/1`;
         }
-        if (userIcon === currentUser.value.userIcon) {
+        if (
+            userIcon === currentUser.value.iconUrl ||
+            (!userIcon && currentUser.value.iconUrl === currentUser.value.currentAvatarImageUrl)
+        ) {
             return;
         }
-        userRequest
-            .saveCurrentUser({
-                userIcon
-            })
-            .then((args) => {
-                toast.success(t('message.gallery.profile_icon_changed'));
-                return args;
-            });
+        const accountId = currentUser.value.id;
+        iconMutationPending.value = true;
+        try {
+            await userRequest.saveProfile({ userIcon });
+            if (currentUser.value.id !== accountId) return;
+            await getCurrentUser();
+            if (currentUser.value.id !== accountId) return;
+            if (userStore.userDialog.id === accountId) {
+                updateUserDialogProfile();
+            }
+            toast.success(t('message.gallery.profile_icon_changed'));
+        } catch (err) {
+            toast.error(t('message.gallery.failed'));
+            console.error('Failed to update profile icon:', err);
+        } finally {
+            iconMutationPending.value = false;
+        }
     }
 
     /**
      *
      * @param userIcon
      */
-    function compareCurrentVRCPlusIcon(userIcon) {
-        return isCurrentFile(currentUser.value.userIcon, userIcon);
+    function compareCurrentVRCPlusIcon(fileId) {
+        return isCurrentFile(currentUser.value.iconUrl, fileId);
     }
 
     /**
