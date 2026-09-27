@@ -12,6 +12,7 @@ import {
     getGroupName
 } from '../../shared/utils';
 import { createMediaParsers } from './mediaParsers';
+import { createLatestSessionLoad } from './latestSessionLoad';
 import { database } from '../../services/database';
 import { tryLoadPlayerList } from '../../coordinators/gameLogCoordinator';
 import { useAdvancedSettingsStore } from '../settings/advanced';
@@ -35,7 +36,7 @@ const SESSIONS_EVENT_FILTER_TYPES = [
     'VideoPlay'
 ];
 const SESSIONS_DATE_RANGE_MAX_DAYS = 7;
-const SESSIONS_GLOBAL_SEARCH_INITIAL_LOCATIONS = 500;
+const SESSIONS_GLOBAL_SEARCH_INITIAL_LOCATIONS = 50;
 const SESSIONS_SEARCH_BATCH_ATTEMPTS = 3;
 
 export const useGameLogStore = defineStore('GameLog', () => {
@@ -77,6 +78,19 @@ export const useGameLogStore = defineStore('GameLog', () => {
     const sessionsDateTo = ref('');
     const sessionsRawLocations = shallowRef([]);
     const sessionsRawEvents = shallowRef([]);
+    const sessionsLoader = createLatestSessionLoad({
+        run: (operation, isCurrent) => {
+            if (operation.mode === 'more')
+                return performMoreSessionsLoad(isCurrent);
+            if (operation.mode === 'anchor') {
+                return performAnchorSessionsLoad(operation.hours, isCurrent);
+            }
+            return performInitialSessionsLoad(isCurrent);
+        },
+        onLoadingChange: (loading) => {
+            sessionsLoading.value = loading;
+        }
+    });
     const sessionsEventFilterSelection = computed({
         get() {
             return sessionsEventFilters.value.length === 0
@@ -115,6 +129,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
     watch(
         () => watchState.isLoggedIn,
         () => {
+            sessionsLoader.invalidate();
             gameLogTableData.value = [];
             sessionsSegments.value = [];
             sessionsRawLocations.value = [];
@@ -139,6 +154,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
                     gameLogTableLookup();
                 }
             } else {
+                sessionsLoader.invalidate();
                 gameLogTableData.value = [];
                 sessionsSegments.value = [];
                 sessionsRawLocations.value = [];
@@ -797,11 +813,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
                       ? types
                       : [];
         }
-        if (isSessionsGlobalSearchMode()) {
-            await loadSessionsSegments();
-            return;
-        }
-        rebuildSessions();
+        await loadSessionsSegments();
     }
 
     /**
@@ -809,10 +821,6 @@ export const useGameLogStore = defineStore('GameLog', () => {
      */
     async function setSessionsSearch(value) {
         sessionsSearch.value = String(value ?? '');
-        if (isSessionsGlobalSearchMode()) {
-            await loadSessionsSegments();
-            return;
-        }
         await loadSessionsSegments();
     }
 
@@ -839,13 +847,15 @@ export const useGameLogStore = defineStore('GameLog', () => {
     /**
      * @param {number|null} beforeId
      * @param {number} fetchCount
-     * @returns {Promise<{ beforeId: number|null, hasMore: boolean }>}
+     * @param {() => boolean} isCurrent
+     * @returns {Promise<{ beforeId: number|null, hasMore: boolean }|null>}
      */
-    async function loadSessionsSearchBatch(beforeId, fetchCount) {
+    async function loadSessionsSearchBatch(beforeId, fetchCount, isCurrent) {
         const locations = await database.getSessionsLocationSegments(
             beforeId,
             fetchCount
         );
+        if (!isCurrent()) return null;
         if (locations.length === 0) {
             return { beforeId, hasMore: false };
         }
@@ -859,6 +869,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
         }
 
         const events = await fetchEventsForLocations(locations);
+        if (!isCurrent()) return null;
         sessionsRawLocations.value = [
             ...sessionsRawLocations.value,
             ...locations
@@ -880,233 +891,235 @@ export const useGameLogStore = defineStore('GameLog', () => {
      * a reasonable number of location segments. Fetches one extra and drops
      * the oldest to ensure the boundary has complete event data.
      */
-    async function loadSessionsSegments() {
-        if (sessionsLoading.value) return;
-        sessionsLoading.value = true;
-        try {
-            sessionsCursor.value = null;
-            sessionsHasMore.value = true;
+    function loadSessionsSegments() {
+        return sessionsLoader.reload({ mode: 'initial' });
+    }
 
-            // Derive location budget from maxTableSize (total event budget)
-            const locationBudget = Math.max(
-                5,
-                Math.ceil(vrcxStore.maxTableSize / 50)
-            );
-            let fetchCount = locationBudget + 1; // +1 to drop last for clean boundary
+    async function performInitialSessionsLoad(isCurrent) {
+        sessionsCursor.value = null;
+        sessionsHasMore.value = true;
 
-            if (isSessionsGlobalSearchMode()) {
-                fetchCount = SESSIONS_GLOBAL_SEARCH_INITIAL_LOCATIONS + 1;
-                let beforeId = null;
-                let hasMore = true;
-                let attempts = 0;
-                sessionsRawLocations.value = [];
-                sessionsRawEvents.value = [];
-                sessionsSegments.value = [];
+        // Derive location budget from maxTableSize (total event budget)
+        const locationBudget = Math.max(
+            5,
+            Math.ceil(vrcxStore.maxTableSize / 50)
+        );
+        let fetchCount = locationBudget + 1; // +1 to drop last for clean boundary
 
-                while (
-                    hasMore &&
-                    sessionsSegments.value.length === 0 &&
-                    attempts < SESSIONS_SEARCH_BATCH_ATTEMPTS
-                ) {
-                    const nextBatch = await loadSessionsSearchBatch(
-                        beforeId,
-                        fetchCount
-                    );
-                    beforeId = nextBatch.beforeId;
-                    hasMore = nextBatch.hasMore;
-                    attempts += 1;
-                }
+        if (isSessionsGlobalSearchMode()) {
+            fetchCount = SESSIONS_GLOBAL_SEARCH_INITIAL_LOCATIONS + 1;
+            let beforeId = null;
+            let hasMore = true;
+            let attempts = 0;
+            sessionsRawLocations.value = [];
+            sessionsRawEvents.value = [];
+            sessionsSegments.value = [];
 
-                sessionsCursor.value = beforeId;
-                sessionsHasMore.value = hasMore;
-                return;
+            while (
+                hasMore &&
+                sessionsSegments.value.length === 0 &&
+                attempts < SESSIONS_SEARCH_BATCH_ATTEMPTS
+            ) {
+                const nextBatch = await loadSessionsSearchBatch(
+                    beforeId,
+                    fetchCount,
+                    isCurrent
+                );
+                if (!nextBatch) return;
+                beforeId = nextBatch.beforeId;
+                hasMore = nextBatch.hasMore;
+                attempts += 1;
             }
 
-            if (sessionsDateRangeActive.value) {
-                let beforeId = null;
-                let hasMore = true;
-                sessionsRawLocations.value = [];
-                sessionsRawEvents.value = [];
-                sessionsSegments.value = [];
-                while (hasMore && sessionsSegments.value.length === 0) {
-                    const locations =
-                        beforeId === null
-                            ? await database.getSessionsLocationSegmentsByAnchor(
-                                  sessionsDateFrom.value ||
-                                      sessionsDateTo.value,
-                                  fetchCount
-                              )
-                            : await database.getSessionsLocationSegments(
-                                  beforeId,
-                                  fetchCount
-                              );
-                    if (locations.length === 0) {
-                        hasMore = false;
-                        break;
-                    }
-
-                    const hasExtraTail = locations.length >= fetchCount;
-                    if (hasExtraTail) {
-                        locations.pop();
-                    }
-                    if (locations.length === 0) {
-                        hasMore = false;
-                        break;
-                    }
-
-                    const inRangeLocations = locations.filter((location) =>
-                        isSessionsLocationInDateRange(location)
-                    );
-                    const oldestLocationEpoch = toSessionsEpoch(
-                        locations[locations.length - 1].created_at
-                    );
-                    const newestLocationEpoch = toSessionsEpoch(
-                        locations[0].created_at
-                    );
-                    const isEntireBatchAfterRange =
-                        Boolean(sessionsDateTo.value) &&
-                        oldestLocationEpoch >
-                            toSessionsEpoch(sessionsDateTo.value);
-                    const reachedRangeStart =
-                        Boolean(sessionsDateFrom.value) &&
-                        newestLocationEpoch <
-                            toSessionsEpoch(sessionsDateFrom.value);
-
-                    if (inRangeLocations.length === 0) {
-                        if (reachedRangeStart || !hasExtraTail) {
-                            hasMore = false;
-                            break;
-                        }
-                        beforeId = locations[locations.length - 1].id;
-                        hasMore = hasExtraTail || isEntireBatchAfterRange;
-                        continue;
-                    }
-
-                    const events =
-                        await fetchEventsForLocations(inRangeLocations);
-                    sessionsRawLocations.value = [
-                        ...sessionsRawLocations.value,
-                        ...inRangeLocations
-                    ];
-                    sessionsRawEvents.value = [
-                        ...sessionsRawEvents.value,
-                        ...events
-                    ];
-                    beforeId = locations[locations.length - 1].id;
-                    rebuildSessions();
-                    hasMore = hasExtraTail && !reachedRangeStart;
-                }
-                sessionsCursor.value = beforeId;
-                sessionsHasMore.value = hasMore;
-                return;
-            }
-
-            const locations = await database.getSessionsLocationSegments(
-                null,
-                fetchCount
-            );
-            if (locations.length === 0) {
-                sessionsRawLocations.value = [];
-                sessionsRawEvents.value = [];
-                sessionsSegments.value = [];
-                sessionsHasMore.value = false;
-                return;
-            }
-
-            // Drop last segment for boundary cleanliness
-            const hasExtraTail = locations.length >= fetchCount;
-            if (hasExtraTail) {
-                locations.pop();
-            }
-
-            const events = await fetchEventsForLocations(locations);
-            sessionsRawLocations.value = locations;
-            sessionsRawEvents.value = events;
-            rebuildSessions();
-
-            sessionsCursor.value = locations[locations.length - 1].id;
-            sessionsHasMore.value = hasExtraTail;
-        } finally {
-            sessionsLoading.value = false;
+            sessionsCursor.value = beforeId;
+            sessionsHasMore.value = hasMore;
+            return;
         }
+
+        if (sessionsDateRangeActive.value) {
+            let beforeId = null;
+            let hasMore = true;
+            sessionsRawLocations.value = [];
+            sessionsRawEvents.value = [];
+            sessionsSegments.value = [];
+            while (hasMore && sessionsSegments.value.length === 0) {
+                const locations =
+                    beforeId === null
+                        ? await database.getSessionsLocationSegmentsByAnchor(
+                              sessionsDateFrom.value || sessionsDateTo.value,
+                              fetchCount
+                          )
+                        : await database.getSessionsLocationSegments(
+                              beforeId,
+                              fetchCount
+                          );
+                if (!isCurrent()) return;
+                if (locations.length === 0) {
+                    hasMore = false;
+                    break;
+                }
+
+                const hasExtraTail = locations.length >= fetchCount;
+                if (hasExtraTail) {
+                    locations.pop();
+                }
+                if (locations.length === 0) {
+                    hasMore = false;
+                    break;
+                }
+
+                const inRangeLocations = locations.filter((location) =>
+                    isSessionsLocationInDateRange(location)
+                );
+                const oldestLocationEpoch = toSessionsEpoch(
+                    locations[locations.length - 1].created_at
+                );
+                const newestLocationEpoch = toSessionsEpoch(
+                    locations[0].created_at
+                );
+                const isEntireBatchAfterRange =
+                    Boolean(sessionsDateTo.value) &&
+                    oldestLocationEpoch > toSessionsEpoch(sessionsDateTo.value);
+                const reachedRangeStart =
+                    Boolean(sessionsDateFrom.value) &&
+                    newestLocationEpoch <
+                        toSessionsEpoch(sessionsDateFrom.value);
+
+                if (inRangeLocations.length === 0) {
+                    if (reachedRangeStart || !hasExtraTail) {
+                        hasMore = false;
+                        break;
+                    }
+                    beforeId = locations[locations.length - 1].id;
+                    hasMore = hasExtraTail || isEntireBatchAfterRange;
+                    continue;
+                }
+
+                const events = await fetchEventsForLocations(inRangeLocations);
+                if (!isCurrent()) return;
+                sessionsRawLocations.value = [
+                    ...sessionsRawLocations.value,
+                    ...inRangeLocations
+                ];
+                sessionsRawEvents.value = [
+                    ...sessionsRawEvents.value,
+                    ...events
+                ];
+                beforeId = locations[locations.length - 1].id;
+                rebuildSessions();
+                hasMore = hasExtraTail && !reachedRangeStart;
+            }
+            sessionsCursor.value = beforeId;
+            sessionsHasMore.value = hasMore;
+            return;
+        }
+
+        const locations = await database.getSessionsLocationSegments(
+            null,
+            fetchCount
+        );
+        if (!isCurrent()) return;
+        if (locations.length === 0) {
+            sessionsRawLocations.value = [];
+            sessionsRawEvents.value = [];
+            sessionsSegments.value = [];
+            sessionsHasMore.value = false;
+            return;
+        }
+
+        // Drop last segment for boundary cleanliness
+        const hasExtraTail = locations.length >= fetchCount;
+        if (hasExtraTail) {
+            locations.pop();
+        }
+
+        const events = await fetchEventsForLocations(locations);
+        if (!isCurrent()) return;
+        sessionsRawLocations.value = locations;
+        sessionsRawEvents.value = events;
+        rebuildSessions();
+
+        sessionsCursor.value = locations[locations.length - 1].id;
+        sessionsHasMore.value = hasExtraTail;
     }
 
     /**
      * Load more (older) session segments for infinite scroll.
      */
     async function loadMoreSessionsSegments() {
-        if (sessionsLoading.value || !sessionsHasMore.value) return;
-        sessionsLoading.value = true;
-        try {
-            const batchBudget = Math.max(
-                3,
-                Math.ceil(vrcxStore.maxTableSize / 100)
-            );
-            const fetchCount = batchBudget + 1;
+        if (!sessionsHasMore.value) return;
+        return sessionsLoader.more();
+    }
 
-            if (isSessionsGlobalSearchMode()) {
-                let beforeId = sessionsCursor.value;
-                let hasMore = sessionsHasMore.value;
-                const previousCount = sessionsSegments.value.length;
-                let attempts = 0;
+    async function performMoreSessionsLoad(isCurrent) {
+        if (!sessionsHasMore.value) return;
+        const batchBudget = Math.max(
+            3,
+            Math.ceil(vrcxStore.maxTableSize / 100)
+        );
+        const fetchCount = batchBudget + 1;
 
-                while (
-                    hasMore &&
-                    beforeId != null &&
-                    sessionsSegments.value.length < vrcxStore.searchLimit &&
-                    sessionsSegments.value.length === previousCount &&
-                    attempts < SESSIONS_SEARCH_BATCH_ATTEMPTS
-                ) {
-                    const nextBatch = await loadSessionsSearchBatch(
-                        beforeId,
-                        fetchCount
-                    );
-                    beforeId = nextBatch.beforeId;
-                    hasMore = nextBatch.hasMore;
-                    attempts += 1;
-                }
+        if (isSessionsGlobalSearchMode()) {
+            let beforeId = sessionsCursor.value;
+            let hasMore = sessionsHasMore.value;
+            const previousCount = sessionsSegments.value.length;
+            let attempts = 0;
 
-                sessionsCursor.value = beforeId;
-                sessionsHasMore.value = hasMore;
-                return;
+            while (
+                hasMore &&
+                beforeId != null &&
+                sessionsSegments.value.length < vrcxStore.searchLimit &&
+                sessionsSegments.value.length === previousCount &&
+                attempts < SESSIONS_SEARCH_BATCH_ATTEMPTS
+            ) {
+                const nextBatch = await loadSessionsSearchBatch(
+                    beforeId,
+                    fetchCount,
+                    isCurrent
+                );
+                if (!nextBatch) return;
+                beforeId = nextBatch.beforeId;
+                hasMore = nextBatch.hasMore;
+                attempts += 1;
             }
 
-            const moreLocations = await database.getSessionsLocationSegments(
-                sessionsCursor.value,
-                fetchCount
-            );
-            if (moreLocations.length === 0) {
-                sessionsHasMore.value = false;
-                return;
-            }
-
-            const hasExtraTail = moreLocations.length >= fetchCount;
-            if (hasExtraTail) {
-                moreLocations.pop();
-            }
-
-            const moreEvents = await fetchEventsForLocations(moreLocations);
-
-            sessionsRawLocations.value = [
-                ...sessionsRawLocations.value,
-                ...moreLocations
-            ];
-            sessionsRawEvents.value = [
-                ...sessionsRawEvents.value,
-                ...moreEvents
-            ];
-            rebuildSessions();
-
-            sessionsCursor.value = moreLocations[moreLocations.length - 1].id;
-            sessionsHasMore.value =
-                hasExtraTail &&
-                (!sessionsDateRangeActive.value ||
-                    toSessionsEpoch(
-                        moreLocations[moreLocations.length - 1].created_at
-                    ) >= toSessionsEpoch(sessionsDateFrom.value));
-        } finally {
-            sessionsLoading.value = false;
+            sessionsCursor.value = beforeId;
+            sessionsHasMore.value = hasMore;
+            return;
         }
+
+        const moreLocations = await database.getSessionsLocationSegments(
+            sessionsCursor.value,
+            fetchCount
+        );
+        if (!isCurrent()) return;
+        if (moreLocations.length === 0) {
+            sessionsHasMore.value = false;
+            return;
+        }
+
+        const hasExtraTail = moreLocations.length >= fetchCount;
+        if (hasExtraTail) {
+            moreLocations.pop();
+        }
+
+        const moreEvents = await fetchEventsForLocations(moreLocations);
+        if (!isCurrent()) return;
+
+        sessionsRawLocations.value = [
+            ...sessionsRawLocations.value,
+            ...moreLocations
+        ];
+        sessionsRawEvents.value = [...sessionsRawEvents.value, ...moreEvents];
+        rebuildSessions();
+
+        sessionsCursor.value = moreLocations[moreLocations.length - 1].id;
+        sessionsHasMore.value =
+            hasExtraTail &&
+            (!sessionsDateRangeActive.value ||
+                toSessionsEpoch(
+                    moreLocations[moreLocations.length - 1].created_at
+                ) >= toSessionsEpoch(sessionsDateFrom.value));
     }
 
     /**
@@ -1114,47 +1127,46 @@ export const useGameLogStore = defineStore('GameLog', () => {
      * @param {number} hours - how many hours back
      */
     async function jumpToSessionsAnchor(hours) {
-        if (sessionsLoading.value) return;
-        sessionsLoading.value = true;
-        try {
-            const sinceDate = new Date(
-                Date.now() - hours * 3600 * 1000
-            ).toISOString();
-            const maxSegments = Math.max(
-                10,
-                Math.ceil(vrcxStore.maxTableSize / 25)
-            );
+        return sessionsLoader.reload({ mode: 'anchor', hours });
+    }
 
-            const locations =
-                await database.getSessionsLocationSegmentsByAnchor(
-                    sinceDate,
-                    maxSegments + 1
-                );
-            if (locations.length === 0) {
-                sessionsRawLocations.value = [];
-                sessionsRawEvents.value = [];
-                sessionsSegments.value = [];
-                sessionsHasMore.value = false;
-                sessionsCursor.value = null;
-                return;
-            }
+    async function performAnchorSessionsLoad(hours, isCurrent) {
+        const sinceDate = new Date(
+            Date.now() - hours * 3600 * 1000
+        ).toISOString();
+        const maxSegments = Math.max(
+            10,
+            Math.ceil(vrcxStore.maxTableSize / 25)
+        );
 
-            // Drop last segment for boundary cleanliness
-            const hasExtraTail = locations.length > maxSegments;
-            if (hasExtraTail) {
-                locations.pop();
-            }
-
-            const events = await fetchEventsForLocations(locations);
-            sessionsRawLocations.value = locations;
-            sessionsRawEvents.value = events;
-            rebuildSessions();
-
-            sessionsCursor.value = locations[locations.length - 1].id;
-            sessionsHasMore.value = true;
-        } finally {
-            sessionsLoading.value = false;
+        const locations = await database.getSessionsLocationSegmentsByAnchor(
+            sinceDate,
+            maxSegments + 1
+        );
+        if (!isCurrent()) return;
+        if (locations.length === 0) {
+            sessionsRawLocations.value = [];
+            sessionsRawEvents.value = [];
+            sessionsSegments.value = [];
+            sessionsHasMore.value = false;
+            sessionsCursor.value = null;
+            return;
         }
+
+        // Drop last segment for boundary cleanliness
+        const hasExtraTail = locations.length > maxSegments;
+        if (hasExtraTail) {
+            locations.pop();
+        }
+
+        const events = await fetchEventsForLocations(locations);
+        if (!isCurrent()) return;
+        sessionsRawLocations.value = locations;
+        sessionsRawEvents.value = events;
+        rebuildSessions();
+
+        sessionsCursor.value = locations[locations.length - 1].id;
+        sessionsHasMore.value = true;
     }
 
     /**
@@ -1181,11 +1193,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
 
     async function toggleSessionsVipFilter() {
         sessionsVipFilter.value = !sessionsVipFilter.value;
-        if (isSessionsGlobalSearchMode()) {
-            await loadSessionsSegments();
-            return;
-        }
-        rebuildSessions();
+        await loadSessionsSegments();
     }
 
     /**

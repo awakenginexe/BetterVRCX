@@ -101,6 +101,14 @@
 
             <div v-else-if="segments.length === 0" class="game-log-sessions__empty bv-empty-state">
                 <DataTableEmpty v-if="!sessionsLoading" type="nodata" />
+                <Button
+                    v-if="!sessionsLoading && sessionsHasMore"
+                    data-testid="sessions-load-more-empty"
+                    variant="outline"
+                    size="sm"
+                    @click="gameLogStore.loadMoreSessionsSegments()">
+                    {{ t('common.load_more') }}
+                </Button>
             </div>
 
             <template v-else>

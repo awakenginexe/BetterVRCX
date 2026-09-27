@@ -235,4 +235,13 @@ describe('GameLogSessions.vue', () => {
             'bv-empty-state'
         );
     });
+
+    test('allows searching older batches when current results are empty', async () => {
+        sessionsHasMore.value = true;
+        const wrapper = mount(GameLogSessions);
+        await wrapper
+            .get('[data-testid="sessions-load-more-empty"]')
+            .trigger('click');
+        expect(mocks.loadMoreSessionsSegments).toHaveBeenCalledTimes(1);
+    });
 });
