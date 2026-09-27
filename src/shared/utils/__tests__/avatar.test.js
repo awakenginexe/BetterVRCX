@@ -39,6 +39,7 @@ describe('storeAvatarImage', () => {
         expect(result.avatarName).toBe('Cool Robot');
         expect(result.ownerId).toBe('usr_owner1');
         expect(result.fileCreatedAt).toBe('2024-01-01T00:00:00Z');
+        expect(result.isAvatarImage).toBe(true);
     });
 
     test('stores result in cachedAvatarNames map', () => {
@@ -58,6 +59,14 @@ describe('storeAvatarImage', () => {
             cache
         );
         expect(result.avatarName).toBe('');
+        expect(result.isAvatarImage).toBe(false);
+    });
+
+    test('does not classify a tagged custom icon as an avatar', () => {
+        const cache = new Map();
+        const args = makeArgs('Avatar - Misleading - Image - x', 'usr_456');
+        args.json.tags = ['icon'];
+        expect(storeAvatarImage(args, cache).isAvatarImage).toBe(false);
     });
 
     test('handles special characters in avatar name', () => {

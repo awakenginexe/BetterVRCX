@@ -20,7 +20,8 @@ function storeAvatarImage(args, cachedAvatarNames) {
     const avatarInfo = {
         ownerId,
         avatarName,
-        fileCreatedAt
+        fileCreatedAt,
+        isAvatarImage: Boolean(avatarName) && !args.json.tags?.includes('icon')
     };
     cachedAvatarNames.set(fileId, avatarInfo);
     return avatarInfo;
