@@ -30,7 +30,17 @@
                 v-model="screenshotMetadataDialog.search"
                 class="screenshot-metadata__search"
                 :placeholder="t('dialog.screenshot_metadata.search_placeholder')"
-                @input="screenshotMetadataSearch" />
+                @input="handleSearchInput"
+                @keydown.enter.prevent="screenshotMetadataSearch(true)"
+                @compositionstart="handleSearchCompositionStart"
+                @compositionend="handleSearchCompositionEnd" />
+            <Button
+                size="sm"
+                variant="outline"
+                :disabled="isComposing || !screenshotMetadataDialog.search.trim()"
+                @click="screenshotMetadataSearch(true)">
+                {{ t('nav_tooltip.search') }}
+            </Button>
             <Select :model-value="screenshotMetadataDialog.searchType" @update:modelValue="handleSearchTypeChange">
                 <SelectTrigger size="sm" style="width: 150px">
                     <SelectValue :placeholder="t('dialog.screenshot_metadata.search_type_placeholder')" />
@@ -484,7 +494,9 @@
         return results;
     }
 
-    const screenshotMetadataSearchInputs = ref(0);
+    const isComposing = ref(false);
+    let searchGeneration = 0;
+    let searchTimer = null;
 
     onMounted(() => {
         if (!screenshotMetadataDialog.metadata.filePath) {
@@ -501,6 +513,9 @@
         navigateNext();
     });
     onUnmounted(() => {
+        searchGeneration += 1;
+        clearTimeout(searchTimer);
+        screenshotMetadataDialog.loading = false;
         stopPrevWatch();
         stopNextWatch();
     });
@@ -697,53 +712,87 @@
     /**
      *
      */
-    function screenshotMetadataSearch() {
+    function handleSearchCompositionStart() {
+        isComposing.value = true;
+        searchGeneration += 1;
+        clearTimeout(searchTimer);
+        screenshotMetadataDialog.loading = false;
+    }
+
+    function handleSearchCompositionEnd() {
+        isComposing.value = false;
+        screenshotMetadataSearch();
+    }
+
+    function handleSearchInput(value) {
+        screenshotMetadataDialog.search = String(value ?? '');
+        screenshotMetadataSearch();
+    }
+
+    function clearSearchResults() {
         const D = screenshotMetadataDialog;
+        D.searchIndex = null;
+        D.searchResults = null;
+        searchResultsData.value = [];
+        selectedSearchFilePath.value = null;
+        searchViewMode.value = 'detail';
+        D.loading = false;
+        if (!D.metadata.filePath) D.metadata = {};
+    }
 
-        screenshotMetadataSearchInputs.value++;
-        let current = screenshotMetadataSearchInputs.value;
-        setTimeout(() => {
-            if (current !== screenshotMetadataSearchInputs.value) {
-                return;
-            }
-            screenshotMetadataSearchInputs.value = 0;
+    /**
+     * @param {boolean} explicit Allow nonempty short searches from Enter or the button.
+     */
+    function screenshotMetadataSearch(explicit = false) {
+        const D = screenshotMetadataDialog;
+        const generation = ++searchGeneration;
+        clearTimeout(searchTimer);
+        if (isComposing.value) return;
 
-            if (D.search === '') {
-                screenshotMetadataResetSearch();
-                if (D.metadata.filePath !== null) {
-                    getAndDisplayScreenshot(D.metadata.filePath, true);
-                }
-                return;
-            }
+        const query = D.search.trim();
+        if (!query) {
+            screenshotMetadataResetSearch();
+            return;
+        }
+        if (!explicit && Array.from(query).length < 3) {
+            clearSearchResults();
+            return;
+        }
 
-            const searchType = D.searchTypes.indexOf(D.searchType);
+        clearSearchResults();
+        const searchType = D.searchTypes.indexOf(D.searchType);
+        const runSearch = async () => {
+            if (generation !== searchGeneration) return;
             D.loading = true;
-            AppApi.FindScreenshotsBySearch(D.search, searchType)
-                .then(async (json) => {
-                    const results = JSON.parse(json);
-
-                    if (results.length === 0) {
-                        D.metadata = {};
-                        D.metadata.error = t('dialog.screenshot_metadata.no_results');
-
-                        D.searchIndex = null;
-                        D.searchResults = null;
-                        searchResultsData.value = [];
-                        searchViewMode.value = 'detail';
-                        return;
-                    }
-
-                    D.searchIndex = 0;
-                    D.searchResults = results;
-
-                    const enriched = await loadSearchResultsMetadata(results, D.search, searchType);
-                    searchResultsData.value = enriched;
-                    searchViewMode.value = 'table';
-                })
-                .finally(() => {
-                    D.loading = false;
-                });
-        }, 500);
+            try {
+                const json = await AppApi.FindScreenshotsBySearch(query, searchType);
+                if (generation !== searchGeneration) return;
+                const results = JSON.parse(json);
+                if (results.length === 0) {
+                    clearSearchResults();
+                    D.metadata = { error: t('dialog.screenshot_metadata.no_results') };
+                    return;
+                }
+                const enriched = await loadSearchResultsMetadata(results, query, searchType);
+                if (generation !== searchGeneration) return;
+                D.searchIndex = 0;
+                D.searchResults = results;
+                searchResultsData.value = enriched;
+                searchViewMode.value = 'table';
+            } catch (err) {
+                if (generation !== searchGeneration) return;
+                clearSearchResults();
+                D.metadata = { error: t('dialog.screenshot_metadata.search_failed') };
+                console.error('Screenshot search failed:', err);
+            } finally {
+                if (generation === searchGeneration) D.loading = false;
+            }
+        };
+        if (explicit) {
+            void runSearch();
+        } else {
+            searchTimer = setTimeout(runSearch, 500);
+        }
     }
 
     /**
@@ -761,12 +810,10 @@
     function screenshotMetadataResetSearch() {
         const D = screenshotMetadataDialog;
 
+        searchGeneration += 1;
+        clearTimeout(searchTimer);
         D.search = '';
-        D.searchIndex = null;
-        D.searchResults = null;
-        searchResultsData.value = [];
-        selectedSearchFilePath.value = null;
-        searchViewMode.value = 'detail';
+        clearSearchResults();
     }
 
     /**

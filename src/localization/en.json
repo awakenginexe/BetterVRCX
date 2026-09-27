@@ -2278,6 +2278,7 @@
             "upload": "Upload",
             "search_placeholder": "Search",
             "search_type_placeholder": "Search Type",
+            "search_failed": "Screenshot search failed",
             "search_types": {
                 "player_name": "Player Name",
                 "player_id": "Player ID",

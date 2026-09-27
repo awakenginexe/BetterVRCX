@@ -2047,6 +2047,7 @@
             "delete_metadata": "ลบเมทาดาตา",
             "search_placeholder": "ค้นหา",
             "search_type_placeholder": "ประเภทการค้นหา",
+            "search_failed": "ค้นหารูปหน้าจอไม่สำเร็จ",
             "search_types": {
                 "player_name": "ชื่อผู้เล่น",
                 "player_id": "ID ผู้เล่น",
