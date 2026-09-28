@@ -1061,7 +1061,8 @@ export const useGameLogStore = defineStore('GameLog', () => {
 
         if (isSessionsGlobalSearchMode()) {
             let beforeId = sessionsCursor.value;
-            let hasMore = sessionsHasMore.value;
+            /** @type {boolean} */
+            let hasMore = Boolean(sessionsHasMore.value);
             const previousCount = sessionsSegments.value.length;
             let attempts = 0;
 

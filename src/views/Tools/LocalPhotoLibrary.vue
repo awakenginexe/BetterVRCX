@@ -159,7 +159,7 @@
                         {{ statusText(selected.status) }}
                     </p>
                     <p class="text-xs text-muted-foreground">{{ t('view.tools.photo_library.player_note') }}</p>
-                    <Button size="sm" variant="outline" @click="AppApi.OpenFolderAndSelectItem(selected.filePath)">
+                    <Button size="sm" variant="outline" @click="openPhotoFolder">
                         <FolderOpen class="size-4" /> {{ t('dialog.screenshot_metadata.open_folder') }}
                     </Button>
                 </aside>
@@ -300,6 +300,10 @@
         detailId++;
         selected.value = null;
         history.value = null;
+    }
+
+    function openPhotoFolder() {
+        if (selected.value?.filePath) AppApi.OpenFolderAndSelectItem(selected.value.filePath);
     }
 
     watch(

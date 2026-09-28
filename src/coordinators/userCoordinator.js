@@ -68,7 +68,7 @@ export function invalidateUserPublicProfile(userId) {
             query.queryKey[0] === 'publicProfile' &&
             query.queryKey[2] === userId
     });
-    useInstanceStore().refreshPlayerPublicProfile(userId);
+    useInstanceStore().refreshPlayerPublicProfile();
 }
 const userRefRamCache = new Map();
 
@@ -339,8 +339,10 @@ export function showUserDialog(userId) {
     }
     const cachedFullRef = userRefRamCache.get(userId);
     const cachedFriend = friendStore.friends.get(userId);
-    const cachedPublicProfile = queryClient.getQueryData(
-        queryKeys.publicProfile(currentUser.id, userId)
+    const cachedPublicProfile = /** @type {any} */ (
+        queryClient.getQueryData(
+            queryKeys.publicProfile(currentUser.id, userId)
+        )
     )?.json;
 
     D.id = userId;

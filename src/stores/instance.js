@@ -1385,7 +1385,8 @@ export const useInstanceStore = defineStore('Instance', () => {
                 ref.id && queryKeys.publicProfile(accountId, ref.id);
             const profileState =
                 profileKey && queryClient.getQueryState(profileKey);
-            const publicProfileRef = profileState?.data?.json || {};
+            const publicProfileRef =
+                /** @type {any} */ (profileState?.data)?.json || {};
             if (
                 ref.id &&
                 (!profileState?.dataUpdatedAt ||

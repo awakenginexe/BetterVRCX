@@ -19,6 +19,11 @@ function classifyFailure(error) {
     return { status: 'unknown', reason: 'uncertain', retryable: false };
 }
 
+/**
+ * @param {{send: (payload: any) => Promise<any>, getAccountId: () => string,
+ * isLoggedIn: () => boolean, onSuccess?: (entry: any, payload: any) => void,
+ * onFinished?: (status: string, summary: any) => void, now?: () => number}} options
+ */
 export function createInviteBatchManager({
     send,
     getAccountId,

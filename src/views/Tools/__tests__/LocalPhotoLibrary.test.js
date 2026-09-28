@@ -133,8 +133,13 @@ describe('LocalPhotoLibrary', () => {
             .findAll('button')
             .find((button) => button.text() === 'Alice')
             .trigger('click');
+        await dialog
+            .findAll('button')
+            .find((button) => button.text().includes('open_folder'))
+            .trigger('click');
         expect(mocks.world).toHaveBeenCalledWith('wrld_1');
         expect(mocks.user).toHaveBeenCalledWith('usr_1');
+        expect(mocks.folder).toHaveBeenCalledWith('/photos/one.png');
         expect(mocks.thumbnail).toHaveBeenCalledTimes(3);
         const search = wrapper.find(
             'input[placeholder="view.tools.photo_library.search_hint"]'

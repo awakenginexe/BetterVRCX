@@ -60,8 +60,8 @@ export function buildRequestInit(endpoint, options) {
 
 /**
  * Parses a raw response: JSON-decodes response.data and detects API-level errors.
- * @param {{status: number, data?: string | object}} response
- * @returns {{status: number, data?: any, hasApiError?: boolean, parseError?: boolean}}
+ * @param {{status: number, data?: string | object, retryAfter?: string}} response
+ * @returns {{status: number, data?: any, retryAfter?: string, hasApiError?: boolean, parseError?: boolean}}
  */
 export function parseResponse(response) {
     if (!response.data) {
@@ -278,7 +278,12 @@ export function request(endpoint, options) {
                     retryAfter
                 );
             } else if (data && typeof data.error === 'string') {
-                $throw(data.status_code || status, data.error, endpoint, retryAfter);
+                $throw(
+                    data.status_code || status,
+                    data.error,
+                    endpoint,
+                    retryAfter
+                );
             }
             $throw(status, data, endpoint, retryAfter);
         });
@@ -332,6 +337,7 @@ export function shouldIgnoreError(code, endpoint) {
  * @param {string|object} [error]
  * @param {string} [endpoint]
  * @param {string} [retryAfter]
+ * @returns {never}
  */
 export function $throw(code, error, endpoint, retryAfter) {
     let message = [];
@@ -369,10 +375,11 @@ export function $throw(code, error, endpoint, retryAfter) {
             position: 'bottom-left'
         });
     }
-    const e = new Error(text);
-    e.status = code;
-    e.endpoint = endpoint;
-    if (retryAfter) e.retryAfter = retryAfter;
+    const e = Object.assign(new Error(text), {
+        status: code,
+        endpoint,
+        retryAfter
+    });
     throw e;
 }
 
