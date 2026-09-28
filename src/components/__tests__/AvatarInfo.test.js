@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createI18n } from 'vue-i18n';
 import { createTestingPinia } from '@pinia/testing';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
 import AvatarInfo from '../AvatarInfo.vue';
@@ -84,7 +84,12 @@ vi.mock('../../services/watchState', () => ({
 import * as avatarCoordinatorModule from '../../coordinators/avatarCoordinator';
 vi.mock('../../coordinators/avatarCoordinator', async (importOriginal) => {
     const actual = await importOriginal();
-    return { ...actual, showAvatarAuthorDialog: vi.fn() };
+    return {
+        ...actual,
+        getAvatarName: vi.fn(),
+        showAvatarAuthorDialog: vi.fn(),
+        showAvatarDialog: vi.fn()
+    };
 });
 
 const i18n = createI18n({
@@ -128,6 +133,29 @@ describe('AvatarInfo.vue', () => {
     });
 
     describe('avatar name display', () => {
+        test('keeps the observed avatar when an older image lookup finishes later', async () => {
+            let finishLookup;
+            vi.mocked(avatarCoordinatorModule.getAvatarName).mockImplementation(
+                () => new Promise((resolve) => (finishLookup = resolve))
+            );
+            const wrapper = mountAvatarInfo({
+                imageurl: 'https://example.com/old-avatar.png',
+                userid: 'usr_friend'
+            });
+            await wrapper.setProps({
+                observedAvatar: {
+                    id: 'avtr_public',
+                    name: 'Jelly Birb',
+                    authorId: 'usr_creator',
+                    releaseStatus: 'public'
+                }
+            });
+            finishLookup({ avatarName: 'Old Avatar', ownerId: 'usr_old' });
+            await flushPromises();
+            expect(wrapper.text()).toContain('Jelly Birb');
+            expect(wrapper.text()).not.toContain('Old Avatar');
+        });
+
         test('shows hintavatarname when hintownerid is provided', () => {
             const wrapper = mountAvatarInfo({
                 imageurl: 'https://example.com/avatar.png',
@@ -213,6 +241,27 @@ describe('AvatarInfo.vue', () => {
     });
 
     describe('click behavior', () => {
+        test('opens the observed public avatar even without a profile avatar image', async () => {
+            const wrapper = mountAvatarInfo({
+                userid: 'usr_friend',
+                observedAvatar: {
+                    id: 'avtr_public',
+                    name: 'Jelly Birb',
+                    authorId: 'usr_creator',
+                    releaseStatus: 'public'
+                }
+            });
+
+            expect(wrapper.text()).toContain('Jelly Birb');
+            await wrapper.trigger('click');
+            expect(
+                avatarCoordinatorModule.showAvatarDialog
+            ).toHaveBeenCalledWith('avtr_public');
+            expect(
+                avatarCoordinatorModule.showAvatarAuthorDialog
+            ).not.toHaveBeenCalled();
+        });
+
         test('does not call showAvatarAuthorDialog when no imageurl', async () => {
             const wrapper = mountAvatarInfo({});
             await wrapper.trigger('click');

@@ -402,13 +402,18 @@
             {{
                 userDialog.id !== currentUser.id &&
                 userDialog.ref.profilePicOverride &&
-                userDialog.ref.currentAvatarImageUrl
+                userDialog.ref.currentAvatarImageUrl &&
+                !verifiedObservedAvatar
                     ? t('dialog.user.info.avatar_info_last_seen')
                     : t('dialog.user.info.avatar_info')
             }}
             <span class="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 <TooltipWrapper
-                    v-if="userDialog.ref.profilePicOverride && !userDialog.ref.currentAvatarImageUrl"
+                    v-if="
+                        userDialog.ref.profilePicOverride &&
+                        !userDialog.ref.currentAvatarImageUrl &&
+                        !verifiedObservedAvatar
+                    "
                     side="top"
                     :content="t('dialog.user.info.vrcplus_hides_avatar')">
                     <Info class="inline-block h-3 w-3 align-middle" :style="{ color: userDialog.theme.iconColor }" />
@@ -419,7 +424,8 @@
             v-if="
                 userDialog.loading &&
                 !userDialog.ref.currentAvatarImageUrl &&
-                !userDialog.ref.currentAvatarThumbnailImageUrl
+                !userDialog.ref.currentAvatarThumbnailImageUrl &&
+                !verifiedObservedAvatar
             ">
             <div class="flex items-center justify-between gap-2">
                 <div class="space-y-1.5 flex-1">
@@ -432,19 +438,16 @@
         <div v-else class="text-xs flex justify-between gap-2">
             <AvatarInfo
                 :key="userDialog.id"
-                :imageurl="userDialog.ref.currentAvatarImageUrl"
+                :imageurl="avatarImageUrl"
                 :userid="userDialog.id"
-                :avatartags="userDialog.ref.currentAvatarTags"
+                :avatartags="avatarTags"
+                :observed-avatar="verifiedObservedAvatar"
                 style="display: inline-block" />
             <img
-                v-if="userDialog.ref.currentAvatarThumbnailImageUrl"
+                v-if="avatarThumbnailImageUrl"
                 class="h-12 w-16 rounded-lg object-cover cursor-pointer flex-none border border-(--bv-border-default)"
-                :src="userDialog.ref.currentAvatarThumbnailImageUrl"
-                @click="
-                    showFullscreenImageDialog(
-                        userDialog.ref.currentAvatarImageUrl || userDialog.ref.currentAvatarThumbnailImageUrl
-                    )
-                "
+                :src="avatarThumbnailImageUrl"
+                @click="showFullscreenImageDialog(avatarImageUrl || avatarThumbnailImageUrl)"
                 loading="lazy" />
         </div>
     </div>
@@ -523,7 +526,16 @@
     import { copyToClipboard, formatDateFilter, languageClass, openDiscordProfile } from '../../../shared/utils';
     import { useUserDisplay } from '../../../composables/useUserDisplay';
     import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
-    import { useGalleryStore, useUserStore } from '../../../stores';
+    import {
+        useAvatarStore,
+        useGalleryStore,
+        useGameLogStore,
+        useGameStore,
+        useLocationStore,
+        usePhotonStore,
+        useUserStore
+    } from '../../../stores';
+    import { observedAvatarRequester } from '../../../services/observedAvatarRequest';
     import { Badge } from '../../ui/badge';
     import { Checkbox } from '../../ui/checkbox';
     import { Skeleton } from '@/components/ui/skeleton';
@@ -561,6 +573,122 @@
     const { t } = useI18n();
 
     const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
+    const { isGameRunning } = storeToRefs(useGameStore());
+    const { photonLobbyCurrent, photonLobbyAvatars } = storeToRefs(usePhotonStore());
+    const { lastLocation } = storeToRefs(useLocationStore());
+    const gameLogStore = useGameLogStore();
+    const avatarStore = useAvatarStore();
+    const verifiedObservedAvatar = ref(null);
+    const avatarImageUrl = computed(() =>
+        verifiedObservedAvatar.value
+            ? verifiedObservedAvatar.value.imageUrl
+            : userDialog.value.ref.currentAvatarImageUrl
+    );
+    const avatarThumbnailImageUrl = computed(() =>
+        verifiedObservedAvatar.value
+            ? verifiedObservedAvatar.value.thumbnailImageUrl
+            : userDialog.value.ref.currentAvatarThumbnailImageUrl
+    );
+    const avatarTags = computed(() =>
+        verifiedObservedAvatar.value ? verifiedObservedAvatar.value.tags || [] : userDialog.value.ref.currentAvatarTags
+    );
+    const observedAvatarId = computed(() => {
+        if (!isGameRunning.value || !userDialog.value.id) return '';
+        const isPresent = [...photonLobbyCurrent.value.values()].some((user) => user?.id === userDialog.value.id);
+        return isPresent ? photonLobbyAvatars.value.get(userDialog.value.id) || '' : '';
+    });
+    const isPresentInGameLog = computed(
+        () => isGameRunning.value && lastLocation.value.playerList.has(userDialog.value.id)
+    );
+    const loggedAvatarName = computed(
+        () => gameLogStore.state.lastLocationAvatarList.get(userDialog.value.ref.displayName) || ''
+    );
+
+    watch(
+        [() => userDialog.value.id, observedAvatarId],
+        async ([userId, avatarId], _previous, onCleanup) => {
+            verifiedObservedAvatar.value = null;
+            if (!avatarId) return;
+
+            let cancelled = false;
+            onCleanup(() => (cancelled = true));
+            try {
+                const response = await observedAvatarRequester.getAvatar(
+                    avatarId,
+                    () => cancelled || userDialog.value.id !== userId || observedAvatarId.value !== avatarId
+                );
+                if (response.status !== 'ok') return;
+                const { json } = response;
+                if (cancelled || userDialog.value.id !== userId || observedAvatarId.value !== avatarId) return;
+                const observedAuthorId = avatarStore.cachedAvatars.get(avatarId)?.authorId;
+                if (
+                    json?.id === avatarId &&
+                    json.releaseStatus === 'public' &&
+                    (!observedAuthorId || json.authorId === observedAuthorId)
+                ) {
+                    verifiedObservedAvatar.value = json;
+                }
+            } catch {
+                // An unavailable or private avatar keeps the profile's existing fallback.
+            }
+        },
+        { immediate: true }
+    );
+    watch(
+        [() => userDialog.value.id, isPresentInGameLog, loggedAvatarName, observedAvatarId],
+        async ([userId, isPresent, currentLogName, photonAvatarId], _previous, onCleanup) => {
+            if (!photonAvatarId) verifiedObservedAvatar.value = null;
+            if (
+                !isPresent ||
+                photonAvatarId ||
+                typeof AppApi === 'undefined' ||
+                typeof AppApi.GetObservedAvatarLogData !== 'function'
+            )
+                return;
+
+            let cancelled = false;
+            onCleanup(() => (cancelled = true));
+            try {
+                const observation = JSON.parse(await AppApi.GetObservedAvatarLogData(userDialog.value.ref.displayName));
+                const name = (observation.avatarName || currentLogName || '').normalize('NFKC').trim();
+                if (!name || !Array.isArray(observation.avatarIds)) return;
+                const avatarIds = [...new Set(observation.avatarIds)]
+                    .filter((id) => /^avtr_[0-9a-f-]{36}$/i.test(id))
+                    .slice(-20);
+                const matches = [];
+                let completed = true;
+                for (const avatarId of avatarIds) {
+                    const response = await observedAvatarRequester.getAvatar(
+                        avatarId,
+                        () =>
+                            cancelled ||
+                            userDialog.value.id !== userId ||
+                            !isPresentInGameLog.value ||
+                            !!observedAvatarId.value
+                    );
+                    if (response.status === 'cancelled' || response.status === 'rate_limited') {
+                        completed = false;
+                        break;
+                    }
+                    const avatar = response.status === 'ok' ? response.json : null;
+                    if (
+                        avatar?.id === avatarId &&
+                        avatar.releaseStatus === 'public' &&
+                        avatar.name?.normalize('NFKC').trim() === name
+                    ) {
+                        matches.push(avatar);
+                        if (matches.length > 1) break;
+                    }
+                }
+                if (cancelled || userDialog.value.id !== userId || !isPresentInGameLog.value || observedAvatarId.value)
+                    return;
+                if (completed && matches.length === 1) verifiedObservedAvatar.value = matches[0];
+            } catch {
+                // Keep the existing profile fallback when local observations are unavailable.
+            }
+        },
+        { immediate: true }
+    );
     const { toggleSharedConnectionsOptOut, toggleDiscordFriendsOptOut, toggleAvatarCopying, toggleAllowBooping } =
         useUserStore();
 

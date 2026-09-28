@@ -243,6 +243,7 @@ declare global {
 
         // Folders
         GetVRChatAppDataLocation(): Promise<string>;
+        GetObservedAvatarLogData(displayName: string): Promise<string>;
         GetVRChatPhotosLocation(): Promise<string>;
         GetUGCPhotoLocation(path?: string): Promise<string>;
         GetVRChatScreenshotsLocation(): Promise<string>;

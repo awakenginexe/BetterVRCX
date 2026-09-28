@@ -21,7 +21,7 @@
     import { useI18n } from 'vue-i18n';
 
     import { TooltipWrapper } from './ui/tooltip';
-    import { getAvatarName, showAvatarAuthorDialog } from '../coordinators/avatarCoordinator';
+    import { getAvatarName, showAvatarAuthorDialog, showAvatarDialog } from '../coordinators/avatarCoordinator';
 
     const { t } = useI18n();
 
@@ -30,21 +30,27 @@
         userid: String,
         hintownerid: String,
         hintavatarname: [String, Object],
-        avatartags: Array
+        avatartags: Array,
+        observedAvatar: Object
     });
 
     const avatarName = ref('');
     const avatarType = ref('');
     const avatarTags = ref('');
     let ownerId = '';
+    let parseVersion = 0;
 
     const parse = async () => {
+        const version = ++parseVersion;
         ownerId = '';
         avatarName.value = '';
         avatarType.value = '';
         avatarTags.value = '';
 
-        if (!props.imageurl) {
+        if (props.observedAvatar?.id && props.observedAvatar.releaseStatus === 'public') {
+            avatarName.value = props.observedAvatar.name;
+            ownerId = props.observedAvatar.authorId;
+        } else if (!props.imageurl) {
             avatarName.value = '';
         } else if (props.hintownerid) {
             if (typeof props.hintavatarname === 'string') {
@@ -54,6 +60,7 @@
         } else {
             try {
                 const info = await getAvatarName(props.imageurl);
+                if (version !== parseVersion) return;
                 avatarName.value = info.avatarName;
                 ownerId = info.ownerId;
             } catch {
@@ -63,6 +70,8 @@
 
         if (typeof props.userid === 'undefined' || !ownerId) {
             avatarType.value = '';
+        } else if (props.observedAvatar?.id && props.observedAvatar.releaseStatus === 'public') {
+            avatarType.value = '(public)';
         } else if (ownerId === props.userid) {
             avatarType.value = '(own)';
         } else {
@@ -75,9 +84,15 @@
     };
 
     const confirm = () => {
+        if (props.observedAvatar?.id && props.observedAvatar.releaseStatus === 'public') {
+            showAvatarDialog(props.observedAvatar.id);
+            return;
+        }
         if (!props.imageurl) return;
         showAvatarAuthorDialog(props.userid, ownerId, props.imageurl);
     };
 
-    watch([() => props.imageurl, () => props.userid, () => props.avatartags], parse, { immediate: true });
+    watch([() => props.imageurl, () => props.userid, () => props.avatartags, () => props.observedAvatar], parse, {
+        immediate: true
+    });
 </script>

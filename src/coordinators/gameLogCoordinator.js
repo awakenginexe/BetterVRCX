@@ -380,25 +380,15 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             let avatarName = gameLogStore.state.lastLocationAvatarList.get(
                 gameLog.displayName
             );
-            if (
-                photonStore.photonLoggingEnabled ||
-                avatarName === gameLog.avatarName
-            ) {
+            if (avatarName === gameLog.avatarName) {
                 break;
             }
+            gameLogStore.state.lastLocationAvatarList.set(gameLog.displayName, gameLog.avatarName);
+            if (photonStore.photonLoggingEnabled) break;
             if (!avatarName) {
-                avatarName = gameLog.avatarName;
-                gameLogStore.state.lastLocationAvatarList.set(
-                    gameLog.displayName,
-                    avatarName
-                );
                 break;
             }
             avatarName = gameLog.avatarName;
-            gameLogStore.state.lastLocationAvatarList.set(
-                gameLog.displayName,
-                avatarName
-            );
             entry = {
                 created_at: gameLog.dt,
                 type: 'AvatarChange',

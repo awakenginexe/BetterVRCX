@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 
 const userDialogMock = ref({
     id: 'usr_target',
@@ -45,6 +45,15 @@ const alwaysAnimateVRCProfileEffectsMock = ref(false);
 const cachedProfileEffectsMock = ref(new Map());
 const cachedIconFramesMock = ref(new Map());
 const cachedNameplateEffectsMock = ref(new Map());
+const isGameRunningMock = ref(true);
+const photonLobbyCurrentMock = ref(new Map());
+const photonLobbyAvatarsMock = ref(new Map());
+const lastLocationMock = ref({
+    location: 'wrld_test:1',
+    playerList: new Map()
+});
+const gameLogStateMock = reactive({ lastLocationAvatarList: new Map() });
+const cachedAvatarsMock = new Map();
 const copyUserDisplayNameMock = vi.fn();
 const getUserStateTextMock = vi.fn(() => 'Online');
 const toggleBadgeVisibilityMock = vi.fn();
@@ -78,7 +87,19 @@ vi.mock('../../../../stores', () => ({
     }),
     useGalleryStore: () => ({
         showFullscreenImageDialog: vi.fn()
-    })
+    }),
+    useGameStore: () => ({ isGameRunning: isGameRunningMock }),
+    usePhotonStore: () => ({
+        photonLobbyCurrent: photonLobbyCurrentMock,
+        photonLobbyAvatars: photonLobbyAvatarsMock
+    }),
+    useLocationStore: () => ({ lastLocation: lastLocationMock }),
+    useGameLogStore: () => ({ state: gameLogStateMock }),
+    useAvatarStore: () => ({ cachedAvatars: cachedAvatarsMock })
+}));
+
+vi.mock('../../../../api', () => ({
+    avatarRequest: { getAvatar: vi.fn() }
 }));
 
 vi.mock('../../../../composables/useUserDisplay', () => ({
@@ -118,9 +139,19 @@ vi.mock('../UserActionDropdown.vue', () => ({
 }));
 
 vi.mock('@/components/AvatarInfo.vue', () => ({
-    default: { template: '<div data-testid="avatar-info" />' }
+    default: {
+        name: 'AvatarInfo',
+        props: ['observedAvatar'],
+        template: '<div data-testid="avatar-info" />'
+    }
 }));
 
+vi.mock('../../../../services/observedAvatarRequest', () => ({
+    observedAvatarRequester: { getAvatar: vi.fn() }
+}));
+
+import { avatarRequest } from '../../../../api';
+import { observedAvatarRequester } from '../../../../services/observedAvatarRequest';
 import UserSummaryHeader from '../UserSummaryHeader.vue';
 
 function mountHeader(props = {}) {
@@ -132,6 +163,16 @@ function mountHeader(props = {}) {
             toggleBadgeShowcased: toggleBadgeShowcasedMock,
             userDialogCommand: userDialogCommandMock,
             ...props
+        },
+        global: {
+            components: {
+                AvatarInfo: {
+                    name: 'AvatarInfo',
+                    props: ['observedAvatar'],
+                    template: '<div data-testid="avatar-info" />'
+                },
+                TooltipWrapper: { template: '<div><slot /></div>' }
+            }
         }
     });
 }
@@ -154,10 +195,369 @@ describe('UserSummaryHeader.vue', () => {
         cachedProfileEffectsMock.value = new Map();
         cachedIconFramesMock.value = new Map();
         cachedNameplateEffectsMock.value = new Map();
+        isGameRunningMock.value = true;
+        photonLobbyCurrentMock.value = new Map();
+        photonLobbyAvatarsMock.value = new Map();
+        lastLocationMock.value = {
+            location: 'wrld_test:1',
+            playerList: new Map()
+        };
+        gameLogStateMock.lastLocationAvatarList.clear();
+        globalThis.AppApi = {
+            GetObservedAvatarLogData: vi
+                .fn()
+                .mockResolvedValue('{"avatarName":"","avatarIds":[]}')
+        };
+        cachedAvatarsMock.clear();
+        vi.mocked(avatarRequest.getAvatar).mockReset();
+        vi.mocked(observedAvatarRequester.getAvatar)
+            .mockReset()
+            .mockImplementation(async (avatarId, isCancelled) => {
+                if (isCancelled()) return { status: 'cancelled' };
+                try {
+                    const { json } = await avatarRequest.getAvatar({
+                        avatarId
+                    });
+                    return { status: 'ok', json };
+                } catch (error) {
+                    return {
+                        status: error?.status === 429 ? 'rate_limited' : 'error'
+                    };
+                }
+            });
         currentUserMock.value.id = 'usr_self';
         isLocalUserVrcPlusSupporterMock.value = false;
         copyUserDisplayNameMock.mockReset();
         userImageMock.mockClear();
+    });
+
+    test('shows the verified current public avatar from a friend in the same instance', async () => {
+        photonLobbyCurrentMock.value.set(1, { id: 'usr_target' });
+        photonLobbyAvatarsMock.value.set('usr_target', 'avtr_jelly');
+        cachedAvatarsMock.set('avtr_jelly', { authorId: 'usr_creator' });
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValue({
+            json: {
+                id: 'avtr_jelly',
+                name: 'Jelly Birb',
+                authorId: 'usr_creator',
+                releaseStatus: 'public',
+                imageUrl: 'https://example.com/jelly.png',
+                thumbnailImageUrl: 'https://example.com/jelly-thumb.png'
+            }
+        });
+
+        const wrapper = mountHeader();
+        await flushPromises();
+
+        expect(observedAvatarRequester.getAvatar).toHaveBeenCalledWith(
+            'avtr_jelly',
+            expect.any(Function)
+        );
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toMatchObject({
+            id: 'avtr_jelly',
+            name: 'Jelly Birb'
+        });
+        expect(
+            wrapper
+                .find('img[src="https://example.com/jelly-thumb.png"]')
+                .exists()
+        ).toBe(true);
+        wrapper.unmount();
+    });
+
+    test('uses a unique public avatar ID matching the current game log name when Photon is unavailable', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Fish v1․0',
+                avatarIds: [
+                    'avtr_11111111-1111-1111-1111-111111111111',
+                    'avtr_22222222-2222-2222-2222-222222222222'
+                ]
+            })
+        );
+        vi.mocked(avatarRequest.getAvatar).mockImplementation(({ avatarId }) =>
+            Promise.resolve({
+                json: {
+                    id: avatarId,
+                    name:
+                        avatarId === 'avtr_22222222-2222-2222-2222-222222222222'
+                            ? 'Fish v1.0'
+                            : 'Other',
+                    authorId: 'usr_creator',
+                    releaseStatus: 'public',
+                    thumbnailImageUrl: 'https://example.com/fish.png'
+                }
+            })
+        );
+
+        const wrapper = mountHeader();
+        await flushPromises();
+
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')?.id
+        ).toBe('avtr_22222222-2222-2222-2222-222222222222');
+        wrapper.unmount();
+    });
+
+    test('does not guess when multiple public avatar IDs share the logged name', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Same name',
+                avatarIds: [
+                    'avtr_11111111-1111-1111-1111-111111111111',
+                    'avtr_22222222-2222-2222-2222-222222222222'
+                ]
+            })
+        );
+        vi.mocked(avatarRequest.getAvatar).mockImplementation(({ avatarId }) =>
+            Promise.resolve({
+                json: {
+                    id: avatarId,
+                    name: 'Same name',
+                    releaseStatus: 'public'
+                }
+            })
+        );
+
+        const wrapper = mountHeader();
+        await flushPromises();
+
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        wrapper.unmount();
+    });
+
+    test('requests logged avatar candidates one at a time', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Fish',
+                avatarIds: [
+                    'avtr_11111111-1111-1111-1111-111111111111',
+                    'avtr_22222222-2222-2222-2222-222222222222'
+                ]
+            })
+        );
+        let finishFirstRequest;
+        vi.mocked(avatarRequest.getAvatar)
+            .mockImplementationOnce(
+                () => new Promise((resolve) => (finishFirstRequest = resolve))
+            )
+            .mockResolvedValueOnce({
+                json: {
+                    id: 'avtr_22222222-2222-2222-2222-222222222222',
+                    name: 'Fish',
+                    releaseStatus: 'public'
+                }
+            });
+
+        const wrapper = mountHeader();
+        await flushPromises();
+        expect(avatarRequest.getAvatar).toHaveBeenCalledTimes(1);
+        finishFirstRequest({
+            json: {
+                id: 'avtr_11111111-1111-1111-1111-111111111111',
+                name: 'Other',
+                releaseStatus: 'public'
+            }
+        });
+        wrapper.unmount();
+    });
+
+    test('stops checking logged candidates after VRChat rate limits a request', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Fish',
+                avatarIds: [
+                    'avtr_11111111-1111-1111-1111-111111111111',
+                    'avtr_22222222-2222-2222-2222-222222222222'
+                ]
+            })
+        );
+        vi.mocked(avatarRequest.getAvatar).mockRejectedValueOnce(
+            Object.assign(new Error('rate limited'), {
+                status: 429,
+                retryAfter: '60'
+            })
+        );
+
+        const wrapper = mountHeader();
+        await flushPromises();
+        expect(avatarRequest.getAvatar).toHaveBeenCalledTimes(1);
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        wrapper.unmount();
+    });
+
+    test('rejects private log candidates and clears a result when the friend leaves', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Fish v1.0',
+                avatarIds: ['avtr_22222222-2222-2222-2222-222222222222']
+            })
+        );
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValueOnce({
+            json: {
+                id: 'avtr_22222222-2222-2222-2222-222222222222',
+                name: 'Fish v1.0',
+                releaseStatus: 'private'
+            }
+        });
+        const wrapper = mountHeader();
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+
+        gameLogStateMock.lastLocationAvatarList.set('TargetUser', 'Fish v1.0');
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValueOnce({
+            json: {
+                id: 'avtr_22222222-2222-2222-2222-222222222222',
+                name: 'Fish v1.0',
+                releaseStatus: 'public'
+            }
+        });
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')?.releaseStatus
+        ).toBe('public');
+
+        lastLocationMock.value.playerList.delete('usr_target');
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        wrapper.unmount();
+    });
+
+    test('does not expose a private or mismatched observed avatar', async () => {
+        photonLobbyCurrentMock.value.set(1, { id: 'usr_target' });
+        photonLobbyAvatarsMock.value.set('usr_target', 'avtr_jelly');
+        cachedAvatarsMock.set('avtr_jelly', { authorId: 'usr_creator' });
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValueOnce({
+            json: {
+                id: 'avtr_jelly',
+                name: 'Private Avatar',
+                authorId: 'usr_creator',
+                releaseStatus: 'private',
+                thumbnailImageUrl: 'https://example.com/private.png'
+            }
+        });
+        const wrapper = mountHeader();
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        expect(
+            wrapper.find('img[src="https://example.com/private.png"]').exists()
+        ).toBe(false);
+
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValueOnce({
+            json: {
+                id: 'avtr_other',
+                name: 'Wrong Avatar',
+                authorId: 'usr_wrong',
+                releaseStatus: 'public'
+            }
+        });
+        cachedAvatarsMock.set('avtr_other', { authorId: 'usr_creator' });
+        photonLobbyAvatarsMock.value.set('usr_target', 'avtr_other');
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        wrapper.unmount();
+    });
+
+    test('discards an observed avatar response after the friend leaves', async () => {
+        photonLobbyCurrentMock.value.set(1, { id: 'usr_target' });
+        photonLobbyAvatarsMock.value.set('usr_target', 'avtr_jelly');
+        let finishRequest;
+        vi.mocked(avatarRequest.getAvatar).mockImplementation(
+            () => new Promise((resolve) => (finishRequest = resolve))
+        );
+        const wrapper = mountHeader();
+        photonLobbyCurrentMock.value.delete(1);
+        finishRequest({
+            json: {
+                id: 'avtr_jelly',
+                name: 'Jelly Birb',
+                authorId: 'usr_creator',
+                releaseStatus: 'public'
+            }
+        });
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
+        wrapper.unmount();
+    });
+
+    test('does not pair the current avatar name with an old profile thumbnail', async () => {
+        userDialogMock.value.ref.currentAvatarThumbnailImageUrl =
+            'https://example.com/old-avatar.png';
+        photonLobbyCurrentMock.value.set(1, { id: 'usr_target' });
+        photonLobbyAvatarsMock.value.set('usr_target', 'avtr_jelly');
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValue({
+            json: {
+                id: 'avtr_jelly',
+                name: 'Jelly Birb',
+                authorId: 'usr_creator',
+                releaseStatus: 'public'
+            }
+        });
+
+        const wrapper = mountHeader();
+        await flushPromises();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')?.name
+        ).toBe('Jelly Birb');
+        expect(
+            wrapper
+                .find('img[src="https://example.com/old-avatar.png"]')
+                .exists()
+        ).toBe(false);
+        wrapper.unmount();
     });
 
     test('renders VRC+ badge with md size when userDialog.ref.$isVRCPlus is true', () => {
