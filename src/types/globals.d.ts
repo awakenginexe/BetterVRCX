@@ -410,7 +410,9 @@ declare global {
         ClearCookies(): Promise<void>;
         GetCookies(): Promise<string>;
         SetCookies(cookie: string): Promise<void>;
-        Execute(options: any): Promise<{ Item1: number; Item2: string; Item3?: string }>;
+        Execute(
+            options: any
+        ): Promise<{ Item1: number; Item2: string; Item3?: string }>;
         ExecuteJson(requestJson: string): Promise<string>;
     };
 
