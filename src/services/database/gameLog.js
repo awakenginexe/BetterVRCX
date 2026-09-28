@@ -1316,6 +1316,52 @@ const gameLog = {
         return players;
     },
 
+    // Read only detail enrichment. Both the exact instance and a closed session must cover the
+    // metadata timestamp; players are included only when their recorded stay spans that time.
+    async getPhotoHistoryContext(worldId, instanceId, timestampUtc) {
+        if (
+            !worldId ||
+            !instanceId ||
+            !timestampUtc ||
+            Number.isNaN(Date.parse(timestampUtc))
+        )
+            return null;
+        const sessions = [];
+        await sqliteService.execute(
+            (row) => sessions.push({ location: row[0], worldName: row[1] }),
+            `SELECT location, world_name FROM gamelog_location
+             WHERE world_id = @world AND location = @location AND time > 0
+               AND (julianday(@at) - julianday(created_at)) * 86400000 BETWEEN 0 AND time
+             LIMIT 2`,
+            {
+                '@world': worldId,
+                '@location': instanceId,
+                '@at': timestampUtc
+            }
+        );
+        if (sessions.length !== 1) return null;
+        const players = [];
+        const seen = new Set();
+        await sqliteService.execute(
+            (row) => {
+                const key = row[1] || row[0];
+                if (key && !seen.has(key)) {
+                    seen.add(key);
+                    players.push({ displayName: row[0], userId: row[1] });
+                }
+            },
+            `SELECT display_name, user_id FROM gamelog_join_leave
+            WHERE location = @location AND type = 'OnPlayerLeft' AND time > 0
+              AND (julianday(@at) - julianday(created_at)) * 86400000 BETWEEN -time AND 0
+            ORDER BY id DESC LIMIT 200`,
+            {
+                '@location': instanceId,
+                '@at': timestampUtc
+            }
+        );
+        return { worldName: sessions[0].worldName, players, source: 'gamelog' };
+    },
+
     /**
      * @param {string} location
      * @returns {Promise<Array<{created_at: string, display_name: string, user_id: string, time: number}>>}

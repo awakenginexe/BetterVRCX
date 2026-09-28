@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -59,7 +60,7 @@ public partial class AppApi
             return null;
 
 
-        var metadata = ScreenshotHelper.GetScreenshotMetadata(path);
+        var metadata = ScreenshotHelper.GetCachedOrParseMetadata(path);
 
         if (metadata == null)
         {
@@ -113,6 +114,35 @@ public partial class AppApi
         logger.Info($"FindScreenshotsBySearch took {stopwatch.ElapsedMilliseconds}ms to complete.");
 
         return json.ToString();
+    }
+
+    public Task<string> GetLocalPhotoPage(string search, string from, string to,
+        string beforeTime, string beforePath, int limit, bool refresh = false)
+    {
+        return Task.Run(() =>
+        {
+            var directory = GetVRChatPhotosLocation();
+            if (string.IsNullOrWhiteSpace(directory))
+                return "{\"items\":[],\"hasMore\":false}";
+            var cursor = long.TryParse(beforeTime, out var parsed) && parsed > 0 ? parsed : long.MaxValue;
+            var page = ScreenshotPhotoLibrary.GetPage(directory, search, from, to,
+                cursor, beforePath, limit, refresh);
+            return JsonConvert.SerializeObject(page, new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                }
+            });
+        });
+    }
+
+    public Task<string> GetLocalPhotoThumbnail(string path, int size = 256)
+    {
+        var directory = GetVRChatPhotosLocation();
+        return string.IsNullOrWhiteSpace(directory)
+            ? Task.FromResult<string>(null)
+            : ScreenshotPhotoLibrary.GetThumbnailAsync(directory, path, size);
     }
 
     public string GetLastScreenshot()

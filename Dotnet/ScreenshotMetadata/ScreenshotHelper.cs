@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,8 +13,24 @@ namespace VRCX
     internal static class ScreenshotHelper
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private static readonly ScreenshotMetadataDatabase CacheDatabase = new(Path.Join(Program.AppDataDirectory, "metadataCache.db"));
-        private static readonly ConcurrentDictionary<string, ScreenshotMetadata?> MetadataCache = new();
+        private static readonly Lazy<ScreenshotMetadataDatabase> CacheDatabase =
+            new(() => new ScreenshotMetadataDatabase(Path.Join(Program.AppDataDirectory, "metadataCache.db")));
+        private static readonly object CacheLock = new();
+        private const int MemoryCacheLimit = 256;
+        private sealed record CachedMetadata(string Path, long Length, long LastWriteTicks, long CreationTicks, ScreenshotMetadata Metadata);
+        private static readonly LinkedList<CachedMetadata> MetadataCache = new();
+        private static readonly Dictionary<string, LinkedListNode<CachedMetadata>> MetadataCacheByPath =
+            new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        internal static ScreenshotMetadataDatabase Database => CacheDatabase.Value;
+
+        internal static void ClearMemoryCache()
+        {
+            lock (CacheLock)
+            {
+                MetadataCache.Clear();
+                MetadataCacheByPath.Clear();
+            }
+        }
 
         public enum ScreenshotSearchType
         {
@@ -25,59 +40,119 @@ namespace VRCX
             WorldID,
         }
 
-        public static bool TryGetCachedMetadata(string filePath, out ScreenshotMetadata? metadata)
+        public static void InvalidateMetadata(string filePath, ScreenshotMetadataDatabase? database = null)
         {
-            if (MetadataCache.TryGetValue(filePath, out metadata))
-                return true;
-
-            var id = CacheDatabase.IsFileCached(filePath);
-            if (id == -1)
-                return false;
-
-            var metadataStr = CacheDatabase.GetMetadataById(id);
-            var metadataObj = metadataStr == null ? null : JsonConvert.DeserializeObject<ScreenshotMetadata>(metadataStr);
-            MetadataCache.TryAdd(filePath, metadataObj);
-
-            metadata = metadataObj;
-            return true;
+            if (string.IsNullOrWhiteSpace(filePath)) return;
+            var path = Path.GetFullPath(filePath);
+            lock (CacheLock)
+            {
+                if (MetadataCacheByPath.Remove(path, out var node)) MetadataCache.Remove(node);
+                (database ?? Database).InvalidateFile(path);
+            }
         }
 
-        public static List<ScreenshotMetadata> FindScreenshots(string query, string directory, ScreenshotSearchType searchType)
+        public static ScreenshotMetadata? GetCachedOrParseMetadata(string filePath, ScreenshotMetadataDatabase? database = null, bool forceRefresh = false)
+        {
+            if (string.IsNullOrWhiteSpace(filePath)) return null;
+            string path;
+            try { path = Path.GetFullPath(filePath); }
+            catch { return null; }
+            if (!File.Exists(path) || !path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) return null;
+
+            lock (CacheLock)
+            {
+                long length, lastWrite, created;
+                try
+                {
+                    var file = new FileInfo(path);
+                    length = file.Length;
+                    lastWrite = file.LastWriteTimeUtc.Ticks;
+                    created = file.CreationTimeUtc.Ticks;
+                }
+                catch (IOException) { return ScreenshotMetadata.JustError(path, "File is unavailable or still being written."); }
+                catch (UnauthorizedAccessException) { return ScreenshotMetadata.JustError(path, "File is unavailable."); }
+                if (MetadataCacheByPath.TryGetValue(path, out var node))
+                {
+                    if (!forceRefresh && node.Value.Length == length && node.Value.LastWriteTicks == lastWrite && node.Value.CreationTicks == created)
+                    {
+                        MetadataCache.Remove(node);
+                        MetadataCache.AddFirst(node);
+                        return node.Value.Metadata;
+                    }
+                    MetadataCache.Remove(node);
+                    MetadataCacheByPath.Remove(path);
+                }
+
+                var owner = database ?? Database;
+                var disk = owner.GetFileCache(path);
+                if (!forceRefresh && disk != null && disk.FileLength == length && disk.LastWriteTicks == lastWrite && disk.CreationTicks == created && disk.ParseState is 1 or 2)
+                {
+                    ScreenshotMetadata? cached = null;
+                    try
+                    {
+                        cached = disk.ParseState == 1 && disk.Metadata != null
+                            ? JsonConvert.DeserializeObject<ScreenshotMetadata>(disk.Metadata)
+                            : ScreenshotMetadata.JustError(path, disk.Error ?? "Image has no valid metadata.");
+                    }
+                    catch (JsonException ex) { Logger.Warn(ex, "Invalid cached screenshot metadata for {0}", path); }
+                    if (cached != null)
+                    {
+                        Remember(path, length, lastWrite, created, cached);
+                        return cached;
+                    }
+                }
+
+                ScreenshotMetadata parsed;
+                try { parsed = GetScreenshotMetadata(path) ?? ScreenshotMetadata.JustError(path, "Image has no valid metadata."); }
+                catch (IOException) { return ScreenshotMetadata.JustError(path, "File is unavailable or still being written."); }
+                catch (UnauthorizedAccessException) { return ScreenshotMetadata.JustError(path, "File is unavailable."); }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Failed to read screenshot metadata for {0}", path);
+                    parsed = ScreenshotMetadata.JustError(path, "Failed to parse metadata.");
+                }
+                var state = parsed.Error == null ? 1 :
+                    parsed.Error == "Image has no valid metadata." ? 2 : 3;
+                // Parse failures may be caused by an image that is still being written.
+                if (state != 3)
+                {
+                    owner.SaveFileCache(path, length, lastWrite, created, state,
+                        state == 1 ? JsonConvert.SerializeObject(parsed) : null, parsed.Error);
+                    Remember(path, length, lastWrite, created, parsed);
+                }
+                return parsed;
+            }
+        }
+
+        private static void Remember(string path, long length, long lastWrite, long created, ScreenshotMetadata metadata)
+        {
+            var node = MetadataCache.AddFirst(new CachedMetadata(path, length, lastWrite, created, metadata));
+            MetadataCacheByPath[path] = node;
+            while (MetadataCache.Count > MemoryCacheLimit)
+            {
+                var oldest = MetadataCache.Last!;
+                MetadataCacheByPath.Remove(oldest.Value.Path);
+                MetadataCache.RemoveLast();
+            }
+        }
+
+        public static List<ScreenshotMetadata> FindScreenshots(string query, string directory, ScreenshotSearchType searchType,
+            ScreenshotMetadataDatabase? database = null)
         {
             var result = new List<ScreenshotMetadata>();
-            var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-            var addToCache = new List<MetadataCache>();
-            var amtFromCache = 0;
+            if (!Directory.Exists(directory)) return result;
+            var files = Directory.EnumerateFiles(directory, "*", new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                IgnoreInaccessible = true
+            });
+            var fileCount = 0;
             foreach (var file in files)
             {
-                ScreenshotMetadata? metadata;
-                if (TryGetCachedMetadata(file, out metadata))
-                {
-                    amtFromCache++;
-                }
-                else
-                {
-                    metadata = GetScreenshotMetadata(file, false);
-                    var dbEntry = new MetadataCache()
-                    {
-                        FilePath = file,
-                        Metadata = null,
-                        CachedAt = DateTimeOffset.Now
-                    };
-
-                    if (metadata == null || metadata.Error != null)
-                    {
-                        addToCache.Add(dbEntry);
-                        MetadataCache.TryAdd(file, null);
-                        continue;
-                    }
-
-                    dbEntry.Metadata = JsonConvert.SerializeObject(metadata);
-                    addToCache.Add(dbEntry);
-                    MetadataCache.TryAdd(file, metadata);
-                }
-
-                if (metadata == null)
+                if (!file.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) continue;
+                fileCount++;
+                var metadata = GetCachedOrParseMetadata(file, database);
+                if (metadata == null || metadata.Error != null)
                     continue;
 
                 switch (searchType)
@@ -108,10 +183,7 @@ namespace VRCX
                 }
             }
 
-            if (addToCache.Count > 0)
-                CacheDatabase.BulkAddMetadataCache(addToCache);
-
-            Logger.ConditionalDebug("Found {0}/{1} screenshots matching query '{2}' of type '{3}'. {4}/{5} pulled from cache.", result.Count, files.Length, query, searchType, amtFromCache, files.Length);
+            Logger.ConditionalDebug("Found {0}/{1} screenshots matching query '{2}' of type '{3}'.", result.Count, fileCount, query, searchType);
 
             return result;
         }
@@ -119,11 +191,14 @@ namespace VRCX
         public static ScreenshotMetadata? GetScreenshotMetadata(string path, bool includeJSON = false)
         {
             // Early return if file doesn't exist, or isn't a PNG(Check both extension and file header)
-            if (!File.Exists(path) || !path.EndsWith(".png"))
+            if (!File.Exists(path) || !path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 return null;
+            if (!IsPNGFile(path))
+                return ScreenshotMetadata.JustError(path, "File is not a complete PNG image.");
 
             List<string> metadata = ReadTextMetadata(path);
             ScreenshotMetadata result = new ScreenshotMetadata();
+            var foundSupportedMetadata = false;
 
             for (var i = 0; i < metadata.Count; i++)
             {
@@ -139,6 +214,7 @@ namespace VRCX
                         result.SourceFile = path;
 
                         gotVrchatMetadata = true;
+                        foundSupportedMetadata = true;
                     }
 
                     if (metadataString.StartsWith("{") && metadataString.EndsWith("}")) // # Professional Json Validatior© 2.0
@@ -161,6 +237,7 @@ namespace VRCX
                                 result.JSON = metadataString;
 
                             gotMetadata = true;
+                            foundSupportedMetadata = true;
                         }
                     }
 
@@ -168,6 +245,7 @@ namespace VRCX
                     {
                         result = ScreenshotHelper.ParseLfsPicture(metadataString);
                         result.SourceFile = path;
+                        foundSupportedMetadata = true;
                     }
                 }
                 catch (Exception ex)
@@ -177,7 +255,7 @@ namespace VRCX
                 }
             }
 
-            if (result.Application == null || metadata.Count == 0)
+            if (!foundSupportedMetadata || result.Application == null)
                 return ScreenshotMetadata.JustError(path, "Image has no valid metadata.");
 
             return result;
@@ -227,14 +305,17 @@ namespace VRCX
                 PNGHelper.DeleteTextChunk("XML:com.adobe.xmp", pngFile);
 
             PNGHelper.DeleteTextChunk("Description", pngFile);
+            InvalidateMetadata(path);
         }
 
-        public static bool WriteVRCXMetadata(string text, string path)
+        public static bool WriteVRCXMetadata(string text, string path, ScreenshotMetadataDatabase? database = null)
         {
             var pngFile = new PNGFile(path, true);
             var chunk = PNGHelper.GenerateTextChunk("Description", text);
             var status = pngFile.WriteChunk(chunk);
             pngFile.Dispose();
+
+            if (status) InvalidateMetadata(path, database);
 
             return status;
         }

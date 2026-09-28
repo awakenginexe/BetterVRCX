@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Threading;
 
 namespace VRCX
 {
@@ -17,6 +18,12 @@ namespace VRCX
     internal class ScreenshotMetadataDatabase
     {
         private readonly SQLiteConnection _sqlite;
+        private readonly object _sync = new();
+        private long _cacheWriteCount;
+        internal long CacheWriteCount => Interlocked.Read(ref _cacheWriteCount);
+
+        internal record FileCacheEntry(string? Metadata, long FileLength, long LastWriteTicks, long CreationTicks, int ParseState, string? Error);
+        internal record PhotoIndexEntry(string FilePath, long FileTimeTicks);
 
         public ScreenshotMetadataDatabase(string databaseLocation)
         {
@@ -30,6 +37,143 @@ namespace VRCX
                                     cached_at INTEGER NOT NULL
                                 );";
             cmd.ExecuteNonQuery();
+
+            // Existing metadataCache.db owns both parsed metadata and the photo file index.
+            using var migration = _sqlite.BeginTransaction();
+            var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var info = new SQLiteCommand("PRAGMA table_info(cache);", _sqlite, migration))
+            using (var reader = info.ExecuteReader())
+                while (reader.Read()) columns.Add(reader.GetString(1));
+            foreach (var (name, definition) in new[]
+            {
+                ("file_length", "INTEGER NOT NULL DEFAULT -1"),
+                ("last_write_ticks", "INTEGER NOT NULL DEFAULT -1"),
+                ("creation_ticks", "INTEGER NOT NULL DEFAULT -1"),
+                ("parse_state", "INTEGER NOT NULL DEFAULT 0"),
+                ("parse_error", "TEXT")
+            })
+            {
+                if (columns.Contains(name)) continue;
+                using var alter = new SQLiteCommand($"ALTER TABLE cache ADD COLUMN {name} {definition};", _sqlite, migration);
+                alter.ExecuteNonQuery();
+            }
+            using (var index = new SQLiteCommand(@"CREATE TABLE IF NOT EXISTS photo_index (
+                    file_path TEXT PRIMARY KEY,
+                    photo_root TEXT NOT NULL,
+                    file_time_ticks INTEGER NOT NULL,
+                    scan_id INTEGER NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS photo_index_page
+                    ON photo_index(photo_root, file_time_ticks DESC, file_path DESC);", _sqlite, migration))
+                index.ExecuteNonQuery();
+            migration.Commit();
+        }
+
+        internal FileCacheEntry? GetFileCache(string filePath)
+        {
+            lock (_sync)
+            {
+                using var command = new SQLiteCommand(
+                    "SELECT metadata, file_length, last_write_ticks, creation_ticks, parse_state, parse_error FROM cache WHERE file_path = @path ORDER BY id DESC LIMIT 1;", _sqlite);
+                command.Parameters.AddWithValue("@path", filePath);
+                using var reader = command.ExecuteReader();
+                if (!reader.Read()) return null;
+                return new FileCacheEntry(
+                    reader.IsDBNull(0) ? null : reader.GetString(0),
+                    reader.GetInt64(1), reader.GetInt64(2), reader.GetInt64(3), reader.GetInt32(4),
+                    reader.IsDBNull(5) ? null : reader.GetString(5));
+            }
+        }
+
+        internal void SaveFileCache(string filePath, long length, long lastWriteTicks, long creationTicks, int state, string? metadata, string? error)
+        {
+            lock (_sync)
+            {
+                using var update = new SQLiteCommand(@"UPDATE cache SET metadata=@metadata, cached_at=@cachedAt,
+                    file_length=@length, last_write_ticks=@lastWrite, creation_ticks=@created, parse_state=@state, parse_error=@error
+                    WHERE file_path=@path;", _sqlite);
+                update.Parameters.AddWithValue("@path", filePath);
+                update.Parameters.AddWithValue("@metadata", (object?)metadata ?? DBNull.Value);
+                update.Parameters.AddWithValue("@cachedAt", DateTimeOffset.UtcNow.Ticks);
+                update.Parameters.AddWithValue("@length", length);
+                update.Parameters.AddWithValue("@lastWrite", lastWriteTicks);
+                update.Parameters.AddWithValue("@created", creationTicks);
+                update.Parameters.AddWithValue("@state", state);
+                update.Parameters.AddWithValue("@error", (object?)error ?? DBNull.Value);
+                if (update.ExecuteNonQuery() != 0)
+                {
+                    Interlocked.Increment(ref _cacheWriteCount);
+                    return;
+                }
+                using var insert = new SQLiteCommand(@"INSERT INTO cache
+                    (file_path, metadata, cached_at, file_length, last_write_ticks, creation_ticks, parse_state, parse_error)
+                    VALUES (@path, @metadata, @cachedAt, @length, @lastWrite, @created, @state, @error);", _sqlite);
+                foreach (SQLiteParameter parameter in update.Parameters)
+                    insert.Parameters.AddWithValue(parameter.ParameterName, parameter.Value);
+                insert.ExecuteNonQuery();
+                Interlocked.Increment(ref _cacheWriteCount);
+            }
+        }
+
+        internal void InvalidateFile(string filePath)
+        {
+            lock (_sync)
+            {
+                using var command = new SQLiteCommand("UPDATE cache SET last_write_ticks=-1 WHERE file_path=@path;", _sqlite);
+                command.Parameters.AddWithValue("@path", filePath);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        internal void SyncPhotoIndex(string root, IEnumerable<PhotoIndexEntry> files)
+        {
+            lock (_sync)
+            {
+                using var transaction = _sqlite.BeginTransaction();
+                var scanId = DateTime.UtcNow.Ticks;
+                using var command = new SQLiteCommand(@"INSERT OR REPLACE INTO photo_index
+                    (file_path, photo_root, file_time_ticks, scan_id) VALUES (@path, @root, @time, @scan);", _sqlite, transaction);
+                var pathParameter = command.Parameters.Add("@path", System.Data.DbType.String);
+                command.Parameters.AddWithValue("@root", root);
+                var timeParameter = command.Parameters.Add("@time", System.Data.DbType.Int64);
+                command.Parameters.AddWithValue("@scan", scanId);
+                foreach (var file in files)
+                {
+                    pathParameter.Value = file.FilePath;
+                    timeParameter.Value = file.FileTimeTicks;
+                    command.ExecuteNonQuery();
+                }
+                using var removeMissingCache = new SQLiteCommand(@"DELETE FROM cache WHERE file_path IN
+                    (SELECT file_path FROM photo_index WHERE photo_root=@root AND scan_id<>@scan);", _sqlite, transaction);
+                removeMissingCache.Parameters.AddWithValue("@root", root);
+                removeMissingCache.Parameters.AddWithValue("@scan", scanId);
+                removeMissingCache.ExecuteNonQuery();
+                using var prune = new SQLiteCommand(@"DELETE FROM photo_index
+                    WHERE photo_root=@root AND scan_id<>@scan;", _sqlite, transaction);
+                prune.Parameters.AddWithValue("@root", root);
+                prune.Parameters.AddWithValue("@scan", scanId);
+                prune.ExecuteNonQuery();
+                transaction.Commit();
+            }
+        }
+
+        internal List<PhotoIndexEntry> GetPhotoPage(string root, long beforeTime, string beforePath, int limit)
+        {
+            lock (_sync)
+            {
+                var result = new List<PhotoIndexEntry>();
+                using var command = new SQLiteCommand(@"SELECT file_path, file_time_ticks FROM photo_index
+                    WHERE photo_root=@root AND
+                      (file_time_ticks < @time OR (file_time_ticks = @time AND file_path < @path))
+                    ORDER BY file_time_ticks DESC, file_path DESC LIMIT @limit;", _sqlite);
+                command.Parameters.AddWithValue("@root", root);
+                command.Parameters.AddWithValue("@time", beforeTime);
+                command.Parameters.AddWithValue("@path", beforePath);
+                command.Parameters.AddWithValue("@limit", limit);
+                using var reader = command.ExecuteReader();
+                while (reader.Read()) result.Add(new PhotoIndexEntry(reader.GetString(0), reader.GetInt64(1)));
+                return result;
+            }
         }
 
         public void AddMetadataCache(string filePath, string metadata)

@@ -20,6 +20,7 @@ import MyAvatars from './../views/MyAvatars/MyAvatars.vue';
 import Notification from './../views/Notifications/Notification.vue';
 import PlayerList from './../views/PlayerList/PlayerList.vue';
 import ScreenshotMetadata from './../views/Tools/ScreenshotMetadata.vue';
+import LocalPhotoLibrary from './../views/Tools/LocalPhotoLibrary.vue';
 import Search from './../views/Search/Search.vue';
 import Settings from './../views/Settings/Settings.vue';
 import Tools from './../views/Tools/Tools.vue';
@@ -152,6 +153,12 @@ const routes = [
                 name: 'screenshot-metadata',
                 component: ScreenshotMetadata,
                 meta: { navKeys: ['tool-screenshot-metadata', 'tools'] }
+            },
+            {
+                path: 'tools/photo-library',
+                name: 'photo-library',
+                component: LocalPhotoLibrary,
+                meta: { navKeys: ['tool-photo-library', 'tools'] }
             },
             {
                 path: 'settings',

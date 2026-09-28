@@ -326,6 +326,19 @@ declare global {
             carouselCache: boolean
         ): Promise<string>;
         GetScreenshotMetadata(path: string): Promise<string>;
+        GetLocalPhotoPage(
+            search: string,
+            from: string,
+            to: string,
+            beforeTime: string,
+            beforePath: string,
+            limit: number,
+            refresh?: boolean
+        ): Promise<string>;
+        GetLocalPhotoThumbnail(
+            path: string,
+            size?: number
+        ): Promise<string | null>;
         FindScreenshotsBySearch(
             searchQuery: string,
             searchType?: number
