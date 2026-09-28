@@ -377,11 +377,12 @@ namespace VRCX
             return System.Text.Json.JsonSerializer.Serialize(new
             {
                 status = result.Item1,
-                message = result.Item2
+                message = result.Item2,
+                retryAfter = result.Item3
             });
         }
 
-        public async Task<Tuple<int, string>> Execute(IDictionary<string, object> options)
+        public async Task<Tuple<int, string, string?>> Execute(IDictionary<string, object> options)
         {
             try
             {
@@ -463,21 +464,24 @@ namespace VRCX
                     _cookieDirty = true;
 
                 var contentTypeResponse = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                var retryAfter = response.Headers.RetryAfter?.ToString();
 
                 if (contentTypeResponse.Contains("image/") || contentTypeResponse.Contains("application/octet-stream"))
                 {
                     // Base64 response data for image
                     var imageBytes = await response.Content.ReadAsByteArrayAsync();
-                    return new Tuple<int, string>(
+                    return new Tuple<int, string, string?>(
                         (int)response.StatusCode,
-                        $"data:image/png;base64,{Convert.ToBase64String(imageBytes)}"
+                        $"data:image/png;base64,{Convert.ToBase64String(imageBytes)}",
+                        retryAfter
                     );
                 }
 
                 var responseBody = await response.Content.ReadAsStringAsync();
-                return new Tuple<int, string>(
+                return new Tuple<int, string, string?>(
                     (int)response.StatusCode,
-                    responseBody
+                    responseBody,
+                    retryAfter
                 );
             }
             catch (HttpRequestException httpException)
@@ -488,9 +492,10 @@ namespace VRCX
                 // Try to get status code if available
                 var statusCode = httpException.StatusCode.HasValue ? (int)httpException.StatusCode.Value : -1;
 
-                return new Tuple<int, string>(
+                return new Tuple<int, string, string?>(
                     statusCode,
-                    httpException.Message
+                    httpException.Message,
+                    null
                 );
             }
             catch (Exception e)
@@ -498,9 +503,10 @@ namespace VRCX
                 if (e.InnerException != null)
                     Logger.Error($"{e.Message} | {e.InnerException}");
 
-                return new Tuple<int, string>(
+                return new Tuple<int, string, string?>(
                     -1,
-                    e.Message
+                    e.Message,
+                    null
                 );
             }
         }

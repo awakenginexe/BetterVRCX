@@ -15,7 +15,7 @@ class WebApiService {
 
     /**
      * @param {any} options
-     * @returns {Promise<{status: number, data?: string}>}
+     * @returns {Promise<{status: number, data?: string, retryAfter?: string}>}
      */
     async execute(options) {
         if (!options) {
@@ -30,7 +30,8 @@ class WebApiService {
             }
             return {
                 status: data.status,
-                data: data.message
+                data: data.message,
+                retryAfter: data.retryAfter
             };
         }
 
@@ -40,7 +41,8 @@ class WebApiService {
         }
         return {
             status: item.Item1,
-            data: item.Item2
+            data: item.Item2,
+            retryAfter: item.Item3
         };
     }
 }

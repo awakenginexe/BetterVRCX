@@ -20,13 +20,116 @@ vi.mock('../index.js', () => ({
 
 import { gameLog } from '../gameLog.js';
 
+test('photo history includes only stays spanning a verified instance session', async () => {
+    const db = new DatabaseSync(':memory:');
+    db.exec(`CREATE TABLE gamelog_location (world_id TEXT, world_name TEXT, location TEXT, time INTEGER, created_at TEXT);
+        CREATE TABLE gamelog_join_leave (id INTEGER PRIMARY KEY, display_name TEXT, user_id TEXT, location TEXT, type TEXT, time INTEGER, created_at TEXT);`);
+    db.prepare('INSERT INTO gamelog_location VALUES (?,?,?,?,?)').run(
+        'wrld_1',
+        'World',
+        'wrld_1:1',
+        3600000,
+        '2025-01-01T10:00:00Z'
+    );
+    const insert = db.prepare(
+        'INSERT INTO gamelog_join_leave (display_name,user_id,location,type,time,created_at) VALUES (?,?,?,?,?,?)'
+    );
+    insert.run(
+        'Alice',
+        'usr_1',
+        'wrld_1:1',
+        'OnPlayerLeft',
+        1800000,
+        '2025-01-01T10:40:00Z'
+    );
+    insert.run(
+        'Bob',
+        'usr_2',
+        'wrld_1:1',
+        'OnPlayerLeft',
+        300000,
+        '2025-01-01T10:10:00Z'
+    );
+    insert.run(
+        'Other instance',
+        'usr_3',
+        'wrld_1:2',
+        'OnPlayerLeft',
+        1800000,
+        '2025-01-01T10:40:00Z'
+    );
+    mocks.execute.mockImplementation(async (callback, sql, params) => {
+        const stmt = db.prepare(sql);
+        stmt.setReturnArrays(true);
+        for (const row of stmt.all(
+            Object.fromEntries(
+                Object.entries(params).map(([key, value]) => [
+                    key.slice(1),
+                    value
+                ])
+            )
+        ))
+            callback(row);
+    });
+    try {
+        expect(
+            await gameLog.getPhotoHistoryContext(
+                'wrld_1',
+                'wrld_1:1',
+                '2025-01-01T10:30:00Z'
+            )
+        ).toEqual({
+            worldName: 'World',
+            players: [{ displayName: 'Alice', userId: 'usr_1' }],
+            source: 'gamelog'
+        });
+        expect(
+            await gameLog.getPhotoHistoryContext(
+                'wrld_1',
+                'wrld_1:1',
+                '2025-01-01T17:30:00+07:00'
+            )
+        ).toMatchObject({ players: [{ displayName: 'Alice' }] });
+        expect(
+            await gameLog.getPhotoHistoryContext(
+                'wrld_1',
+                'wrld_1:1',
+                '2025-01-01T09:00:00Z'
+            )
+        ).toBeNull();
+        expect(
+            await gameLog.getPhotoHistoryContext(
+                'wrld_1',
+                'wrld_1:2',
+                '2025-01-01T10:30:00Z'
+            )
+        ).toBeNull();
+        db.prepare('INSERT INTO gamelog_location VALUES (?,?,?,?,?)').run(
+            'wrld_1',
+            'Ambiguous',
+            'wrld_1:1',
+            3600000,
+            '2025-01-01T10:00:00Z'
+        );
+        expect(
+            await gameLog.getPhotoHistoryContext(
+                'wrld_1',
+                'wrld_1:1',
+                '2025-01-01T10:30:00Z'
+            )
+        ).toBeNull();
+    } finally {
+        db.close();
+    }
+});
+
 describe('gameLog.getMyTopWorlds', () => {
     beforeEach(() => {
         mocks.execute.mockReset();
     });
 
     test('adds an exclude clause when a home world id is provided', async () => {
-        mocks.execute.mockImplementation(async (callback, sql, params) => {
+        mocks.execute.mockImplementation(async (callback) => {
             callback(['wrld_1', 'World One', 3, 9000]);
             return undefined;
         });

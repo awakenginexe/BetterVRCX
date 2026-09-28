@@ -19,6 +19,8 @@ import {
     patchQueryDataWithRecency
 } from '../entityCache';
 import { queryClient } from '../client';
+import { queryKeys } from '../keys';
+import { entityQueryPolicies } from '../policies';
 
 describe('entity query cache helpers', () => {
     beforeEach(() => {
@@ -62,6 +64,37 @@ describe('entity query cache helpers', () => {
         expect(first.cache).toBe(false);
         expect(second.cache).toBe(true);
         expect(callCount).toBe(1);
+    });
+
+    test('shares one in-flight public profile request and isolates accounts', async () => {
+        let resolve;
+        const pending = new Promise((done) => {
+            resolve = done;
+        });
+        const queryFn = vi.fn(() => pending);
+        const key = queryKeys.publicProfile('usr_account_1', 'usr_target');
+        const options = {
+            queryKey: key,
+            policy: entityQueryPolicies.publicProfile,
+            queryFn
+        };
+
+        const dialog = fetchWithEntityPolicy(options);
+        const playerList = fetchWithEntityPolicy(options);
+        resolve({ json: { bioLinks: ['https://example.com'] } });
+        await Promise.all([dialog, playerList]);
+        expect(queryFn).toHaveBeenCalledTimes(1);
+
+        await fetchWithEntityPolicy(options);
+        expect(queryFn).toHaveBeenCalledTimes(1);
+        await fetchWithEntityPolicy({
+            ...options,
+            queryKey: queryKeys.publicProfile('usr_account_2', 'usr_target')
+        });
+        expect(queryFn).toHaveBeenCalledTimes(2);
+
+        queryClient.clear();
+        expect(queryClient.getQueryData(key)).toBeUndefined();
     });
 
     test('always refetches when staleTime is zero (instance strategy)', async () => {

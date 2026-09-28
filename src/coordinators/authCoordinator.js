@@ -9,7 +9,7 @@ import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 import { useUpdateLoopStore } from '../stores/updateLoop';
 import { useUserStore } from '../stores/user';
-import { applyCurrentUser } from './userCoordinator';
+import { applyCurrentUser, clearUserDialogCaches } from './userCoordinator';
 import { watchState } from '../services/watchState';
 
 import configRepository from '../services/config';
@@ -46,6 +46,7 @@ export async function runLogoutFlow() {
     authStore.autoLoginAttempts.clear();
     closeWebSocket();
     queryClient.clear();
+    clearUserDialogCaches();
 }
 
 /**

@@ -1,7 +1,11 @@
 import { patchAndRefetchActiveQuery, queryKeys } from '../queries';
 import { request } from '../services/request';
 import { useUserStore } from '../stores';
-import { applyUser, applyCurrentUser } from '../coordinators/userCoordinator';
+import {
+    applyUser,
+    applyCurrentUser,
+    invalidateUserPublicProfile
+} from '../coordinators/userCoordinator';
 
 /**
  * @returns {string}
@@ -239,14 +243,16 @@ const userReq = {
     },
 
     /**
-     * @param {Partial<import('../types/api/profile').publicProfile>} params
-     * @returns {Promise<{json: import('../types/api/profile').publicProfile, params: Partial<import('../types/api/profile').publicProfile>}>}
+     * @param {Partial<import('../types/api/profile').selfProfile>} params
+     * @returns {Promise<{json: import('../types/api/profile').publicProfile, params: Partial<import('../types/api/profile').selfProfile>}>}
      */
     saveProfile(params) {
-        return request(`profile/${getCurrentUserId()}`, {
+        const userId = getCurrentUserId();
+        return request(`profile/${userId}`, {
             method: 'PUT',
             params
         }).then((json) => {
+            invalidateUserPublicProfile(userId);
             const args = {
                 json,
                 params

@@ -326,6 +326,19 @@ declare global {
             carouselCache: boolean
         ): Promise<string>;
         GetScreenshotMetadata(path: string): Promise<string>;
+        GetLocalPhotoPage(
+            search: string,
+            from: string,
+            to: string,
+            beforeTime: string,
+            beforePath: string,
+            limit: number,
+            refresh?: boolean
+        ): Promise<string>;
+        GetLocalPhotoThumbnail(
+            path: string,
+            size?: number
+        ): Promise<string | null>;
         FindScreenshotsBySearch(
             searchQuery: string,
             searchType?: number
@@ -397,7 +410,9 @@ declare global {
         ClearCookies(): Promise<void>;
         GetCookies(): Promise<string>;
         SetCookies(cookie: string): Promise<void>;
-        Execute(options: any): Promise<{ Item1: number; Item2: string }>;
+        Execute(
+            options: any
+        ): Promise<{ Item1: number; Item2: string; Item3?: string }>;
         ExecuteJson(requestJson: string): Promise<string>;
     };
 

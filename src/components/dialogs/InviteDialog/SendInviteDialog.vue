@@ -62,12 +62,14 @@
             :sendInviteDialog="sendInviteDialog"
             @update:sendInviteDialog="emit('update:sendInviteDialog', $event)"
             :invite-dialog="inviteDialog"
+            @batchStarted="cancelSendInvite"
             @closeInviteDialog="closeInviteDialog" />
         <EditAndSendInviteDialog
             v-model:edit-and-send-invite-dialog="editAndSendInviteDialog"
             :sendInviteDialog="sendInviteDialog"
             @update:sendInviteDialog="emit('update:sendInviteDialog', $event)"
             :invite-dialog="inviteDialog"
+            @batchStarted="cancelSendInvite"
             @closeInviteDialog="closeInviteDialog" />
     </Dialog>
 </template>

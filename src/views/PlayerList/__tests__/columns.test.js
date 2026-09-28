@@ -176,8 +176,9 @@ describe('views/PlayerList/columns.jsx', () => {
         const row = makeRow({
             ref: {
                 ...makeRow().original.ref,
-                bioLinks: ['https://example.com']
-            }
+                bioLinks: ['https://stale.example']
+            },
+            publicProfileRef: { bioLinks: ['https://example.com'] }
         });
         const cols = createColumns({
             randomUserColours: { value: false, __v_isRef: true },

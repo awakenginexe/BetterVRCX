@@ -19,6 +19,16 @@ const toolDefinitions = [
         action: { type: 'route', routeName: 'screenshot-metadata' }
     },
     {
+        key: 'photo-library',
+        category: 'image',
+        iconKey: 'image',
+        navIcon: 'ri-image-2-line',
+        titleKey: 'view.tools.photo_library.title',
+        descriptionKey: 'view.tools.photo_library.description',
+        navEligible: true,
+        action: { type: 'route', routeName: 'photo-library' }
+    },
+    {
         key: 'gallery',
         category: 'image',
         iconKey: 'image',

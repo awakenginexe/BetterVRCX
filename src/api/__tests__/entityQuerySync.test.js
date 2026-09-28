@@ -8,6 +8,7 @@ const mockApplyCurrentUser = vi.fn((json) => ({
     ...json
 }));
 const mockApplyUser = vi.fn((json) => ({ ...json }));
+const mockInvalidateUserPublicProfile = vi.fn();
 const mockApplyWorld = vi.fn((json) => ({ ...json }));
 
 vi.mock('../../services/request', () => ({
@@ -27,7 +28,9 @@ vi.mock('../../stores', () => ({
 
 vi.mock('../../coordinators/userCoordinator', () => ({
     applyCurrentUser: (...args) => mockApplyCurrentUser(...args),
-    applyUser: (...args) => mockApplyUser(...args)
+    applyUser: (...args) => mockApplyUser(...args),
+    invalidateUserPublicProfile: (...args) =>
+        mockInvalidateUserPublicProfile(...args)
 }));
 
 vi.mock('../../coordinators/worldCoordinator', () => ({
@@ -69,6 +72,24 @@ describe('entity mutation query sync', () => {
                 queryKey: ['user', 'usr_me']
             })
         );
+    });
+
+    test('saveProfile uses the profile endpoint and invalidates the existing public profile cache', async () => {
+        mockRequest.mockResolvedValue({
+            id: 'usr_me',
+            iconUrl: 'https://example.com/icon.png'
+        });
+
+        await userRequest.saveProfile({
+            userIcon: 'https://example.com/icon.png'
+        });
+
+        expect(mockRequest).toHaveBeenCalledWith('profile/usr_me', {
+            method: 'PUT',
+            params: { userIcon: 'https://example.com/icon.png' }
+        });
+        expect(mockInvalidateUserPublicProfile).toHaveBeenCalledWith('usr_me');
+        expect(mockApplyCurrentUser).not.toHaveBeenCalled();
     });
 
     test('saveAvatar patches and refetches active avatar query', async () => {

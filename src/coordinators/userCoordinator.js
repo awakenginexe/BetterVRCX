@@ -28,7 +28,7 @@ import {
 import { processBulk, request } from '../services/request';
 import { AppDebug } from '../services/appConfig';
 import { database } from '../services/database';
-import { patchUserFromEvent } from '../queries';
+import { patchUserFromEvent, queryClient, queryKeys } from '../queries';
 import { watchState } from '../services/watchState';
 import { applyAvatar, showAvatarDialog } from './avatarCoordinator';
 import { applyFavorite } from './favoriteCoordinator';
@@ -62,8 +62,19 @@ import { useSharedFeedStore } from '../stores/sharedFeed';
 import { useUiStore } from '../stores/ui';
 import { useUserStore } from '../stores/user';
 
-const userPublicProfileRamCache = new Map();
+export function invalidateUserPublicProfile(userId) {
+    queryClient.removeQueries({
+        predicate: (query) =>
+            query.queryKey[0] === 'publicProfile' &&
+            query.queryKey[2] === userId
+    });
+    useInstanceStore().refreshPlayerPublicProfile();
+}
 const userRefRamCache = new Map();
+
+export function clearUserDialogCaches() {
+    userRefRamCache.clear();
+}
 
 const getRobotUrl = () =>
     `${AppDebug.endpointDomain}/file/file_0e8c4e32-7444-44ea-ade4-313c010d4bae/1/file`;
@@ -313,6 +324,7 @@ export function showUserDialog(userId) {
     const t = i18n.global.t;
 
     const { currentUser, userDialog, showUserDialogHistory } = userStore;
+    const accountId = currentUser.id;
 
     const isMainDialogOpen = uiStore.openDialog({
         type: 'user',
@@ -327,7 +339,11 @@ export function showUserDialog(userId) {
     }
     const cachedFullRef = userRefRamCache.get(userId);
     const cachedFriend = friendStore.friends.get(userId);
-    const cachedPublicProfile = userPublicProfileRamCache.get(userId);
+    const cachedPublicProfile = /** @type {any} */ (
+        queryClient.getQueryData(
+            queryKeys.publicProfile(currentUser.id, userId)
+        )
+    )?.json;
 
     D.id = userId;
     D.ref = cachedFullRef
@@ -455,6 +471,12 @@ export function showUserDialog(userId) {
             throw err;
         })
         .then((args) => {
+            if (
+                !watchState.isLoggedIn ||
+                userStore.currentUser.id !== accountId
+            ) {
+                return;
+            }
             userRefRamCache.set(userId, args.ref);
             if (args.ref.id === D.id) {
                 D.loading = false;
@@ -610,18 +632,23 @@ export function showUserDialog(userId) {
 }
 
 export function updateUserDialogProfile() {
-    const D = useUserStore().userDialog;
+    const userStore = useUserStore();
+    const D = userStore.userDialog;
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const targetUserId = D.id;
+    const accountId = userStore.currentUser.id;
     if (!targetUserId) {
         return;
     }
-    userRequest
-        .getPublicProfile({ userId: targetUserId })
+    queryRequest
+        .fetch('publicProfile', { accountId, userId: targetUserId })
         .then((args1) => {
             const profile = args1.json || {};
-            userPublicProfileRamCache.set(targetUserId, profile);
-            if (args1.params.userId !== D.id) {
+            if (
+                targetUserId !== D.id ||
+                accountId !== userStore.currentUser.id ||
+                !watchState.isLoggedIn
+            ) {
                 return;
             }
             D.publicProfileRef = profile;
@@ -648,9 +675,6 @@ export function updateUserDialogProfile() {
         })
         .catch((err) => {
             console.error('Failed to fetch public profile', err);
-            if (D.id === targetUserId) {
-                D.publicProfileRef = {};
-            }
         });
 }
 

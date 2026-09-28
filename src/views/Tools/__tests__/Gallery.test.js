@@ -1,12 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ref } from 'vue';
-import { mount } from '@vue/test-utils';
+import { nextTick, ref } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
 
 const mocks = vi.hoisted(() => ({
     loadGalleryData: vi.fn(),
     routerPush: vi.fn(),
-    getInventory: vi.fn()
+    getInventory: vi.fn(),
+    saveProfile: vi.fn(),
+    getCurrentUser: vi.fn(),
+    updateUserDialogProfile: vi.fn()
 }));
+
+const currentUser = ref({
+    id: 'usr_me',
+    iconUrl: '',
+    currentAvatarImageUrl: ''
+});
+const vrcPlusSupporter = ref(true);
 
 const galleryStore = {
     galleryTable: ref([]),
@@ -38,6 +48,10 @@ vi.mock('vue-router', () => ({
 vi.mock('vue-sonner', () => ({
     toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() })
 }));
+vi.mock('../../../coordinators/userCoordinator', () => ({
+    getCurrentUser: (...args) => mocks.getCurrentUser(...args),
+    updateUserDialogProfile: (...args) => mocks.updateUserDialogProfile(...args)
+}));
 vi.mock('../../../stores', () => ({
     useAdvancedSettingsStore: () => ({ currentUserInventory: ref([]) }),
     useAuthStore: () => ({
@@ -46,14 +60,15 @@ vi.mock('../../../stores', () => ({
     useGalleryStore: () => galleryStore,
     useModalStore: () => ({ confirm: vi.fn() }),
     useUserStore: () => ({
-        currentUser: ref({ profilePicOverride: '', userIcon: '' }),
-        isLocalUserVrcPlusSupporter: ref(true)
+        currentUser,
+        userDialog: { id: 'usr_me' },
+        isLocalUserVrcPlusSupporter: vrcPlusSupporter
     })
 }));
 vi.mock('../../../api', () => ({
     inventoryRequest: {},
     miscRequest: {},
-    userRequest: {},
+    userRequest: { saveProfile: (...args) => mocks.saveProfile(...args) },
     vrcPlusIconRequest: {},
     vrcPlusImageRequest: {}
 }));
@@ -95,6 +110,7 @@ vi.mock('lucide-vue-next', () => ({
 }));
 
 import Gallery from '../Gallery.vue';
+import { toast } from 'vue-sonner';
 
 const Button = {
     emits: ['click'],
@@ -102,8 +118,51 @@ const Button = {
 };
 const Passthrough = { template: '<div><slot /></div>' };
 
+function mountIconGallery() {
+    galleryStore.VRCPlusIconsTable.value = [
+        {
+            id: 'file_1',
+            versions: [{ file: { url: 'https://example.com/file_1.png' } }]
+        }
+    ];
+    const wrapper = mount(Gallery, {
+        global: {
+            stubs: {
+                Button,
+                ButtonGroup: Passthrough,
+                TabsUnderline: {
+                    props: ['items'],
+                    data: () => ({ activeTab: 'gallery' }),
+                    template:
+                        '<div><button v-for="item in items" :key="item.value" data-testid="gallery-tab" @click="activeTab = item.value">{{ item.value }}</button><slot :name="activeTab" /></div>'
+                },
+                Item: Passthrough,
+                ItemHeader: Passthrough,
+                ItemFooter: { template: '<footer><slot /></footer>' },
+                ItemGroup: Passthrough
+            }
+        }
+    });
+    return wrapper
+        .findAll('[data-testid="gallery-tab"]')[1]
+        .trigger('click')
+        .then(() => wrapper);
+}
+
 describe('Gallery', () => {
-    beforeEach(() => vi.clearAllMocks());
+    beforeEach(() => {
+        vi.clearAllMocks();
+        currentUser.value = {
+            id: 'usr_me',
+            iconUrl: '',
+            currentAvatarImageUrl: ''
+        };
+        vrcPlusSupporter.value = true;
+        mocks.saveProfile.mockResolvedValue({
+            json: { iconUrl: 'https://example.com/file/file_1/1' }
+        });
+        mocks.getCurrentUser.mockResolvedValue({ json: { id: 'usr_me' } });
+    });
 
     it('switches Gallery tabs, routes an upload, and refreshes inventory from its tab', async () => {
         const wrapper = mount(Gallery, {
@@ -184,6 +243,57 @@ describe('Gallery', () => {
         await refresh.trigger('click');
 
         expect(mocks.getInventory).toHaveBeenCalledOnce();
+        wrapper.unmount();
+    });
+
+    it('sets and clears the icon through the profile API, then refreshes current and dialog data', async () => {
+        const wrapper = await mountIconGallery();
+        await wrapper.findAll('footer button')[1].trigger('click');
+        await flushPromises();
+
+        expect(mocks.saveProfile).toHaveBeenCalledWith({
+            userIcon: '/file/file_1/1'
+        });
+        expect(mocks.getCurrentUser).toHaveBeenCalledOnce();
+        expect(mocks.updateUserDialogProfile).toHaveBeenCalledOnce();
+        expect(toast.success).toHaveBeenCalledOnce();
+
+        currentUser.value.iconUrl = '/file/file_1/1';
+        await nextTick();
+        await wrapper
+            .findAll('button')
+            .find((button) =>
+                button.text().includes('dialog.gallery_icons.clear')
+            )
+            .trigger('click');
+        await flushPromises();
+        expect(mocks.saveProfile).toHaveBeenLastCalledWith({ userIcon: '' });
+        expect(mocks.getCurrentUser).toHaveBeenCalledTimes(2);
+        wrapper.unmount();
+    });
+
+    it('keeps the icon state and reports failure when the profile API rejects', async () => {
+        mocks.saveProfile.mockRejectedValueOnce(new Error('API failure'));
+        const wrapper = await mountIconGallery();
+        await wrapper.findAll('footer button')[1].trigger('click');
+        await flushPromises();
+
+        expect(currentUser.value.iconUrl).toBe('');
+        expect(mocks.getCurrentUser).not.toHaveBeenCalled();
+        expect(mocks.updateUserDialogProfile).not.toHaveBeenCalled();
+        expect(toast.success).not.toHaveBeenCalled();
+        expect(toast.error).toHaveBeenCalledOnce();
+        wrapper.unmount();
+    });
+
+    it('does not send an icon update without the required account entitlement', async () => {
+        vrcPlusSupporter.value = false;
+        const wrapper = await mountIconGallery();
+        await wrapper.findAll('footer button')[1].trigger('click');
+        await flushPromises();
+
+        expect(mocks.saveProfile).not.toHaveBeenCalled();
+        expect(toast.success).not.toHaveBeenCalled();
         wrapper.unmount();
     });
 });

@@ -68,6 +68,23 @@ globalThis.AppApi = {
 
 import ScreenshotMetadata from '../ScreenshotMetadata.vue';
 
+function mountInspector() {
+    return mount(ScreenshotMetadata, {
+        global: {
+            stubs: {
+                DisplayName: { template: '<span><slot /></span>' },
+                Location: { template: '<span><slot /></span>' }
+            }
+        }
+    });
+}
+
+function searchInput(wrapper) {
+    return wrapper.get(
+        'input[placeholder="dialog.screenshot_metadata.search_placeholder"]'
+    );
+}
+
 describe('ScreenshotMetadata.vue', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -101,14 +118,7 @@ describe('ScreenshotMetadata.vue', () => {
     });
 
     test('searches metadata, opens a result in the inspector, and dispatches image preview', async () => {
-        const wrapper = mount(ScreenshotMetadata, {
-            global: {
-                stubs: {
-                    DisplayName: { template: '<span><slot /></span>' },
-                    Location: { template: '<span><slot /></span>' }
-                }
-            }
-        });
+        const wrapper = mountInspector();
         await flushPromises();
 
         await wrapper
@@ -132,5 +142,120 @@ describe('ScreenshotMetadata.vue', () => {
         expect(showFullscreenImageDialog).toHaveBeenCalledWith(
             'C:/shots/one.png'
         );
+    });
+
+    test('does not enumerate photos for whitespace or short automatic input, but Enter searches a short term', async () => {
+        const wrapper = mountInspector();
+        await flushPromises();
+        const input = searchInput(wrapper);
+
+        await input.setValue('   ');
+        await vi.advanceTimersByTimeAsync(500);
+        expect(findScreenshotsBySearch).not.toHaveBeenCalled();
+
+        await input.setValue('猫');
+        await vi.advanceTimersByTimeAsync(500);
+        expect(findScreenshotsBySearch).not.toHaveBeenCalled();
+
+        await input.trigger('keydown.enter');
+        await flushPromises();
+        expect(findScreenshotsBySearch).toHaveBeenCalledWith('猫', 0);
+        wrapper.unmount();
+    });
+
+    test('waits for IME composition and searches trimmed Unicode input after completion', async () => {
+        const wrapper = mountInspector();
+        await flushPromises();
+        const input = searchInput(wrapper);
+
+        await input.trigger('compositionstart');
+        await input.setValue('  ภาษาไทย  ');
+        await vi.advanceTimersByTimeAsync(500);
+        expect(findScreenshotsBySearch).not.toHaveBeenCalled();
+
+        await input.trigger('compositionend');
+        await vi.advanceTimersByTimeAsync(500);
+        expect(findScreenshotsBySearch).toHaveBeenCalledWith('ภาษาไทย', 0);
+        wrapper.unmount();
+    });
+
+    test('ignores an old response after clearing search and resets loading and selection', async () => {
+        let resolveSearch;
+        findScreenshotsBySearch.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveSearch = resolve;
+                })
+        );
+        const wrapper = mountInspector();
+        await flushPromises();
+        const input = searchInput(wrapper);
+
+        await input.setValue('Friend');
+        await vi.advanceTimersByTimeAsync(500);
+        expect(findScreenshotsBySearch).toHaveBeenCalledOnce();
+
+        await input.setValue('');
+        await flushPromises();
+        resolveSearch(JSON.stringify(['C:/shots/one.png']));
+        await flushPromises();
+
+        expect(wrapper.find('.screenshot-metadata__results').exists()).toBe(
+            false
+        );
+        expect(
+            wrapper.find('.screenshot-metadata__toolbar').text()
+        ).not.toContain('1/');
+        wrapper.unmount();
+    });
+
+    test('keeps only the latest search response when requests finish out of order', async () => {
+        let resolveOld;
+        findScreenshotsBySearch
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveOld = resolve;
+                    })
+            )
+            .mockResolvedValueOnce(JSON.stringify(['C:/shots/one.png']));
+        const wrapper = mountInspector();
+        await flushPromises();
+        const input = searchInput(wrapper);
+
+        await input.setValue('older');
+        await vi.advanceTimersByTimeAsync(500);
+        await input.setValue('newer');
+        await vi.advanceTimersByTimeAsync(500);
+        await flushPromises();
+        expect(wrapper.get('.screenshot-metadata__results').text()).toContain(
+            'Test World'
+        );
+
+        resolveOld(JSON.stringify([]));
+        await flushPromises();
+        expect(wrapper.get('.screenshot-metadata__results').text()).toContain(
+            'Test World'
+        );
+        wrapper.unmount();
+    });
+
+    test('reports search errors and clears the loading state', async () => {
+        findScreenshotsBySearch.mockRejectedValueOnce(
+            new Error('disk unavailable')
+        );
+        const wrapper = mountInspector();
+        await flushPromises();
+        await searchInput(wrapper).setValue('Friend');
+        await vi.advanceTimersByTimeAsync(500);
+        await flushPromises();
+
+        expect(wrapper.text()).toContain(
+            'dialog.screenshot_metadata.search_failed'
+        );
+        expect(wrapper.find('.screenshot-metadata__results').exists()).toBe(
+            false
+        );
+        wrapper.unmount();
     });
 });

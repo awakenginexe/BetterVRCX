@@ -406,7 +406,8 @@ export const createColumns = ({
             meta: { label: () => t('table.playerList.bioLink') },
             cell: ({ row }) => {
                 const links =
-                    row.original?.ref?.bioLinks?.filter(Boolean) ?? [];
+                    row.original?.publicProfileRef?.bioLinks?.filter(Boolean) ??
+                    [];
                 return (
                     <div class="flex items-center">
                         {links.map((link, index) => (

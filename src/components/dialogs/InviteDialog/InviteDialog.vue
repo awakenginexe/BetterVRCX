@@ -64,7 +64,7 @@
                         @update:modelValue="setInviteUserIds"
                         :groups="userPickerGroups"
                         multiple
-                        :disabled="inviteDialog.loading"
+                        :disabled="batchBusy"
                         :placeholder="t('dialog.invite.select_placeholder')"
                         :search-placeholder="t('dialog.invite.select_placeholder')"
                         :clearable="true">
@@ -96,19 +96,71 @@
                         </template>
                     </VirtualCombobox>
                 </div>
+
+                <div v-if="batchForDialog" class="mt-4 rounded-md border p-3 text-sm" role="status" aria-live="polite">
+                    <div>
+                        {{
+                            t('dialog.invite.batch_target', { target: inviteBatch.worldName || inviteBatch.instanceId })
+                        }}
+                    </div>
+                    <div>
+                        {{
+                            t('dialog.invite.batch_progress', {
+                                completed: inviteBatchSummary.completed,
+                                total: inviteBatchSummary.total
+                            })
+                        }}
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-3 text-xs">
+                        <span>{{ t('dialog.invite.batch_succeeded', { count: inviteBatchSummary.succeeded }) }}</span>
+                        <span>{{ t('dialog.invite.batch_failed', { count: inviteBatchSummary.failed }) }}</span>
+                        <span>{{
+                            t('dialog.invite.batch_cancelled_count', { count: inviteBatchSummary.cancelled })
+                        }}</span>
+                        <span>{{ t('dialog.invite.batch_unknown', { count: inviteBatchSummary.unknown }) }}</span>
+                    </div>
+                    <ul class="mt-2 max-h-36 overflow-y-auto text-xs">
+                        <li v-for="entry in inviteBatch.entries" :key="entry.id" class="py-0.5">
+                            {{ entry.name }} —
+                            {{
+                                entry.reason
+                                    ? t(`dialog.invite.batch_reason_${entry.reason}`)
+                                    : t(`dialog.invite.batch_status_${entry.status}`)
+                            }}
+                        </li>
+                    </ul>
+                    <div class="mt-2 flex gap-2">
+                        <Button v-if="batchBusy" size="sm" variant="outline" @click="cancelInviteBatch">
+                            {{ t('dialog.invite.batch_cancel_action') }}
+                        </Button>
+                        <Button
+                            v-else-if="hasRetryableFailures"
+                            size="sm"
+                            variant="outline"
+                            :disabled="retryNow < inviteBatch.retryAfterAt"
+                            @click="retryFailedInviteBatch">
+                            {{ t('dialog.invite.batch_retry_action') }}
+                        </Button>
+                    </div>
+                    <div v-if="hasRetryableFailures && retryNow < inviteBatch.retryAfterAt" class="mt-1 text-xs">
+                        {{ t('dialog.invite.batch_retry_after') }}
+                    </div>
+                </div>
             </div>
 
             <DialogFooter>
                 <Button
                     variant="secondary"
                     class="mr-2"
-                    :disabled="inviteDialog.loading || !inviteDialog.userIds.length"
+                    :disabled="batchBusy || confirmationPending || !inviteDialog.userIds.length"
                     @click="showSendInviteDialog"
                     >{{ t('dialog.invite.invite_with_message') }}</Button
                 >
-                <Button :disabled="inviteDialog.loading || !inviteDialog.userIds.length" @click="sendInvite">{{
-                    t('dialog.invite.invite')
-                }}</Button>
+                <Button
+                    :disabled="batchBusy || confirmationPending || !inviteDialog.userIds.length"
+                    @click="sendInvite"
+                    >{{ t('dialog.invite.invite') }}</Button
+                >
             </DialogFooter>
         </DialogContent>
 
@@ -122,11 +174,10 @@
 
 <script setup>
     import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-    import { computed, ref } from 'vue';
+    import { computed, onUnmounted, ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Check as CheckIcon } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
-    import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
 
     import {
@@ -137,9 +188,7 @@
         useModalStore,
         useUserStore
     } from '../../../stores';
-    import { parseLocation } from '../../../shared/utils';
     import { useUserDisplay } from '../../../composables/useUserDisplay';
-    import { instanceRequest, notificationRequest } from '../../../api';
     import { VirtualCombobox } from '../../ui/virtual-combobox';
     import {
         DropdownMenu,
@@ -157,7 +206,9 @@
     const favoriteStore = useFavoriteStore();
     const { favoriteFriendGroups, localFriendFavoriteGroups, localFriendFavorites, groupedByGroupKeyFavoriteFriends } =
         storeToRefs(favoriteStore);
-    const { refreshInviteMessageTableData } = useInviteStore();
+    const inviteStore = useInviteStore();
+    const { refreshInviteMessageTableData, startInviteBatch, cancelInviteBatch, retryFailedInviteBatch } = inviteStore;
+    const { inviteBatch, inviteBatchSummary } = storeToRefs(inviteStore);
     const { currentUser } = storeToRefs(useUserStore());
     const { clearInviteImageUpload } = useGalleryStore();
 
@@ -174,6 +225,31 @@
     const emit = defineEmits(['closeInviteDialog']);
 
     const sendInviteDialogVisible = ref(false);
+    const confirmationPending = ref(false);
+    const retryNow = ref(Date.now());
+    const batchBusy = computed(() => inviteBatch.value.status === 'running');
+    const batchForDialog = computed(
+        () => inviteBatch.value.status !== 'idle' && inviteBatch.value.accountId === currentUser.value?.id
+    );
+    const hasRetryableFailures = computed(
+        () =>
+            batchForDialog.value &&
+            inviteBatch.value.entries.some((entry) => entry.status === 'failed' && entry.retryable)
+    );
+    let retryTimer;
+    watch(
+        () => [props.inviteDialog.visible, inviteBatch.value.retryAfterAt],
+        ([visible, retryAfterAt]) => {
+            clearTimeout(retryTimer);
+            retryNow.value = Date.now();
+            if (visible && retryAfterAt > retryNow.value) {
+                retryTimer = setTimeout(() => {
+                    retryNow.value = Date.now();
+                }, retryAfterAt - retryNow.value);
+            }
+        }
+    );
+    onUnmounted(() => clearTimeout(retryTimer));
     const sendInviteDialog = ref({
         messageSlot: {},
         userId: '',
@@ -385,51 +461,24 @@
     /**
      *
      */
-    function sendInvite() {
-        modalStore
-            .confirm({
+    async function sendInvite() {
+        if (batchBusy.value || confirmationPending.value) return;
+        confirmationPending.value = true;
+        try {
+            const { ok } = await modalStore.confirm({
                 description: t('confirm.invite'),
                 title: 'Confirm'
-            })
-            .then(({ ok }) => {
-                if (!ok) return;
-                const D = props.inviteDialog;
-                if (D.loading === true) {
-                    return;
-                }
-                D.loading = true;
-                const inviteLoop = () => {
-                    if (D.userIds.length > 0) {
-                        const receiverUserId = D.userIds.shift();
-                        if (receiverUserId === currentUser.value.id) {
-                            // can't invite self!?
-                            const L = parseLocation(D.worldId);
-                            instanceRequest
-                                .selfInvite({
-                                    instanceId: L.instanceId,
-                                    worldId: L.worldId
-                                })
-                                .finally(inviteLoop);
-                        } else {
-                            notificationRequest
-                                .sendInvite(
-                                    {
-                                        instanceId: D.worldId,
-                                        worldId: D.worldId,
-                                        worldName: D.worldName
-                                    },
-                                    receiverUserId
-                                )
-                                .finally(inviteLoop);
-                        }
-                    } else {
-                        D.loading = false;
-                        D.visible = false;
-                        toast.success(t('message.invite.sent'));
-                    }
-                };
-                inviteLoop();
             });
+            if (!ok || batchBusy.value) return;
+            const D = props.inviteDialog;
+            startInviteBatch({
+                instanceId: D.worldId,
+                worldName: D.worldName,
+                recipients: D.userIds.map((id) => ({ id, name: resolveUserDisplayName(id) }))
+            });
+        } finally {
+            confirmationPending.value = false;
+        }
     }
 </script>
 

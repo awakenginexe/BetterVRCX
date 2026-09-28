@@ -154,6 +154,13 @@ const routes = [
                 meta: { navKeys: ['tool-screenshot-metadata', 'tools'] }
             },
             {
+                path: 'tools/photo-library',
+                name: 'photo-library',
+                component: () =>
+                    import('./../views/Tools/LocalPhotoLibrary.vue'),
+                meta: { navKeys: ['tool-photo-library', 'tools'] }
+            },
+            {
                 path: 'settings',
                 name: 'settings',
                 component: Settings,
