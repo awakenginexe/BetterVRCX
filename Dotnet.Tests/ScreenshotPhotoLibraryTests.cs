@@ -50,7 +50,13 @@ public class ScreenshotPhotoLibraryTests
         Assert.Equal(digest, SHA256.HashData(File.ReadAllBytes(current)));
         Assert.False(File.Exists(Path.Combine(fixture.Root, "photoLibrary.db")));
         Assert.NotNull(await ScreenshotPhotoLibrary.GetThumbnailAsync(fixture.Root, current, 128));
-        Assert.Null(await ScreenshotPhotoLibrary.GetThumbnailAsync(fixture.Root, Path.Combine(Path.GetTempPath(), "outside.png"), 128));
+        var outside = Path.Combine(Path.GetTempPath(), "bettervrcx-outside-" + Guid.NewGuid() + ".png");
+        try
+        {
+            using (var image = new Image<Rgba32>(2, 2)) image.SaveAsPng(outside);
+            Assert.Null(await ScreenshotPhotoLibrary.GetThumbnailAsync(fixture.Root, outside, 128));
+        }
+        finally { if (File.Exists(outside)) File.Delete(outside); }
     }
 
     [Fact]
@@ -68,6 +74,7 @@ public class ScreenshotPhotoLibraryTests
         fixture.Photo("changed.png", "2026-01-01T10:00:00Z", "Second", "Bob", true);
         Assert.Equal("Second", fixture.Page(refresh: true).Items.Single().World?.Name);
         File.Delete(path);
+        Assert.Equal("missing_file", fixture.Page().Items.Single().Status);
         Assert.Empty(fixture.Page(refresh: true).Items);
         Assert.Null(fixture.Database.GetFileCache(path));
     }
