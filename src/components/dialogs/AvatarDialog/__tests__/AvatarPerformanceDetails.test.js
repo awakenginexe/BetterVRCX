@@ -44,6 +44,45 @@ it('uses existing keyboard-accessible PC/Android tabs and emits platform selecti
     expect(wrapper.emitted('update:selectedPlatform')[0]).toEqual(['android']);
 });
 it.each([
+    ['Excellent', 'text-emerald-400'],
+    ['Good', 'text-green-400'],
+    ['Medium', 'text-yellow-400'],
+    ['Poor', 'text-orange-400'],
+    ['VeryPoor', 'text-red-400'],
+    ['Very Poor', 'text-red-400'],
+    ['Unknown', 'text-muted-foreground']
+])(
+    'colors the official %s rating while preserving its label',
+    (rating, color) => {
+        const wrapper = render({
+            packages,
+            selectedPlatform: 'standalonewindows',
+            result: { status: 'available', rating }
+        });
+        const badge = wrapper.get('[data-testid="performance-rating"]');
+        expect(badge.classes()).toContain(color);
+        expect(badge.text()).toBe(rating);
+        expect(badge.get('[aria-hidden="true"]').classes()).toContain(
+            'bg-current'
+        );
+    }
+);
+it('updates the rating color when the selected platform analysis changes', async () => {
+    const wrapper = render({
+        packages,
+        selectedPlatform: 'standalonewindows',
+        result: { status: 'available', rating: 'VeryPoor' }
+    });
+    await wrapper.setProps({
+        selectedPlatform: 'android',
+        result: { status: 'available', rating: 'Good' }
+    });
+    const badge = wrapper.get('[data-testid="performance-rating"]');
+    expect(badge.classes()).toContain('text-green-400');
+    expect(badge.classes()).not.toContain('text-red-400');
+    expect(badge.text()).toBe('Good');
+});
+it.each([
     ['loading', 'Loading performance data'],
     ['pending', 'Performance analysis pending'],
     ['unavailable', 'Performance data unavailable'],

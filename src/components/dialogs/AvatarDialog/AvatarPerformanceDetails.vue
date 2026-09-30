@@ -29,7 +29,14 @@
         </Tabs>
         <div v-if="packages.length" class="flex justify-between gap-3 mb-2">
             <span class="font-medium">{{ platformLabel(selectedPlatform) }}</span>
-            <span v-if="result.rating" class="font-medium">{{ result.rating }}</span>
+            <span
+                v-if="result.rating"
+                class="inline-flex items-center gap-1.5 rounded-sm border border-current/30 bg-current/10 px-1.5 py-0.5 font-medium"
+                :class="ratingColor"
+                data-testid="performance-rating">
+                <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-current" />
+                {{ result.rating }}
+            </span>
         </div>
         <p v-if="result.status !== 'available'" role="status" class="py-1">
             {{ t(`dialog.avatar.performance.${result.status}`) }}
@@ -86,6 +93,16 @@
     const emit = defineEmits(['update:selectedPlatform', 'refresh']);
     const { t, locale } = useI18n();
     const platformLabel = (platform) => ({ standalonewindows: 'PC', android: 'Android', ios: 'iOS' })[platform];
+    const ratingColor = computed(
+        () =>
+            ({
+                excellent: 'text-emerald-400',
+                good: 'text-green-400',
+                medium: 'text-yellow-400',
+                poor: 'text-orange-400',
+                verypoor: 'text-red-400'
+            })[props.result.rating?.replace(/\s/g, '').toLowerCase()] || 'text-muted-foreground'
+    );
     const groups = computed(() =>
         performanceGroups
             .map(([name, fields]) => ({
