@@ -194,8 +194,18 @@
             <TabsContent value="avatar" class="search-view__panel">
                 <div class="search-view__panel-body">
                     <div class="search-view__filters">
+                        <Select :model-value="avatarSearchMode" @update:modelValue="setAvatarSearchMode">
+                            <SelectTrigger class="bv-focus-ring" size="sm" :aria-label="t('avatar_search_v2.mode')">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="fallback">{{ t('avatar_search_v2.fallback') }}</SelectItem>
+                                <SelectItem value="deep">{{ t('avatar_search_v2.deep') }}</SelectItem>
+                                <SelectItem value="custom">{{ t('avatar_search_v2.custom') }}</SelectItem>
+                            </SelectContent>
+                        </Select>
                         <Select
-                            v-if="avatarRemoteDatabaseProviderList.length > 0"
+                            v-if="avatarSearchMode === 'custom' && avatarRemoteDatabaseProviderList.length > 0"
                             :model-value="avatarRemoteDatabaseProvider"
                             @update:modelValue="setAvatarProvider">
                             <SelectTrigger class="bv-focus-ring" size="sm">
@@ -207,12 +217,12 @@
                                         v-for="provider in avatarRemoteDatabaseProviderList.filter(Boolean)"
                                         :key="provider"
                                         :value="provider">
-                                        {{ provider }}
+                                        {{ provider === avtrdb.url ? 'AvtrDB (VRCX)' : provider }}
                                     </SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <span v-else class="text-sm text-muted-foreground">
+                        <span v-else-if="avatarSearchMode === 'custom'" class="text-sm text-muted-foreground">
                             {{ t('view.search.avatar.no_provider') }}
                         </span>
                         <Button
@@ -224,10 +234,36 @@
                             <Settings class="size-4" />
                         </Button>
                     </div>
+                    <p
+                        v-if="avatarSearchMode !== 'custom' && !avatarSearchSources?.length"
+                        class="text-xs text-muted-foreground px-3 mb-2">
+                        {{ t('avatar_search_v2.no_sources') }}
+                    </p>
+                    <p
+                        v-if="avatarSearchState?.failedProviders?.length && !isSearchAvatarLoading"
+                        class="text-xs text-muted-foreground px-3 mb-2"
+                        role="status">
+                        {{
+                            t('avatar_search_v2.unavailable', {
+                                providers: avatarSearchState.failedProviders.map(sourceLabel).join(' · ')
+                            })
+                        }}
+                    </p>
+                    <p
+                        v-if="avatarSearchState?.pagination?.vrcndb?.has_more && !isSearchAvatarLoading"
+                        class="text-xs text-muted-foreground px-3 mb-2">
+                        {{ t('avatar_search_v2.limited_results') }}
+                    </p>
                     <div class="search-view__results bv-surface">
                         <div v-if="isSearchAvatarLoading" class="search-view__loading" role="status" aria-live="polite">
                             <Spinner class="text-2xl" />
-                            <span>{{ t('nav_tooltip.search') }}</span>
+                            <span>{{
+                                avatarSearchState?.activeProvider
+                                    ? t('avatar_search_v2.searching', {
+                                          provider: sourceLabel(avatarSearchState.activeProvider)
+                                      })
+                                    : t('avatar_search_v2.searching_all')
+                            }}</span>
                         </div>
                         <template v-else-if="searchAvatarPage.length > 0">
                             <ItemGroup
@@ -268,6 +304,15 @@
                                             <ItemDescription class="line-clamp-1 text-xs">
                                                 {{ avatar.authorName }}
                                             </ItemDescription>
+                                            <TooltipWrapper
+                                                v-if="avatar.$searchMetadata?.sources?.length"
+                                                :content="t('avatar_search_v2.supplemental_hint')">
+                                                <Badge
+                                                    variant="outline"
+                                                    class="max-w-full truncate text-[10px] font-normal">
+                                                    {{ avatar.$searchMetadata.sources.map(sourceLabel).join(' + ') }}
+                                                </Badge>
+                                            </TooltipWrapper>
                                         </ItemContent>
                                     </div>
                                 </Item>
@@ -357,6 +402,10 @@
     import { useMagicKeys, whenever } from '@vueuse/core';
     import { toast } from 'vue-sonner';
     import { Button } from '@/components/ui/button';
+    import { Badge } from '@/components/ui/badge';
+    import { TooltipWrapper } from '@/components/ui/tooltip';
+    import { sourceLabel } from '../../services/avatarSearch/providers';
+    import { avtrdb } from '../../services/avatarSearch/providers/avtrdb';
     import { Checkbox } from '@/components/ui/checkbox';
     import { InputGroupField } from '@/components/ui/input-group';
 
@@ -377,9 +426,14 @@
     import { useSearchGroup } from './composables/useSearchGroup';
 
     const { randomUserColours } = storeToRefs(useAppearanceSettingsStore());
-    const { avatarRemoteDatabaseProviderList, avatarRemoteDatabaseProvider, isAvatarProviderDialogVisible } =
-        storeToRefs(useAvatarProviderStore());
-    const { setAvatarProvider } = useAvatarProviderStore();
+    const {
+        avatarRemoteDatabaseProviderList,
+        avatarRemoteDatabaseProvider,
+        isAvatarProviderDialogVisible,
+        avatarSearchMode,
+        avatarSearchSources
+    } = storeToRefs(useAvatarProviderStore());
+    const { setAvatarProvider, setAvatarSearchMode } = useAvatarProviderStore();
 
     const { searchText, searchUserResults } = storeToRefs(useSearchStore());
     const { clearSearch } = useSearchStore();
@@ -429,6 +483,7 @@
         searchAvatarResults,
         searchAvatarPage,
         isSearchAvatarLoading,
+        avatarSearchState,
         searchAvatar,
         moreSearchAvatar,
         clearAvatarSearch

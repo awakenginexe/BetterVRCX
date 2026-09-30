@@ -1,5 +1,5 @@
 import { queryClient, queryKeys } from '../queries';
-import { request } from '../services/request';
+import { failedGetRequests, request } from '../services/request';
 import { useUserStore } from '../stores';
 
 /**
@@ -65,17 +65,17 @@ const miscReq = {
      * @param {{
      *       fileId: string,
      *       version: number,
-     *       variant: string
+     *       variant?: string
      * }} params
+     * @param {{forceRefresh?: boolean}} [options]
      * @returns { Promise<{json: any, params}> }
      */
-    getFileAnalysis(params) {
-        return request(
-            `analysis/${params.fileId}/${params.version}/${params.variant}`,
-            {
-                method: 'GET'
-            }
-        ).then((json) => {
+    getFileAnalysis(params, { forceRefresh = false } = {}) {
+        const endpoint = `analysis/${params.fileId}/${params.version}${params.variant ? `/${params.variant}` : ''}`;
+        if (forceRefresh) failedGetRequests.delete(endpoint);
+        return request(endpoint, {
+            method: 'GET'
+        }).then((json) => {
             const args = {
                 json,
                 params

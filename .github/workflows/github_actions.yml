@@ -544,6 +544,18 @@ jobs:
         create_setup
       ]
     steps:
+      - uses: actions/checkout@v6
+      - name: Prepare release notes
+        env:
+          RELEASE_TAG: ${{ needs.set_version.outputs.tag }}
+        run: |
+          awk -v version="${RELEASE_TAG#v}" '
+            $0 == "## " version { in_release = 1; next }
+            in_release && /^## / { exit }
+            in_release { print }
+          ' CHANGELOG.md > release-notes.md
+          test -s release-notes.md
+
       - name: Download Windows Installer
         uses: actions/download-artifact@v8
         with:
@@ -587,7 +599,8 @@ jobs:
           tag_name: ${{ needs.set_version.outputs.tag }}
           draft: false
           prerelease: false
-          generate_release_notes: ${{ github.event_name == 'push' }}
+          body_path: release-notes.md
+          generate_release_notes: false
 
       - name: Upload release assets safely
         env:

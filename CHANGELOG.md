@@ -1,6 +1,13 @@
 # Changelog
 
-## 4.0.0 (unreleased)
+## 4.1.0
+
+- Avatar Search v2: AvtrDB, Avtr.icu and VRCNDb, smart fallback, combined results and source badges.
+- Richer avatar details with database information and official VRChat performance statistics.
+- Separate PC/Android performance views, colored ratings, automatic caching and manual refresh.
+- Improved observed public-avatar lookup and friendship history.
+
+## 4.0.0
 
 ### Profile and API compatibility
 

@@ -6,6 +6,7 @@ import { useAdvancedSettingsStore } from './settings/advanced';
 import { watchState } from '../services/watchState';
 
 import configRepository from '../services/config';
+import { BUILTIN_PROVIDERS } from '../services/avatarSearch/providers';
 
 export const useAvatarProviderStore = defineStore('AvatarProvider', () => {
     const advancedSettingsStore = useAdvancedSettingsStore();
@@ -13,6 +14,65 @@ export const useAvatarProviderStore = defineStore('AvatarProvider', () => {
     const isAvatarProviderDialogVisible = ref(false);
 
     const avatarRemoteDatabaseProvider = ref('');
+    const avatarSearchMode = ref('fallback');
+    const avatarSearchContactEmail = ref('');
+    const avatarSearchSources = ref(BUILTIN_PROVIDERS.map((p) => p.id));
+
+    async function initSearchSettings() {
+        avatarSearchContactEmail.value = await configRepository.getString(
+            'VRCX_avatarSearchContactEmail',
+            ''
+        );
+        const mode = await configRepository.getString(
+            'VRCX_avatarSearchMode',
+            'fallback'
+        );
+        if (['fallback', 'deep', 'custom'].includes(mode))
+            avatarSearchMode.value = mode;
+        try {
+            const sources = JSON.parse(
+                await configRepository.getString(
+                    'VRCX_avatarSearchSources',
+                    'null'
+                )
+            );
+            if (Array.isArray(sources))
+                avatarSearchSources.value = BUILTIN_PROVIDERS.map(
+                    (p) => p.id
+                ).filter((id) => sources.includes(id));
+        } catch {
+            /* Keep defaults for malformed legacy configuration. */
+        }
+    }
+
+    async function setAvatarSearchMode(mode) {
+        if (!['fallback', 'deep', 'custom'].includes(mode)) return;
+        avatarSearchMode.value = mode;
+        await configRepository.setString('VRCX_avatarSearchMode', mode);
+    }
+
+    async function setAvatarSearchContactEmail(value) {
+        avatarSearchContactEmail.value = String(value)
+            .replace(/[\r\n]/g, '')
+            .trim();
+        await configRepository.setString(
+            'VRCX_avatarSearchContactEmail',
+            avatarSearchContactEmail.value
+        );
+    }
+
+    async function setAvatarSearchSource(source, enabled) {
+        const selected = new Set(avatarSearchSources.value);
+        if (enabled) selected.add(source);
+        else selected.delete(source);
+        avatarSearchSources.value = BUILTIN_PROVIDERS.map((p) => p.id).filter(
+            (id) => selected.has(id)
+        );
+        await configRepository.setString(
+            'VRCX_avatarSearchSources',
+            JSON.stringify(avatarSearchSources.value)
+        );
+    }
 
     const avatarRemoteDatabaseProviderList = ref([
         'https://api.avtrdb.com/v3/avatar/search/vrcx'
@@ -123,7 +183,9 @@ export const useAvatarProviderStore = defineStore('AvatarProvider', () => {
             advancedSettingsStore.setAvatarRemoteDatabase(true);
         } else {
             avatarRemoteDatabaseProvider.value = '';
-            advancedSettingsStore.setAvatarRemoteDatabase(false);
+            advancedSettingsStore.setAvatarRemoteDatabase(
+                avatarSearchSources.value.length > 0
+            );
         }
     }
 
@@ -140,11 +202,18 @@ export const useAvatarProviderStore = defineStore('AvatarProvider', () => {
     }
 
     initAvatarProviderState();
+    initSearchSettings();
 
     return {
         isAvatarProviderDialogVisible,
         avatarRemoteDatabaseProvider,
         avatarRemoteDatabaseProviderList,
+        avatarSearchMode,
+        avatarSearchSources,
+        avatarSearchContactEmail,
+        setAvatarSearchContactEmail,
+        setAvatarSearchMode,
+        setAvatarSearchSource,
 
         addAvatarProvider,
         removeAvatarProvider,

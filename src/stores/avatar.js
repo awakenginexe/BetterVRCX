@@ -9,6 +9,7 @@ import {
 } from '../coordinators/avatarCoordinator';
 import { database } from '../services/database';
 import { watchState } from '../services/watchState';
+import { avatarSearchService } from '../services/avatarSearch/avatarSearchService';
 
 export const useAvatarStore = defineStore('Avatar', () => {
     let cachedAvatarModerations = new Map();
@@ -23,6 +24,7 @@ export const useAvatarStore = defineStore('Avatar', () => {
         id: '',
         memo: '',
         ref: {},
+        externalMetadata: null,
         isFavorite: false,
         isBlocked: false,
         isQuestFallback: false,
@@ -39,6 +41,7 @@ export const useAvatarStore = defineStore('Avatar', () => {
         cacheLocked: false,
         cachePath: '',
         fileAnalysis: {},
+        performanceAvatar: null,
         timeSpent: 0
     });
     const avatarHistory = ref([]);
@@ -51,6 +54,8 @@ export const useAvatarStore = defineStore('Avatar', () => {
             cachedAvatars.clear();
             cachedAvatarNames.clear();
             cachedAvatarModerations.clear();
+            avatarSearchService.clear();
+            avatarDialog.value.externalMetadata = null;
             avatarHistory.value = [];
             if (isLoggedIn) {
                 getAvatarHistory();
