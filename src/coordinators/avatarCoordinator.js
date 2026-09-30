@@ -6,7 +6,6 @@ import {
     createDefaultAvatarRef,
     extractFileId,
     getAvailablePlatforms,
-    getBundleDateSize,
     getPlatformInfo,
     replaceBioSymbols,
     sanitizeEntityJson,
@@ -107,6 +106,7 @@ export function showAvatarDialog(avatarId, options = {}) {
     D.cacheLocked = false;
     D.cachePath = '';
     D.fileAnalysis = {};
+    D.performanceAvatar = null;
     D.isQuestFallback = false;
     D.isPC = false;
     D.isQuest = false;
@@ -134,6 +134,7 @@ export function showAvatarDialog(avatarId, options = {}) {
         .then((args) => {
             const ref = applyAvatar(args.json);
             D.ref = ref;
+            D.performanceAvatar = args.json;
             uiStore.setDialogCrumbLabel('avatar', D.id, D.ref?.name || D.id);
             avatarStore.getAvatarGallery(avatarId);
             avatarStore.updateVRChatAvatarCache();
@@ -154,9 +155,6 @@ export function showAvatarDialog(avatarId, options = {}) {
                     D.imposterVersion = unityPackage.impostorizerVersion;
                     break;
                 }
-            }
-            if (Object.keys(D.fileAnalysis).length === 0) {
-                getBundleDateSize(ref);
             }
         })
         .catch((err) => {

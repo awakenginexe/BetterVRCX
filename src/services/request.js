@@ -288,9 +288,11 @@ export function request(endpoint, options) {
             $throw(status, data, endpoint, retryAfter);
         });
     if (init.method === 'GET') {
-        req.finally(() => {
+        const cleanup = () => {
             pendingGetRequests.delete(init.url);
-        });
+        };
+        // A rejected finally() chain would leave expected analysis failures unhandled.
+        req.then(cleanup, cleanup);
         pendingGetRequests.set(init.url, {
             req,
             time: Date.now()

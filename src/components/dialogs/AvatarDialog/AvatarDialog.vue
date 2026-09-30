@@ -345,6 +345,12 @@
                 @update:modelValue="avatarDialogTabClick">
                 <template #Info>
                     <div class="flex flex-wrap items-start px-2.5" style="max-height: unset">
+                        <AvatarPerformanceDetails
+                            v-model:selected-platform="performancePlatform"
+                            :packages="performancePackages"
+                            :result="performanceResult"
+                            :refreshing="performanceRefreshing"
+                            @refresh="refreshPerformance" />
                         <div
                             v-if="avatarDialog.galleryImages.length || avatarDialog.ref.authorId === currentUser.id"
                             style="width: 100%">
@@ -623,6 +629,8 @@
         compareUnityVersion,
         copyToClipboard,
         formatDateFilter,
+        getAvailablePlatforms,
+        getPlatformInfo,
         openFolderGeneric,
         timeToText
     } from '../../../shared/utils';
@@ -647,6 +655,8 @@
     import { useAvatarDialogCommands } from './useAvatarDialogCommands';
 
     import DialogJsonTab from '../DialogJsonTab.vue';
+    import AvatarPerformanceDetails from './AvatarPerformanceDetails.vue';
+    import { useAvatarPerformance } from './useAvatarPerformance';
     import ImageCropDialog from '../ImageCropDialog.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
 
@@ -668,6 +678,35 @@
     const uiStore = useUiStore();
 
     const { t } = useI18n();
+
+    const {
+        packages: performancePackages,
+        selectedPlatform: performancePlatform,
+        selectedResult: performanceResult,
+        refreshing: performanceRefreshing,
+        refresh: refreshPerformance
+    } = useAvatarPerformance(
+        () => avatarDialog.value.performanceAvatar,
+        () => avatarDialog.value.visible,
+        (platform, result) => {
+            if (result.status !== 'available' && result.fileAnalysis?.success !== true) {
+                delete avatarDialog.value.fileAnalysis[platform];
+                return;
+            }
+            const json = { ...result.fileAnalysis };
+            if (Number.isFinite(json.fileSize)) json._fileSize = `${(json.fileSize / 1048576).toFixed(2)} MB`;
+            if (Number.isFinite(json.uncompressedSize)) json._uncompressedSize = `${(json.uncompressedSize / 1048576).toFixed(2)} MB`;
+            avatarDialog.value.fileAnalysis[platform] = json;
+        },
+        (metadata) => {
+            const D = avatarDialog.value;
+            D.ref = applyAvatar(metadata);
+            const packages = metadata.unityPackages || [];
+            Object.assign(D, getAvailablePlatforms(packages));
+            D.platformInfo = getPlatformInfo(packages);
+            D.fileAnalysis = {};
+        }
+    );
 
     const {
         cropDialogOpen,

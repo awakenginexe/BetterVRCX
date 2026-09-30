@@ -39,6 +39,7 @@ export const useAvatarStore = defineStore('Avatar', () => {
         cacheLocked: false,
         cachePath: '',
         fileAnalysis: {},
+        performanceAvatar: null,
         timeSpent: 0
     });
     const avatarHistory = ref([]);
