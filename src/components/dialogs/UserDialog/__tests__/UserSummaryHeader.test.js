@@ -95,11 +95,15 @@ vi.mock('../../../../stores', () => ({
     }),
     useLocationStore: () => ({ lastLocation: lastLocationMock }),
     useGameLogStore: () => ({ state: gameLogStateMock }),
-    useAvatarStore: () => ({ cachedAvatars: cachedAvatarsMock })
+    useAvatarStore: () => ({ cachedAvatars: cachedAvatarsMock }),
+    useAvatarProviderStore: () => ({
+        avatarRemoteDatabaseProviderList: ['https://example.com/provider']
+    })
 }));
 
 vi.mock('../../../../api', () => ({
-    avatarRequest: { getAvatar: vi.fn() }
+    avatarRequest: { getAvatar: vi.fn() },
+    userRequest: { getUsers: vi.fn() }
 }));
 
 vi.mock('../../../../composables/useUserDisplay', () => ({
@@ -111,6 +115,9 @@ vi.mock('../../../../composables/useUserDisplay', () => ({
 
 vi.mock('@/coordinators/groupCoordinator', () => ({
     showGroupDialog: vi.fn()
+}));
+vi.mock('../../../../coordinators/avatarCoordinator', () => ({
+    lookupAvatarsByAuthor: vi.fn()
 }));
 
 vi.mock('@/components/ui/tooltip', () => ({
@@ -147,10 +154,11 @@ vi.mock('@/components/AvatarInfo.vue', () => ({
 }));
 
 vi.mock('../../../../services/observedAvatarRequest', () => ({
-    observedAvatarRequester: { getAvatar: vi.fn() }
+    observedAvatarRequester: { getAvatar: vi.fn(), run: vi.fn() }
 }));
 
-import { avatarRequest } from '../../../../api';
+import { avatarRequest, userRequest } from '../../../../api';
+import { lookupAvatarsByAuthor } from '../../../../coordinators/avatarCoordinator';
 import { observedAvatarRequester } from '../../../../services/observedAvatarRequest';
 import UserSummaryHeader from '../UserSummaryHeader.vue';
 
@@ -210,6 +218,21 @@ describe('UserSummaryHeader.vue', () => {
         };
         cachedAvatarsMock.clear();
         vi.mocked(avatarRequest.getAvatar).mockReset();
+        vi.mocked(userRequest.getUsers).mockReset();
+        vi.mocked(lookupAvatarsByAuthor).mockReset();
+        vi.mocked(observedAvatarRequester.run)
+            .mockReset()
+            .mockImplementation(async (operation, isCancelled) => {
+                if (isCancelled()) return { status: 'cancelled' };
+                try {
+                    const { json } = await operation();
+                    return { status: 'ok', json };
+                } catch (error) {
+                    return {
+                        status: error?.status === 429 ? 'rate_limited' : 'error'
+                    };
+                }
+            });
         vi.mocked(observedAvatarRequester.getAvatar)
             .mockReset()
             .mockImplementation(async (avatarId, isCancelled) => {
@@ -305,6 +328,99 @@ describe('UserSummaryHeader.vue', () => {
                 .findComponent({ name: 'AvatarInfo' })
                 .props('observedAvatar')?.id
         ).toBe('avtr_22222222-2222-2222-2222-222222222222');
+        wrapper.unmount();
+    });
+
+    test('finds the public avatar by its logged creator before its ID appears in the game log', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: '＃Ceru-515N4',
+                avatarAuthorName: '515N4',
+                avatarIds: []
+            })
+        );
+        vi.mocked(userRequest.getUsers).mockResolvedValue({
+            json: [{ id: 'usr_creator', displayName: '515N4' }]
+        });
+        vi.mocked(lookupAvatarsByAuthor).mockResolvedValue([
+            {
+                id: 'avtr_public',
+                authorId: 'usr_creator',
+                name: '#Ceru-515N4',
+                releaseStatus: 'public'
+            }
+        ]);
+        vi.mocked(avatarRequest.getAvatar).mockResolvedValue({
+            json: {
+                id: 'avtr_public',
+                authorId: 'usr_creator',
+                authorName: '515N4',
+                name: '#Ceru-515N4',
+                releaseStatus: 'public',
+                thumbnailImageUrl: 'https://example.com/ceru.png'
+            }
+        });
+
+        const wrapper = mountHeader();
+        await flushPromises();
+
+        expect(userRequest.getUsers).toHaveBeenCalledWith(
+            expect.objectContaining({ search: '515N4' })
+        );
+        expect(lookupAvatarsByAuthor).toHaveBeenCalledWith(
+            'https://example.com/provider',
+            'usr_creator',
+            { silent: true, honorRateLimit: true }
+        );
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')?.id
+        ).toBe('avtr_public');
+        wrapper.unmount();
+    });
+
+    test('does not choose between public avatars with the same creator and name', async () => {
+        lastLocationMock.value.playerList.set('usr_target', {
+            displayName: 'TargetUser'
+        });
+        vi.mocked(AppApi.GetObservedAvatarLogData).mockResolvedValue(
+            JSON.stringify({
+                avatarName: 'Same name',
+                avatarAuthorName: 'Creator',
+                avatarIds: []
+            })
+        );
+        vi.mocked(userRequest.getUsers).mockResolvedValue({
+            json: [{ id: 'usr_creator', displayName: 'Creator' }]
+        });
+        vi.mocked(lookupAvatarsByAuthor).mockResolvedValue([
+            {
+                id: 'avtr_a',
+                authorId: 'usr_creator',
+                name: 'Same name',
+                releaseStatus: 'public'
+            },
+            {
+                id: 'avtr_b',
+                authorId: 'usr_creator',
+                name: 'Same name',
+                releaseStatus: 'public'
+            }
+        ]);
+
+        const wrapper = mountHeader();
+        await flushPromises();
+
+        expect(avatarRequest.getAvatar).not.toHaveBeenCalled();
+        expect(
+            wrapper
+                .findComponent({ name: 'AvatarInfo' })
+                .props('observedAvatar')
+        ).toBe(null);
         wrapper.unmount();
     });
 

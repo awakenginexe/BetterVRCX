@@ -1399,8 +1399,8 @@
             },
             "info": {
                 "header": "資訊",
-                "vrcx_info": "VRCX 資訊",
-                "vrcx_info_tooltip": "VRCX 的資訊可能不準確",
+                "vrcx_info": "BetterVRCX 資訊",
+                "vrcx_info_tooltip": "BetterVRCX 的資訊可能不準確",
                 "launch_invite_tooltip": "啟動 / 邀請",
                 "self_invite_tooltip": "自我邀請",
                 "open_in_vrchat_tooltip": "在 VRChat 中開啟",

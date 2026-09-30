@@ -94,4 +94,28 @@ describe('observed avatar requests', () => {
         await expect(second).resolves.toEqual({ status: 'cancelled' });
         expect(request).toHaveBeenCalledTimes(1);
     });
+
+    test('paces creator search requests in the same queue as avatar details', async () => {
+        let time = 10_000;
+        const request = vi.fn().mockResolvedValue({ json: { id: 'avatar' } });
+        const wait = vi.fn(async (ms) => {
+            time += ms;
+        });
+        const requester = createObservedAvatarRequester({
+            request,
+            now: () => time,
+            wait
+        });
+        const search = vi.fn().mockResolvedValue({ json: [{ id: 'creator' }] });
+
+        await expect(requester.run(search)).resolves.toEqual({
+            status: 'ok',
+            json: [{ id: 'creator' }]
+        });
+        await expect(requester.getAvatar('avatar')).resolves.toEqual({
+            status: 'ok',
+            json: { id: 'avatar' }
+        });
+        expect(wait).toHaveBeenCalledExactlyOnceWith(2_000);
+    });
 });

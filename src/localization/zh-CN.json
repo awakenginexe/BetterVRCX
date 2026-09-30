@@ -1409,8 +1409,8 @@
             },
             "info": {
                 "header": "信息",
-                "vrcx_info": "VRCX 信息",
-                "vrcx_info_tooltip": "VRCX 的信息可能不准确",
+                "vrcx_info": "BetterVRCX 信息",
+                "vrcx_info_tooltip": "BetterVRCX 的信息可能不准确",
                 "launch_invite_tooltip": "启动 / 邀请",
                 "self_invite_tooltip": "邀请自己",
                 "open_in_vrchat_tooltip": "在 VRChat 中打开",

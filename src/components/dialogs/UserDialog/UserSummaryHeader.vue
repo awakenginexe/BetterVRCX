@@ -521,6 +521,7 @@
     import { computed, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
+    import { userRequest } from '../../../api';
 
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     import { copyToClipboard, formatDateFilter, languageClass, openDiscordProfile } from '../../../shared/utils';
@@ -528,6 +529,7 @@
     import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
     import {
         useAvatarStore,
+        useAvatarProviderStore,
         useGalleryStore,
         useGameLogStore,
         useGameStore,
@@ -536,6 +538,7 @@
         useUserStore
     } from '../../../stores';
     import { observedAvatarRequester } from '../../../services/observedAvatarRequest';
+    import { lookupAvatarsByAuthor } from '../../../coordinators/avatarCoordinator';
     import { Badge } from '../../ui/badge';
     import { Checkbox } from '../../ui/checkbox';
     import { Skeleton } from '@/components/ui/skeleton';
@@ -578,6 +581,7 @@
     const { lastLocation } = storeToRefs(useLocationStore());
     const gameLogStore = useGameLogStore();
     const avatarStore = useAvatarStore();
+    const avatarProviderStore = useAvatarProviderStore();
     const verifiedObservedAvatar = ref(null);
     const avatarImageUrl = computed(() =>
         verifiedObservedAvatar.value
@@ -649,23 +653,87 @@
             let cancelled = false;
             onCleanup(() => (cancelled = true));
             try {
-                const observation = JSON.parse(await AppApi.GetObservedAvatarLogData(userDialog.value.ref.displayName));
+                const isCancelled = () =>
+                    cancelled ||
+                    userDialog.value.id !== userId ||
+                    !isPresentInGameLog.value ||
+                    !!observedAvatarId.value;
+                let observation = JSON.parse(await AppApi.GetObservedAvatarLogData(userDialog.value.ref.displayName));
+                if (
+                    !observation.avatarAuthorName &&
+                    (observation.avatarName || currentLogName) &&
+                    observation.avatarIds?.length === 0 &&
+                    !isCancelled()
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, 4_000));
+                    if (isCancelled()) return;
+                    observation = JSON.parse(await AppApi.GetObservedAvatarLogData(userDialog.value.ref.displayName));
+                }
                 const name = (observation.avatarName || currentLogName || '').normalize('NFKC').trim();
                 if (!name || !Array.isArray(observation.avatarIds)) return;
+
+                const authorName = observation.avatarAuthorName?.normalize('NFKC').trim();
+                if (authorName && !isCancelled()) {
+                    const users = await observedAvatarRequester.run(
+                        () => userRequest.getUsers({ n: 50, offset: 0, search: authorName }),
+                        isCancelled
+                    );
+                    if (users.status === 'cancelled' || users.status === 'rate_limited') return;
+                    const creators = Array.isArray(users.json)
+                        ? users.json.filter((user) => user.displayName?.normalize('NFKC').trim() === authorName)
+                        : [];
+                    if (users.status === 'ok' && creators.length === 1 && users.json.length < 50 && !isCancelled()) {
+                        const creatorId = creators[0].id;
+                        const candidates = new Set();
+                        for (const providerUrl of new Set(avatarProviderStore.avatarRemoteDatabaseProviderList)) {
+                            const avatars = await observedAvatarRequester.run(
+                                async () => ({
+                                    json: await lookupAvatarsByAuthor(providerUrl, creatorId, {
+                                        silent: true,
+                                        honorRateLimit: true
+                                    })
+                                }),
+                                isCancelled
+                            );
+                            if (avatars.status === 'cancelled' || avatars.status === 'rate_limited') return;
+                            if (avatars.status !== 'ok' || !Array.isArray(avatars.json)) continue;
+                            for (const avatar of avatars.json) {
+                                if (
+                                    avatar.id &&
+                                    avatar.authorId === creatorId &&
+                                    avatar.releaseStatus === 'public' &&
+                                    avatar.name?.normalize('NFKC').trim() === name
+                                )
+                                    candidates.add(avatar.id);
+                            }
+                        }
+                        if (candidates.size === 1 && !isCancelled()) {
+                            const candidateId = [...candidates][0];
+                            const detail = await observedAvatarRequester.getAvatar(candidateId, isCancelled);
+                            if (detail.status === 'cancelled' || detail.status === 'rate_limited') return;
+                            const avatar = detail.json;
+                            if (
+                                detail.status === 'ok' &&
+                                !isCancelled() &&
+                                avatar?.id === candidateId &&
+                                avatar.authorId === creatorId &&
+                                avatar.releaseStatus === 'public' &&
+                                avatar.name?.normalize('NFKC').trim() === name
+                            ) {
+                                verifiedObservedAvatar.value = avatar;
+                                return;
+                            }
+                        }
+                    }
+                }
+
                 const avatarIds = [...new Set(observation.avatarIds)]
                     .filter((id) => /^avtr_[0-9a-f-]{36}$/i.test(id))
                     .slice(-20);
                 const matches = [];
                 let completed = true;
                 for (const avatarId of avatarIds) {
-                    const response = await observedAvatarRequester.getAvatar(
-                        avatarId,
-                        () =>
-                            cancelled ||
-                            userDialog.value.id !== userId ||
-                            !isPresentInGameLog.value ||
-                            !!observedAvatarId.value
-                    );
+                    const response = await observedAvatarRequester.getAvatar(avatarId, isCancelled);
                     if (response.status === 'cancelled' || response.status === 'rate_limited') {
                         completed = false;
                         break;

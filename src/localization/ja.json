@@ -1406,8 +1406,8 @@
             },
             "info": {
                 "header": "情報",
-                "vrcx_info": "VRCX 情報",
-                "vrcx_info_tooltip": "VRCX の情報は正確でない可能性があります",
+                "vrcx_info": "BetterVRCX 情報",
+                "vrcx_info_tooltip": "BetterVRCX の情報は正確でない可能性があります",
                 "launch_invite_tooltip": "起動/招待",
                 "self_invite_tooltip": "自分を招待",
                 "open_in_vrchat_tooltip": "VRChat で開く",

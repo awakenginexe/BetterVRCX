@@ -24,7 +24,7 @@ export function createObservedAvatarRequester({
     let nextRequestAt = 0;
     let rateLimitedUntil = 0;
 
-    function getAvatar(avatarId, isCancelled = () => false) {
+    function run(operation, isCancelled = () => false) {
         const result = queue.then(async () => {
             if (isCancelled()) return { status: 'cancelled' };
             if (now() < rateLimitedUntil) return { status: 'rate_limited' };
@@ -36,7 +36,7 @@ export function createObservedAvatarRequester({
 
             nextRequestAt = now() + REQUEST_INTERVAL_MS;
             try {
-                const { json } = await request(avatarId);
+                const { json } = await operation();
                 return { status: 'ok', json };
             } catch (error) {
                 if (error?.status === 429) {
@@ -50,7 +50,11 @@ export function createObservedAvatarRequester({
         return result;
     }
 
-    return { getAvatar };
+    function getAvatar(avatarId, isCancelled) {
+        return run(() => request(avatarId), isCancelled);
+    }
+
+    return { getAvatar, run };
 }
 
 export const observedAvatarRequester = createObservedAvatarRequester({

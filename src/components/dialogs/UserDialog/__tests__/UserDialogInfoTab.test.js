@@ -260,6 +260,66 @@ describe('UserDialogInfoTab.vue', () => {
     });
 
     describe('dom rendering', () => {
+        test('shows the latest friended and unfriended dates as separate rows', () => {
+            const wrapper = mountComponent({
+                userDialog: {
+                    dateFriendedInfo: [
+                        {
+                            type: 'Friend',
+                            created_at: '2025-01-01T00:00:00.000Z'
+                        },
+                        {
+                            type: 'Unfriend',
+                            created_at: '2025-04-01T00:00:00.000Z'
+                        },
+                        {
+                            type: 'Friend',
+                            created_at: '2025-06-01T00:00:00.000Z'
+                        },
+                        {
+                            type: 'Unfriend',
+                            created_at: '2025-08-01T00:00:00.000Z'
+                        }
+                    ],
+                    unFriended: true,
+                    dateFriended: '2025-08-01T00:00:00.000Z'
+                }
+            });
+
+            const friended = wrapper.find(
+                '[data-testid="friendship-friended"]'
+            );
+            const unfriended = wrapper.find(
+                '[data-testid="friendship-unfriended"]'
+            );
+            expect(friended.exists()).toBe(true);
+            expect(unfriended.exists()).toBe(true);
+            expect(friended.text()).not.toContain('—');
+            expect(unfriended.text()).not.toContain('—');
+        });
+
+        test('shows an unknown friended date when only an unfriend was recorded', () => {
+            const wrapper = mountComponent({
+                userDialog: {
+                    dateFriendedInfo: [
+                        {
+                            type: 'Unfriend',
+                            created_at: '2026-05-22T16:13:47.934Z'
+                        }
+                    ],
+                    unFriended: true,
+                    dateFriended: '2026-05-22T16:13:47.934Z'
+                }
+            });
+
+            expect(
+                wrapper.find('[data-testid="friendship-friended"]').text()
+            ).toContain('—');
+            expect(
+                wrapper.find('[data-testid="friendship-unfriended"]').text()
+            ).not.toContain('—');
+        });
+
         test('keeps Private and shows Last Seen separately, then removes hints when disabled', async () => {
             const wrapper = mountComponent({
                 userDialog: {

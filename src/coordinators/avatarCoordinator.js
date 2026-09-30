@@ -423,7 +423,11 @@ async function lookupAvatarByFileId(providerUrl, fileId) {
  * @param providerUrl
  * @param authorId
  */
-async function lookupAvatarsByAuthor(providerUrl, authorId) {
+export async function lookupAvatarsByAuthor(
+    providerUrl,
+    authorId,
+    { silent = false, honorRateLimit = false } = {}
+) {
     const vrcxUpdaterStore = useVRCXUpdaterStore();
 
     const avatars = [];
@@ -440,6 +444,12 @@ async function lookupAvatarsByAuthor(providerUrl, authorId) {
                 'VRCX-ID': vrcxUpdaterStore.vrcxId
             }
         });
+        if (honorRateLimit && response.status === 429) {
+            throw Object.assign(new Error('Avatar provider rate limited'), {
+                status: 429,
+                retryAfter: response.retryAfter
+            });
+        }
         const json = JSON.parse(response.data);
         logWebRequest('[EXTERNAL GET]', url, `(${response.status})`, json);
         if (response.status === 200 && typeof json === 'object') {
@@ -463,9 +473,10 @@ async function lookupAvatarsByAuthor(providerUrl, authorId) {
             throw new Error(`Error: ${response.data}`);
         }
     } catch (err) {
+        if (honorRateLimit && err?.status === 429) throw err;
         const msg = `Avatar lookup failed for ${authorId} with ${url}\n${err}`;
         console.error(msg);
-        toast.error(msg);
+        if (!silent) toast.error(msg);
     }
     return avatars;
 }

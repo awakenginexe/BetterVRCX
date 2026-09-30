@@ -1518,8 +1518,8 @@
             },
             "info": {
                 "header": "Info",
-                "vrcx_info": "VRCX Info",
-                "vrcx_info_tooltip": "VRCX info may be inaccurate",
+                "vrcx_info": "BetterVRCX Info",
+                "vrcx_info_tooltip": "BetterVRCX info may be inaccurate",
                 "launch_invite_tooltip": "Launch/Invite",
                 "self_invite_tooltip": "Invite Yourself",
                 "open_in_vrchat_tooltip": "Open in VRChat",
@@ -1551,6 +1551,7 @@
                 "last_login": "Last Login",
                 "date_joined": "Date Joined",
                 "friended": "Friended",
+                "friended_not_recorded": "No local record of when you became friends.",
                 "unfriended": "Unfriended",
                 "avatar_cloning": "Avatar Cloning",
                 "booping": "Booping",

@@ -339,29 +339,39 @@
                                     }}</span>
                                 </div>
                             </TooltipWrapper>
-                            <TooltipWrapper side="top" :disabled="userDialog.dateFriendedInfo.length === 0">
+                            <TooltipWrapper side="top" :disabled="friendshipHistory.length === 0">
                                 <template #content>
-                                    <template v-if="userDialog.dateFriendedInfo.length === 1">
-                                        {{ formatDateFilter(userDialog.dateFriended, 'long') }}
+                                    <template v-if="!friendedAt">
+                                        <span>{{ t('dialog.user.info.friended_not_recorded') }}</span
+                                        ><br />
                                     </template>
-                                    <template v-else>
-                                        <template v-for="ref in userDialog.dateFriendedInfo" :key="ref.type">
-                                            <span>{{ ref.type }}: {{ formatDateFilter(ref.created_at, 'long') }}</span
-                                            ><br />
-                                        </template>
+                                    <template
+                                        v-for="ref in friendshipHistory"
+                                        :key="ref.rowId ?? `${ref.type}-${ref.created_at}`">
+                                        <span>{{ ref.type }}: {{ formatDateFilter(ref.created_at, 'long') }}</span
+                                        ><br />
                                     </template>
                                 </template>
-                                <div class="flex justify-between items-start gap-2 text-xs">
-                                    <span class="text-muted-foreground shrink-0">
-                                        {{
-                                            userDialog.unFriended
-                                                ? t('dialog.user.info.unfriended')
-                                                : t('dialog.user.info.friended')
-                                        }}
-                                    </span>
-                                    <span class="text-right text-muted-foreground">{{
-                                        timeAgo(userDialog.dateFriended)
-                                    }}</span>
+                                <div class="flex flex-col gap-1.5">
+                                    <div
+                                        data-testid="friendship-friended"
+                                        class="flex justify-between items-start gap-2 text-xs">
+                                        <span class="text-muted-foreground shrink-0">{{
+                                            t('dialog.user.info.friended')
+                                        }}</span>
+                                        <span class="text-right text-muted-foreground">{{ timeAgo(friendedAt) }}</span>
+                                    </div>
+                                    <div
+                                        v-if="unfriendedAt"
+                                        data-testid="friendship-unfriended"
+                                        class="flex justify-between items-start gap-2 text-xs">
+                                        <span class="text-muted-foreground shrink-0">{{
+                                            t('dialog.user.info.unfriended')
+                                        }}</span>
+                                        <span class="text-right text-muted-foreground">{{
+                                            timeAgo(unfriendedAt)
+                                        }}</span>
+                                    </div>
                                 </div>
                             </TooltipWrapper>
                             <TooltipWrapper
@@ -568,6 +578,17 @@
     const { enabled: lastKnownPresenceEnabled, observations: lastKnownPresenceObservations } =
         storeToRefs(useLastKnownPresenceStore());
     const friendStore = useFriendStore();
+    const friendshipHistory = computed(() =>
+        [...(userDialog.value.dateFriendedInfo || [])]
+            .filter((entry) => entry?.created_at && (entry.type === 'Friend' || entry.type === 'Unfriend'))
+            .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+    );
+    const friendedAt = computed(
+        () => friendshipHistory.value.find((entry) => entry.type === 'Friend')?.created_at || ''
+    );
+    const unfriendedAt = computed(
+        () => friendshipHistory.value.find((entry) => entry.type === 'Unfriend')?.created_at || ''
+    );
     const lastKnownObservation = computed(() => {
         if (!lastKnownPresenceEnabled.value) return null;
         return (
