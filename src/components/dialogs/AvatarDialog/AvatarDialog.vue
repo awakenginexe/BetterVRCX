@@ -345,6 +345,7 @@
                 @update:modelValue="avatarDialogTabClick">
                 <template #Info>
                     <div class="flex flex-wrap items-start px-2.5" style="max-height: unset">
+                        <AvatarDatabaseInfo :avatar="avatarDialog.ref" :metadata="avatarDialog.externalMetadata" />
                         <AvatarPerformanceDetails
                             v-model:selected-platform="performancePlatform"
                             :packages="performancePackages"
@@ -655,6 +656,7 @@
     import { useAvatarDialogCommands } from './useAvatarDialogCommands';
 
     import DialogJsonTab from '../DialogJsonTab.vue';
+    import AvatarDatabaseInfo from './AvatarDatabaseInfo.vue';
     import AvatarPerformanceDetails from './AvatarPerformanceDetails.vue';
     import { useAvatarPerformance } from './useAvatarPerformance';
     import ImageCropDialog from '../ImageCropDialog.vue';

@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => {
         currentUser: ref({ id: 'usr_me' }),
         avatarRemoteDatabaseProviderList: ref(['provider-a']),
         avatarRemoteDatabaseProvider: ref('provider-a'),
+        avatarSearchMode: ref('fallback'),
+        avatarSearchSources: ref(['avtrdb', 'avtricu', 'vrcndb']),
+        setAvatarSearchMode: vi.fn(),
         isAvatarProviderDialogVisible: ref(false),
         avatarRemoteDatabase: ref(true),
         searchText: ref(''),
@@ -43,6 +46,11 @@ mocks.useSearchAvatarApi = {
     searchAvatarResults: ref([]),
     searchAvatarPage: ref([]),
     isSearchAvatarLoading: ref(false),
+    avatarSearchState: ref({
+        activeProvider: null,
+        failedProviders: [],
+        pagination: {}
+    }),
     searchAvatar: vi.fn(),
     moreSearchAvatar: vi.fn(),
     clearAvatarSearch: vi.fn()
@@ -109,6 +117,9 @@ vi.mock('../../../stores', () => ({
         avatarRemoteDatabaseProviderList:
             mocks.avatarRemoteDatabaseProviderList,
         avatarRemoteDatabaseProvider: mocks.avatarRemoteDatabaseProvider,
+        avatarSearchMode: mocks.avatarSearchMode,
+        avatarSearchSources: mocks.avatarSearchSources,
+        setAvatarSearchMode: mocks.setAvatarSearchMode,
         isAvatarProviderDialogVisible: mocks.isAvatarProviderDialogVisible,
         setAvatarProvider: (...args) => mocks.setAvatarProvider(...args)
     }),
@@ -296,6 +307,11 @@ describe('Search.vue', () => {
         mocks.useSearchAvatarApi.searchAvatarResults.value = [];
         mocks.useSearchAvatarApi.searchAvatarPage.value = [];
         mocks.useSearchAvatarApi.isSearchAvatarLoading.value = false;
+        mocks.useSearchAvatarApi.avatarSearchState.value = {
+            activeProvider: null,
+            failedProviders: [],
+            pagination: {}
+        };
 
         mocks.useSearchWorldApi.searchWorldParams.value = { offset: 0 };
         mocks.useSearchWorldApi.searchWorldResults.value = [];
@@ -403,6 +419,23 @@ describe('Search.vue', () => {
             'view.search.avatar.min_chars_warning'
         );
         expect(mocks.useSearchAvatarApi.searchAvatar).not.toHaveBeenCalled();
+    });
+
+    it('shows merged sources on one avatar card and opens the official dialog', async () => {
+        mocks.useSearchAvatarApi.searchAvatarPage.value = [
+            {
+                id: 'avtr_one',
+                name: 'Rurune',
+                authorName: 'Author',
+                $searchMetadata: { sources: ['avtrdb', 'avtricu', 'vrcndb'] }
+            }
+        ];
+        const wrapper = mountSearch();
+        await wrapper.get('[data-testid="set-tab-avatar"]').trigger('click');
+        expect(wrapper.text()).toContain('AvtrDB + Avtr.icu + VRCNDb');
+        const card = wrapper.get('.search-view__result-card-action');
+        await card.trigger('click');
+        expect(mocks.showAvatarDialog).toHaveBeenCalledWith('avtr_one');
     });
 
     it('opens user dialog when clicking a user item', async () => {

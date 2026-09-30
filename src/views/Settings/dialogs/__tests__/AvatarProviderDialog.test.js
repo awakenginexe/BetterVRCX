@@ -3,6 +3,10 @@ import { mount } from '@vue/test-utils';
 
 const mocks = vi.hoisted(() => ({
     avatarRemoteDatabaseProviderList: require('vue').ref([]),
+    avatarSearchMode: require('vue').ref('fallback'),
+    avatarSearchSources: require('vue').ref(['avtrdb', 'avtricu', 'vrcndb']),
+    setAvatarSearchMode: vi.fn(),
+    setAvatarSearchSource: vi.fn(),
     saveAvatarProviderList: vi.fn(),
     removeAvatarProvider: vi.fn()
 }));
@@ -26,6 +30,11 @@ vi.mock('../../../../stores', () => ({
     useAvatarProviderStore: () => ({
         avatarRemoteDatabaseProviderList:
             mocks.avatarRemoteDatabaseProviderList,
+        avatarSearchMode: mocks.avatarSearchMode,
+        avatarSearchSources: mocks.avatarSearchSources,
+        setAvatarSearchMode: (...args) => mocks.setAvatarSearchMode(...args),
+        setAvatarSearchSource: (...args) =>
+            mocks.setAvatarSearchSource(...args),
         saveAvatarProviderList: (...args) =>
             mocks.saveAvatarProviderList(...args),
         removeAvatarProvider: (...args) => mocks.removeAvatarProvider(...args)
@@ -67,7 +76,8 @@ vi.mock('@/components/ui/input-group', () => ({
     }
 }));
 
-vi.mock('lucide-vue-next', () => ({
+vi.mock('lucide-vue-next', async (importOriginal) => ({
+    ...(await importOriginal()),
     Trash2: {
         emits: ['click'],
         template:
