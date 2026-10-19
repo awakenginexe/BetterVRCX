@@ -179,7 +179,9 @@
                     :tooltip="isCollapsed ? t('nav_tooltip.expand_menu') : t('nav_tooltip.collapse_menu')"
                     @click="emit('toggle-nav-collapse')">
                     <div class="bv-nav-icon-box">
-                        <i class="ri-side-bar-line text-lg transition-transform duration-200" :class="{ 'rotate-180': isCollapsed }" />
+                        <i
+                            class="ri-side-bar-line text-lg transition-transform duration-200"
+                            :class="{ 'rotate-180': isCollapsed }" />
                     </div>
                     <span v-show="!isCollapsed" class="truncate">{{ t('nav_tooltip.collapse_menu') }}</span>
                 </SidebarMenuButton>
@@ -307,10 +309,10 @@
     }
 
     .bv-new-dashboard-btn {
-        border: 1px dashed transparent;
+        border: 1px dashed var(--bv-border-default);
         color: var(--bv-text-muted);
         background: transparent;
-        border-radius: 8px;
+        border-radius: 10px;
         transition:
             background-color var(--bv-duration-fast) var(--bv-ease-out),
             border-color var(--bv-duration-fast) var(--bv-ease-out),
