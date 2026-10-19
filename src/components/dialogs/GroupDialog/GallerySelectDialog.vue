@@ -10,7 +10,7 @@
                 <span class="ml-1.5 text-muted-foreground text-xs">{{ imageTable.length }}/64</span>
                 <br />
                 <input
-                    id="GalleryUploadButton"
+                    ref="uploadInput"
                     type="file"
                     accept="image/*"
                     style="display: none"
@@ -68,6 +68,7 @@
     import { computed, ref, watch } from 'vue';
 
     const uploading = ref(false);
+    const uploadInput = ref(null);
 
     const { t } = useI18n();
 
@@ -123,7 +124,7 @@
      *
      */
     function displayGalleryUpload() {
-        document.getElementById('GalleryUploadButton').click();
+        uploadInput.value?.click();
     }
 
     /**
@@ -132,7 +133,7 @@
      */
     function onFileChangeGallery(e) {
         const clearFile = function () {
-            const fileInput = /** @type{HTMLInputElement} */ (document.querySelector('#GalleryUploadButton'));
+            const fileInput = uploadInput.value;
             if (fileInput) {
                 fileInput.value = '';
             }

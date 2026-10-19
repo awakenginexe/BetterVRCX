@@ -28,6 +28,44 @@ import GallerySelectDialog from '../GallerySelectDialog.vue';
 
 const slot = { template: '<div><slot /></div>' };
 describe('gallery image upload', () => {
+    test('each selector opens its own file input when multiple selectors are mounted', async () => {
+        const options = {
+            attachTo: document.body,
+            props: {
+                gallerySelectDialog: {
+                    visible: true,
+                    isIconGallerySelectDialog: false
+                }
+            },
+            global: {
+                plugins: [createPinia()],
+                stubs: {
+                    Dialog: slot,
+                    DialogContent: slot,
+                    DialogHeader: slot,
+                    DialogTitle: slot
+                }
+            }
+        };
+        const first = mount(GallerySelectDialog, options);
+        const second = mount(GallerySelectDialog, options);
+        const firstClick = vi
+            .spyOn(first.find('input[type=file]').element, 'click')
+            .mockImplementation(() => {});
+        const secondClick = vi
+            .spyOn(second.find('input[type=file]').element, 'click')
+            .mockImplementation(() => {});
+        await second
+            .findAll('button')
+            .find((button) =>
+                button.text().includes('dialog.gallery_select.upload')
+            )
+            .trigger('click');
+        first.unmount();
+        second.unmount();
+        expect(secondClick).toHaveBeenCalledOnce();
+        expect(firstClick).not.toHaveBeenCalled();
+    });
     test('a supporter uploads a gallery image through the gallery endpoint', async () => {
         const wrapper = mount(GallerySelectDialog, {
             props: {

@@ -432,6 +432,15 @@ const groupReq = {
      * }} params
      * @returns { Promise<{json: any, params}> }
      */
+    declineGroupInvite(params) {
+        return request(
+            `groups/${params.groupId}/members/${getCurrentUserId()}`,
+            { method: 'DELETE' }
+        ).then((json) => {
+            refetchActiveGroupScope(params.groupId);
+            return { json, params };
+        });
+    },
     sendGroupInvite(params) {
         return request(`groups/${params.groupId}/invites`, {
             method: 'POST',
