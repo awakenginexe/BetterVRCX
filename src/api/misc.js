@@ -10,6 +10,13 @@ function getCurrentUserId() {
 }
 
 const miscReq = {
+    getInfoPush(params) {
+        return request('infoPush', {
+            method: 'GET',
+            params
+        }).then((json) => ({ json, params }));
+    },
+
     getFile(params) {
         return request(`file/${params.fileId}`, {
             method: 'GET'
