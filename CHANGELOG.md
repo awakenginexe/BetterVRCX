@@ -1,5 +1,50 @@
 # Changelog
 
+## 4.2.0
+
+BetterVRCX 4.2.0 brings a cleaner sidebar, smoother navigation, and a Mutual Friend Network that is easier to explore. This update also adds official VRChat Marketplace browsing and more ways to manage your avatars, groups, and instances.
+
+### A more polished interface
+
+- Enjoy smoother page changes, dialog openings, and content reveals when viewing profiles, worlds, avatars, and instances.
+- The refreshed sidebar has clearer navigation states and a hover effect that lifts the whole item.
+- Explore the Mutual Friend Network with fewer competing labels, subtler connections, and cleaner avatar rings. Select a friend or choose **Focus connections** from their context menu to highlight their network and frame it on screen.
+- Use the network's zoom and reset controls, people and connection counts, and focused friend card to move between the overview and individual connections.
+- Motion respects reduced-motion preferences, and profile decorations can pause while the app is unfocused without stopping live updates.
+
+### Official Marketplace and avatar tools
+
+- Search the official Avatar Marketplace from **Search**, with minimum and maximum price filters, sorting, and paginated results. Avatar Search v2 and its existing providers remain available.
+- Browse VRChat Store shelves and available avatar, group, and world listings. See prices, ownership status, and your VRChat Credits balance where supported.
+- Purchase eligible listings with an explicit confirmation showing the item and price. Ownership and balance refresh after a purchase.
+- Find your licensed avatars in your own profile's avatar tab, with search, sorting, and manual refresh.
+- Reorder or remove your avatar gallery images, and copy an avatar's name or ID from its sharing menu.
+
+### Groups, worlds, and instances
+
+- Create, edit, reorder, and delete group roles, manage permissions, and assign or remove eligible roles. Controls respect your permissions, role hierarchy, and purchase restrictions.
+- Create, rename, and delete group galleries, and upload or remove gallery images where permitted.
+- Manage pending group invitations and blocked groups, submit moderation reports, and view available report history.
+- View instance languages and percentages when VRChat supplies them, alongside active instance counts and associated calendar event details.
+- Rename eligible instances and link or unlink group calendar events when authorised.
+- Hide closed instances from world instance lists, with support for VRChat's newer instance response format.
+
+### Profiles and presence
+
+- Last Known Presence now uses additional game-log and location events to keep locally observed presence information current.
+- Profile history records bio and profile-link changes while avoiding duplicate entries for unchanged information.
+- See saved player memos in the Player List and your own Account Standing when provided by VRChat.
+- Manage **Reduced Profile Animations** under **Settings → Profile Backdrop**, alongside BetterVRCX's existing appearance controls.
+
+### Notifications and reliability
+
+- Check for unopened inventory bundles and browse supported VRChat information announcements from Tools.
+- Choose which statuses allow automatic acceptance of invite requests, with another status check before an invite is sent.
+- Get clearer login feedback when email verification is required.
+- Sticker-saving failures now show an error and allow retrying. URL validation and Electron system-theme updates have also been improved.
+
+Marketplace availability, prices, and administrative actions depend on VRChat and your account permissions. Existing Avatar Search v2 providers, multi-invite, local photo library, Google Drive backups, and BetterVRCX profile customisation remain part of the app.
+
 ## 4.1.0
 
 - Avatar Search v2: AvtrDB, Avtr.icu and VRCNDb, smart fallback, combined results and source badges.
