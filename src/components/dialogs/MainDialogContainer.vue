@@ -39,6 +39,7 @@
     import GroupMemberModerationDialog from './GroupDialog/GroupMemberModerationDialog.vue';
     import { getReadableProfileThemeColor } from '@/shared/utils/user';
     import { profileBackgrounds } from '@/shared/constants/backgrounds';
+    import { useContentReveal } from '@/composables/useContentReveal';
 
     const avatarStore = useAvatarStore();
     const groupStore = useGroupStore();
@@ -138,6 +139,27 @@
             }
         }
     });
+
+    const entityView = ref(null);
+    const activeEntity = computed(() => {
+        switch (activeType.value) {
+            case 'user':
+                return { id: userStore.userDialog.id, loading: userStore.userDialog.loading };
+            case 'world':
+                return { id: worldStore.worldDialog.id, loading: worldStore.worldDialog.loading };
+            case 'avatar':
+                return { id: avatarStore.avatarDialog.id, loading: avatarStore.avatarDialog.loading };
+            case 'group':
+                return { id: groupStore.groupDialog.id, loading: groupStore.groupDialog.loading };
+            case 'previous-instances-info':
+                return { id: previousInstancesInfoDialog.value.instanceId, loading: false };
+            default:
+                return { id: previousInstancesListDialog.value.lastId, loading: false };
+        }
+    });
+    const revealIdentity = computed(() => `${activeType.value}:${activeEntity.value.id ?? ''}`);
+    const revealReady = computed(() => isOpen.value && !activeEntity.value?.loading);
+    useContentReveal(entityView, revealIdentity, revealReady);
 
     const dialogClass = computed(() => {
         switch (activeType.value) {
@@ -345,6 +367,7 @@
             </Breadcrumb>
 
             <component
+                ref="entityView"
                 :is="activeComponent"
                 v-if="activeComponent"
                 v-bind="activeComponentProps"

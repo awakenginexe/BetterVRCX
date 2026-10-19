@@ -7,7 +7,7 @@
             </DialogDescription>
         </DialogHeader>
         <div class="bv-entity-dialog-body flex-1 min-h-0 flex flex-col">
-            <div class="bv-entity-dialog-header flex-shrink-0" style="display: flex">
+            <div data-bv-motion-part class="bv-entity-dialog-header flex-shrink-0" style="display: flex">
                 <div style="flex: none; width: 160px; height: 120px">
                     <img
                         v-if="!worldDialog.loading && !imageError"
@@ -332,6 +332,7 @@
                 </div>
             </div>
             <TabsUnderline
+                data-bv-motion-part
                 class="bv-entity-dialog-tabs"
                 v-model="worldDialog.activeTab"
                 :items="worldDialogTabs"

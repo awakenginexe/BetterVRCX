@@ -26,7 +26,7 @@
         </div>
         <div v-for="room in visibleRooms" :key="room.id">
             <template v-if="isAgeGatedInstancesVisible || !(room.ageGate || room.location?.includes('~ageGate'))">
-                <div style="margin: 6px 0">
+                <div class="bv-instance-card" style="margin: 6px 0">
                     <div class="flex flex-wrap gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
                         <LocationWorld
                             class="text-sm"

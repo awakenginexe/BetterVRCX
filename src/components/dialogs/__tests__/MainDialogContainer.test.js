@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const mocks = vi.hoisted(() => ({
     closeMainDialog: vi.fn(),
@@ -127,6 +127,44 @@ describe('MainDialogContainer.vue', () => {
         expect(wrapper.get('[data-testid="user-dialog"]').classes()).toContain(
             'bv-entity-dialog'
         );
+    });
+
+    it('reveals the mounted entity root without replacing its component', async () => {
+        const { useAppFocus } =
+            await import('../../../composables/useAppFocus');
+        const { isAppFocused } = useAppFocus();
+        const wasFocused = isAppFocused.value;
+        window.dispatchEvent(new Event('focus'));
+        const descriptor = Object.getOwnPropertyDescriptor(
+            HTMLElement.prototype,
+            'animate'
+        );
+        const animate = vi.fn(() => ({ cancel: vi.fn() }));
+        Object.defineProperty(HTMLElement.prototype, 'animate', {
+            configurable: true,
+            value: animate
+        });
+        let wrapper;
+        try {
+            wrapper = mount(MainDialogContainer);
+            const entity = wrapper.get('[data-testid="user-dialog"]').element;
+            await nextTick();
+            expect(animate).toHaveBeenCalledOnce();
+            expect(animate.mock.contexts[0]).toBe(entity);
+            expect(wrapper.get('[data-testid="user-dialog"]').element).toBe(
+                entity
+            );
+        } finally {
+            wrapper?.unmount();
+            if (descriptor)
+                Object.defineProperty(
+                    HTMLElement.prototype,
+                    'animate',
+                    descriptor
+                );
+            else delete HTMLElement.prototype.animate;
+            if (!wasFocused) window.dispatchEvent(new Event('blur'));
+        }
     });
 
     it('renders active dialog and handles breadcrumb back click', async () => {

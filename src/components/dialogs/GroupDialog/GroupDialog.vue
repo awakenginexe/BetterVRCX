@@ -8,7 +8,7 @@
         </DialogHeader>
 
         <!-- Summary card -->
-        <div class="bv-entity-dialog-rail flex-none w-77 pr-4 overflow-y-auto">
+        <div data-bv-motion-part class="bv-entity-dialog-rail flex-none w-77 pr-4 overflow-y-auto">
             <div class="bv-entity-dialog-header rounded-xl bg-(--profile-card) overflow-hidden flex flex-col">
                 <!-- Banner with icon -->
                 <div class="relative aspect-17/6">
@@ -504,7 +504,7 @@
         </div>
 
         <!-- Right side Tabs -->
-        <div class="bv-entity-dialog-body flex-1 min-w-0 flex flex-col min-h-0 pl-4">
+        <div data-bv-motion-part class="bv-entity-dialog-body flex-1 min-w-0 flex flex-col min-h-0 pl-4">
             <TabsUnderline
                 class="bv-entity-dialog-tabs"
                 v-model="groupDialog.activeTab"

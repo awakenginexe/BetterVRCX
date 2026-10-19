@@ -41,6 +41,30 @@
     transition-timing-function: var(--bv-ease-spring);
 }
 
+.bv-page-enter-active,
+.bv-page-slide-up-enter-active,
+.bv-page-slide-down-enter-active {
+    transition-property: opacity, transform, scale;
+}
+
+.bv-page-enter-from,
+.bv-page-slide-up-enter-from,
+.bv-page-slide-down-enter-from {
+    scale: 0.99;
+}
+
+.bv-instance-card {
+    border-radius: var(--bv-radius-lg);
+    transition-property: background-color, box-shadow, translate;
+    transition-duration: var(--bv-motion-feedback);
+    transition-timing-function: var(--bv-ease-spring);
+}
+
+.bv-instance-card:focus-within {
+    background-color: var(--bv-accent-subtle);
+    box-shadow: inset 0 0 0 1px var(--bv-border-default);
+}
+
 .bv-nav-item,
 .bv-nav-sub-item {
     transition-property:
@@ -63,6 +87,12 @@
 
     .bv-discovery-card:not([aria-disabled='true']):hover {
         translate: 0 -3px;
+    }
+
+    .bv-instance-card:hover {
+        translate: 0 -1px;
+        background-color: var(--bv-accent-subtle);
+        box-shadow: inset 0 0 0 1px var(--bv-border-default);
     }
 
     :is(.bv-nav-item, .bv-nav-sub-item):not(:disabled):not(
@@ -272,7 +302,8 @@
     animation-play-state: paused;
 }
 
-:root[data-bv-motion='paused'] :is(.bv-nav-item, .bv-nav-sub-item) {
+:root[data-bv-motion='paused']
+    :is(.bv-nav-item, .bv-nav-sub-item, .bv-instance-card) {
     scale: none !important;
     translate: none !important;
 }
@@ -290,7 +321,8 @@
         .bv-discovery-card,
         .bv-nav-icon-box,
         .bv-nav-item,
-        .bv-nav-sub-item
+        .bv-nav-sub-item,
+        .bv-instance-card
     ) {
         scale: none !important;
         translate: none !important;
@@ -310,6 +342,7 @@
 @media (prefers-reduced-motion: reduce) {
     [class*='bv-page-'] {
         transform: none !important;
+        scale: none !important;
         transition-duration: 1ms !important;
     }
 }
