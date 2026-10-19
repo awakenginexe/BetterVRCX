@@ -89,6 +89,14 @@ function makeRow(overrides = {}) {
 }
 
 describe('views/PlayerList/columns.jsx', () => {
+    test('renders local memos as text for friends and visitors', () => {
+        globalThis.React = { createElement };
+        const column = createColumns({}).find((column) => column.id === 'memo');
+        const row = makeRow({ ref: { $memo: '<b>Local memo</b>' } });
+        expect(column.accessorFn(row.original)).toBe('<b>Local memo</b>');
+        expect(column.cell({ row }).children).toEqual(['<b>Local memo</b>']);
+    });
+
     beforeEach(() => {
         globalThis.React = { createElement };
         mocks.openExternalLink.mockReset();

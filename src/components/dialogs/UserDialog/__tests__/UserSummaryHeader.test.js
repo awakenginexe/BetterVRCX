@@ -40,6 +40,10 @@ const currentUserMock = ref({
 });
 
 const isLocalUserVrcPlusSupporterMock = ref(false);
+const isClientConfigReadyMock = ref(false);
+const isClientConfigSavingMock = ref(false);
+const currentUserClientConfigMock = ref({ accessReduceDecorAnim: false });
+const toggleReducedProfileAnimationsMock = vi.fn();
 const displayVRCProfileEffectsMock = ref(true);
 const alwaysAnimateVRCProfileEffectsMock = ref(false);
 const cachedProfileEffectsMock = ref(new Map());
@@ -75,6 +79,10 @@ vi.mock('../../../../stores', () => ({
     useUserStore: () => ({
         userDialog: userDialogMock,
         currentUser: currentUserMock,
+        isClientConfigReady: isClientConfigReadyMock,
+        isClientConfigSaving: isClientConfigSavingMock,
+        currentUserClientConfig: currentUserClientConfigMock,
+        toggleReducedProfileAnimations: toggleReducedProfileAnimationsMock,
         isLocalUserVrcPlusSupporter: isLocalUserVrcPlusSupporterMock,
         cachedProfileEffects: cachedProfileEffectsMock,
         cachedIconFrames: cachedIconFramesMock,
@@ -1078,4 +1086,25 @@ describe('account standing visibility', () => {
         await flushPromises();
         expect(wrapper.get('[data-account-standing]').text()).toBe('good');
     });
+});
+
+test('enables the reduced-animation control after the remote preference has loaded', async () => {
+    userDialogMock.value.loading = false;
+    userDialogMock.value.id = currentUserMock.value.id;
+    userDialogMock.value.ref.id = currentUserMock.value.id;
+    isClientConfigReadyMock.value = false;
+    const wrapper = mountHeader();
+    const control = wrapper
+        .findAll('button')
+        .find((button) =>
+            button
+                .text()
+                .includes('profile_improvements.reduced_profile_animations')
+        );
+    expect(control.attributes('disabled')).toBeDefined();
+    isClientConfigReadyMock.value = true;
+    await flushPromises();
+    expect(control.attributes('disabled')).toBeUndefined();
+    await control.trigger('click');
+    expect(toggleReducedProfileAnimationsMock).toHaveBeenCalled();
 });

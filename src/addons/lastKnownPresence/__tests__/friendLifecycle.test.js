@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { reactive, ref } from 'vue';
 
 const dependencies = vi.hoisted(() => ({
+    getAllUserStats: vi.fn(),
     user: {
         userDialog: { visible: false },
         currentUser: { id: 'usr_me' },
@@ -57,7 +58,15 @@ vi.mock('../../../services/watchState', () => ({
     watchState: reactive({ isLoggedIn: false, isFriendsLoaded: false })
 }));
 vi.mock('../../../services/database', () => ({
-    database: new Proxy({}, { get: () => vi.fn().mockResolvedValue([]) })
+    database: new Proxy(
+        {},
+        {
+            get: (_target, key) =>
+                key === 'getAllUserStats'
+                    ? dependencies.getAllUserStats
+                    : vi.fn().mockResolvedValue([])
+        }
+    )
 }));
 vi.mock('../../../services/config', () => ({
     default: {
@@ -152,6 +161,23 @@ describe('friend last seen', () => {
             friends.onlineFriends.some((friend) => friend.id === user.id)
         ).toBe(true);
         expect(friends.friends.get(user.id).ref.location).toBe('private');
+    });
+
+    it('keeps newer live sightings when historical statistics load later', async () => {
+        friends.updateFriendLastSeen(user.id, '2026-10-19T10:00:00.000Z');
+        dependencies.getAllUserStats.mockResolvedValue([
+            {
+                userId: user.id,
+                lastSeen: '2026-10-18T10:00:00.000Z',
+                joinCount: 2,
+                timeSpent: 100
+            }
+        ]);
+        await friends.getAllUserStats();
+        expect(friends.friends.get(user.id).ref.$lastSeen).toBe(
+            '2026-10-19T10:00:00.000Z'
+        );
+        expect(friends.friends.get(user.id).ref.$joinCount).toBe(2);
     });
 
     it('ignores stale or malformed observations and unknown users', () => {

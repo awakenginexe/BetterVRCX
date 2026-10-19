@@ -83,6 +83,30 @@ describe('views/Feed/columns.jsx', () => {
         globalThis.React = { createElement };
     });
 
+    test('shows removed profile links in the expanded history while escaping markup', () => {
+        const expander = columns.find((column) => column.id === 'expander');
+        const expanded = expander.meta.expandedRow({
+            row: {
+                original: {
+                    type: 'Bio',
+                    bio: '',
+                    previousBio: '',
+                    bioLinks: [],
+                    previousBioLinks: ['https://example.com/<img>']
+                }
+            }
+        });
+        const links = findNode(
+            expanded,
+            (node) =>
+                node.type === 'pre' &&
+                node.props.innerHTML.includes('example.com')
+        );
+        expect(links.props.innerHTML).toContain('x-text-removed');
+        expect(links.props.innerHTML).toContain('&lt;img&gt;');
+        expect(links.props.innerHTML).not.toContain('<img>');
+    });
+
     test('renders current bio text in detail cell', () => {
         const detailCol = columns.find((c) => c.id === 'detail');
         const row = {

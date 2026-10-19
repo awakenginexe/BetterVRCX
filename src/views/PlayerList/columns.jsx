@@ -453,6 +453,23 @@ export const createColumns = ({
                         : '';
                 return <span>{text}</span>;
             }
+        },
+        {
+            id: 'memo',
+            accessorFn: (row) => row?.ref?.$memo,
+            header: () => t('profile_improvements.player_memo'),
+            size: 150,
+            minSize: 20,
+            meta: {
+                stretch: true,
+                label: () => t('profile_improvements.player_memo')
+            },
+            enableSorting: false,
+            cell: ({ row }) => (
+                <span class="whitespace-pre-wrap">
+                    {row.original?.ref?.$memo || ''}
+                </span>
+            )
         }
     ];
 

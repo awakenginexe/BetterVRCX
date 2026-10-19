@@ -121,6 +121,13 @@ export const useFeedStore = defineStore('Feed', () => {
                 if (String(row.bio).toUpperCase().includes(value)) {
                     return true;
                 }
+                if (
+                    [
+                        ...(row.bioLinks || []),
+                        ...(row.previousBioLinks || [])
+                    ].some((link) => link.toUpperCase().includes(value))
+                )
+                    return true;
                 if (String(row.previousBio).toUpperCase().includes(value)) {
                     return true;
                 }

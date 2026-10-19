@@ -18,7 +18,6 @@ import {
     runPendingOfflineTickFlow,
     runUpdateFriendFlow
 } from '../coordinators/friendPresenceCoordinator';
-import { syncFriendSearchIndex } from '../coordinators/searchIndexCoordinator';
 import {
     updateFriendship,
     runUpdateFriendshipsFlow
@@ -573,17 +572,7 @@ export const useFriendStore = defineStore('Friend', () => {
             $nickName: ''
         });
         if (watchState.isFriendsLoaded) {
-            getUserMemo(id).then((memo) => {
-                if (memo.userId === id) {
-                    ctx.memo = memo.memo;
-                    ctx.$nickName = '';
-                    if (memo.memo) {
-                        const array = memo.memo.split('\n');
-                        ctx.$nickName = array[0];
-                    }
-                    syncFriendSearchIndex(ctx);
-                }
-            });
+            getUserMemo(id);
         }
         if (typeof ref === 'undefined') {
             const friendLogRef = friendLog.get(id);
@@ -894,7 +883,7 @@ export const useFriendStore = defineStore('Friend', () => {
                 ref = friends.get(item.userId);
                 if (ref?.ref) {
                     ref.ref.$joinCount = item.joinCount;
-                    ref.ref.$lastSeen = item.lastSeen;
+                    updateFriendLastSeen(item.userId, item.lastSeen);
                     ref.ref.$timeSpent = item.timeSpent;
                     reindexSortedFriend(ref);
                 }
@@ -902,9 +891,6 @@ export const useFriendStore = defineStore('Friend', () => {
         });
     }
 
-    /**
-     *
-     */
     /**
      * @param {string} userId
      * @param {string} lastSeen

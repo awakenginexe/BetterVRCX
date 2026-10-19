@@ -16,6 +16,29 @@ const tableAlter = {
         await this.addFriendLogFriendNumber();
         await this.updateTableForAvatarHistory();
         await this.addPerformanceIndexes(); // 16
+        await this.addFeedBioLinks(); // 17
+    },
+
+    async addFeedBioLinks() {
+        const tables = [];
+        await sqliteService.execute(
+            (row) => tables.push(row[0]),
+            "SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE '%_feed_bio'"
+        );
+        for (const table of tables) {
+            const identifier = `"${table.replaceAll('"', '""')}"`;
+            const columns = new Set();
+            await sqliteService.execute(
+                (row) => columns.add(row[1]),
+                `PRAGMA table_info(${identifier})`
+            );
+            for (const column of ['bio_links', 'previous_bio_links']) {
+                if (!columns.has(column))
+                    await sqliteService.executeNonQuery(
+                        `ALTER TABLE ${identifier} ADD ${column} TEXT`
+                    );
+            }
+        }
     },
 
     async updateTableForGroupNames() {

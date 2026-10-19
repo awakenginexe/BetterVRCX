@@ -216,3 +216,17 @@ describe('reduced animation setting', () => {
         expect(store.currentUserClientConfig.accessReduceDecorAnim).toBe(true);
     });
 });
+
+test('does not save an animation preference before its account setting has loaded', async () => {
+    setActivePinia(createPinia());
+    const { useUserStore } = await import('../user');
+    const { watchState } = await import('../../services/watchState');
+    watchState.isLoggedIn = false;
+    const store = useUserStore();
+    mocks.saveClientConfig.mockClear();
+    mocks.confirm.mockResolvedValue({ ok: true });
+    mocks.getClientConfig.mockReturnValue(new Promise(() => {}));
+    watchState.isLoggedIn = true;
+    await store.toggleReducedProfileAnimations();
+    expect(mocks.saveClientConfig).not.toHaveBeenCalled();
+});

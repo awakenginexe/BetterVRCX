@@ -58,6 +58,7 @@ export interface VrcxUser extends GetUserResponse {
     $mutualCount: number;
     $mutualOptedOut: boolean;
     $nickName: string;
+    $memo: string;
     $previousLocation: string;
     $customTag: string;
     $customTagColour: string;
@@ -171,6 +172,7 @@ interface GetUserResponse {
 }
 
 interface GetCurrentUserResponse extends GetUserResponse {
+    accountStanding?: string;
     acceptedPrivacyVersion: number;
     acceptedTOSVersion: number;
     accountDeletionDate: string | null;

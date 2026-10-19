@@ -1,3 +1,4 @@
+import { recordUserProfile } from '../coordinators/profileHistoryCoordinator';
 import { patchAndRefetchActiveQuery, queryKeys } from '../queries';
 import { request } from '../services/request';
 import { useUserStore } from '../stores';
@@ -210,9 +211,16 @@ const userReq = {
      * @returns {Promise<{json: import('../types/api/profile').publicProfile, params: { userId: string }}>}
      */
     getPublicProfile(params) {
+        const accountId = getCurrentUserId();
         return request(`profile/${params.userId}`, {
             method: 'GET'
-        }).then((json) => {
+        }).then(async (json) => {
+            try {
+                if (accountId === getCurrentUserId())
+                    await recordUserProfile(json, params.userId);
+            } catch (error) {
+                console.error('Failed to record profile history:', error);
+            }
             const args = {
                 json,
                 params

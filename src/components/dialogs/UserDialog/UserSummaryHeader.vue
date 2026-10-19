@@ -404,7 +404,7 @@
                     <button
                         type="button"
                         class="flex justify-between items-center text-xs cursor-pointer hover:text-foreground disabled:opacity-50"
-                        :disabled="isClientConfigSaving"
+                        :disabled="isClientConfigSaving || !isClientConfigReady"
                         @click="toggleReducedProfileAnimations">
                         <span class="text-muted-foreground">{{
                             t('profile_improvements.reduced_profile_animations')
@@ -610,8 +610,14 @@
 
     const { t } = useI18n();
 
-    const { userDialog, currentUser, currentUserClientConfig, isClientConfigSaving, isLocalUserVrcPlusSupporter } =
-        storeToRefs(useUserStore());
+    const {
+        userDialog,
+        currentUser,
+        currentUserClientConfig,
+        isClientConfigSaving,
+        isClientConfigReady,
+        isLocalUserVrcPlusSupporter
+    } = storeToRefs(useUserStore());
     const { isGameRunning } = storeToRefs(useGameStore());
     const { photonLobbyCurrent, photonLobbyAvatars } = storeToRefs(usePhotonStore());
     const { lastLocation } = storeToRefs(useLocationStore());

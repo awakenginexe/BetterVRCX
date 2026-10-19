@@ -200,6 +200,16 @@ const expandedRow = ({ row }) => {
                         original.bio
                     )}
                 ></pre>
+                {original.bioLinks != null &&
+                original.previousBioLinks != null ? (
+                    <pre
+                        class="text-xs leading-5.5 whitespace-pre-wrap font-[inherit]"
+                        innerHTML={formatDifference(
+                            original.previousBioLinks.join('\n'),
+                            original.bioLinks.join('\n')
+                        )}
+                    ></pre>
+                ) : null}
             </div>
         );
     }
@@ -423,7 +433,10 @@ export const columns = [
             if (type === 'Bio') {
                 return (
                     <span class="block w-full min-w-0 truncate">
-                        {original.bio}
+                        {[original.bio, ...(original.bioLinks || [])]
+                            .filter(Boolean)
+                            .join(' | ') ||
+                            t('profile_improvements.bio_cleared')}
                     </span>
                 );
             }

@@ -333,6 +333,7 @@ export const useUserStore = defineStore('User', () => {
     const currentUserClientConfig = ref({ accessReduceDecorAnim: false });
     let clientConfigGeneration = 0;
     const isClientConfigSaving = ref(false);
+    const isClientConfigReady = ref(false);
 
     const cachedProfileEffects = shallowReactive(new Map());
     const cachedIconFrames = shallowReactive(new Map());
@@ -419,6 +420,7 @@ export const useUserStore = defineStore('User', () => {
             const generation = ++clientConfigGeneration;
             currentUserClientConfig.value = { accessReduceDecorAnim: false };
             isClientConfigSaving.value = false;
+            isClientConfigReady.value = false;
             if (isLoggedIn) {
                 userRequest
                     .getClientConfig()
@@ -427,6 +429,9 @@ export const useUserStore = defineStore('User', () => {
                             generation === clientConfigGeneration &&
                             watchState.isLoggedIn
                         ) {
+                            isClientConfigReady.value =
+                                typeof json?.accessReduceDecorAnim ===
+                                'boolean';
                             currentUserClientConfig.value = {
                                 accessReduceDecorAnim:
                                     json?.accessReduceDecorAnim === true
@@ -979,7 +984,12 @@ export const useUserStore = defineStore('User', () => {
     /**
      */
     async function toggleReducedProfileAnimations() {
-        if (isClientConfigSaving.value || !watchState.isLoggedIn) return;
+        if (
+            isClientConfigSaving.value ||
+            !isClientConfigReady.value ||
+            !watchState.isLoggedIn
+        )
+            return;
         const generation = clientConfigGeneration;
         const accessReduceDecorAnim =
             !currentUserClientConfig.value.accessReduceDecorAnim;
@@ -1100,6 +1110,7 @@ export const useUserStore = defineStore('User', () => {
         cachedUserIdsByDisplayName,
         currentUserClientConfig,
         isClientConfigSaving,
+        isClientConfigReady,
         toggleReducedProfileAnimations,
         cachedProfileEffects,
         cachedIconFrames,

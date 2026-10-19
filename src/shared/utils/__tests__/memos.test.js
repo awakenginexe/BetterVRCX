@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
     friends: new Map(),
+    cachedUsers: new Map(),
+    userDialog: { id: 'usr_1' },
+    syncFriendSearchIndex: vi.fn(),
     setUserDialogMemo: vi.fn(),
     database: {
         getUserMemo: vi.fn(),
@@ -21,8 +24,14 @@ vi.mock('../../../stores', () => ({
         friends: mocks.friends
     }),
     useUserStore: () => ({
+        cachedUsers: mocks.cachedUsers,
+        userDialog: mocks.userDialog,
         setUserDialogMemo: (...args) => mocks.setUserDialogMemo(...args)
     })
+}));
+
+vi.mock('../../../coordinators/searchIndexCoordinator', () => ({
+    syncFriendSearchIndex: mocks.syncFriendSearchIndex
 }));
 
 vi.mock('../../../services/database', () => ({
@@ -45,6 +54,7 @@ describe('memos utils', () => {
             .spyOn(console, 'error')
             .mockImplementation(() => {});
         mocks.friends = new Map();
+        mocks.cachedUsers.clear();
         mocks.setUserDialogMemo.mockReset();
         mocks.database.getUserMemo.mockReset();
         mocks.database.setUserMemo.mockReset();
@@ -70,6 +80,26 @@ describe('memos utils', () => {
             editedAt: '',
             memo: ''
         });
+    });
+
+    test('loads local memos for non-friends shown in the player list', async () => {
+        const user = { id: 'usr_visitor', $memo: '' };
+        mocks.cachedUsers.set(user.id, user);
+        mocks.database.getUserMemo.mockResolvedValue({
+            userId: user.id,
+            memo: 'Local note'
+        });
+        await getUserMemo(user.id);
+        expect(user.$memo).toBe('Local note');
+    });
+
+    test('updates and clears cached player memos after saving', async () => {
+        const user = { id: 'usr_1', $memo: 'old' };
+        mocks.cachedUsers.set(user.id, user);
+        await saveUserMemo(user.id, 'new');
+        expect(user.$memo).toBe('new');
+        await saveUserMemo(user.id, '');
+        expect(user.$memo).toBe('');
     });
 
     test('getWorldMemo returns fallback when database throws', async () => {

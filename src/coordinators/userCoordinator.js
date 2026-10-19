@@ -153,6 +153,7 @@ export function applyUser(json) {
         } else {
             setCachedUser(ref);
         }
+        getUserMemo(ref.id);
         runUpdateFriendFlow(ref.id);
     } else {
         if (json.state !== 'online') {
@@ -363,19 +364,7 @@ export function showUserDialog(userId) {
     D.loading = !cachedFullRef;
 
     getUserMemo(userId).then((memo) => {
-        if (memo.userId === userId) {
-            D.memo = memo.memo;
-            const ref = friendStore.friends.get(userId);
-            if (ref) {
-                ref.memo = String(memo.memo || '');
-                if (memo.memo) {
-                    ref.$nickName = memo.memo.split('\n')[0];
-                } else {
-                    ref.$nickName = '';
-                }
-                syncFriendSearchIndex(ref);
-            }
-        }
+        if (D.id === userId && memo?.userId === userId) D.memo = memo.memo;
     });
 
     D.avatars = [];

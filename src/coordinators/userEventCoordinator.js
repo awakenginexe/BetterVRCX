@@ -315,28 +315,6 @@ export async function runHandleUserUpdateFlow(
         feedStore.addFeedEntry(feed);
         database.addStatusToDatabase(feed);
     }
-    if (props.bio && props.bio[0] && props.bio[1]) {
-        let bio = '';
-        let previousBio = '';
-        if (props.bio[0]) {
-            bio = props.bio[0];
-        }
-        if (props.bio[1]) {
-            previousBio = props.bio[1];
-        }
-        feed = {
-            created_at: nowIso(),
-            type: 'Bio',
-            userId: ref.id,
-            displayName: ref.displayName,
-            bio,
-            previousBio
-        };
-        notificationStore.queueFeedNoty(feed);
-        sharedFeedStore.addEntry(feed);
-        feedStore.addFeedEntry(feed);
-        database.addBioToDatabase(feed);
-    }
     if (
         props.note &&
         props.note[0] !== null &&
