@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ProfileBackgroundSettings from '../ProfileBackgroundSettings.vue';
 
@@ -25,6 +25,10 @@ const setProfileBackgroundOpacity = vi.fn((val) => {
     profileBackgroundOpacity.value = val;
 });
 const saveOpenVROption = vi.fn();
+const currentUserClientConfig = ref({ accessReduceDecorAnim: false });
+const isClientConfigReady = ref(true);
+const isClientConfigSaving = ref(false);
+const toggleReducedProfileAnimations = vi.fn();
 
 vi.mock('vue-i18n', () => ({
     useI18n: () => ({ t: (key) => key })
@@ -46,15 +50,21 @@ vi.mock('@/stores', () => ({
     }),
     useVrStore: () => ({
         saveOpenVROption
+    }),
+    useUserStore: () => ({
+        currentUserClientConfig,
+        isClientConfigReady,
+        isClientConfigSaving,
+        toggleReducedProfileAnimations
     })
 }));
 
 vi.mock('@/components/ui/switch', () => ({
     Switch: {
-        props: ['modelValue', 'ariaLabel'],
+        props: ['modelValue', 'ariaLabel', 'disabled'],
         emits: ['update:modelValue'],
         template:
-            '<button data-testid="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)">switch</button>'
+            '<button data-testid="switch" :aria-label="ariaLabel" :aria-checked="modelValue" :disabled="disabled" @click="$emit(\'update:modelValue\', !modelValue)">switch</button>'
     }
 }));
 
@@ -92,6 +102,9 @@ describe('ProfileBackgroundSettings.vue', () => {
         displayVRCProfileEffects.value = true;
         alwaysAnimateVRCProfileEffects.value = false;
         displayVRCProfileBackgrounds.value = true;
+        currentUserClientConfig.value = { accessReduceDecorAnim: false };
+        isClientConfigReady.value = true;
+        isClientConfigSaving.value = false;
         vi.clearAllMocks();
     });
 
@@ -106,7 +119,7 @@ describe('ProfileBackgroundSettings.vue', () => {
         expect(wrapper.text()).toContain(
             'Always animate decorations when unfocused'
         );
-        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(4);
+        expect(wrapper.findAll('[data-testid="switch"]').length).toBe(5);
         expect(wrapper.find('[data-testid="number-field"]').exists()).toBe(
             true
         );
@@ -115,8 +128,9 @@ describe('ProfileBackgroundSettings.vue', () => {
     it('toggles backdrop setting when switch is clicked', async () => {
         displayVRCProfileBackgrounds.value = true;
         const wrapper = mount(ProfileBackgroundSettings);
-        const switches = wrapper.findAll('[data-testid="switch"]');
-        await switches[3].trigger('click');
+        await wrapper
+            .get('[aria-label="VRChat Profile Backgrounds"]')
+            .trigger('click');
         expect(setDisplayVRCProfileBackgrounds).toHaveBeenCalled();
     });
 
@@ -140,5 +154,34 @@ describe('ProfileBackgroundSettings.vue', () => {
         expect(wrapper.find('[data-testid="number-field"]').exists()).toBe(
             false
         );
+    });
+
+    it('shows the saved reduced-animation preference and reuses its confirmed account action', async () => {
+        currentUserClientConfig.value.accessReduceDecorAnim = true;
+        const wrapper = mount(ProfileBackgroundSettings);
+        const control = wrapper.get(
+            '[aria-label="profile_improvements.reduced_profile_animations"]'
+        );
+        expect(control.attributes('aria-checked')).toBe('true');
+        await control.trigger('click');
+        expect(toggleReducedProfileAnimations).toHaveBeenCalledOnce();
+        expect(setAlwaysAnimateVRCProfileEffects).not.toHaveBeenCalled();
+    });
+
+    it('disables the account preference while loading or saving', async () => {
+        isClientConfigReady.value = false;
+        const wrapper = mount(ProfileBackgroundSettings);
+        const control = wrapper.get(
+            '[aria-label="profile_improvements.reduced_profile_animations"]'
+        );
+        expect(control.attributes('disabled')).toBeDefined();
+        await control.trigger('click');
+        expect(toggleReducedProfileAnimations).not.toHaveBeenCalled();
+        isClientConfigReady.value = true;
+        await flushPromises();
+        expect(control.attributes('disabled')).toBeUndefined();
+        isClientConfigSaving.value = true;
+        await flushPromises();
+        expect(control.attributes('disabled')).toBeDefined();
     });
 });

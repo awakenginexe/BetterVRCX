@@ -29,6 +29,16 @@
                     aria-label="Always animate decorations when unfocused"
                     @update:model-value="setAlwaysAnimateVRCProfileEffects" />
             </SettingsItem>
+
+            <SettingsItem
+                :label="t('profile_improvements.reduced_profile_animations')"
+                :description="t('profile_improvements.reduced_profile_animations_description')">
+                <Switch
+                    :model-value="currentUserClientConfig.accessReduceDecorAnim"
+                    :aria-label="t('profile_improvements.reduced_profile_animations')"
+                    :disabled="isClientConfigSaving || !isClientConfigReady"
+                    @update:model-value="toggleReducedProfileAnimations" />
+            </SettingsItem>
         </SettingsGroup>
 
         <SettingsGroup title="VRChat Profile Backdrops">
@@ -75,7 +85,7 @@
 <script setup>
     import { useI18n } from 'vue-i18n';
     import { storeToRefs } from 'pinia';
-    import { useAppearanceSettingsStore, useVrStore } from '@/stores';
+    import { useAppearanceSettingsStore, useUserStore, useVrStore } from '@/stores';
     import { Switch } from '@/components/ui/switch';
     import {
         NumberField,
@@ -89,6 +99,9 @@
 
     const { t } = useI18n();
     const appearanceSettingsStore = useAppearanceSettingsStore();
+    const userStore = useUserStore();
+    const { currentUserClientConfig, isClientConfigReady, isClientConfigSaving } = storeToRefs(userStore);
+    const { toggleReducedProfileAnimations } = userStore;
     const { saveOpenVROption } = useVrStore();
     const {
         displayVRCProfileThemes,

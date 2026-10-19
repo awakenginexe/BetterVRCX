@@ -3682,6 +3682,7 @@
     "profile_improvements": {
         "account_standing": "Account Standing",
         "reduced_profile_animations": "Reduced Profile Animations",
+        "reduced_profile_animations_description": "Reduce profile decoration animations using your VRChat account preference. This also applies in BetterVRCX without changing its other animation settings.",
         "licensed": "Licensed",
         "licensed_count": "Licensed avatars: {count}",
         "refresh_licensed": "Refresh licensed avatars",

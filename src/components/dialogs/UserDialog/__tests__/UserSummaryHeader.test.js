@@ -1088,23 +1088,13 @@ describe('account standing visibility', () => {
     });
 });
 
-test('enables the reduced-animation control after the remote preference has loaded', async () => {
+test('keeps the reduced-animation preference out of the profile header', async () => {
     userDialogMock.value.loading = false;
     userDialogMock.value.id = currentUserMock.value.id;
     userDialogMock.value.ref.id = currentUserMock.value.id;
-    isClientConfigReadyMock.value = false;
     const wrapper = mountHeader();
-    const control = wrapper
-        .findAll('button')
-        .find((button) =>
-            button
-                .text()
-                .includes('profile_improvements.reduced_profile_animations')
-        );
-    expect(control.attributes('disabled')).toBeDefined();
-    isClientConfigReadyMock.value = true;
     await flushPromises();
-    expect(control.attributes('disabled')).toBeUndefined();
-    await control.trigger('click');
-    expect(toggleReducedProfileAnimationsMock).toHaveBeenCalled();
+    expect(wrapper.text()).not.toContain(
+        'profile_improvements.reduced_profile_animations'
+    );
 });

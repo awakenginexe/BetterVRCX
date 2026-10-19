@@ -401,20 +401,6 @@
                                 : t('dialog.user.info.avatar_cloning_deny')
                         }}</span>
                     </div>
-                    <button
-                        type="button"
-                        class="flex justify-between items-center text-xs cursor-pointer hover:text-foreground disabled:opacity-50"
-                        :disabled="isClientConfigSaving || !isClientConfigReady"
-                        @click="toggleReducedProfileAnimations">
-                        <span class="text-muted-foreground">{{
-                            t('profile_improvements.reduced_profile_animations')
-                        }}</span>
-                        <span class="text-muted-foreground">{{
-                            currentUserClientConfig?.accessReduceDecorAnim
-                                ? t('dialog.user.info.avatar_cloning_allow')
-                                : t('dialog.user.info.avatar_cloning_deny')
-                        }}</span>
-                    </button>
                     <div
                         class="flex justify-between items-center text-xs cursor-pointer hover:text-foreground"
                         @click="toggleDiscordFriendsOptOut">
@@ -610,14 +596,7 @@
 
     const { t } = useI18n();
 
-    const {
-        userDialog,
-        currentUser,
-        currentUserClientConfig,
-        isClientConfigSaving,
-        isClientConfigReady,
-        isLocalUserVrcPlusSupporter
-    } = storeToRefs(useUserStore());
+    const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
     const { isGameRunning } = storeToRefs(useGameStore());
     const { photonLobbyCurrent, photonLobbyAvatars } = storeToRefs(usePhotonStore());
     const { lastLocation } = storeToRefs(useLocationStore());
@@ -799,13 +778,8 @@
         },
         { immediate: true }
     );
-    const {
-        toggleSharedConnectionsOptOut,
-        toggleDiscordFriendsOptOut,
-        toggleAvatarCopying,
-        toggleAllowBooping,
-        toggleReducedProfileAnimations
-    } = useUserStore();
+    const { toggleSharedConnectionsOptOut, toggleDiscordFriendsOptOut, toggleAvatarCopying, toggleAllowBooping } =
+        useUserStore();
 
     const isVrcPlusUser = computed(() =>
         Boolean(
