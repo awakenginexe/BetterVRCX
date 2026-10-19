@@ -391,20 +391,14 @@ describe('useUserDialogCommands', () => {
             });
         });
 
-        it('Report Hacking: should confirm then report', async () => {
-            const { userDialogCommand } = useUserDialogCommands(
-                userDialog,
-                deps
-            );
+        it('Report Hacking opens the report form without submitting a legacy report', () => {
+            const openReport = vi.fn();
+            const { userDialogCommand, registerCallbacks } =
+                useUserDialogCommands(userDialog, deps);
+            registerCallbacks({ showModerationReportDialog: openReport });
             userDialogCommand('Report Hacking');
-            await vi.waitFor(() => {
-                expect(miscRequest.reportUser).toHaveBeenCalledWith({
-                    userId: 'usr_test123',
-                    contentType: 'user',
-                    reason: 'behavior-hacking',
-                    type: 'report'
-                });
-            });
+            expect(openReport).toHaveBeenCalledOnce();
+            expect(miscRequest.reportUser).not.toHaveBeenCalled();
         });
 
         it('Unfriend: should confirm then delete friend', async () => {

@@ -90,7 +90,7 @@ export function useGroupRoles(group, userId, api) {
     async function save(fields) {
         const original = roles.value.find((role) => role.id === fields.id);
         if (fields.id ? !original || !canEdit(original) : !canManage.value)
-            throw new Error('Role is read-only');
+            throw new Error('group_management.role_read_only');
         const selected = [...(fields.permissions || [])];
         if (
             selected.some(
@@ -101,7 +101,7 @@ export function useGroupRoles(group, userId, api) {
                     )
             )
         )
-            throw new Error('Permission cannot be granted');
+            throw new Error('group_management.permission_denied');
         if (
             fields.requiresPurchase &&
             (fields.isSelfAssignable ||
@@ -114,14 +114,19 @@ export function useGroupRoles(group, userId, api) {
                         )
                 ))
         )
-            throw new Error(
-                'Purchase roles cannot be self assigned, added on join, or grant management permissions'
-            );
+            throw new Error('group_management.purchase_restrictions');
+        const name = fields.name?.trim();
+        const description = fields.description || '';
+        if (
+            !original?.defaultRole &&
+            (!name || name.length > 64 || description.length > 512)
+        )
+            throw new Error('group_management.invalid_fields');
         const body = original?.defaultRole
             ? { permissions: selected }
             : {
-                  name: fields.name?.trim(),
-                  description: fields.description || '',
+                  name,
+                  description,
                   requiresTwoFactor: Boolean(fields.requiresTwoFactor),
                   ...(original?.permissions?.includes('*')
                       ? {}
@@ -132,13 +137,6 @@ export function useGroupRoles(group, userId, api) {
                             permissions: selected
                         })
               };
-        if (
-            !original?.defaultRole &&
-            (!body.name ||
-                body.name.length > 64 ||
-                body.description.length > 512)
-        )
-            throw new Error('Name and description are invalid');
         const changed = await mutate((groupId) =>
             original
                 ? api.editGroupRole({ groupId, roleId: original.id, ...body })
@@ -150,7 +148,7 @@ export function useGroupRoles(group, userId, api) {
     async function remove(role) {
         const original = roles.value.find((item) => item.id === role.id);
         if (!original || !canDelete(original))
-            throw new Error('Role cannot be deleted');
+            throw new Error('group_management.role_delete_denied');
         const changed = await mutate((groupId) =>
             api.deleteGroupRole({ groupId, roleId: original.id })
         );
@@ -193,7 +191,7 @@ export function useGroupRoles(group, userId, api) {
     async function toggleSelf(role) {
         const original = roles.value.find((item) => item.id === role.id);
         if (!original || !canToggleSelf(original))
-            throw new Error('Role cannot be self assigned');
+            throw new Error('group_management.role_assign_denied');
         await mutate(async (groupId) => {
             const removing = group.value.myMember.roleIds?.includes(
                 original.id

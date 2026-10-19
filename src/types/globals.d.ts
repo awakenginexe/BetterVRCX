@@ -43,6 +43,12 @@ declare global {
             getArch: () => Promise<string>;
             getClipboardText: () => Promise<string>;
             getNoUpdater: () => Promise<boolean>;
+            setThemeSource: (
+                source: 'system' | 'light' | 'dark'
+            ) => Promise<boolean>;
+            onSystemThemeChanged: (
+                callback: (event: unknown, isDark: boolean) => void
+            ) => () => void;
             setTrayIconNotification: (notify: boolean) => Promise<void>;
             openFileDialog: () => Promise<string>;
             openDirectoryDialog: () => Promise<string>;

@@ -512,6 +512,13 @@
                 :unmount-on-hide="false"
                 fill
                 @update:modelValue="groupDialogTabClick">
+                <template #Store>
+                    <StoreBrowser
+                        v-if="groupDialog.activeTab === 'Store' && groupDialog.ref.storeId"
+                        :key="groupDialog.id"
+                        :entity-id="groupDialog.id"
+                        :store-id="groupDialog.ref.storeId" />
+                </template>
                 <template #Info>
                     <GroupDialogInfoTab
                         :show-group-post-edit-dialog="showGroupPostEditDialog"
@@ -612,6 +619,7 @@
 
     import DialogJsonTab from '../DialogJsonTab.vue';
     import GroupDialogInfoTab from './GroupDialogInfoTab.vue';
+    import StoreBrowser from '../../marketplace/StoreBrowser.vue';
     import { useGroupDialogCommands } from './useGroupDialogCommands';
     import GroupDialogMembersTab from './GroupDialogMembersTab.vue';
     import GroupDialogPhotosTab from './GroupDialogPhotosTab.vue';
@@ -623,6 +631,7 @@
     const { t } = useI18n();
     const groupDialogTabs = computed(() => [
         { value: 'Info', label: t('dialog.group.info.header') },
+        ...(groupDialog.value.ref?.storeId ? [{ value: 'Store', label: t('marketplace.store') }] : []),
         { value: 'Posts', label: t('dialog.group.posts.header') },
         { value: 'Members', label: t('dialog.group.members.header') },
         { value: 'Photos', label: t('dialog.group.gallery.header') },

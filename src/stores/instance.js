@@ -49,6 +49,7 @@ import { queryClient, queryKeys } from '../queries';
 import { createPublicProfileQueue } from '../services/publicProfileQueue';
 
 import configRepository from '../services/config';
+import { getWorldInstances } from '../shared/utils/instanceImprovements';
 
 export const useInstanceStore = defineStore('Instance', () => {
     const locationStore = useLocationStore();
@@ -742,10 +743,9 @@ export const useInstanceStore = defineStore('Instance', () => {
             return;
         }
         const instances = {};
-        if (D.ref.instances) {
-            for (instance of D.ref.instances) {
-                // instance = [ instanceId, occupants ]
-                const instanceId = instance[0];
+        {
+            for (const summary of getWorldInstances(D.ref)) {
+                const { instanceId, n_users } = summary;
                 instances[instanceId] = {
                     id: instanceId,
                     tag: `${D.id}:${instanceId}`,
@@ -753,7 +753,7 @@ export const useInstanceStore = defineStore('Instance', () => {
                     friendCount: 0,
                     users: [],
                     shortName: '',
-                    ref: {}
+                    ref: { userCount: n_users, capacity: D.ref.capacity }
                 };
             }
         }

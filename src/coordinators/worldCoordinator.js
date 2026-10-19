@@ -27,6 +27,7 @@ import {
 import { useUiStore } from '../stores/ui';
 import { useUserStore } from '../stores/user';
 import { useWorldStore } from '../stores/world';
+import { getWorldInstances } from '../shared/utils/instanceImprovements';
 
 /**
  * @param {string} tag
@@ -128,9 +129,8 @@ export function showWorldDialog(tag, shortName = null, options = {}) {
             if (D.id === args.ref.id) {
                 D.ref = args.ref;
                 uiStore.setDialogCrumbLabel('world', D.id, D.ref?.name || D.id);
-                if (args.ref.instances) {
-                    for (const instance of args.ref.instances) {
-                        const instanceId = instance[0];
+                {
+                    for (const { instanceId } of getWorldInstances(args.ref)) {
                         const tag = `${D.id}:${instanceId}`;
                         if (isRealInstance(tag)) {
                             instanceRequest.getInstance({

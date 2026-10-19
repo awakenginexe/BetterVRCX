@@ -42,6 +42,12 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
     const autoStateChangeGroups = ref([]);
     const autoAcceptInviteRequests = ref('Off');
     const autoAcceptInviteGroups = ref([]);
+    const autoAcceptInviteStatuses = ref([
+        'join me',
+        'active',
+        'ask me',
+        'busy'
+    ]);
     const recentActionCooldownEnabled = ref(false);
     const recentActionCooldownMinutes = ref(60);
 
@@ -71,6 +77,7 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
             autoStateChangeGroupsStrConfig,
             autoAcceptInviteRequestsConfig,
             autoAcceptInviteGroupsStrConfig,
+            autoAcceptInviteStatusesConfig,
             recentActionCooldownEnabledConfig,
             recentActionCooldownMinutesConfig
         ] = await Promise.all([
@@ -113,6 +120,10 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
             configRepository.getString('VRCX_autoStateChangeGroups', '[]'),
             configRepository.getString('VRCX_autoAcceptInviteRequests', 'Off'),
             configRepository.getString('VRCX_autoAcceptInviteGroups', '[]'),
+            configRepository.getString(
+                'VRCX_autoAcceptInviteStatuses',
+                '["join me","active","ask me","busy"]'
+            ),
             configRepository.getBool('VRCX_recentActionCooldownEnabled', false),
             configRepository.getInt('VRCX_recentActionCooldownMinutes', 60)
         ]);
@@ -165,6 +176,16 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
         autoAcceptInviteGroups.value = JSON.parse(
             autoAcceptInviteGroupsStrConfig
         );
+        try {
+            const statuses = JSON.parse(autoAcceptInviteStatusesConfig);
+            autoAcceptInviteStatuses.value = Array.isArray(statuses)
+                ? statuses.filter((status) =>
+                      ['join me', 'active', 'ask me', 'busy'].includes(status)
+                  )
+                : [];
+        } catch {
+            autoAcceptInviteStatuses.value = [];
+        }
         recentActionCooldownEnabled.value = recentActionCooldownEnabledConfig;
         recentActionCooldownMinutes.value = recentActionCooldownMinutesConfig;
     }
@@ -375,6 +396,18 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
         );
     }
 
+    function setAutoAcceptInviteStatuses(value) {
+        autoAcceptInviteStatuses.value = Array.isArray(value)
+            ? value.filter((status) =>
+                  ['join me', 'active', 'ask me', 'busy'].includes(status)
+              )
+            : [];
+        configRepository.setString(
+            'VRCX_autoAcceptInviteStatuses',
+            JSON.stringify(autoAcceptInviteStatuses.value)
+        );
+    }
+
     function promptProxySettings() {
         // Element Plus: prompt(message, title, options)
         modalStore
@@ -465,6 +498,7 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
         autoStateChangeGroups,
         autoAcceptInviteRequests,
         autoAcceptInviteGroups,
+        autoAcceptInviteStatuses,
         recentActionCooldownEnabled,
         recentActionCooldownMinutes,
 
@@ -491,6 +525,7 @@ export const useGeneralSettingsStore = defineStore('GeneralSettings', () => {
         setAutoStateChangeGroups,
         setAutoAcceptInviteRequests,
         setAutoAcceptInviteGroups,
+        setAutoAcceptInviteStatuses,
         promptProxySettings,
         setRecentActionCooldownEnabled,
         setRecentActionCooldownMinutes

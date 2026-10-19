@@ -1,4 +1,7 @@
 <template>
+    <GroupUserActionsDialog v-model:open="groupUserActions" />
+    <ModerationReportsDialog v-model:open="moderationReports" />
+    <InfoPushDialog :is-info-push-dialog-visible="infoPush" @close="closeDialog('infoPush')" />
     <GroupCalendarDialog :visible="groupCalendar" @close="closeDialog('groupCalendar')" />
     <NoteExportDialog :isNoteExportDialogVisible="noteExport" @close="closeDialog('noteExport')" />
     <ExportDiscordNamesDialog v-model:discordNamesDialogVisible="exportDiscordNames" :friends="friends" />
@@ -15,11 +18,14 @@
 
 <script setup>
     import { storeToRefs } from 'pinia';
+    import GroupUserActionsDialog from '../../../components/dialogs/GroupDialog/GroupUserActionsDialog.vue';
+    import ModerationReportsDialog from '../../../components/dialogs/GroupDialog/ModerationReportsDialog.vue';
 
     import { useFriendStore, useToolsStore } from '../../../stores';
 
     import AutoChangeStatusDialog from '../dialogs/AutoChangeStatusDialog.vue';
     import RegistryBackupDialog from '../dialogs/RegistryBackupDialog.vue';
+    import InfoPushDialog from '../dialogs/InfoPushDialog.vue';
 
     import EditInviteMessageDialog from '../dialogs/EditInviteMessagesDialog.vue';
     import ExportAvatarsListDialog from '../dialogs/ExportAvatarsListDialog.vue';
@@ -32,6 +38,9 @@
     const toolsStore = useToolsStore();
     const {
         autoChangeStatus,
+        infoPush,
+        groupUserActions,
+        moderationReports,
         editInviteMessages,
         exportAvatarsList,
         exportDiscordNames,

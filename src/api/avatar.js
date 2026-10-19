@@ -255,9 +255,10 @@ const avatarReq = {
      * @param {string[]} order
      * @returns {Promise<{json: any, params}>}
      */
-    setAvatarGalleryOrder(order) {
+    setAvatarGalleryOrder(order, galleryId) {
         const params = {
-            ids: order
+            ids: order,
+            galleryId
         };
         return request('files/order', {
             method: 'PUT',

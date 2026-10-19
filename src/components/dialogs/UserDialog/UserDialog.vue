@@ -83,6 +83,12 @@
                 v-model:sendInviteDialog="sendInviteDialog"
                 @closeInviteDialog="closeInviteDialog" />
             <ModerateGroupDialog />
+            <ModerationReportDialog
+                v-if="reportOpen"
+                v-model:open="reportOpen"
+                type="user"
+                :content-id="userDialog.id"
+                :content-name="userDialog.ref.displayName" />
         </div>
     </div>
 </template>
@@ -113,6 +119,7 @@
     import { formatJsonVars } from '../../../shared/utils/base/ui';
     import { miscRequest } from '../../../api';
     import { useUserDialogCommands } from './useUserDialogCommands';
+    import ModerationReportDialog from '../GroupDialog/ModerationReportDialog.vue';
     import { showAvatarDialog, showAvatarAuthorDialog } from '../../../coordinators/avatarCoordinator';
     import { showUserDialog, refreshUserDialogAvatars } from '../../../coordinators/userCoordinator';
     import { getFriendRequest, handleFriendDelete } from '../../../coordinators/friendRelationshipCoordinator';
@@ -161,6 +168,7 @@
         return tabs;
     });
     const infoTabRef = ref(null);
+    const reportOpen = ref(false);
     const activityTabRef = ref(null);
     const favoriteWorldsTabRef = ref(null);
     const mutualFriendsTabRef = ref(null);
@@ -172,6 +180,12 @@
     const instanceStore = useInstanceStore();
 
     const { userDialog, currentUser } = storeToRefs(useUserStore());
+    watch(
+        () => userDialog.value.id,
+        () => {
+            reportOpen.value = false;
+        }
+    );
     const userDialogTabColor = computed(() => {
         const color = userDialog.value.theme?.buttonColor;
         if (!color) {
@@ -397,6 +411,9 @@
 
     // Register simple dialog openers as callbacks for the command composable
     registerCallbacks({
+        showModerationReportDialog: () => {
+            reportOpen.value = true;
+        },
         showEditProfileDialog,
         showEditNoteAndMemoDialog: () => infoTabRef.value?.showEditNoteAndMemoDialog()
     });

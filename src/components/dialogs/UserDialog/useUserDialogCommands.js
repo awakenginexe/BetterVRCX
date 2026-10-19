@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import {
     favoriteRequest,
     friendRequest,
-    miscRequest,
     notificationRequest,
     playerModerationRequest,
     queryRequest
@@ -619,22 +618,7 @@ export function useUserDialogCommands(
                     handleSendPlayerModeration(args);
                 }
             },
-            'Report Hacking': {
-                confirm: () => ({
-                    title: t('confirm.title'),
-                    description: t('confirm.command_question', {
-                        command: t('dialog.user.actions.report_hacking')
-                    })
-                }),
-                handler: (userId) => {
-                    miscRequest.reportUser({
-                        userId,
-                        contentType: 'user',
-                        reason: 'behavior-hacking',
-                        type: 'report'
-                    });
-                }
-            },
+            'Report Hacking': 'showModerationReportDialog',
             Unfriend: {
                 confirm: () => ({
                     title: t('confirm.title'),

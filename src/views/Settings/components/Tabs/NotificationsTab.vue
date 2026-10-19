@@ -1,6 +1,10 @@
 <template>
     <div class="settings-tab-stack flex flex-col gap-5 py-2">
         <SettingsGroup :title="t('view.settings.notifications.notifications.header')">
+            <SimpleSwitch
+                :label="t('compatibility.bundle_notifications')"
+                :value="inventoryBundleNotifications"
+                @change="setInventoryBundleNotifications" />
             <SettingsItem :label="t('view.settings.notifications.notifications.layout')">
                 <Select :model-value="notificationLayout" @update:modelValue="setNotificationLayout">
                     <SelectTrigger size="sm">
@@ -33,13 +37,12 @@
                     @update:modelValue="setNonFriendNotificationInstanceTypes">
                     <SelectTrigger size="sm">
                         <SelectValue
-                            :placeholder="t('view.settings.notifications.notifications.non_friend_instance_types_placeholder')" />
+                            :placeholder="
+                                t('view.settings.notifications.notifications.non_friend_instance_types_placeholder')
+                            " />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem
-                            v-for="item in availableInstanceTypes"
-                            :key="item.value"
-                            :value="item.value">
+                        <SelectItem v-for="item in availableInstanceTypes" :key="item.value" :value="item.value">
                             {{ item.label }}
                         </SelectItem>
                     </SelectContent>
@@ -194,6 +197,7 @@
     import FeedFiltersDialog from '../../dialogs/FeedFiltersDialog.vue';
     import SettingsGroup from '../SettingsGroup.vue';
     import SettingsItem from '../SettingsItem.vue';
+    import SimpleSwitch from '../SimpleSwitch.vue';
 
     const { t } = useI18n();
 
@@ -208,6 +212,7 @@
         notificationTTSTest,
         TTSvoices,
         notificationLayout,
+        inventoryBundleNotifications,
         nonFriendNotificationInstanceTypes
     } = storeToRefs(notificationsSettingsStore);
 
@@ -220,7 +225,8 @@
         changeTTSVoice,
         saveNotificationTTS,
         testNotificationTTS,
-        setNotificationLayout
+        setNotificationLayout,
+        setInventoryBundleNotifications
     } = notificationsSettingsStore;
 
     const availableInstanceTypes = computed(() => [

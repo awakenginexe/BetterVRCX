@@ -122,6 +122,11 @@ vi.mock(
 vi.mock('../../../components/dialogs/InviteGroupDialog.vue', () => ({
     default: { template: '<div data-testid="global-dialog-invite-group" />' }
 }));
+vi.mock('../../../components/dialogs/InventoryBundleDialog.vue', () => ({
+    default: {
+        template: '<div data-testid="global-dialog-inventory-bundle" />'
+    }
+}));
 vi.mock('../../Settings/dialogs/VRChatConfigDialog.vue', () => ({
     default: { template: '<div data-testid="global-dialog-vrchat-config" />' }
 }));
@@ -213,6 +218,7 @@ describe('MainLayout.vue', () => {
         const expectedDialogIds = [
             'global-dialog-main',
             'global-dialog-invite-group',
+            'global-dialog-inventory-bundle',
             'global-dialog-image-preview',
             'global-dialog-launch',
             'global-dialog-launch-options',

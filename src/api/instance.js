@@ -6,6 +6,24 @@ import { request } from '../services/request';
 import { useInstanceStore } from '../stores';
 
 const instanceReq = {
+    getInstanceCount() {
+        return request('instances/count', { method: 'GET' }).then((json) => ({
+            json
+        }));
+    },
+
+    updateInstance(params) {
+        const { location, ...body } = params;
+        return request(`instances/${location}`, {
+            method: 'PUT',
+            params: body
+        }).then((json) => ({
+            json,
+            params,
+            ref: useInstanceStore().applyInstance(json)
+        }));
+    },
+
     /**
      * @type {import('../types/api/instance').GetInstance}
      */

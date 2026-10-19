@@ -257,6 +257,26 @@
                         </Select>
                     </FieldContent>
                 </Field>
+                <Field>
+                    <FieldLabel>{{ t('compatibility.auto_accept_statuses') }}</FieldLabel>
+                    <FieldContent>
+                        <Select
+                            :model-value="autoAcceptInviteStatuses"
+                            multiple
+                            :disabled="autoAcceptInviteRequests === 'Off'"
+                            @update:modelValue="setAutoAcceptInviteStatuses">
+                            <SelectTrigger size="sm">
+                                <SelectValue :placeholder="t('compatibility.auto_accept_none')" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="join me">{{ t('dialog.user.status.join_me') }}</SelectItem>
+                                <SelectItem value="active">{{ t('dialog.user.status.online') }}</SelectItem>
+                                <SelectItem value="ask me">{{ t('dialog.user.status.ask_me') }}</SelectItem>
+                                <SelectItem value="busy">{{ t('dialog.user.status.busy') }}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FieldContent>
+                </Field>
             </FieldGroup>
         </DialogContent>
     </Dialog>
@@ -308,6 +328,7 @@
         autoStateChangeCompanyDesc,
         autoStateChangeGroups,
         autoAcceptInviteRequests,
+        autoAcceptInviteStatuses,
         autoAcceptInviteGroups
     } = storeToRefs(generalSettingsStore);
 
@@ -326,6 +347,7 @@
         setAutoStateChangeCompanyDesc,
         setAutoStateChangeGroups,
         setAutoAcceptInviteRequests,
+        setAutoAcceptInviteStatuses,
         setAutoAcceptInviteGroups
     } = generalSettingsStore;
 

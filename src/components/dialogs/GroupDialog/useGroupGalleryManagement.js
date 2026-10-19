@@ -43,14 +43,14 @@ export function useGroupGalleryManagement(dialog, userId, api) {
     async function save(fields) {
         const gallery = fields.id ? findGallery(fields.id) : null;
         if (fields.id ? !gallery || !canManage(gallery) : !canCreate.value)
-            throw new Error('Gallery is read-only');
+            throw new Error('group_management.gallery_read_only');
         const name = fields.name?.trim();
         if (
             !name ||
             name.length > 64 ||
             (fields.description || '').length > 1000
         )
-            throw new Error('Name and description are invalid');
+            throw new Error('group_management.invalid_fields');
         const body = {
             name,
             description: fields.description || '',
@@ -82,7 +82,7 @@ export function useGroupGalleryManagement(dialog, userId, api) {
     async function remove(gallery) {
         const original = findGallery(gallery.id);
         if (!original || !canCreate.value)
-            throw new Error('Gallery cannot be deleted');
+            throw new Error('group_management.gallery_delete_denied');
         return mutate(
             (groupId) =>
                 api.deleteGroupGallery({ groupId, galleryId: original.id }),
@@ -98,7 +98,7 @@ export function useGroupGalleryManagement(dialog, userId, api) {
     async function addImage(gallery, fileId) {
         const original = findGallery(gallery.id);
         if (!original || !canSubmit(original) || !fileId?.startsWith('file_'))
-            throw new Error('Image cannot be submitted');
+            throw new Error('group_management.image_submit_denied');
         return mutate(
             (groupId) =>
                 api.addGroupGalleryImage({
@@ -117,7 +117,7 @@ export function useGroupGalleryManagement(dialog, userId, api) {
     async function removeImage(gallery, image) {
         const original = findGallery(gallery.id);
         if (!original || !canDeleteImage(original, image))
-            throw new Error('Image cannot be deleted');
+            throw new Error('group_management.image_delete_denied');
         return mutate(
             (groupId) =>
                 api.deleteGroupGalleryImage({

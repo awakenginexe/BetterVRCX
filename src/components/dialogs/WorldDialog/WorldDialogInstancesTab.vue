@@ -1,5 +1,12 @@
 <template>
     <div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <InstanceActivity :active="worldDialog.visible && worldDialog.activeTab === 'Instances'" />
+            <label class="flex items-center gap-2 text-sm">
+                <Checkbox v-model="hideClosed" @update:model-value="saveClosedFilter" />
+                {{ t('instance_improvements.hide_closed') }}
+            </label>
+        </div>
         <div class="flex items-center text-sm">
             <User />
             {{ t('dialog.world.instances.public_count', { count: worldDialog.ref.publicOccupants }) }}
@@ -17,7 +24,7 @@
                 })
             }}
         </div>
-        <div v-for="room in worldDialog.rooms" :key="room.id">
+        <div v-for="room in visibleRooms" :key="room.id">
             <template v-if="isAgeGatedInstancesVisible || !(room.ageGate || room.location?.includes('~ageGate'))">
                 <div style="margin: 6px 0">
                     <div class="flex flex-wrap gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
@@ -122,7 +129,11 @@
     import { Spinner } from '@/components/ui/spinner';
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
-    import { computed } from 'vue';
+    import { computed, ref } from 'vue';
+    import { Checkbox } from '@/components/ui/checkbox';
+    import InstanceActivity from '../InstanceActivity.vue';
+    import { isClosedInstance } from '../../../shared/utils/instanceImprovements';
+    import configRepository from '../../../services/config';
 
     import { refreshInstancePlayerCount } from '../../../coordinators/instanceCoordinator';
     import { useUserDisplay } from '../../../composables/useUserDisplay';
@@ -149,6 +160,21 @@
     const userStore = useUserStore();
     const { currentUser } = storeToRefs(userStore);
     const { worldDialog } = storeToRefs(useWorldStore());
+    const hideClosed = ref(false);
+    let filterChanged = false;
+    configRepository
+        .getBool('VRCX_hideClosedInstances', false)
+        .then((value) => {
+            if (!filterChanged) hideClosed.value = value === true;
+        })
+        .catch(console.error);
+    const visibleRooms = computed(() =>
+        hideClosed.value ? worldDialog.value.rooms.filter((room) => !isClosedInstance(room)) : worldDialog.value.rooms
+    );
+    function saveClosedFilter(value) {
+        filterChanged = true;
+        configRepository.setBool('VRCX_hideClosedInstances', value).catch(console.error);
+    }
     const { lastLocation } = storeToRefs(useLocationStore());
     const { showPreviousInstancesInfoDialog } = useInstanceStore();
     const { instanceJoinHistory } = storeToRefs(useInstanceStore());

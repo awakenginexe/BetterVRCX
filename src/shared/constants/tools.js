@@ -9,6 +9,36 @@ const toolCategories = [
 
 const toolDefinitions = [
     {
+        key: 'group-user-actions',
+        category: 'group',
+        iconKey: 'users',
+        navIcon: 'ri-group-line',
+        titleKey: 'group_management.personal_actions',
+        descriptionKey: 'group_management.personal_actions_description',
+        navEligible: true,
+        action: { type: 'dialog', dialogKey: 'group-user-actions' }
+    },
+    {
+        key: 'moderation-reports',
+        category: 'other',
+        iconKey: 'file-text',
+        navIcon: 'ri-flag-line',
+        titleKey: 'group_management.report_history',
+        descriptionKey: 'group_management.report_history_description',
+        navEligible: true,
+        action: { type: 'dialog', dialogKey: 'moderation-reports' }
+    },
+    {
+        key: 'info-push',
+        category: 'other',
+        iconKey: 'file-text',
+        navIcon: 'ri-notification-3-line',
+        titleKey: 'announcements.title',
+        descriptionKey: 'announcements.description',
+        navEligible: true,
+        action: { type: 'dialog', dialogKey: 'info-push' }
+    },
+    {
         key: 'screenshot-metadata',
         category: 'image',
         iconKey: 'camera',

@@ -17,6 +17,13 @@ vi.mock('../../../plugins/router', () => ({
 import { convertFileUrlToImageUrl, debounce } from '../common';
 
 describe('convertFileUrlToImageUrl', () => {
+    test.each([42, true, {}, [], new URL('https://example.com')])(
+        'ignores non-string API image values: %j',
+        (value) => {
+            expect(convertFileUrlToImageUrl(value)).toBe('');
+        }
+    );
+
     test('converts standard file URL to image URL', () => {
         const url =
             'https://api.vrchat.cloud/api/1/file/file_abc123-def456/1/file';

@@ -23,6 +23,7 @@ export const useNotificationsSettingsStore = defineStore(
         const ovrtHudNotifications = ref(true);
         const ovrtWristNotifications = ref(false);
         const imageNotifications = ref(true);
+        const inventoryBundleNotifications = ref(false);
         const desktopToast = ref('Never');
         const afkDesktopToast = ref(false);
         const notificationTTS = ref('Never');
@@ -142,6 +143,7 @@ export const useNotificationsSettingsStore = defineStore(
                 ovrtHudNotificationsConfig,
                 ovrtWristNotificationsConfig,
                 imageNotificationsConfig,
+                inventoryBundleNotificationsConfig,
                 desktopToastConfig,
                 afkDesktopToastConfig,
                 notificationTTSConfig,
@@ -160,6 +162,10 @@ export const useNotificationsSettingsStore = defineStore(
                 configRepository.getBool('VRCX_ovrtHudNotifications', true),
                 configRepository.getBool('VRCX_ovrtWristNotifications', false),
                 configRepository.getBool('VRCX_imageNotifications', true),
+                configRepository.getBool(
+                    'VRCX_inventoryBundleNotifications',
+                    true
+                ),
                 configRepository.getString('VRCX_desktopToast', 'Never'),
                 configRepository.getBool('VRCX_afkDesktopToast', false),
                 configRepository.getString('VRCX_notificationTTS', 'Never'),
@@ -197,6 +203,8 @@ export const useNotificationsSettingsStore = defineStore(
             ovrtHudNotifications.value = ovrtHudNotificationsConfig;
             ovrtWristNotifications.value = ovrtWristNotificationsConfig;
             imageNotifications.value = imageNotificationsConfig;
+            inventoryBundleNotifications.value =
+                inventoryBundleNotificationsConfig;
             desktopToast.value = desktopToastConfig;
             afkDesktopToast.value = afkDesktopToastConfig;
             notificationTTS.value = notificationTTSConfig;
@@ -235,6 +243,13 @@ export const useNotificationsSettingsStore = defineStore(
         function setOverlayToast(value) {
             overlayToast.value = value;
             configRepository.setString('VRCX_overlayToast', value);
+        }
+        function setInventoryBundleNotifications(value) {
+            inventoryBundleNotifications.value = value === true;
+            configRepository.setBool(
+                'VRCX_inventoryBundleNotifications',
+                inventoryBundleNotifications.value
+            );
         }
         function setOverlayNotifications() {
             overlayNotifications.value = !overlayNotifications.value;
@@ -532,6 +547,7 @@ export const useNotificationsSettingsStore = defineStore(
             ovrtHudNotifications,
             ovrtWristNotifications,
             imageNotifications,
+            inventoryBundleNotifications,
             desktopToast,
             afkDesktopToast,
             notificationTTS,
@@ -553,6 +569,7 @@ export const useNotificationsSettingsStore = defineStore(
             setOvrtHudNotifications,
             setOvrtWristNotifications,
             setImageNotifications,
+            setInventoryBundleNotifications,
             setDesktopToast,
             setAfkDesktopToast,
             setNotificationTTS,

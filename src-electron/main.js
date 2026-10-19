@@ -9,7 +9,8 @@ const {
     Menu,
     dialog,
     Notification,
-    nativeImage
+    nativeImage,
+    nativeTheme
 } = require('electron');
 const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
@@ -133,6 +134,11 @@ ipcMain.handle('callDotNetMethod', (event, className, methodName, args) => {
 
 /** @type {Electron.CrossProcessExports.BrowserWindow} */
 let mainWindow = undefined;
+const { registerSystemTheme } = require('./system-theme');
+app.once(
+    'will-quit',
+    registerSystemTheme(ipcMain, nativeTheme, () => mainWindow)
+);
 
 const VRCXStorage = interopApi.getDotNetObject('VRCXStorage');
 const hasAskedToMoveAppImage =

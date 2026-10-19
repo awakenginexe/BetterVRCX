@@ -7,6 +7,7 @@ import { queryRequest } from '../../../api';
  * @param {import('vue').Ref} groupDialog - reactive ref to the group dialog state
  * @returns {{
  *   isGroupGalleryLoading: import('vue').Ref<boolean>,
+ *   galleryError: import('vue').Ref<string>,
  *   groupDialogGalleryCurrentName: import('vue').Ref<string>,
  *   groupGalleryTabs: import('vue').ComputedRef<Array>,
  *   groupGalleryStatus: (gallery: Object) => Object,

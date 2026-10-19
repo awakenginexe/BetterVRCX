@@ -3,6 +3,9 @@ import { reactive, toRefs } from 'vue';
 
 const initialDialogState = () => ({
     groupCalendar: false,
+    infoPush: false,
+    groupUserActions: false,
+    moderationReports: false,
     noteExport: false,
     exportDiscordNames: false,
     exportFriendsList: false,

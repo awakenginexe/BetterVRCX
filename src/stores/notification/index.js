@@ -279,7 +279,10 @@ export const useNotificationStore = defineStore('Notification', () => {
         const ref = args.json;
         if (
             ref.type !== 'requestInvite' ||
-            generalSettingsStore.autoAcceptInviteRequests === 'Off'
+            generalSettingsStore.autoAcceptInviteRequests === 'Off' ||
+            !generalSettingsStore.autoAcceptInviteStatuses?.includes(
+                userStore.currentUser.status
+            )
         ) {
             return;
         }
@@ -357,6 +360,13 @@ export const useNotificationStore = defineStore('Notification', () => {
                 worldId: L.worldId
             })
             .then((args1) => {
+                if (
+                    generalSettingsStore.autoAcceptInviteRequests === 'Off' ||
+                    !generalSettingsStore.autoAcceptInviteStatuses?.includes(
+                        userStore.currentUser.status
+                    )
+                )
+                    return;
                 notificationRequest
                     .sendInvite(
                         {

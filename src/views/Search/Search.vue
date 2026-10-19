@@ -7,7 +7,11 @@
             </div>
             <div class="search-view__context" aria-live="polite">
                 <span>{{ activeSearchLabel }}</span>
-                <strong class="search-view__result-count font-mono">{{ activeResultCount }}</strong>
+                <strong
+                    v-if="!['marketplace', 'store'].includes(activeSearchTab)"
+                    class="search-view__result-count font-mono"
+                    >{{ activeResultCount }}</strong
+                >
             </div>
         </header>
         <Tabs v-model="activeSearchTab" :unmount-on-hide="false" aria-label="Search tabs" class="search-view__tabs">
@@ -17,8 +21,10 @@
                     <TabsTrigger class="bv-focus-ring" value="world">{{ t('view.search.world.header') }}</TabsTrigger>
                     <TabsTrigger class="bv-focus-ring" value="avatar">{{ t('view.search.avatar.header') }}</TabsTrigger>
                     <TabsTrigger class="bv-focus-ring" value="group">{{ t('view.search.group.header') }}</TabsTrigger>
+                    <TabsTrigger class="bv-focus-ring" value="marketplace">{{ t('marketplace.avatars') }}</TabsTrigger>
+                    <TabsTrigger class="bv-focus-ring" value="store">{{ t('marketplace.store') }}</TabsTrigger>
                 </TabsList>
-                <div class="search-view__query">
+                <div v-if="!['marketplace', 'store'].includes(activeSearchTab)" class="search-view__query">
                     <InputGroupField
                         :model-value="searchText"
                         :placeholder="searchPlaceholder"
@@ -375,6 +381,12 @@
                     @prev="paginationConfig.onPrev"
                     @next="paginationConfig.onNext" />
             </TabsContent>
+            <TabsContent value="marketplace" class="search-view__panel">
+                <MarketplaceSearch v-if="activeSearchTab === 'marketplace'" />
+            </TabsContent>
+            <TabsContent value="store" class="search-view__panel">
+                <StoreBrowser v-if="activeSearchTab === 'store'" />
+            </TabsContent>
         </Tabs>
         <AvatarProviderDialog v-model:isAvatarProviderDialogVisible="isAvatarProviderDialogVisible" />
     </div>
@@ -387,6 +399,8 @@
     import { DataTableEmpty } from '@/components/ui/data-table';
     import { Spinner } from '@/components/ui/spinner';
     import AvatarProviderDialog from '../Settings/dialogs/AvatarProviderDialog.vue';
+    import MarketplaceSearch from '../../components/marketplace/MarketplaceSearch.vue';
+    import StoreBrowser from '../../components/marketplace/StoreBrowser.vue';
     import SearchPagination from './components/SearchPagination.vue';
     import {
         Item,
@@ -515,7 +529,9 @@
             user: 'view.search.user.header',
             world: 'view.search.world.header',
             avatar: 'view.search.avatar.header',
-            group: 'view.search.group.header'
+            group: 'view.search.group.header',
+            marketplace: 'marketplace.avatars',
+            store: 'marketplace.store'
         };
         return t(labels[activeSearchTab.value]);
     });

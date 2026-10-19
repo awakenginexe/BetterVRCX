@@ -338,6 +338,13 @@
                 :unmount-on-hide="false"
                 fill
                 @update:modelValue="worldDialogTabClick">
+                <template #Store>
+                    <StoreBrowser
+                        v-if="worldDialog.activeTab === 'Store' && worldDialog.ref.storeId"
+                        :key="worldDialog.id"
+                        :entity-id="worldDialog.id"
+                        :store-id="worldDialog.ref.storeId" />
+                </template>
                 <template #Instances>
                     <WorldDialogInstancesTab />
                 </template>
@@ -448,6 +455,7 @@
     import DialogJsonTab from '../DialogJsonTab.vue';
     import ImageCropDialog from '../ImageCropDialog.vue';
     import WorldDialogInfoTab from './WorldDialogInfoTab.vue';
+    import StoreBrowser from '../../marketplace/StoreBrowser.vue';
     import WorldDialogInstancesTab from './WorldDialogInstancesTab.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
 
@@ -510,6 +518,7 @@
     const worldDialogTabs = computed(() => [
         { value: 'Instances', label: t('dialog.world.instances.header') },
         { value: 'Info', label: t('dialog.world.info.header') },
+        ...(worldDialog.value.ref?.storeId ? [{ value: 'Store', label: t('marketplace.store') }] : []),
         { value: 'JSON', label: t('dialog.world.json.header') }
     ]);
 

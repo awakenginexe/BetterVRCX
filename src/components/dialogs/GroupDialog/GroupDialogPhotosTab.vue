@@ -16,7 +16,7 @@
             }}</Button>
         </div>
         <p v-if="error || actionError || galleryError" role="alert" class="text-sm text-destructive">
-            {{ actionError || error || galleryError }}
+            {{ t(actionError || error || galleryError) }}
         </p>
         <p v-if="notice" role="status" class="text-sm text-muted-foreground">{{ notice }}</p>
         <form v-if="form" class="space-y-3 border rounded-lg p-3 my-2" @submit.prevent="saveGallery">

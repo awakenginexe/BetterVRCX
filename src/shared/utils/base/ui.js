@@ -103,8 +103,17 @@ function useThemeColor() {
  *
  * @returns {boolean}
  */
+let electronSystemIsDark = null;
+
 function systemIsDarkMode() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return (
+        electronSystemIsDark ??
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
+}
+
+function setSystemIsDarkMode(value) {
+    if (typeof value === 'boolean') electronSystemIsDark = value;
 }
 
 function applyThemeFonts(themeKey, fontLinks = []) {
@@ -257,6 +266,7 @@ function applyAppCjkFontPack(packKey) {
 }
 
 function changeAppThemeStyle(themeMode) {
+    let followsSystem = themeMode === 'system';
     if (themeMode === 'system') {
         themeMode = systemIsDarkMode() ? 'dark' : 'light';
     }
@@ -266,6 +276,7 @@ function changeAppThemeStyle(themeMode) {
         // fallback to system
         console.error('Invalid theme mode:', themeMode);
         configRepository.setString('VRCX_ThemeMode', 'system');
+        followsSystem = true;
         themeMode = systemIsDarkMode() ? 'dark' : 'light';
         themeConfig = THEME_CONFIG[themeMode];
     }
@@ -288,6 +299,14 @@ function changeAppThemeStyle(themeMode) {
     } else {
         AppApi.ChangeTheme(0);
     }
+
+    window.electron
+        ?.setThemeSource?.(
+            followsSystem ? 'system' : themeConfig.isDark ? 'dark' : 'light'
+        )
+        .catch((error) =>
+            console.error('Failed to update native theme:', error)
+        );
 
     return { isDark: themeConfig.isDark };
 
@@ -509,6 +528,7 @@ function redirectToToolsTab() {
 
 export {
     systemIsDarkMode,
+    setSystemIsDarkMode,
     changeAppThemeStyle,
     useThemeColor,
     applyThemeColor,

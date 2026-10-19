@@ -49,6 +49,9 @@ vi.mock('../../coordinators/userCoordinator', () => ({
     updateAutoStateChange: vi.fn()
 }));
 import { useUpdateLoopStore } from '../updateLoop';
+vi.mock('../inventoryBundle', () => ({
+    useInventoryBundleStore: () => ({ checkInventoryBundles: vi.fn() })
+}));
 it('runs presence verification at the existing five minute cadence', async () => {
     vi.stubGlobal('AppApi', { CheckGameRunning: vi.fn() });
     vi.stubGlobal('LINUX', false);

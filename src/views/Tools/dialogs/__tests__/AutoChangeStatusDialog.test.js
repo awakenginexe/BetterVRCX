@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
         autoStateChangeGroups: { __v_isRef: true, value: [] },
         autoAcceptInviteRequests: { __v_isRef: true, value: 'Off' },
         autoAcceptInviteGroups: { __v_isRef: true, value: [] },
+        autoAcceptInviteStatuses: { __v_isRef: true, value: ['active'] },
         setAutoStateChangeEnabled: vi.fn(),
         setAutoStateChangeAloneStatus: vi.fn(),
         setAutoStateChangeCompanyStatus: vi.fn(),
@@ -26,7 +27,8 @@ const mocks = vi.hoisted(() => ({
         setAutoStateChangeCompanyDesc: vi.fn(),
         setAutoStateChangeGroups: vi.fn(),
         setAutoAcceptInviteRequests: vi.fn(),
-        setAutoAcceptInviteGroups: vi.fn()
+        setAutoAcceptInviteGroups: vi.fn(),
+        setAutoAcceptInviteStatuses: vi.fn()
     },
     favoriteStore: {
         favoriteFriendGroups: {

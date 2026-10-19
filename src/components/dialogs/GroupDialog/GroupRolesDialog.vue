@@ -13,7 +13,7 @@
                 }}</Button>
             </div>
             <p v-if="error || validationError" role="alert" class="text-destructive text-sm">
-                {{ validationError || error }}
+                {{ t(validationError || error) }}
             </p>
             <p v-if="loading" role="status" class="text-sm text-muted-foreground">
                 {{ t('group_management.loading') }}

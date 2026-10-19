@@ -299,6 +299,28 @@ describe('useAuthStore login failure toast policy', () => {
         vi.useRealTimers();
     });
 
+    test('explains email verification for manual and saved-account login failures', async () => {
+        const store = await createAuthStore();
+        store.loginForm.username = 'tester@example.com';
+        store.loginForm.password = 'password';
+        await failManualLogin(
+            store,
+            makeAuthError('Check your email for verification', 403)
+        );
+        expect(mocks.toast.error).toHaveBeenCalledWith(
+            'message.auth.check_your_email'
+        );
+
+        mocks.toast.error.mockClear();
+        await failSavedAccountLogin(
+            store,
+            makeAuthError('Check your email', 403)
+        );
+        expect(mocks.toast.error).toHaveBeenCalledWith(
+            'message.auth.check_your_email'
+        );
+    });
+
     test('shows a single warning toast on the third manual login failure inside 90 seconds', async () => {
         const store = await createAuthStore();
         store.loginForm.username = 'tester@example.com';

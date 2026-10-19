@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -21,6 +21,7 @@ import {
     changeAppThemeStyle,
     changeHtmlLangAttribute,
     getThemeMode,
+    setSystemIsDarkMode,
     updateTrustColorClasses
 } from '../../shared/utils/base/ui';
 import { computeTrustLevel, getNameColour } from '../../shared/utils';
@@ -547,13 +548,23 @@ export const useAppearanceSettingsStore = defineStore(
             }
         }
 
-        window
-            .matchMedia('(prefers-color-scheme: dark)')
-            .addEventListener('change', async () => {
-                if (themeMode.value === 'system') {
-                    setThemeMode(themeMode.value);
-                }
-            });
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const onMediaTheme = () => {
+            if (themeMode.value === 'system') setThemeMode('system');
+        };
+        const stopNativeTheme = window.electron?.onSystemThemeChanged?.(
+            (_event, isDark) => {
+                setSystemIsDarkMode(isDark);
+                if (themeMode.value === 'system' && isDarkMode.value !== isDark)
+                    setThemeMode('system');
+            }
+        );
+        if (!stopNativeTheme)
+            mediaQuery.addEventListener('change', onMediaTheme);
+        onScopeDispose(() => {
+            stopNativeTheme?.();
+            mediaQuery.removeEventListener('change', onMediaTheme);
+        });
 
         /**
          * @param {string} mode

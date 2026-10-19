@@ -246,10 +246,24 @@
                                     <RefreshCw class="size-4" />
                                     {{ t('dialog.avatar.actions.refresh') }}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem @click="avatarDialogCommand('Share')">
-                                    <Share2 class="size-4" />
-                                    {{ t('dialog.avatar.actions.share') }}
-                                </DropdownMenuItem>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger
+                                        ><Share2 class="size-4 mr-2" />{{
+                                            t('dialog.avatar.actions.share')
+                                        }}</DropdownMenuSubTrigger
+                                    >
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem @click="avatarDialogCommand('Share')"
+                                            ><Copy class="size-4" />{{ t('marketplace.copy_url') }}</DropdownMenuItem
+                                        >
+                                        <DropdownMenuItem @click="copyToClipboard(avatarDialog.ref.name)"
+                                            ><Copy class="size-4" />{{ t('marketplace.copy_name') }}</DropdownMenuItem
+                                        >
+                                        <DropdownMenuItem @click="copyToClipboard(avatarDialog.id)"
+                                            ><Copy class="size-4" />{{ t('marketplace.copy_id') }}</DropdownMenuItem
+                                        >
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     v-if="avatarDialog.isBlocked"
@@ -343,6 +357,14 @@
                 :unmount-on-hide="false"
                 fill
                 @update:modelValue="avatarDialogTabClick">
+                <template #Store>
+                    <StoreBrowser
+                        v-if="avatarDialog.activeTab === 'Store'"
+                        :key="avatarDialog.id"
+                        :entity-id="avatarDialog.id"
+                        :product-id="avatarDialog.ref.productId"
+                        :listings="avatarDialog.ref.publishedListings" />
+                </template>
                 <template #Info>
                     <div class="flex flex-wrap items-start px-2.5" style="max-height: unset">
                         <AvatarDatabaseInfo :avatar="avatarDialog.ref" :metadata="avatarDialog.externalMetadata" />
@@ -378,7 +400,9 @@
                             <div class="mt-2 w-[80%] ml-20">
                                 <Carousel v-if="avatarDialog.galleryImages.length" class="w-full">
                                     <CarouselContent class="h-50">
-                                        <CarouselItem v-for="imageUrl in avatarDialog.galleryImages" :key="imageUrl">
+                                        <CarouselItem
+                                            v-for="(imageUrl, index) in avatarDialog.galleryImages"
+                                            :key="imageUrl">
                                             <div class="relative h-50 w-full">
                                                 <img
                                                     :src="imageUrl"
@@ -393,6 +417,37 @@
                                                     class="absolute inset-0 items-center justify-center bg-muted"
                                                     style="display: none">
                                                     <Image class="size-8 text-muted-foreground" />
+                                                </div>
+                                                <div v-if="canEditGallery" class="absolute top-1 right-1 flex gap-1">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        :disabled="
+                                                            galleryBusy || avatarDialog.galleryLoading || index === 0
+                                                        "
+                                                        :aria-label="t('marketplace.move_left')"
+                                                        @click="editGallery(() => moveGalleryImage(index, -1))"
+                                                        >←</Button
+                                                    >
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        :disabled="
+                                                            galleryBusy ||
+                                                            avatarDialog.galleryLoading ||
+                                                            index === avatarDialog.galleryImages.length - 1
+                                                        "
+                                                        :aria-label="t('marketplace.move_right')"
+                                                        @click="editGallery(() => moveGalleryImage(index, 1))"
+                                                        >→</Button
+                                                    >
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        :disabled="galleryBusy || avatarDialog.galleryLoading"
+                                                        @click="editGallery(() => removeGalleryImage(index))"
+                                                        >{{ t('marketplace.remove_image') }}</Button
+                                                    >
                                                 </div>
                                             </div>
                                         </CarouselItem>
@@ -640,6 +695,9 @@
         DropdownMenuContent,
         DropdownMenuItem,
         DropdownMenuSeparator,
+        DropdownMenuSub,
+        DropdownMenuSubContent,
+        DropdownMenuSubTrigger,
         DropdownMenuTrigger
     } from '../../ui/dropdown-menu';
     import { Badge } from '../../ui/badge';
@@ -657,8 +715,10 @@
 
     import DialogJsonTab from '../DialogJsonTab.vue';
     import AvatarDatabaseInfo from './AvatarDatabaseInfo.vue';
+    import StoreBrowser from '../../marketplace/StoreBrowser.vue';
     import AvatarPerformanceDetails from './AvatarPerformanceDetails.vue';
     import { useAvatarPerformance } from './useAvatarPerformance';
+    import { useAvatarGalleryManagement } from './useAvatarGalleryManagement';
     import ImageCropDialog from '../ImageCropDialog.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
 
@@ -680,6 +740,25 @@
     const uiStore = useUiStore();
 
     const { t } = useI18n();
+    const {
+        canEdit: canEditGallery,
+        busy: galleryBusy,
+        moveImage: moveGalleryImage,
+        removeImage: removeGalleryImage
+    } = useAvatarGalleryManagement(
+        avatarDialog,
+        currentUser,
+        () => modalStore.confirm({ title: t('confirm.title'), description: t('marketplace.confirm_remove_image') }),
+        getAvatarGallery
+    );
+    async function editGallery(action) {
+        try {
+            await action();
+        } catch (error) {
+            console.error('Failed to edit avatar gallery:', error);
+            toast.error(t('marketplace.gallery_error'));
+        }
+    }
 
     const {
         packages: performancePackages,
@@ -697,7 +776,8 @@
             }
             const json = { ...result.fileAnalysis };
             if (Number.isFinite(json.fileSize)) json._fileSize = `${(json.fileSize / 1048576).toFixed(2)} MB`;
-            if (Number.isFinite(json.uncompressedSize)) json._uncompressedSize = `${(json.uncompressedSize / 1048576).toFixed(2)} MB`;
+            if (Number.isFinite(json.uncompressedSize))
+                json._uncompressedSize = `${(json.uncompressedSize / 1048576).toFixed(2)} MB`;
             avatarDialog.value.fileAnalysis[platform] = json;
         },
         (metadata) => {
@@ -736,6 +816,9 @@
 
     const avatarDialogTabs = computed(() => [
         { value: 'Info', label: t('dialog.avatar.info.header') },
+        ...(avatarDialog.value.ref?.publishedListings?.length
+            ? [{ value: 'Store', label: t('marketplace.store') }]
+            : []),
         { value: 'JSON', label: t('dialog.avatar.json.header') }
     ]);
 

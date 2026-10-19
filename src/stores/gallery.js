@@ -269,34 +269,44 @@ export const useGalleryStore = defineStore('Gallery', () => {
         if (instanceStickersCache.value.length > 100) {
             instanceStickersCache.value.shift();
         }
-        const args = await queryRequest.fetch('userInventoryItem', {
-            inventoryId,
-            userId
-        });
+        try {
+            const args = await queryRequest.fetch('userInventoryItem', {
+                inventoryId,
+                userId
+            });
 
-        if (
-            args.json.itemType !== 'sticker' ||
-            !args.json.flags.includes('ugc')
-        ) {
-            // Not a sticker or ugc, skipping
-            return;
-        }
-        const imageUrl = args.json.metadata?.imageUrl ?? args.json.imageUrl;
-        const createdAt = args.json.created_at;
-        const monthFolder = createdAt.slice(0, 7);
-        const fileNameDate = createdAt
-            .replace(/:/g, '-')
-            .replace(/T/g, '_')
-            .replace(/Z/g, '');
-        const fileName = `${displayName}_${fileNameDate}_${inventoryId}.png`;
-        const filePath = await AppApi.SaveStickerToFile(
-            imageUrl,
-            advancedSettingsStore.ugcFolderPath,
-            monthFolder,
-            fileName
-        );
-        if (filePath) {
+            if (
+                args.json.itemType !== 'sticker' ||
+                !args.json.flags.includes('ugc')
+            ) {
+                // Not a sticker or ugc, skipping
+                return;
+            }
+            const imageUrl = args.json.metadata?.imageUrl ?? args.json.imageUrl;
+            const createdAt = args.json.created_at;
+            const monthFolder = createdAt.slice(0, 7);
+            const fileNameDate = createdAt
+                .replace(/:/g, '-')
+                .replace(/T/g, '_')
+                .replace(/Z/g, '');
+            const fileName = `${displayName}_${fileNameDate}_${inventoryId}.png`;
+            const filePath = await AppApi.SaveStickerToFile(
+                imageUrl,
+                advancedSettingsStore.ugcFolderPath,
+                monthFolder,
+                fileName
+            );
+            if (!filePath)
+                throw new Error('Sticker save returned no file path');
             console.log(`Sticker saved to file: ${monthFolder}\\${fileName}`);
+            return filePath;
+        } catch (error) {
+            instanceStickersCache.value = instanceStickersCache.value.filter(
+                (id) => id !== inventoryId
+            );
+            console.error('Failed to save sticker:', error);
+            toast.error(t('compatibility.sticker_save_failed'));
+            return false;
         }
     }
 

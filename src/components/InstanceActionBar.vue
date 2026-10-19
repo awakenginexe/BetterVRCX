@@ -75,6 +75,7 @@
             </TooltipWrapper>
         </div>
 
+        <InstanceManagement v-if="showButtons && instance" :instance="instance" :location="resolvedInstanceLocation" />
         <div
             v-if="showInstanceInfo"
             :class="
@@ -101,6 +102,7 @@
                             </span>
                         </div>
 
+                        <InstanceLanguages :instance="instance" />
                         <span>
                             {{ t('dialog.user.info.instance_game_version') }} {{ instance?.gameServerVersion }}
                         </span>
@@ -135,7 +137,9 @@
                         {{ locationStore.lastLocation.playerList.size }}/{{ instance?.capacity }}
                     </span>
 
-                    <span v-else-if="instance?.userCount"> {{ instance.userCount }}/{{ instance?.capacity }} </span>
+                    <span v-else-if="instance?.userCount != null">
+                        {{ instance.userCount }}/{{ instance?.capacity }}
+                    </span>
                 </div>
             </TooltipWrapper>
 
@@ -190,6 +194,8 @@
 </template>
 
 <script lang="ts" setup>
+    import InstanceLanguages from './dialogs/InstanceLanguages.vue';
+    import InstanceManagement from './dialogs/InstanceManagement.vue';
     import {
         History,
         Loader2,

@@ -231,7 +231,7 @@
                                 :disabled="userDialog.ref.$isModerator"
                                 @click="onCommand('Report Hacking')">
                                 <Flag class="size-4" />
-                                {{ t('dialog.user.actions.report_hacking') }}
+                                {{ t('group_management.report_content') }}
                             </DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>

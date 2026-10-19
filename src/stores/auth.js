@@ -933,14 +933,21 @@ export const useAuthStore = defineStore('Auth', () => {
             headers: {
                 Authorization: `Basic ${auth}`
             }
-        }).then((json) => {
-            const args = {
-                json,
-                origin: true
-            };
-            handleCurrentUserUpdate(json);
-            return args;
-        });
+        })
+            .then((json) => {
+                const args = { json, origin: true };
+                handleCurrentUserUpdate(json);
+                return args;
+            })
+            .catch((err) => {
+                if (
+                    typeof err?.message === 'string' &&
+                    /check your email/i.test(err.message)
+                ) {
+                    toast.error(t('message.auth.check_your_email'));
+                }
+                throw err;
+            });
     }
 
     /**

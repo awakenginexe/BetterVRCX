@@ -21,37 +21,27 @@ function setup(permissions = ['group-roles-manage', 'group-roles-assign']) {
         }
     });
     const api = {
-        getGroup: vi
-            .fn()
-            .mockResolvedValue({
-                json: {
-                    roles: [
-                        owner,
-                        { id: 'manager', order: 1, permissions: [] },
-                        member
-                    ]
-                }
-            }),
-        getGroupRoles: vi
-            .fn()
-            .mockResolvedValue({
-                json: [
+        getGroup: vi.fn().mockResolvedValue({
+            json: {
+                roles: [
                     owner,
                     { id: 'manager', order: 1, permissions: [] },
                     member
                 ]
-            }),
-        getGroupPermissionList: vi
-            .fn()
-            .mockResolvedValue({
-                json: [
-                    {
-                        name: 'group-members-remove',
-                        allowedToAdd: true,
-                        isManagementPermission: true
-                    }
-                ]
-            }),
+            }
+        }),
+        getGroupRoles: vi.fn().mockResolvedValue({
+            json: [owner, { id: 'manager', order: 1, permissions: [] }, member]
+        }),
+        getGroupPermissionList: vi.fn().mockResolvedValue({
+            json: [
+                {
+                    name: 'group-members-remove',
+                    allowedToAdd: true,
+                    isManagementPermission: true
+                }
+            ]
+        }),
         editGroupRole: vi.fn().mockResolvedValue({}),
         createGroupRole: vi.fn().mockResolvedValue({ json: { id: 'new' } }),
         deleteGroupRole: vi.fn().mockResolvedValue({}),

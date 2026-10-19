@@ -20,7 +20,7 @@ function convertFileUrlToImageUrl(
     resolution = 128,
     endpointDomain = AppDebug.endpointDomain
 ) {
-    if (!url) {
+    if (typeof url !== 'string' || !url) {
         return '';
     }
     /**

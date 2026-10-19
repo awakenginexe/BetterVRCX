@@ -1,5 +1,7 @@
 <template>
-    <div v-if="watchState.isLoggedIn" class="bv-main-layout-root flex flex-col flex-1 h-full w-full min-h-0 min-w-0 overflow-hidden">
+    <div
+        v-if="watchState.isLoggedIn"
+        class="bv-main-layout-root flex flex-col flex-1 h-full w-full min-h-0 min-w-0 overflow-hidden">
         <div class="bv-main-shell flex flex-col flex-1 h-full w-full min-h-0 min-w-0 overflow-hidden">
             <SidebarProvider
                 :open="sidebarOpen"
@@ -26,7 +28,11 @@
                         ]"
                         @layout="handleAsideLayout">
                         <template #default>
-                            <ResizablePanel id="main-content-panel" :order="1" :size-unit="asideSizeUnit" :min-size="300">
+                            <ResizablePanel
+                                id="main-content-panel"
+                                :order="1"
+                                :size-unit="asideSizeUnit"
+                                :min-size="300">
                                 <div class="bv-route-content w-full h-full" data-shell-region="content">
                                     <RouterView v-slot="{ Component, route }">
                                         <Transition :name="pageTransitionName" mode="out-in">
@@ -90,6 +96,7 @@
         <SendBoopDialog></SendBoopDialog>
 
         <GlobalToolsDialogs></GlobalToolsDialogs>
+        <InventoryBundleDialog />
 
         <ChangelogDialog></ChangelogDialog>
 
@@ -115,6 +122,7 @@
     import FriendImportDialog from '../Favorites/dialogs/FriendImportDialog.vue';
     import FullscreenImagePreview from '../../components/FullscreenImagePreview.vue';
     import GlobalToolsDialogs from '../Tools/components/GlobalToolsDialogs.vue';
+    import InventoryBundleDialog from '../../components/dialogs/InventoryBundleDialog.vue';
     import InviteGroupDialog from '../../components/dialogs/InviteGroupDialog.vue';
     import LaunchDialog from '../../components/dialogs/LaunchDialog.vue';
     import LaunchOptionsDialog from '../Settings/dialogs/LaunchOptionsDialog.vue';
