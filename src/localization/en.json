@@ -621,7 +621,16 @@
             },
             "mutual_friend": {
                 "tab_label": "Mutual Friend Network",
+                "people_count": "{count} people",
+                "connection_count": "{count} known connections",
+                "legend": "Colors show communities · Size shows connections",
                 "actions": {
+                    "focus_connections": "Focus connections",
+                    "clear_focus": "Clear focus",
+                    "zoom_in": "Zoom in",
+                    "zoom_out": "Zoom out",
+                    "reset_view": "Reset view",
+                    "view_controls": "Graph view controls",
                     "start_fetch": "Start Fetch",
                     "fetch_again": "Fetch Again",
                     "stop": "Stop",

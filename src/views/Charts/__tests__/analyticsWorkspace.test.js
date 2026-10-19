@@ -13,11 +13,22 @@ const mocks = vi.hoisted(() => ({
     echartOff: vi.fn(),
     echartOn: vi.fn(),
     echartSetOption: vi.fn(),
-    echartClear: vi.fn()
+    echartClear: vi.fn(),
+    snapshot: vi.fn().mockResolvedValue(new Map()),
+    watchState: { isFriendsLoaded: false, isLoggedIn: false },
+    graphStatus: {
+        isFetching: true,
+        hasFetched: false,
+        cancelRequested: false
+    },
+    sigma: []
 }));
 
 vi.mock('vue-i18n', () => ({
-    useI18n: () => ({ t: (key) => key })
+    useI18n: () => ({
+        t: (key, values) =>
+            values?.count === undefined ? key : `${key}: ${values.count}`
+    })
 }));
 
 vi.mock('pinia', async (importOriginal) => {
@@ -30,7 +41,7 @@ vi.mock('@/services/database', () => ({
         getHotWorlds: (...args) => mocks.getHotWorlds(...args),
         getHotWorldFriendDetail: (...args) =>
             mocks.getHotWorldFriendDetail(...args),
-        getMutualGraphSnapshot: vi.fn().mockResolvedValue(new Map()),
+        getMutualGraphSnapshot: mocks.snapshot,
         getMutualGraphMeta: vi.fn().mockResolvedValue(new Map())
     }
 }));
@@ -46,7 +57,7 @@ vi.mock('@/composables/useUserDisplay', () => ({
     useUserDisplay: () => ({ userImage: () => '', userStatusClass: () => '' })
 }));
 vi.mock('@/services/watchState', () => ({
-    watchState: { isFriendsLoaded: false, isLoggedIn: false }
+    watchState: mocks.watchState
 }));
 vi.mock('@/services/config', () => ({
     default: {
@@ -76,11 +87,7 @@ vi.mock('@/stores', () => ({
     }),
     useChartsStore: () => ({
         mutualGraphFetchState: { processedFriends: 1 },
-        mutualGraphStatus: {
-            isFetching: true,
-            hasFetched: false,
-            cancelRequested: false
-        },
+        mutualGraphStatus: mocks.graphStatus,
         requestMutualGraphCancel: mocks.cancelGraph,
         fetchMutualGraph: vi.fn(),
         fetchSingleFriendMutuals: vi.fn(),
@@ -151,11 +158,79 @@ vi.mock('echarts', () => ({
 vi.mock('@sigma/node-border', () => ({
     createNodeBorderProgram: () => class {}
 }));
+vi.mock('@sigma/node-image', () => ({
+    createNodeImageProgram: () => class {}
+}));
+vi.mock('sigma/rendering', () => ({
+    createNodeCompoundProgram: () => class {}
+}));
 vi.mock('@sigma/edge-curve', () => ({ default: class {} }));
-vi.mock('graphology', () => ({ default: class {} }));
-vi.mock('sigma', () => ({ default: class {} }));
+vi.mock('sigma', () => ({
+    default: class {
+        constructor(graph, container, settings) {
+            this.graph = graph;
+            this.settings = settings;
+            this.events = {};
+            this.camera = {
+                animate: vi.fn(),
+                animatedZoom: vi.fn(),
+                animatedUnzoom: vi.fn(),
+                animatedReset: vi.fn(),
+                getState: () => ({ x: 0.5, y: 0.5, ratio: 1, angle: 0 }),
+                setState: vi.fn()
+            };
+            mocks.sigma.push(this);
+        }
+        setGraph(graph) {
+            this.graph = graph;
+        }
+        setSetting(key, value) {
+            this.settings[key] = value;
+        }
+        getNodeDisplayData(node) {
+            return this.graph.getNodeAttributes(node);
+        }
+        getCamera() {
+            return this.camera;
+        }
+        getDimensions() {
+            return { width: 1000, height: 700 };
+        }
+        framedGraphToViewport(data) {
+            return { x: data.x, y: data.y };
+        }
+        on(event, callback) {
+            this.events[event] = callback;
+        }
+        removeAllListeners() {
+            this.events = {};
+        }
+        refresh() {}
+        kill() {}
+    }
+}));
 vi.mock('graphology-communities-louvain', () => ({ default: () => ({}) }));
-vi.mock('../graphLayoutWorker.js?worker&inline', () => ({ default: class {} }));
+vi.mock('../graphLayoutWorker.js?worker&inline', () => ({
+    default: class {
+        addEventListener(event, callback) {
+            if (event === 'message') this.receive = callback;
+        }
+        postMessage({ requestId, nodes }) {
+            this.receive({
+                data: {
+                    requestId,
+                    positions: Object.fromEntries(
+                        nodes.map(({ id }, i) => [
+                            id,
+                            { x: i * 100, y: (i % 2) * 100 }
+                        ])
+                    )
+                }
+            });
+        }
+        terminate() {}
+    }
+}));
 
 import HotWorlds from '../components/HotWorlds.vue';
 import InstanceActivity from '../components/InstanceActivity.vue';
@@ -245,6 +320,14 @@ function setClientHeight(element, height) {
 describe('analytics workspace behavior', () => {
     beforeEach(() => {
         installResizeObserver();
+        mocks.watchState.isFriendsLoaded = false;
+        mocks.watchState.isLoggedIn = false;
+        Object.assign(mocks.graphStatus, {
+            isFetching: true,
+            hasFetched: false
+        });
+        mocks.snapshot.mockReset().mockResolvedValue(new Map());
+        mocks.sigma.length = 0;
         mocks.getHotWorlds.mockReset().mockResolvedValue([
             {
                 worldId: 'wrld_1',
@@ -310,6 +393,97 @@ describe('analytics workspace behavior', () => {
         await cancel.trigger('click');
 
         expect(mocks.cancelGraph).toHaveBeenCalledTimes(1);
+    });
+
+    test('focuses cached connections, restores hover focus, and wires camera controls without fetching', async () => {
+        Object.assign(mocks.watchState, {
+            isFriendsLoaded: true,
+            isLoggedIn: true
+        });
+        mocks.graphStatus.isFetching = false;
+        mocks.snapshot.mockResolvedValue(
+            new Map([
+                ['usr_a', ['usr_b']],
+                ['usr_b', ['usr_a']],
+                ['usr_c', []]
+            ])
+        );
+        const bounds = vi
+            .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+            .mockReturnValue({ width: 1000, height: 700 });
+        const wrapper = mount(MutualFriends, {
+            global: { stubs: sharedStubs }
+        });
+        await flushPromises();
+        const renderer = mocks.sigma.at(-1);
+        expect(
+            wrapper.get('[data-testid="mutual-network-counts"]').text()
+        ).toContain('3');
+        expect(renderer.graph.size).toBe(1);
+        const node = (id) =>
+            renderer.settings.nodeReducer(
+                id,
+                renderer.graph.getNodeAttributes(id)
+            );
+        const edge = renderer.graph.edges()[0];
+
+        wrapper.vm.navigateToFriend('usr_a');
+        await nextTick();
+        expect(node('usr_a').forceLabel).toBe(true);
+        expect(node('usr_c').label).toBe('');
+        expect(node('usr_c').image).toBeNull();
+        expect(renderer.camera.animate).toHaveBeenCalledWith(
+            expect.objectContaining({ x: 50, y: 50, ratio: 0.3 }),
+            expect.any(Object)
+        );
+        expect(renderer.settings.edgeReducer(edge, {}).hidden).toBe(false);
+        renderer.events.enterNode({ node: 'usr_c' });
+        expect(renderer.settings.edgeReducer(edge, {}).hidden).toBe(true);
+        renderer.events.leaveNode();
+        expect(node('usr_a').forceLabel).toBe(true);
+        expect(renderer.settings.edgeReducer(edge, {}).hidden).toBe(false);
+
+        await wrapper
+            .get('[aria-label="view.charts.mutual_friend.actions.zoom_in"]')
+            .trigger('click');
+        await wrapper
+            .get('[aria-label="view.charts.mutual_friend.actions.zoom_out"]')
+            .trigger('click');
+        expect(renderer.camera.animatedZoom).toHaveBeenCalledOnce();
+        expect(renderer.camera.animatedUnzoom).toHaveBeenCalledOnce();
+        await wrapper
+            .get('[aria-label="view.charts.mutual_friend.actions.reset_view"]')
+            .trigger('click');
+        expect(renderer.camera.animatedReset).toHaveBeenCalledOnce();
+        expect(node('usr_c').label).toBe('usr_c');
+        expect(mocks.snapshot).toHaveBeenCalledOnce();
+        wrapper.vm.navigateToFriend('usr_a');
+        await nextTick();
+        await wrapper.vm.applyGraph(
+            new Map([
+                [
+                    'usr_d',
+                    { friend: { id: 'usr_d' }, mutuals: [{ id: 'usr_b' }] }
+                ],
+                ['usr_c', { friend: { id: 'usr_c' }, mutuals: [] }]
+            ])
+        );
+        await nextTick();
+        expect(wrapper.find('.mutual-network__selection').exists()).toBe(false);
+        expect(
+            wrapper.vm.excludePickerGroups[0].items.map((item) => item.value)
+        ).toEqual(['usr_b', 'usr_c', 'usr_d']);
+        const frame = vi
+            .spyOn(window, 'requestAnimationFrame')
+            .mockReturnValue(42);
+        const cancelFrame = vi.spyOn(window, 'cancelAnimationFrame');
+        mocks.resizeObservers.forEach((observer) => observer.callback());
+        expect(frame).toHaveBeenCalledOnce();
+        wrapper.unmount();
+        expect(cancelFrame).toHaveBeenCalledWith(42);
+        frame.mockRestore();
+        cancelFrame.mockRestore();
+        bounds.mockRestore();
     });
 
     test('runs Instance Activity date navigation and detail filter controls through their composable callbacks', async () => {

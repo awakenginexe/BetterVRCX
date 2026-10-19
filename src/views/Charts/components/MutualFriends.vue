@@ -3,6 +3,14 @@
         <div
             class="analytics-workspace__content mt-0 flex min-h-0 flex-1 flex-col items-center pt-3"
             ref="mutualGraphRef">
+            <div class="mutual-network__heading">
+                <h2>{{ t('view.charts.mutual_friend.tab_label') }}</h2>
+                <span v-if="graphReady" data-testid="mutual-network-counts">
+                    {{ t('view.charts.mutual_friend.people_count', { count: graphNodeCount }) }}
+                    <span aria-hidden="true"> · </span>
+                    {{ t('view.charts.mutual_friend.connection_count', { count: graphEdgeCount }) }}
+                </span>
+            </div>
             <div class="analytics-workspace__toolbar w-full">
                 <div class="analytics-workspace__title">
                     <div>
@@ -246,31 +254,80 @@
                 </div>
             </div>
 
-            <ContextMenu @update:open="onNodeMenuOpenChange">
-                <ContextMenuTrigger as-child>
-                    <div
-                        v-show="!(hasFetched && !isFetching && !graphReady)"
-                        ref="graphContainerRef"
-                        class="analytics-workspace__graph mt-3 min-h-[360px] w-full flex-1 rounded-lg bg-transparent"
-                        :style="{ backgroundColor: canvasBackground }"></div>
-                </ContextMenuTrigger>
-                <ContextMenuContent v-if="contextMenuNodeId" class="min-w-40">
-                    <ContextMenuItem @click="handleNodeMenuViewDetails">
-                        <UserIcon class="size-4" />
+            <div
+                v-show="!(hasFetched && !isFetching && !graphReady)"
+                class="mutual-network__stage"
+                :class="{ 'mutual-network__stage--light': !isDarkMode }">
+                <ContextMenu @update:open="onNodeMenuOpenChange">
+                    <ContextMenuTrigger as-child>
+                        <div
+                            v-show="!(hasFetched && !isFetching && !graphReady)"
+                            ref="graphContainerRef"
+                            class="analytics-workspace__graph mutual-network__canvas"
+                            :style="{ backgroundColor: canvasBackground }"></div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent v-if="contextMenuNodeId" class="min-w-40">
+                        <ContextMenuItem @click="navigateToFriend(contextMenuNodeId)">
+                            <ScanEye class="size-4" />
+                            {{ t('view.charts.mutual_friend.actions.focus_connections') }}
+                        </ContextMenuItem>
+                        <ContextMenuItem @click="handleNodeMenuViewDetails">
+                            <UserIcon class="size-4" />
+                            {{ t('view.charts.mutual_friend.context_menu.view_details') }}
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem @click="handleNodeMenuRefresh">
+                            <RefreshCwIcon class="size-4" />
+                            {{ t('view.charts.mutual_friend.context_menu.refresh_mutuals') }}
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem @click="handleNodeMenuHide">
+                            <EyeOffIcon class="size-4" />
+                            {{ t('view.charts.mutual_friend.context_menu.hide_friend') }}
+                        </ContextMenuItem>
+                    </ContextMenuContent>
+                </ContextMenu>
+                <div v-if="focusedFriend" class="mutual-network__selection">
+                    <div class="min-w-0">
+                        <strong>{{ focusedFriend.name }}</strong>
+                        <span>{{
+                            t('view.charts.mutual_friend.connection_count', { count: focusedFriend.connections })
+                        }}</span>
+                    </div>
+                    <Button size="sm" variant="outline" @click="showUserDialog(selectedFriendId)">
                         {{ t('view.charts.mutual_friend.context_menu.view_details') }}
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem @click="handleNodeMenuRefresh">
-                        <RefreshCwIcon class="size-4" />
-                        {{ t('view.charts.mutual_friend.context_menu.refresh_mutuals') }}
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem @click="handleNodeMenuHide">
-                        <EyeOffIcon class="size-4" />
-                        {{ t('view.charts.mutual_friend.context_menu.hide_friend') }}
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            </ContextMenu>
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        :aria-label="t('view.charts.mutual_friend.actions.clear_focus')"
+                        @click="selectedFriendId = null">
+                        <X />
+                    </Button>
+                </div>
+                <div v-if="graphReady" class="mutual-network__legend">
+                    <span class="mutual-network__legend-colors" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span>{{ t('view.charts.mutual_friend.legend') }}</span>
+                </div>
+                <div
+                    v-if="graphReady"
+                    class="mutual-network__camera"
+                    role="group"
+                    :aria-label="t('view.charts.mutual_friend.actions.view_controls')">
+                    <TooltipWrapper
+                        v-for="control in cameraControls"
+                        :key="control.action"
+                        :content="t(`view.charts.mutual_friend.actions.${control.action}`)">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            :aria-label="t(`view.charts.mutual_friend.actions.${control.action}`)"
+                            @click="control.run">
+                            <component :is="control.icon" />
+                        </Button>
+                    </TooltipWrapper>
+                </div>
+            </div>
 
             <Empty v-if="hasFetched && !isFetching && !graphReady" class="mt-3 w-full flex-1">
                 <EmptyHeader>
@@ -287,8 +344,8 @@
 <script setup>
     defineOptions({ name: 'ChartsMutual' });
 
-    import { useLocalStorage } from '@vueuse/core';
-    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+    import { useLocalStorage, usePreferredReducedMotion } from '@vueuse/core';
+    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue';
     import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
     import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field';
     import { Empty, EmptyDescription, EmptyHeader } from '@/components/ui/empty';
@@ -303,7 +360,12 @@
         Check as CheckIcon,
         EyeOff as EyeOffIcon,
         RefreshCw as RefreshCwIcon,
+        ScanEye,
         Settings,
+        ZoomIn,
+        ZoomOut,
+        Maximize,
+        X,
         User as UserIcon
     } from 'lucide-vue-next';
     import { Button } from '@/components/ui/button';
@@ -351,6 +413,7 @@
     const { friends } = storeToRefs(friendStore);
     const { currentUser } = storeToRefs(userStore);
     const { isDarkMode } = storeToRefs(appearanceStore);
+    const reducedMotion = usePreferredReducedMotion();
     const cachedUsers = userStore.cachedUsers;
 
     const fetchState = chartsStore.mutualGraphFetchState;
@@ -369,12 +432,12 @@
         '#f472b6', // Rose Pink
         '#818cf8', // Royal Indigo
         '#34d399', // Cyan Green
-        '#e879f9'  // Neon Fuchsia
+        '#e879f9' // Neon Fuchsia
     ];
 
     const NodeBorderProgram = createNodeBorderProgram({
         borders: [
-            { size: { value: 0.18, mode: 'relative' }, color: { attribute: 'borderColor' } },
+            { size: { value: 0.1, mode: 'relative' }, color: { attribute: 'borderColor' } },
             { size: { fill: true }, color: { attribute: 'borderColor' } }
         ]
     });
@@ -388,26 +451,25 @@
     class InnerAvatarImageProgram extends BaseImageProgram {
         processVisibleItem(nodeIndex, startIndex, data) {
             super.processVisibleItem(nodeIndex, startIndex, data);
-            this.array[startIndex + 2] = (data.size || 10) * 0.80;
+            this.array[startIndex + 2] = (data.size || 10) * 0.88;
         }
     }
 
-    const MutualNodeProgram = createNodeCompoundProgram([
-        NodeBorderProgram,
-        InnerAvatarImageProgram
-    ]);
+    const MutualNodeProgram = createNodeCompoundProgram([NodeBorderProgram, InnerAvatarImageProgram]);
 
     const mutualGraphWorkspaceRef = ref(null);
     const graphContainerRef = ref(null);
     const mutualGraphRef = ref(null);
 
     let sigmaInstance = null;
+    let refreshFocus = null;
     let currentGraph = null;
     let resizeObserver = null;
     let mutualGraphResizeObserver = null;
     let pendingRender = null;
+    let pendingResize = null;
     let pendingLayoutUpdate = null;
-    let lastMutualMap = null;
+    const lastMutualMap = shallowRef(null);
     let layoutWorker = null;
     let layoutRequestId = 0;
     const layoutResolvers = new Map();
@@ -585,6 +647,8 @@
     });
 
     const graphNodeCount = ref(0);
+    const graphEdgeCount = ref(0);
+    const focusedFriend = ref(null);
     const isLoadingSnapshot = ref(false);
     const totalFriends = computed(() => friends.value.size);
     const isOptOut = computed(() => Boolean(currentUser.value?.hasSharedConnectionsOptOut));
@@ -604,6 +668,22 @@
     const canvasBackground = computed(() => 'transparent');
 
     const selectedFriendId = ref(null);
+    watch(selectedFriendId, () => refreshFocus?.());
+
+    const cameraControls = [
+        { action: 'zoom_in', icon: ZoomIn, run: () => sigmaInstance?.getCamera().animatedZoom(cameraAnimation()) },
+        { action: 'zoom_out', icon: ZoomOut, run: () => sigmaInstance?.getCamera().animatedUnzoom(cameraAnimation()) },
+        { action: 'reset_view', icon: Maximize, run: resetView }
+    ];
+
+    function cameraAnimation() {
+        return { duration: reducedMotion.value === 'reduce' ? 0 : 250 };
+    }
+
+    function resetView() {
+        selectedFriendId.value = null;
+        sigmaInstance?.getCamera().animatedReset(cameraAnimation());
+    }
 
     const contextMenuNodeId = ref(null);
     const graphMeta = ref(new Map());
@@ -613,9 +693,9 @@
     const excludedFriendIds = useLocalStorage(EXCLUDED_FRIENDS_KEY, []);
 
     watch(excludedFriendIds, async () => {
-        if (lastMutualMap) {
+        if (lastMutualMap.value) {
             try {
-                await applyGraph(lastMutualMap);
+                await applyGraph(lastMutualMap.value);
             } catch (err) {
                 console.error('[MutualNetworkGraph] Failed to apply graph after exclude change', err);
             }
@@ -623,11 +703,11 @@
     });
 
     const excludePickerGroups = computed(() => {
-        if (!lastMutualMap) return [];
+        if (!lastMutualMap.value) return [];
         const currentUserId = currentUser.value?.id;
         const seen = new Set();
         const items = [];
-        for (const [friendId, { mutuals }] of lastMutualMap.entries()) {
+        for (const [friendId, { mutuals }] of lastMutualMap.value.entries()) {
             if (friendId === currentUserId || seen.has(friendId)) continue;
             seen.add(friendId);
             const cached = cachedUsers.get(friendId);
@@ -646,13 +726,30 @@
     });
 
     function navigateToFriend(friendId) {
-        selectedFriendId.value = friendId;
-        if (!friendId || !currentGraph || !sigmaInstance) return;
-        if (!currentGraph.hasNode(friendId)) return;
+        selectedFriendId.value = friendId && currentGraph?.hasNode(friendId) ? friendId : null;
+        if (!selectedFriendId.value || !sigmaInstance) return;
         const nodeDisplayData = sigmaInstance.getNodeDisplayData(friendId);
         if (!nodeDisplayData) return;
         const camera = sigmaInstance.getCamera();
-        camera.animate({ x: nodeDisplayData.x, y: nodeDisplayData.y, ratio: 0.15 }, { duration: 300 });
+        const nodes = [friendId, ...currentGraph.neighbors(friendId)]
+            .map((id) => sigmaInstance.getNodeDisplayData(id))
+            .filter(Boolean);
+        const xs = nodes.map((data) => data.x);
+        const ys = nodes.map((data) => data.y);
+        const points = nodes.map((data) => sigmaInstance.framedGraphToViewport(data));
+        const { width, height } = sigmaInstance.getDimensions();
+        const spanX = Math.max(...points.map((point) => point.x)) - Math.min(...points.map((point) => point.x));
+        const spanY = Math.max(...points.map((point) => point.y)) - Math.min(...points.map((point) => point.y));
+        const ratio =
+            camera.getState().ratio * Math.max(spanX / Math.max(1, width - 160), spanY / Math.max(1, height - 180));
+        camera.animate(
+            {
+                x: (Math.min(...xs) + Math.max(...xs)) / 2,
+                y: (Math.min(...ys) + Math.max(...ys)) / 2,
+                ratio: clampNumber(ratio, 0.3, 3)
+            },
+            cameraAnimation()
+        );
     }
 
     function setMutualGraphHeight() {
@@ -662,19 +759,22 @@
         }
     }
 
+    function refreshOnResize() {
+        if (pendingResize !== null) return;
+        pendingResize = requestAnimationFrame(() => {
+            pendingResize = null;
+            sigmaInstance?.refresh();
+        });
+    }
+
     onMounted(() => {
         loadLayoutSettings();
         nextTick(() => {
             if (!graphContainerRef.value) return;
 
-            resizeObserver = new ResizeObserver(() => {
-                if (sigmaInstance?.refresh) sigmaInstance.refresh();
-            });
+            resizeObserver = new ResizeObserver(refreshOnResize);
             resizeObserver.observe(graphContainerRef.value);
-            mutualGraphResizeObserver = new ResizeObserver(() => {
-                setMutualGraphHeight();
-                if (sigmaInstance?.refresh) sigmaInstance.refresh();
-            });
+            mutualGraphResizeObserver = new ResizeObserver(refreshOnResize);
             mutualGraphResizeObserver.observe(mutualGraphWorkspaceRef.value);
             setMutualGraphHeight();
 
@@ -683,6 +783,10 @@
     });
 
     onBeforeUnmount(() => {
+        if (pendingRender) cancelAnimationFrame(pendingRender);
+        if (pendingResize !== null) cancelAnimationFrame(pendingResize);
+        if (pendingLayoutUpdate) clearTimeout(pendingLayoutUpdate);
+        refreshFocus = null;
         if (resizeObserver) {
             resizeObserver.disconnect();
             resizeObserver = null;
@@ -914,7 +1018,7 @@
             const [a, b] = [source, target].sort();
             const key = `${a}__${b}`;
             if (graph.hasEdge(key)) return;
-            graph.addEdgeWithKey(key, a, b, { size: 0.75 });
+            graph.addEdgeWithKey(key, a, b, { size: 0.55 });
             nodeDegree.set(a, (nodeDegree.get(a) || 0) + 1);
             nodeDegree.set(b, (nodeDegree.get(b) || 0) + 1);
         }
@@ -938,7 +1042,7 @@
 
         nodeIds.forEach((id) => {
             const degree = nodeDegree.get(id) || 0;
-            const size = 10 + (maxDegree ? (degree / maxDegree) * 20 : 0);
+            const size = 7 + (maxDegree ? Math.sqrt(degree / maxDegree) * 10 : 0);
             const label = truncateLabelText(nodeNames.get(id) || id);
 
             const friendEntry = friends.value?.get ? friends.value.get(id) : undefined;
@@ -947,6 +1051,7 @@
 
             const attrs = {
                 label,
+                fullName: nodeNames.get(id) || id,
                 size,
                 image,
                 type: 'mutualNode'
@@ -966,7 +1071,6 @@
             applyEdgeCurvature(graph);
         }
 
-        graphNodeCount.value = graph.order;
         return graph;
     }
 
@@ -983,19 +1087,16 @@
             return;
         }
 
-        const DEFAULT_LABEL_THRESHOLD = 10;
+        const DEFAULT_LABEL_THRESHOLD = 16;
 
         const labelColor = isDarkMode.value ? '#e2e8f0' : '#111827';
-        const EDGE_BASE = isDarkMode.value ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.3)';
+        const EDGE_BASE = isDarkMode.value ? 'rgba(148, 163, 184, 0.18)' : 'rgba(100, 116, 139, 0.22)';
         const EDGE_ACTIVE = isDarkMode.value ? '#38bdf8' : '#0284c7';
 
         let cameraState = null;
 
         if (sigmaInstance && forceRecreate) {
-            try {
-                const cam = sigmaInstance.getCamera?.();
-                cameraState = cam?.getState?.() || null;
-            } catch (e) {}
+            cameraState = sigmaInstance.getCamera().getState();
             sigmaInstance.kill();
             sigmaInstance = null;
         }
@@ -1006,7 +1107,17 @@
                 allowInvalidContainer: true,
                 renderLabels: true,
                 labelRenderedSizeThreshold: DEFAULT_LABEL_THRESHOLD,
+                labelDensity: 0.6,
+                labelGridCellSize: 120,
+                labelSize: 12,
+                labelWeight: '500',
                 labelColor: { color: labelColor },
+                hideEdgesOnMove: true,
+                hideLabelsOnMove: true,
+                stagePadding: 36,
+                minCameraRatio: 0.05,
+                maxCameraRatio: 3,
+                minEdgeThickness: 0.5,
                 defaultEdgeColor: EDGE_BASE,
                 zIndex: true,
                 defaultNodeType: 'mutualNode',
@@ -1016,6 +1127,7 @@
                 edgeProgramClasses: { curve: EdgeCurveProgram },
                 defaultDrawNodeHover: (ctx, data, settings) => {
                     if (!data.label) return;
+                    const fullLabel = currentGraph?.getNodeAttribute(data.key, 'fullName') || data.label;
 
                     const fontSize = settings.labelSize ?? 12;
                     const font = settings.labelFont ?? 'sans-serif';
@@ -1032,7 +1144,7 @@
                         subLine = `${t('view.charts.mutual_friend.context_menu.last_fetched')}: ${dayjs(data.lastFetchedAt).format('YYYY-MM-DD HH:mm')}`;
                     }
 
-                    const labelWidth = ctx.measureText(data.label).width;
+                    const labelWidth = ctx.measureText(fullLabel).width;
                     ctx.font = `${smallFontSize}px ${font}`;
                     const subWidth = subLine ? ctx.measureText(subLine).width : 0;
                     ctx.font = `600 ${fontSize}px ${font}`;
@@ -1069,10 +1181,10 @@
 
                     ctx.fillStyle = isDarkMode.value ? '#f8fafc' : '#0f172a';
                     ctx.font = `600 ${fontSize}px ${font}`;
-                    ctx.fillText(data.label, x + paddingX, y + paddingY + fontSize / 2);
+                    ctx.fillText(fullLabel, x + paddingX, y + paddingY + fontSize / 2);
 
                     if (subLine) {
-                        ctx.fillStyle = data.optedOut ? '#ef4444' : (isDarkMode.value ? '#94a3b8' : '#64748b');
+                        ctx.fillStyle = data.optedOut ? '#ef4444' : isDarkMode.value ? '#94a3b8' : '#64748b';
                         ctx.font = `${smallFontSize}px ${font}`;
                         ctx.fillText(subLine, x + paddingX, y + paddingY + lineHeight + smallFontSize / 2);
                     }
@@ -1088,38 +1200,45 @@
         }
 
         if (cameraState) {
-            try {
-                const cam = sigmaInstance.getCamera?.();
-                cam?.setState?.(cameraState);
-            } catch (e) {}
+            sigmaInstance.getCamera().setState(cameraState);
         }
 
         let hovered = null;
+        let focused = null;
         let neighbors = new Set();
 
-        const rebuildNeighbors = (node) => {
-            neighbors = node ? new Set(graph.neighbors(node)) : new Set();
+        refreshFocus = () => {
+            const selected = selectedFriendId.value;
+            focused = hovered || (selected && graph.hasNode(selected) ? selected : null);
+            neighbors = focused ? new Set(graph.neighbors(focused)) : new Set();
+            focusedFriend.value =
+                selected && graph.hasNode(selected)
+                    ? { name: graph.getNodeAttribute(selected, 'fullName'), connections: graph.degree(selected) }
+                    : null;
+            sigmaInstance.setSetting('labelRenderedSizeThreshold', focused ? 0 : DEFAULT_LABEL_THRESHOLD);
+            sigmaInstance.refresh();
         };
 
         sigmaInstance.setSetting('nodeReducer', (node, data) => {
             const res = { ...data };
 
-            const baseBorderColor = data.optedOut ? '#9ca3af' : (data.borderColor || data.color || '#3b82f6');
+            const baseBorderColor = data.optedOut ? '#9ca3af' : data.borderColor || data.color || '#3b82f6';
             res.borderColor = baseBorderColor;
             res.color = data.color || baseBorderColor;
 
-            if (!hovered) {
+            if (!focused) {
                 res.zIndex = 1;
                 return res;
             }
 
-            const isHover = node === hovered;
+            const isHover = node === focused;
             const isNeighbor = neighbors.has(node);
 
             if (isHover) {
-                res.borderColor = '#facc15';
-                res.size = (data.size || 10) * 1.45;
+                res.borderColor = isDarkMode.value ? '#f8fafc' : '#0f172a';
+                res.size = (data.size || 10) * 1.15;
                 res.label = `${data.label} (${neighbors.size})`;
+                res.forceLabel = true;
                 res.labelColor = isDarkMode.value ? '#ffffff' : '#111827';
                 res.zIndex = 10;
                 return res;
@@ -1127,16 +1246,17 @@
 
             if (isNeighbor) {
                 res.borderColor = baseBorderColor;
-                res.size = (data.size || 10) * 1.2;
+                res.size = (data.size || 10) * 1.05;
                 res.label = data.label;
                 res.labelColor = isDarkMode.value ? '#ffffff' : '#111827';
                 res.zIndex = 5;
                 return res;
             }
 
-            res.borderColor = isDarkMode.value ? 'rgba(148,163,184,0.1)' : 'rgba(100,116,139,0.15)';
-            res.color = isDarkMode.value ? 'rgba(148,163,184,0.05)' : 'rgba(100,116,139,0.08)';
-            res.size = (data.size || 10) * 0.75;
+            res.borderColor = isDarkMode.value ? '#252c38' : '#d9e0e8';
+            res.color = isDarkMode.value ? '#171c25' : '#e2e8f0';
+            res.size = (data.size || 10) * 0.55;
+            res.image = null;
             res.label = '';
             res.zIndex = 0;
             return res;
@@ -1145,20 +1265,20 @@
         sigmaInstance.setSetting('edgeReducer', (edge, data) => {
             const res = { ...data };
 
-            if (!hovered) {
+            if (!focused) {
                 res.hidden = false;
                 res.color = EDGE_BASE;
-                res.size = data.size || 0.75;
+                res.size = data.size || 0.55;
                 return res;
             }
 
             const [s, t] = graph.extremities(edge);
-            const active = s === hovered || t === hovered;
+            const active = s === focused || t === focused;
 
             if (active) {
                 res.hidden = false;
                 res.color = EDGE_ACTIVE;
-                res.size = 1.75;
+                res.size = 1.1;
                 return res;
             }
 
@@ -1170,16 +1290,16 @@
 
         sigmaInstance.on('enterNode', ({ node }) => {
             hovered = node;
-            rebuildNeighbors(node);
-            sigmaInstance.setSetting('labelRenderedSizeThreshold', 0);
-            sigmaInstance.refresh();
+            refreshFocus();
         });
 
         sigmaInstance.on('leaveNode', () => {
             hovered = null;
-            rebuildNeighbors(null);
-            sigmaInstance.setSetting('labelRenderedSizeThreshold', DEFAULT_LABEL_THRESHOLD);
-            sigmaInstance.refresh();
+            refreshFocus();
+        });
+
+        sigmaInstance.on('clickStage', () => {
+            selectedFriendId.value = null;
         });
 
         sigmaInstance.on('clickNode', ({ node }) => {
@@ -1194,13 +1314,16 @@
             contextMenuNodeId.value = null;
         });
 
-        sigmaInstance.refresh();
+        refreshFocus();
     }
 
     async function applyGraph(mutualMap) {
-        lastMutualMap = mutualMap;
+        lastMutualMap.value = mutualMap;
         const graph = await buildGraphFromMutualMap(mutualMap, graphMeta.value);
         currentGraph = graph;
+        graphNodeCount.value = graph.order;
+        graphEdgeCount.value = graph.size;
+        if (selectedFriendId.value && !graph.hasNode(selectedFriendId.value)) selectedFriendId.value = null;
         renderGraph(graph);
     }
 
@@ -1408,6 +1531,135 @@
 </script>
 
 <style scoped>
+    .mutual-network__heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6px 16px;
+        width: 100%;
+        padding: 0 4px 12px;
+    }
+
+    .mutual-network__heading h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 650;
+    }
+
+    .mutual-network__heading > span,
+    .mutual-network__selection span {
+        color: var(--bv-text-muted);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mutual-network__stage {
+        position: relative;
+        isolation: isolate;
+        width: 100%;
+        min-height: 420px;
+        flex: 1;
+        margin-top: 12px;
+        overflow: hidden;
+        border: 1px solid var(--bv-border-default);
+        border-radius: var(--bv-radius-lg);
+        background: radial-gradient(ellipse at 50% 40%, var(--bv-bg-control), transparent 75%);
+    }
+
+    .mutual-network__canvas {
+        position: absolute;
+        inset: 0;
+    }
+
+    .mutual-network__stage--light {
+        background: #f4f6fa;
+    }
+
+    .mutual-network__selection,
+    .mutual-network__camera {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        border: 1px solid var(--bv-border-default);
+        border-radius: 12px;
+        background: var(--bv-bg-control);
+        box-shadow: var(--bv-shadow-sm);
+    }
+
+    .mutual-network__selection {
+        top: 16px;
+        left: 16px;
+        max-width: calc(100% - 32px);
+        padding-left: 12px;
+    }
+
+    .mutual-network__selection strong,
+    .mutual-network__selection span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mutual-network__selection strong {
+        font-size: 13px;
+    }
+
+    .mutual-network__camera {
+        right: 16px;
+        bottom: 16px;
+        gap: 2px;
+    }
+
+    .mutual-network__legend {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: calc(100% - 190px);
+        pointer-events: none;
+        color: var(--bv-text-muted);
+        font-size: 11px;
+    }
+
+    .mutual-network__stage--light .mutual-network__legend {
+        color: #475569;
+    }
+
+    .mutual-network__legend-colors {
+        display: flex;
+        flex-shrink: 0;
+        gap: 3px;
+    }
+
+    .mutual-network__legend-colors i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #38bdf8;
+    }
+
+    .mutual-network__legend-colors i:nth-child(2) {
+        background: #4ade80;
+    }
+    .mutual-network__legend-colors i:nth-child(3) {
+        background: #a78bfa;
+    }
+
+    @container analytics-workspace (max-width: 42rem) {
+        .analytics-workspace__title {
+            flex-wrap: wrap;
+        }
+        .mutual-network__legend {
+            bottom: 76px;
+            max-width: calc(100% - 40px);
+        }
+    }
     .analytics-workspace__content {
         min-height: 0;
     }
@@ -1415,11 +1667,6 @@
     .analytics-workspace__progress {
         border: 1px solid var(--bv-border);
         border-radius: 10px;
-        background: var(--bv-bg-surface);
-    }
-
-    .analytics-workspace__graph {
-        border: 1px solid var(--bv-border);
         background: var(--bv-bg-surface);
     }
 </style>
