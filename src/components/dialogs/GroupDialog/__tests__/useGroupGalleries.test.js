@@ -100,6 +100,39 @@ describe('useGroupGalleries', () => {
         });
     });
 
+    test('exposes loading errors instead of presenting a failed fetch as empty', async () => {
+        const dialog = createGroupDialog({
+            ref: { galleries: [{ id: 'g1' }] }
+        });
+        const state = useGroupGalleries(dialog);
+        queryRequest.fetch.mockRejectedValueOnce(new Error('Unavailable'));
+        await state.getGroupGalleries();
+        expect(state.galleryError.value).toBe('Unavailable');
+        expect(state.isGroupGalleryLoading.value).toBe(false);
+    });
+    test('newer refreshes discard older responses for the same group', async () => {
+        const dialog = createGroupDialog({
+            ref: { galleries: [{ id: 'g1' }] }
+        });
+        const state = useGroupGalleries(dialog);
+        let resolve;
+        queryRequest.fetch
+            .mockReturnValueOnce(
+                new Promise((r) => {
+                    resolve = r;
+                })
+            )
+            .mockResolvedValueOnce({
+                json: [{ id: 'new', groupId: 'grp_1', galleryId: 'g1' }]
+            });
+        const previous = state.getGroupGalleries();
+        await state.getGroupGalleries();
+        resolve({ json: [{ id: 'old', groupId: 'grp_1', galleryId: 'g1' }] });
+        await previous;
+        expect(dialog.value.galleries.g1.map((image) => image.id)).toEqual([
+            'new'
+        ]);
+    });
     describe('getGroupGalleries', () => {
         test('resets galleries and tab before loading', async () => {
             const groupDialog = createGroupDialog({

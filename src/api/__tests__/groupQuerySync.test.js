@@ -56,4 +56,69 @@ describe('group query sync', () => {
             refetchType: 'active'
         });
     });
+
+    test('role and gallery mutations send only their body and refresh scoped data', async () => {
+        mockRequest.mockResolvedValue({ id: 'new' });
+        await groupRequest.createGroupRole({
+            groupId: 'grp_1',
+            name: 'Member'
+        });
+        expect(mockRequest).toHaveBeenLastCalledWith('groups/grp_1/roles', {
+            method: 'POST',
+            params: { name: 'Member' }
+        });
+        await groupRequest.editGroupRole({
+            groupId: 'grp_1',
+            roleId: 'role_1',
+            order: 2
+        });
+        expect(mockRequest).toHaveBeenLastCalledWith(
+            'groups/grp_1/roles/role_1',
+            { method: 'PUT', params: { order: 2 } }
+        );
+        await groupRequest.deleteGroupRole({
+            groupId: 'grp_1',
+            roleId: 'role_1'
+        });
+        await groupRequest.createGroupGallery({
+            groupId: 'grp_1',
+            name: 'Photos'
+        });
+        expect(mockRequest).toHaveBeenLastCalledWith('groups/grp_1/galleries', {
+            method: 'POST',
+            params: { name: 'Photos' }
+        });
+        await groupRequest.editGroupGallery({
+            groupId: 'grp_1',
+            galleryId: 'gal_1',
+            name: 'New'
+        });
+        expect(mockRequest).toHaveBeenLastCalledWith(
+            'groups/grp_1/galleries/gal_1',
+            { method: 'PUT', params: { name: 'New' } }
+        );
+        await groupRequest.deleteGroupGallery({
+            groupId: 'grp_1',
+            galleryId: 'gal_1'
+        });
+        await groupRequest.deleteGroupGalleryImage({
+            groupId: 'grp_1',
+            galleryId: 'gal_1',
+            imageId: 'img_1'
+        });
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(7);
+    });
+
+    test('calendar accepts optional pagination without changing the group id', async () => {
+        mockRequest.mockResolvedValue({});
+        await groupRequest.getGroupCalendar('grp_1', {
+            n: 100,
+            offset: 200,
+            after: '2026-10-19'
+        });
+        expect(mockRequest).toHaveBeenCalledWith('calendar/grp_1', {
+            method: 'GET',
+            params: { n: 100, offset: 200, after: '2026-10-19' }
+        });
+    });
 });

@@ -50,6 +50,10 @@
 
     <!-- Info cards -->
     <div class="flex flex-col gap-2.5">
+        <Button variant="outline" size="sm" class="self-start" @click="rolesOpen = true">{{
+            t('group_management.roles')
+        }}</Button>
+        <GroupRolesDialog v-model:open="rolesOpen" :group="groupDialog.ref" />
         <!-- Description card -->
         <div class="rounded-xl bg-(--profile-card) p-3">
             <div
@@ -226,6 +230,7 @@
     import { useGroupCalendarEvents } from './useGroupCalendarEvents';
 
     import GroupCalendarEventCard from '../../../views/Tools/components/GroupCalendarEventCard.vue';
+    import GroupRolesDialog from './GroupRolesDialog.vue';
     import InstanceActionBar from '../../InstanceActionBar.vue';
     import { showUserDialog } from '../../../coordinators/userCoordinator';
 
@@ -251,6 +256,7 @@
         useGroupCalendarEvents(groupDialog);
 
     const announcementPhotoError = ref(false);
+    const rolesOpen = ref(false);
 
     watch(
         () => groupDialog.value.id,

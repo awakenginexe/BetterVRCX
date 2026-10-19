@@ -87,10 +87,20 @@ vi.mock('../../../../api', () => ({
     queryRequest: {
         fetch: vi.fn().mockResolvedValue({ json: [], params: {} })
     },
+    groupRequest: {
+        createGroupGallery: vi
+            .fn()
+            .mockResolvedValue({ json: { id: 'gal_new', name: 'New' } }),
+        editGroupGallery: vi.fn(),
+        addGroupGalleryImage: vi
+            .fn()
+            .mockResolvedValue({ json: { id: 'img_new', approved: true } })
+    },
     userRequest: {}
 }));
 
 import GroupDialogPhotosTab from '../GroupDialogPhotosTab.vue';
+import { groupRequest } from '../../../../api';
 import { useGroupStore } from '../../../../stores';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -152,7 +162,7 @@ function mountComponent(overrides = {}) {
             ref: {
                 galleries: [...MOCK_GALLERIES]
             },
-            galleries: { ...MOCK_GALLERY_IMAGES },
+            galleries: structuredClone(MOCK_GALLERY_IMAGES),
             ...overrides
         }
     });
@@ -161,6 +171,11 @@ function mountComponent(overrides = {}) {
         global: {
             plugins: [pinia],
             stubs: {
+                GallerySelectDialog: {
+                    props: ['gallerySelectDialog'],
+                    emits: ['select-image'],
+                    template: `<button v-if="gallerySelectDialog.visible" class="select-image" @click="$emit('select-image', { fileId: 'file_new' })">select</button>`
+                },
                 RefreshCw: { template: '<svg class="refresh-icon" />' }
             }
         }
@@ -174,7 +189,58 @@ describe('GroupDialogPhotosTab.vue', () => {
         vi.clearAllMocks();
     });
 
+    test('gallery managers can create a gallery through the form', async () => {
+        const wrapper = mountComponent({
+            ref: {
+                galleries: [],
+                myMember: { permissions: ['group-galleries-manage'] }
+            }
+        });
+        await wrapper
+            .findAll('button')
+            .find((button) => button.text() === 'group_management.new_gallery')
+            .trigger('click');
+        await wrapper.find('input').setValue('New');
+        await wrapper.find('form').trigger('submit');
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(wrapper.text()).toContain('New');
+        expect(wrapper.find('form').exists()).toBe(false);
+    });
+    test('gallery submitters can select an image without gallery management rights', async () => {
+        const wrapper = mountComponent({
+            ref: {
+                galleries: [
+                    { ...MOCK_GALLERIES[0], roleIdsToSubmit: ['submitter'] }
+                ],
+                myMember: { permissions: [], roleIds: ['submitter'] }
+            }
+        });
+        expect(wrapper.text()).not.toContain('group_management.edit');
+        await wrapper
+            .findAll('button')
+            .find((button) => button.text() === 'group_management.add_image')
+            .trigger('click');
+        await wrapper.find('.select-image').trigger('click');
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(groupRequest.addGroupGalleryImage).toHaveBeenCalledWith({
+            groupId: 'grp_1',
+            galleryId: 'g1',
+            fileId: 'file_new'
+        });
+        expect(wrapper.text()).toContain('3');
+    });
     describe('rendering', () => {
+        test('shows gallery creation only to gallery managers', () => {
+            const viewer = mountComponent();
+            expect(viewer.text()).not.toContain('group_management.new_gallery');
+            const manager = mountComponent({
+                ref: {
+                    galleries: [...MOCK_GALLERIES],
+                    myMember: { permissions: ['group-galleries-manage'] }
+                }
+            });
+            expect(manager.text()).toContain('group_management.new_gallery');
+        });
         test('renders gallery names', () => {
             const wrapper = mountComponent();
             expect(wrapper.text()).toContain('Photos');

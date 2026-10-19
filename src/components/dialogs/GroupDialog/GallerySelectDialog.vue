@@ -27,7 +27,7 @@
                     <Button
                         variant="outline"
                         size="sm"
-                        :disabled="!isLocalUserVrcPlusSupporter"
+                        :disabled="!isLocalUserVrcPlusSupporter || uploading"
                         @click="displayGalleryUpload">
                         <Upload />
                         {{ t('dialog.gallery_select.upload') }}
@@ -65,7 +65,9 @@
 
     import { useGalleryStore, useUserStore } from '../../../stores';
     import { vrcPlusIconRequest, vrcPlusImageRequest } from '../../../api';
-    import { computed, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
+
+    const uploading = ref(false);
 
     const { t } = useI18n();
 
@@ -136,7 +138,7 @@
             }
         };
         const files = e.target.files || e.dataTransfer.files;
-        if (!files.length) {
+        if (uploading.value || !isLocalUserVrcPlusSupporter.value || !files.length) {
             return;
         }
         if (files[0].size >= 100000000) {
@@ -151,28 +153,26 @@
             return;
         }
         const r = new FileReader();
-        r.onload = function () {
-            const base64Body = btoa(r.result.toString());
-            if (isLocalUserVrcPlusSupporter.value) {
-                vrcPlusIconRequest.uploadVRCPlusIcon(base64Body).then((args) => {
-                    handleGalleryImageAdd(args);
-                    toast.success(t('message.gallery.uploaded'));
-                    if (Object.keys(VRCPlusIconsTable.value).length !== 0) {
-                        VRCPlusIconsTable.value.unshift(args.json);
-                    }
-                    return args;
-                });
-
-                return;
-            }
-            vrcPlusImageRequest.uploadGalleryImage(base64Body).then((args) => {
+        uploading.value = true;
+        r.onload = async function () {
+            try {
+                const base64Body = btoa(r.result.toString());
+                const icon = props.gallerySelectDialog.isIconGallerySelectDialog;
+                const args = await (icon
+                    ? vrcPlusIconRequest.uploadVRCPlusIcon(base64Body)
+                    : vrcPlusImageRequest.uploadGalleryImage(base64Body));
                 handleGalleryImageAdd(args);
+                (icon ? VRCPlusIconsTable.value : galleryTable.value).unshift(args.json);
                 toast.success(t('message.gallery.uploaded'));
-                if (Object.keys(galleryTable.value).length !== 0) {
-                    galleryTable.value.unshift(args.json);
-                }
-                return args;
-            });
+            } catch (error) {
+                toast.error(error.message || String(error));
+            } finally {
+                uploading.value = false;
+            }
+        };
+        r.onerror = () => {
+            uploading.value = false;
+            toast.error(t('group_management.image_read_failed'));
         };
         r.readAsBinaryString(files[0]);
         clearFile();

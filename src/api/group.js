@@ -692,14 +692,16 @@ const groupReq = {
      * @returns { Promise<{json: any, params}> }
      */
     createGroupRole(params) {
+        const { groupId, ...body } = params;
         return request(`groups/${params.groupId}/roles`, {
             method: 'POST',
-            params
+            params: body
         }).then((json) => {
             const args = {
                 json,
                 params
             };
+            refetchActiveGroupScope(groupId);
             return args;
         });
     },
@@ -719,16 +721,33 @@ const groupReq = {
      * @returns { Promise<{json: any, params}> }
      */
     editGroupRole(params) {
+        const { groupId, roleId, ...body } = params;
         return request(`groups/${params.groupId}/roles/${params.roleId}`, {
             method: 'PUT',
-            params
+            params: body
         }).then((json) => {
             const args = {
                 json,
                 params
             };
+            refetchActiveGroupScope(groupId);
             return args;
         });
+    },
+
+    deleteGroupRole(params) {
+        return request(`groups/${params.groupId}/roles/${params.roleId}`, {
+            method: 'DELETE'
+        }).then((json) => {
+            refetchActiveGroupScope(params.groupId);
+            return { json, params };
+        });
+    },
+
+    getGroupPermissionList(params) {
+        return request(`groups/${params.groupId}/permissions`, {
+            method: 'GET'
+        }).then((json) => ({ json, params }));
     },
 
     getUsersGroupInstances() {
@@ -792,9 +811,69 @@ const groupReq = {
         });
     },
 
-    getGroupCalendar(groupId) {
+    createGroupGallery(params) {
+        const { groupId, ...body } = params;
+        return request(`groups/${groupId}/galleries`, {
+            method: 'POST',
+            params: body
+        }).then((json) => {
+            refetchActiveGroupScope(groupId);
+            return { json, params };
+        });
+    },
+
+    editGroupGallery(params) {
+        const { groupId, galleryId, ...body } = params;
+        return request(`groups/${groupId}/galleries/${galleryId}`, {
+            method: 'PUT',
+            params: body
+        }).then((json) => {
+            refetchActiveGroupScope(groupId);
+            return { json, params };
+        });
+    },
+
+    deleteGroupGallery(params) {
+        return request(
+            `groups/${params.groupId}/galleries/${params.galleryId}`,
+            {
+                method: 'DELETE'
+            }
+        ).then((json) => {
+            refetchActiveGroupScope(params.groupId);
+            return { json, params };
+        });
+    },
+
+    deleteGroupGalleryImage(params) {
+        return request(
+            `groups/${params.groupId}/galleries/${params.galleryId}/images/${params.imageId}`,
+            {
+                method: 'DELETE'
+            }
+        ).then((json) => {
+            refetchActiveGroupScope(params.groupId);
+            return { json, params };
+        });
+    },
+
+    addGroupGalleryImage(params) {
+        return request(
+            `groups/${params.groupId}/galleries/${params.galleryId}/images`,
+            {
+                method: 'POST',
+                params: { fileId: params.fileId }
+            }
+        ).then((json) => {
+            refetchActiveGroupScope(params.groupId);
+            return { json, params };
+        });
+    },
+
+    getGroupCalendar(groupId, params = {}) {
         return request(`calendar/${groupId}`, {
-            method: 'GET'
+            method: 'GET',
+            params
         }).then((json) => {
             const args = {
                 json,
