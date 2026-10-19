@@ -37,6 +37,7 @@
 
 <script setup>
     import { computed, onBeforeMount, onMounted, watch } from 'vue';
+    import { useAppMotion } from './composables/useAppMotion';
 
     import { addGameLogEvent, getGameLogTable } from './coordinators/gameLogCoordinator';
     import {
@@ -84,6 +85,7 @@
     initNoty();
 
     const store = createGlobalStores();
+    useAppMotion();
 
     if (typeof window !== 'undefined') {
         window.$pinia = store;

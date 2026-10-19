@@ -13,6 +13,7 @@
 @import './status-icon.css';
 @import './options-container.css';
 @import './bettervrcx.css';
+@import './motion.css';
 
 @custom-variant dark (&:is(.dark *));
 

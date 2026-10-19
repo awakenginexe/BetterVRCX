@@ -116,13 +116,15 @@
         :class="['w-full', fill ? 'flex min-h-0 flex-col' : '']"
         :unmount-on-hide="unmountOnHide"
         @update:modelValue="onValueChange">
-        <TabsList :class="listClass" :aria-label="ariaLabel || undefined">
+        <TabsList data-slot="tabs-list" :class="listClass" :aria-label="ariaLabel || undefined">
             <TabsIndicator
+                data-slot="tabs-indicator"
                 class="pointer-events-none absolute left-0 bottom-0 h-0.5 w-(--reka-tabs-indicator-size) translate-x-(--reka-tabs-indicator-position) transition-[width,translate] duration-200 ease-out">
                 <div class="h-full w-full rounded-full bg-primary" :style="indicatorStyle" />
             </TabsIndicator>
 
             <TabsTrigger
+                data-slot="tabs-trigger"
                 v-for="it in itemsList"
                 :key="it.value"
                 :value="it.value"
@@ -134,6 +136,7 @@
         </TabsList>
 
         <TabsContent
+            data-slot="tabs-content"
             v-for="it in itemsList"
             :key="it.value"
             :value="it.value"
