@@ -905,6 +905,30 @@ export const useFriendStore = defineStore('Friend', () => {
     /**
      *
      */
+    /**
+     * @param {string} userId
+     * @param {string} lastSeen
+     */
+    function updateFriendLastSeen(userId, lastSeen) {
+        const friend = friends.get(userId);
+        const timestamp = Date.parse(lastSeen);
+        if (
+            !friend?.ref ||
+            !Number.isFinite(timestamp) ||
+            timestamp <= Date.parse(friend.ref.$lastSeen)
+        ) {
+            return;
+        }
+        friend.ref.$lastSeen = lastSeen;
+        if (
+            userStore.userDialog.id === userId &&
+            !(timestamp <= Date.parse(userStore.userDialog.lastSeen))
+        ) {
+            userStore.userDialog.lastSeen = lastSeen;
+        }
+        reindexSortedFriend(friend);
+    }
+
     async function getAllUserMutualCount() {
         if (!friends.size) {
             return;
@@ -1440,6 +1464,7 @@ export const useFriendStore = defineStore('Friend', () => {
         refreshFriends,
         updateOnlineFriendCounter,
         getAllUserStats,
+        updateFriendLastSeen,
         getAllUserMutualCount,
         getAllUserMutualOptedOut,
         initFriendLog,

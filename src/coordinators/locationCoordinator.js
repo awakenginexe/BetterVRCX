@@ -7,6 +7,7 @@ import {
 import { database } from '../services/database';
 import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { useAdvancedSettingsStore } from '../stores/settings/advanced';
+import { useFriendStore } from '../stores/friend';
 import { useGameLogStore } from '../stores/gameLog';
 import { useGameStore } from '../stores/game';
 import { useInstanceStore } from '../stores/instance';
@@ -178,6 +179,9 @@ export function runLastLocationResetFlow(
             time: dateTimeStamp - ref.joinTime
         };
         dataBaseEntries.unshift(entry);
+        if (capturePresence)
+            useFriendStore().updateFriendLastSeen(ref.userId, dateTime);
+
         gameLogStore.addGameLog(entry);
     }
     database.addGamelogJoinLeaveBulk(dataBaseEntries);

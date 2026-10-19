@@ -330,6 +330,10 @@ export const useUserStore = defineStore('User', () => {
 
     const cachedUsers = shallowReactive(new Map());
     const cachedUserIdsByDisplayName = shallowReactive(new Map());
+    const currentUserClientConfig = ref({ accessReduceDecorAnim: false });
+    let clientConfigGeneration = 0;
+    const isClientConfigSaving = ref(false);
+
     const cachedProfileEffects = shallowReactive(new Map());
     const cachedIconFrames = shallowReactive(new Map());
     const cachedNameplateEffects = shallowReactive(new Map());
@@ -412,7 +416,29 @@ export const useUserStore = defineStore('User', () => {
     watch(
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
+            const generation = ++clientConfigGeneration;
+            currentUserClientConfig.value = { accessReduceDecorAnim: false };
+            isClientConfigSaving.value = false;
             if (isLoggedIn) {
+                userRequest
+                    .getClientConfig()
+                    .then(({ json }) => {
+                        if (
+                            generation === clientConfigGeneration &&
+                            watchState.isLoggedIn
+                        ) {
+                            currentUserClientConfig.value = {
+                                accessReduceDecorAnim:
+                                    json?.accessReduceDecorAnim === true
+                            };
+                        }
+                    })
+                    .catch((error) =>
+                        console.error(
+                            'Failed to load user client configuration:',
+                            error
+                        )
+                    );
                 loadCosmeticIndexes();
             } else {
                 currentTravelers.clear();
@@ -952,6 +978,36 @@ export const useUserStore = defineStore('User', () => {
 
     /**
      */
+    async function toggleReducedProfileAnimations() {
+        if (isClientConfigSaving.value || !watchState.isLoggedIn) return;
+        const generation = clientConfigGeneration;
+        const accessReduceDecorAnim =
+            !currentUserClientConfig.value.accessReduceDecorAnim;
+        isClientConfigSaving.value = true;
+        try {
+            if (
+                !(await confirmCurrentUserToggle(
+                    t('profile_improvements.reduced_profile_animations'),
+                    accessReduceDecorAnim
+                )) ||
+                generation !== clientConfigGeneration
+            )
+                return;
+            await userRequest.saveClientConfig({ accessReduceDecorAnim });
+            if (
+                generation === clientConfigGeneration &&
+                watchState.isLoggedIn
+            ) {
+                currentUserClientConfig.value = { accessReduceDecorAnim };
+            }
+        } finally {
+            if (generation === clientConfigGeneration)
+                isClientConfigSaving.value = false;
+        }
+    }
+
+    /**
+     */
     async function toggleAvatarCopying() {
         if (
             !(await confirmCurrentUserToggle(
@@ -1042,6 +1098,9 @@ export const useUserStore = defineStore('User', () => {
         customUserTags,
         cachedUsers,
         cachedUserIdsByDisplayName,
+        currentUserClientConfig,
+        isClientConfigSaving,
+        toggleReducedProfileAnimations,
         cachedProfileEffects,
         cachedIconFrames,
         cachedNameplateEffects,

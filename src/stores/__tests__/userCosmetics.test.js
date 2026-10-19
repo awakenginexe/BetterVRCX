@@ -3,6 +3,9 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 
 const mocks = vi.hoisted(() => ({
+    getClientConfig: vi.fn(),
+    saveClientConfig: vi.fn(),
+    confirm: vi.fn(),
     getProfileEffects: vi.fn(),
     getIconFrames: vi.fn(),
     getNameplateEffects: vi.fn()
@@ -14,7 +17,10 @@ vi.mock('vue-i18n', () => ({
 
 vi.mock('../../api', () => ({
     instanceRequest: {},
-    userRequest: {},
+    userRequest: {
+        getClientConfig: (...args) => mocks.getClientConfig(...args),
+        saveClientConfig: (...args) => mocks.saveClientConfig(...args)
+    },
     cosmeticsRequest: {
         getProfileEffects: (...args) => mocks.getProfileEffects(...args),
         getIconFrames: (...args) => mocks.getIconFrames(...args),
@@ -87,7 +93,7 @@ vi.mock('../location', () => ({
 }));
 
 vi.mock('../modal', () => ({
-    useModalStore: () => ({ confirm: vi.fn() })
+    useModalStore: () => ({ confirm: mocks.confirm })
 }));
 
 vi.mock('../ui', () => ({
@@ -105,6 +111,9 @@ describe('user cosmetic indexes', () => {
         setActivePinia(createPinia());
         const { watchState } = await import('../../services/watchState');
         watchState.isLoggedIn = false;
+        mocks.getClientConfig.mockResolvedValue({
+            json: { accessReduceDecorAnim: true }
+        });
         mocks.getProfileEffects.mockResolvedValue({
             json: [{ id: 'cos_profile', metadata: { assets: [] } }]
         });
@@ -145,4 +154,65 @@ describe('user cosmetic indexes', () => {
         expect(mocks.getIconFrames).toHaveBeenCalledTimes(1);
         expect(mocks.getNameplateEffects).toHaveBeenCalledTimes(1);
     }, 15000);
+});
+
+describe('current user client configuration', () => {
+    test('loads reduced animations and clears account settings on logout', async () => {
+        setActivePinia(createPinia());
+        const { useUserStore } = await import('../user');
+        const { watchState } = await import('../../services/watchState');
+        watchState.isLoggedIn = false;
+        const store = useUserStore();
+        mocks.getClientConfig.mockResolvedValue({
+            json: { accessReduceDecorAnim: true }
+        });
+        watchState.isLoggedIn = true;
+        await flushPromises();
+        expect(store.currentUserClientConfig.accessReduceDecorAnim).toBe(true);
+        watchState.isLoggedIn = false;
+        expect(store.currentUserClientConfig.accessReduceDecorAnim).toBe(false);
+    });
+
+    test('discards configuration that finishes after logout', async () => {
+        setActivePinia(createPinia());
+        const { useUserStore } = await import('../user');
+        const { watchState } = await import('../../services/watchState');
+        watchState.isLoggedIn = false;
+        const store = useUserStore();
+        let resolve;
+        mocks.getClientConfig.mockReturnValue(
+            new Promise((done) => {
+                resolve = done;
+            })
+        );
+        watchState.isLoggedIn = true;
+        watchState.isLoggedIn = false;
+        resolve({ json: { accessReduceDecorAnim: true } });
+        await flushPromises();
+        expect(store.currentUserClientConfig.accessReduceDecorAnim).toBe(false);
+    });
+});
+
+describe('reduced animation setting', () => {
+    test('saves a confirmed change and resumes animations only after success', async () => {
+        setActivePinia(createPinia());
+        const { useUserStore } = await import('../user');
+        const { watchState } = await import('../../services/watchState');
+        watchState.isLoggedIn = false;
+        const store = useUserStore();
+        mocks.getClientConfig.mockResolvedValue({
+            json: { accessReduceDecorAnim: false }
+        });
+        watchState.isLoggedIn = true;
+        await flushPromises();
+        mocks.confirm.mockResolvedValue({ ok: true });
+        mocks.saveClientConfig.mockResolvedValue({
+            json: { accessReduceDecorAnim: true }
+        });
+        await store.toggleReducedProfileAnimations();
+        expect(mocks.saveClientConfig).toHaveBeenCalledWith({
+            accessReduceDecorAnim: true
+        });
+        expect(store.currentUserClientConfig.accessReduceDecorAnim).toBe(true);
+    });
 });

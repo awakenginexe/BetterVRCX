@@ -249,6 +249,7 @@ describe('UserSummaryHeader.vue', () => {
                 }
             });
         currentUserMock.value.id = 'usr_self';
+        delete currentUserMock.value.accountStanding;
         isLocalUserVrcPlusSupporterMock.value = false;
         copyUserDisplayNameMock.mockReset();
         userImageMock.mockClear();
@@ -1063,5 +1064,18 @@ describe('UserSummaryHeader.vue', () => {
         );
         expect(wrapper.find('[data-icon-frame-asset]').exists()).toBe(false);
         expect(wrapper.find('[data-nameplate-effect]').exists()).toBe(false);
+    });
+});
+
+describe('account standing visibility', () => {
+    test('shows account standing only on the signed-in account profile', async () => {
+        userDialogMock.value.loading = false;
+        currentUserMock.value.accountStanding = 'good';
+        const wrapper = mountHeader();
+        expect(wrapper.find('[data-account-standing]').exists()).toBe(false);
+        userDialogMock.value.id = currentUserMock.value.id;
+        userDialogMock.value.ref.id = currentUserMock.value.id;
+        await flushPromises();
+        expect(wrapper.get('[data-account-standing]').text()).toBe('good');
     });
 });

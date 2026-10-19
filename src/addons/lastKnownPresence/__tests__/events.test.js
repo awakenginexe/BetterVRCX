@@ -33,6 +33,7 @@ const state = vi.hoisted(() => {
     const friendStore = {
         friends: new Map(),
         localFavoriteFriends: new Set(),
+        updateFriendLastSeen: vi.fn(),
         pendingOfflineMap: new Map(),
         reindexSortedFriend: noop,
         deleteFriend(id) {
@@ -227,6 +228,7 @@ beforeEach(async () => {
         badges: [],
         $lastFetch: 1000
     });
+    state.friendStore.updateFriendLastSeen.mockClear();
     state.userStore.cachedUsers.clear();
     state.userStore.cachedUsers.set(friend.id, friend);
     state.friendStore.friends.clear();
@@ -260,6 +262,41 @@ afterEach(() => {
 });
 
 describe('real event integration', () => {
+    it('updates last seen for live physical joins, departures and world departure', () => {
+        log('player-joined', 2, 'Friend', friend.id);
+        expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
+            friend.id,
+            '1970-01-01T00:00:02.000Z'
+        );
+        log('player-left', 3, 'Friend', friend.id);
+        expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
+            friend.id,
+            '1970-01-01T00:00:03.000Z'
+        );
+        log('player-joined', 4, 'Friend', friend.id);
+        log('location-destination', 46, 'wrld_c:12');
+        expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
+            friend.id,
+            '1970-01-01T00:00:46.000Z'
+        );
+    });
+
+    it('does not turn replayed game logs into a new last-seen observation', () => {
+        addGameLogEntry(
+            {
+                type: 'player-joined',
+                dt: '1970-01-01T00:00:02.000Z',
+                userId: friend.id,
+                displayName: 'Friend'
+            },
+            tag
+        );
+        runLastLocationResetFlow('1970-01-01T00:00:46.000Z', {
+            capturePresence: false
+        });
+        expect(state.friendStore.updateFriendLastSeen).not.toHaveBeenCalled();
+    });
+
     it('snapshots a fresh physical join when we leave, before synthetic leave history', () => {
         log('player-joined', 2, 'Friend', friend.id);
         expect(store.observations.get(friend.id)?.locationTag).toBe(tag);

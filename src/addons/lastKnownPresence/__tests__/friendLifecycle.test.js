@@ -104,6 +104,7 @@ const user = {
 beforeEach(async () => {
     setActivePinia(createPinia());
     friends = useFriendStore();
+    delete user.$lastSeen;
     presence = useLastKnownPresenceStore();
     await presence.init();
     presence.setEnabled(true);
@@ -134,5 +135,37 @@ describe('friend lifecycle', () => {
         watchState.isLoggedIn = !watchState.isLoggedIn;
         expect(presence.observations.size).toBe(0);
         expect(presence.enabled).toBe(true);
+    });
+});
+
+describe('friend last seen', () => {
+    it('updates the open profile and friend ordering without changing API presence', () => {
+        dependencies.user.userDialog = { id: user.id, lastSeen: '' };
+        friends.updateFriendLastSeen(user.id, '2026-10-19T10:00:00.000Z');
+        expect(friends.friends.get(user.id).ref.$lastSeen).toBe(
+            '2026-10-19T10:00:00.000Z'
+        );
+        expect(dependencies.user.userDialog.lastSeen).toBe(
+            '2026-10-19T10:00:00.000Z'
+        );
+        expect(
+            friends.onlineFriends.some((friend) => friend.id === user.id)
+        ).toBe(true);
+        expect(friends.friends.get(user.id).ref.location).toBe('private');
+    });
+
+    it('ignores stale or malformed observations and unknown users', () => {
+        friends.updateFriendLastSeen(user.id, '2026-10-19T10:00:00.000Z');
+        friends.updateFriendLastSeen(user.id, '2026-10-18T10:00:00.000Z');
+        friends.updateFriendLastSeen(user.id, 'not-a-date');
+        expect(() =>
+            friends.updateFriendLastSeen(
+                'usr_unknown',
+                '2026-10-20T10:00:00.000Z'
+            )
+        ).not.toThrow();
+        expect(friends.friends.get(user.id).ref.$lastSeen).toBe(
+            '2026-10-19T10:00:00.000Z'
+        );
     });
 });

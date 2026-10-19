@@ -68,7 +68,7 @@
         }
     });
 
-    const { cachedNameplateEffects } = storeToRefs(useUserStore());
+    const { cachedNameplateEffects, currentUserClientConfig } = storeToRefs(useUserStore());
     const { displayVRCProfileEffects, alwaysAnimateVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
     const { isAppFocused } = useAppFocus();
     const mainUrl = ref('');
@@ -84,7 +84,11 @@
             Boolean(mainUrl.value && !mainAssetError.value) ||
             Boolean(introUrl.value && !introAssetError.value)
     );
-    const animationsPaused = computed(() => !isAppFocused.value && !alwaysAnimateVRCProfileEffects.value);
+    const animationsPaused = computed(
+        () =>
+            currentUserClientConfig?.value?.accessReduceDecorAnim === true ||
+            (!isAppFocused.value && !alwaysAnimateVRCProfileEffects.value)
+    );
     const introTimer = usePausableTimer(() => {
         introActive.value = false;
     }, animationsPaused);

@@ -166,6 +166,25 @@
                     </TooltipWrapper>
 
                     <TooltipWrapper
+                        v-if="userDialog.id === currentUser.id && currentUser.accountStanding"
+                        side="top"
+                        :content="t('profile_improvements.account_standing')">
+                        <Badge
+                            data-account-standing
+                            variant="outline"
+                            class="h-5 px-1.5 text-[11px] leading-none capitalize"
+                            :class="
+                                currentUser.accountStanding === 'good'
+                                    ? 'text-green-500 border-green-500!'
+                                    : 'text-amber-500 border-amber-500!'
+                            ">
+                            <ShieldCheck v-if="currentUser.accountStanding === 'good'" class="h-2.5 w-2.5" />
+                            <ShieldAlert v-else class="h-2.5 w-2.5" />
+                            {{ currentUser.accountStanding }}
+                        </Badge>
+                    </TooltipWrapper>
+
+                    <TooltipWrapper
                         v-if="userDialog.ref.ageVerified && userDialog.ref.ageVerificationStatus"
                         side="top"
                         :content="t('dialog.user.tags.age_verified')">
@@ -382,6 +401,20 @@
                                 : t('dialog.user.info.avatar_cloning_deny')
                         }}</span>
                     </div>
+                    <button
+                        type="button"
+                        class="flex justify-between items-center text-xs cursor-pointer hover:text-foreground disabled:opacity-50"
+                        :disabled="isClientConfigSaving"
+                        @click="toggleReducedProfileAnimations">
+                        <span class="text-muted-foreground">{{
+                            t('profile_improvements.reduced_profile_animations')
+                        }}</span>
+                        <span class="text-muted-foreground">{{
+                            currentUserClientConfig?.accessReduceDecorAnim
+                                ? t('dialog.user.info.avatar_cloning_allow')
+                                : t('dialog.user.info.avatar_cloning_deny')
+                        }}</span>
+                    </button>
                     <div
                         class="flex justify-between items-center text-xs cursor-pointer hover:text-foreground"
                         @click="toggleDiscordFriendsOptOut">
@@ -509,6 +542,8 @@
         Info,
         Monitor,
         Shield,
+        ShieldCheck,
+        ShieldAlert,
         Smartphone,
         Hand,
         UserPlus,
@@ -575,7 +610,8 @@
 
     const { t } = useI18n();
 
-    const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
+    const { userDialog, currentUser, currentUserClientConfig, isClientConfigSaving, isLocalUserVrcPlusSupporter } =
+        storeToRefs(useUserStore());
     const { isGameRunning } = storeToRefs(useGameStore());
     const { photonLobbyCurrent, photonLobbyAvatars } = storeToRefs(usePhotonStore());
     const { lastLocation } = storeToRefs(useLocationStore());
@@ -757,8 +793,13 @@
         },
         { immediate: true }
     );
-    const { toggleSharedConnectionsOptOut, toggleDiscordFriendsOptOut, toggleAvatarCopying, toggleAllowBooping } =
-        useUserStore();
+    const {
+        toggleSharedConnectionsOptOut,
+        toggleDiscordFriendsOptOut,
+        toggleAvatarCopying,
+        toggleAllowBooping,
+        toggleReducedProfileAnimations
+    } = useUserStore();
 
     const isVrcPlusUser = computed(() =>
         Boolean(

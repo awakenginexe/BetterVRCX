@@ -229,6 +229,8 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             gameLogStore.addGamelogLocationToDatabase(entry);
             break;
         case 'player-joined':
+            if (live) friendStore.updateFriendLastSeen(userId, gameLog.dt);
+
             const joinTime = Date.parse(gameLog.dt);
             const userMap = {
                 displayName: gameLog.displayName,
@@ -288,6 +290,8 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             break;
         case 'player-left':
             if (live) {
+                friendStore.updateFriendLastSeen(userId, gameLog.dt);
+
                 const presence = useLastKnownPresenceStore();
                 if (presence.enabled) presence.playerLeft(userId, location);
             }
@@ -383,7 +387,10 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             if (avatarName === gameLog.avatarName) {
                 break;
             }
-            gameLogStore.state.lastLocationAvatarList.set(gameLog.displayName, gameLog.avatarName);
+            gameLogStore.state.lastLocationAvatarList.set(
+                gameLog.displayName,
+                gameLog.avatarName
+            );
             if (photonStore.photonLoggingEnabled) break;
             if (!avatarName) {
                 break;

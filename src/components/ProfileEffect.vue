@@ -41,7 +41,7 @@
         profileEffect: { type: String, default: '' }
     });
 
-    const { cachedProfileEffects } = storeToRefs(useUserStore());
+    const { cachedProfileEffects, currentUserClientConfig } = storeToRefs(useUserStore());
     const { displayVRCProfileEffects, alwaysAnimateVRCProfileEffects } = storeToRefs(useAppearanceSettingsStore());
     const { isAppFocused } = useAppFocus();
     const mainUrl = ref('');
@@ -50,7 +50,11 @@
     const introDuration = ref(0);
     const mainAssetError = ref(false);
     const introAssetError = ref(false);
-    const animationsPaused = computed(() => !isAppFocused.value && !alwaysAnimateVRCProfileEffects.value);
+    const animationsPaused = computed(
+        () =>
+            currentUserClientConfig?.value?.accessReduceDecorAnim === true ||
+            (!isAppFocused.value && !alwaysAnimateVRCProfileEffects.value)
+    );
     const introTimer = usePausableTimer(() => {
         introActive.value = false;
     }, animationsPaused);

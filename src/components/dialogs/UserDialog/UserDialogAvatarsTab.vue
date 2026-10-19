@@ -3,7 +3,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between">
             <div style="display: flex; align-items: center">
                 <Button
-                    v-if="userDialog.ref.id === currentUser.id"
+                    v-if="userDialog.ref.id === currentUser.id && userDialog.avatarReleaseStatus !== 'licensed'"
                     class="rounded-full"
                     variant="ghost"
                     size="icon-sm"
@@ -13,7 +13,7 @@
                     <RefreshCw v-else />
                 </Button>
                 <Button
-                    v-else
+                    v-else-if="userDialog.ref.id !== currentUser.id"
                     class="rounded-full"
                     variant="ghost"
                     size="icon-sm"
@@ -22,7 +22,7 @@
                     <Spinner v-if="userDialog.isAvatarsLoading" />
                     <RefreshCw v-else />
                 </Button>
-                <span class="ml-1.5 text-sm">{{
+                <span v-if="!showLicensedAvatars" class="ml-1.5 text-sm">{{
                     t('dialog.user.avatars.total_count', { count: userDialogAvatars.length })
                 }}</span>
             </div>
@@ -55,12 +55,18 @@
                             <SelectItem value="all">{{ t('dialog.user.avatars.all') }}</SelectItem>
                             <SelectItem value="public">{{ t('dialog.user.avatars.public') }}</SelectItem>
                             <SelectItem value="private">{{ t('dialog.user.avatars.private') }}</SelectItem>
+                            <SelectItem value="licensed">{{ t('profile_improvements.licensed') }}</SelectItem>
                         </SelectContent>
                     </Select>
                 </template>
             </div>
         </div>
-        <div class="flex flex-wrap items-start" style="margin-top: 8px; min-height: 60px; overflow: auto">
+        <PurchasedAvatars
+            v-if="showLicensedAvatars"
+            :key="currentUser.id"
+            :search-query="avatarSearchQuery"
+            :sorting="userDialog.avatarSorting" />
+        <div v-else class="flex flex-wrap items-start" style="margin-top: 8px; min-height: 60px; overflow: auto">
             <template v-if="filteredUserDialogAvatars.length">
                 <div
                     v-for="avatar in filteredUserDialogAvatars"
@@ -116,6 +122,7 @@
     import { Input } from '@/components/ui/input';
     import { Spinner } from '@/components/ui/spinner';
 
+    import PurchasedAvatars from '../../marketplace/PurchasedAvatars.vue';
     import { refreshUserDialogAvatars } from '@/coordinators/userCoordinator';
 
     import { useAdvancedSettingsStore, useAvatarStore, useUserStore } from '../../../stores';
@@ -130,6 +137,10 @@
     const { cachedAvatars } = useAvatarStore();
 
     const { avatarRemoteDatabase } = storeToRefs(useAdvancedSettingsStore());
+
+    const showLicensedAvatars = computed(
+        () => userDialog.value.ref.id === currentUser.value.id && userDialog.value.avatarReleaseStatus === 'licensed'
+    );
 
     const userDialogAvatars = computed(() => {
         const { avatars, avatarReleaseStatus } = userDialog.value;

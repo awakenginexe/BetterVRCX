@@ -5,6 +5,7 @@ import { nextTick, ref } from 'vue';
 const displayVRCProfileEffects = ref(true);
 const alwaysAnimateVRCProfileEffects = ref(false);
 const isAppFocused = ref(true);
+const currentUserClientConfig = ref({ accessReduceDecorAnim: false });
 const cachedProfileEffects = ref(new Map());
 const cachedNameplateEffects = ref(new Map());
 const cachedIconFrames = ref(new Map());
@@ -20,6 +21,7 @@ vi.mock('../../stores', () => ({
         alwaysAnimateVRCProfileEffects
     }),
     useUserStore: () => ({
+        currentUserClientConfig,
         cachedProfileEffects,
         cachedNameplateEffects,
         cachedIconFrames
@@ -47,6 +49,7 @@ describe('decoration animation focus policy', () => {
         displayVRCProfileEffects.value = true;
         alwaysAnimateVRCProfileEffects.value = false;
         isAppFocused.value = true;
+        currentUserClientConfig.value = { accessReduceDecorAnim: false };
         cachedProfileEffects.value = new Map([
             [
                 'profile',
@@ -121,6 +124,17 @@ describe('decoration animation focus policy', () => {
             ).toBe('true');
 
             alwaysAnimateVRCProfileEffects.value = true;
+            await nextTick();
+            expect(
+                wrapper.get('[data-pausable-image]').attributes('data-paused')
+            ).toBe('false');
+
+            currentUserClientConfig.value.accessReduceDecorAnim = true;
+            await nextTick();
+            expect(
+                wrapper.get('[data-pausable-image]').attributes('data-paused')
+            ).toBe('true');
+            currentUserClientConfig.value.accessReduceDecorAnim = false;
             await nextTick();
             expect(
                 wrapper.get('[data-pausable-image]').attributes('data-paused')

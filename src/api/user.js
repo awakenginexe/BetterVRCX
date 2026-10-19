@@ -15,6 +15,19 @@ function getCurrentUserId() {
 }
 
 const userReq = {
+    saveClientConfig(params) {
+        return request(`users/${getCurrentUserId()}/clientConfig`, {
+            method: 'PUT',
+            params
+        }).then((json) => ({ json, params }));
+    },
+
+    getClientConfig() {
+        return request(`users/${getCurrentUserId()}/clientConfig`, {
+            method: 'GET'
+        }).then((json) => ({ json }));
+    },
+
     /**
      * Fetch user from API.
      * identifier of registered user
