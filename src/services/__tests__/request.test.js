@@ -16,9 +16,62 @@ import {
     parseResponse,
     processBulk,
     shouldIgnoreError,
+    $throw,
     request
 } from '../request.js';
 import webApiService from '../webapi.js';
+import { toast } from 'vue-sonner';
+
+describe('inventory bundle errors', () => {
+    test('explains an empty bundle while preserving the server error for callers', () => {
+        const notify = vi.spyOn(toast, 'error').mockImplementation(() => {});
+        try {
+            expect(() =>
+                $throw(
+                    400,
+                    'No inventoryItems created',
+                    'inventory/inv_old/consume'
+                )
+            ).toThrow(
+                expect.objectContaining({
+                    status: 400,
+                    apiMessage: 'No inventoryItems created'
+                })
+            );
+            expect(notify).toHaveBeenCalledExactlyOnceWith(
+                'Bundle unavailable',
+                expect.objectContaining({
+                    description:
+                        'This bundle has no claimable contents. You can refresh your inventory to try again.'
+                })
+            );
+        } finally {
+            notify.mockRestore();
+        }
+    });
+
+    test.each([
+        [400, 'Other failure', 'inventory/inv_old/consume'],
+        [403, 'No inventoryItems created', 'inventory/inv_old/consume'],
+        [400, 'No inventoryItems created', 'reward/redeem']
+    ])(
+        'keeps normal error feedback for %i %s at %s',
+        (status, message, endpoint) => {
+            const notify = vi
+                .spyOn(toast, 'error')
+                .mockImplementation(() => {});
+            try {
+                expect(() => $throw(status, message, endpoint)).toThrow(
+                    message
+                );
+                expect(notify.mock.calls[0][0]).not.toBe('Bundle unavailable');
+                expect(notify.mock.calls[0][1].description).toContain(message);
+            } finally {
+                notify.mockRestore();
+            }
+        }
+    );
+});
 
 describe('buildRequestInit', () => {
     test('builds GET request with default method', () => {
@@ -279,13 +332,14 @@ describe('processBulk', () => {
         expect(done).toHaveBeenCalledWith(true);
     });
 
-    test('calls done(false) when fn throws', async () => {
-        const fn = vi.fn(() => Promise.reject(new Error('network error')));
+    test('passes the error to done when fn throws', async () => {
+        const error = new Error('network error');
+        const fn = vi.fn(() => Promise.reject(error));
         const done = vi.fn();
 
         await processBulk({ fn, params: { n: 5 }, done });
 
-        expect(done).toHaveBeenCalledWith(false);
+        expect(done).toHaveBeenCalledWith(false, error);
     });
 
     test('increments offset correctly', async () => {

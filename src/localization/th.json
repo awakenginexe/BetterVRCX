@@ -2067,6 +2067,8 @@
             "note": "หมายเหตุ",
             "crop_print_border": "ตัดขอบ Print",
             "consume_bundle": "ใช้",
+            "bundle_unavailable": "ไม่สามารถรับบันเดิลได้",
+            "bundle_no_claimable_contents": "บันเดิลนี้ไม่มีไอเทมที่รับได้ คุณสามารถรีเฟรชคลังไอเทมเพื่อลองอีกครั้ง",
             "item": "ไอเทม",
             "sticker": "สติกเกอร์",
             "drone_skin": "สกินโดรน",

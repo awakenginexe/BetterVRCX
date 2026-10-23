@@ -55,6 +55,18 @@ it('deduplicates overlapping requests and bundle IDs, then suppresses repeat not
     expect(store.inventoryBundleDialog.bundles).toEqual([{ id: 'b' }]);
 });
 
+it('requests active bundles and excludes explicitly archived results', async () => {
+    mocks.getInventoryItems.mockResolvedValue({
+        json: { data: [{ id: 'archived', isArchived: true }, { id: 'active' }] }
+    });
+    const store = useInventoryBundleStore();
+    await store.checkInventoryBundles();
+    expect(mocks.getInventoryItems).toHaveBeenCalledWith(
+        expect.objectContaining({ archived: false, types: 'bundle' })
+    );
+    expect(store.inventoryBundleDialog.bundles).toEqual([{ id: 'active' }]);
+});
+
 it('drops stale results on logout and clears seen IDs for another account', async () => {
     let resolve;
     mocks.getInventoryItems.mockReturnValue(new Promise((r) => (resolve = r)));

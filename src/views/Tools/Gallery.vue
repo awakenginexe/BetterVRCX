@@ -509,7 +509,7 @@
                 <div class="gallery-media-panel">
                     <div class="flex items-center gap-2 flex-wrap">
                         <ButtonGroup>
-                            <Button variant="outline" size="sm" @click="getInventory">
+                            <Button variant="outline" size="sm" @click="refreshInventory">
                                 <RefreshCw />
                                 {{ t('dialog.gallery_icons.refresh') }}
                             </Button>
@@ -563,10 +563,26 @@
                                         item.itemTypeLabel || item.itemType
                                     }}</ItemDescription>
                                 </ItemContent>
-                                <ItemFooter v-if="item.itemType === 'bundle'" class="p-2">
-                                    <Button size="sm" @click="consumeInventoryBundle(item.id)">
-                                        {{ t('dialog.gallery_icons.consume_bundle') }}
+                                <ItemFooter v-if="item.itemType === 'bundle'" class="p-2 flex-col items-start gap-2">
+                                    <Button
+                                        size="sm"
+                                        :disabled="
+                                            consumingInventoryIds.has(item.id) || unavailableInventoryIds.has(item.id)
+                                        "
+                                        @click="consumeInventoryBundle(item.id)">
+                                        {{
+                                            t(
+                                                unavailableInventoryIds.has(item.id)
+                                                    ? 'dialog.gallery_icons.bundle_unavailable'
+                                                    : 'dialog.gallery_icons.consume_bundle'
+                                            )
+                                        }}
                                     </Button>
+                                    <p
+                                        v-if="unavailableInventoryIds.has(item.id)"
+                                        class="text-xs text-muted-foreground">
+                                        {{ t('dialog.gallery_icons.bundle_no_claimable_contents') }}
+                                    </p>
                                 </ItemFooter>
                             </div>
                         </Item>
@@ -594,7 +610,7 @@
         NumberFieldIncrement,
         NumberFieldInput
     } from '@/components/ui/number-field';
-    import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+    import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
     import { ButtonGroup } from '@/components/ui/button-group';
     import { Checkbox } from '@/components/ui/checkbox';
@@ -684,6 +700,18 @@
     const emojiAnimationStyle = ref('Stop');
     const emojiAnimLoopPingPong = ref(false);
     const inventoryTypeFilter = ref('all');
+    const consumingInventoryIds = ref(new Set());
+    const unavailableInventoryIds = ref(new Set());
+    let inventoryAccountGeneration = 0;
+    watch(
+        () => currentUser.value.id,
+        () => {
+            inventoryAccountGeneration++;
+            consumingInventoryIds.value.clear();
+            unavailableInventoryIds.value.clear();
+        },
+        { flush: 'sync' }
+    );
 
     const emojiStylePickerGroups = computed(() => [
         {
@@ -1225,15 +1253,30 @@
         return b64uri.split(',', 2)[1]; // strip data:...;base64,
     }
 
+    function refreshInventory() {
+        unavailableInventoryIds.value.clear();
+        return getInventory();
+    }
+
     /**
-     *
-     * @param inventoryId
+     * @param {string} inventoryId
      */
     async function consumeInventoryBundle(inventoryId) {
+        if (consumingInventoryIds.value.has(inventoryId) || unavailableInventoryIds.value.has(inventoryId)) return;
+        const generation = inventoryAccountGeneration;
+        consumingInventoryIds.value.add(inventoryId);
         try {
-            await inventoryRequest.consumeInventoryBundle({
+            const { json } = await inventoryRequest.consumeInventoryBundle({
                 inventoryId
             });
+            if (generation !== inventoryAccountGeneration) return;
+            if (json?.inventoryItemsCreated === 0) {
+                unavailableInventoryIds.value.add(inventoryId);
+                toast.error(t('dialog.gallery_icons.bundle_unavailable'), {
+                    description: t('dialog.gallery_icons.bundle_no_claimable_contents')
+                });
+                return;
+            }
             currentUserInventory.value.delete(inventoryId);
             const array = inventoryTable.value;
             const { length } = array;
@@ -1245,12 +1288,14 @@
             }
             getInventory();
         } catch (error) {
+            if (generation !== inventoryAccountGeneration) return;
+            if (error.status === 400 && error.apiMessage === 'No inventoryItems created') {
+                unavailableInventoryIds.value.add(inventoryId);
+            }
             console.error('Error consuming inventory bundle:', error);
+        } finally {
+            if (generation === inventoryAccountGeneration) consumingInventoryIds.value.delete(inventoryId);
         }
-        // -- response --
-        // errors: []
-        // inventoryItems : []
-        // inventoryItemsCreated: 0
     }
 
     /**

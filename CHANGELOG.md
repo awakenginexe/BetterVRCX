@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.2.1
+
+This update makes inventory bundles clearer to use, especially older bundles that no longer have anything available to claim.
+
+- If VRChat reports that a bundle has no claimable contents, BetterVRCX now explains this instead of showing a confusing **400 Bad Request** error.
+- That bundle stays in your inventory, with **Consume** disabled until you refresh the inventory. Nothing is deleted or marked as successfully claimed.
+- Archived items are excluded from the inventory gallery and unopened-bundle notifications.
+- **Consume** is disabled while a request is running to prevent repeated clicks from sending the same request twice. Other errors still allow you to retry.
+
+This improves how BetterVRCX handles unavailable bundles; it cannot restore rewards that VRChat no longer makes available.
+
 ## 4.2.0
 
 BetterVRCX 4.2.0 brings a cleaner sidebar, smoother navigation, and a Mutual Friend Network that is easier to explore. This update also adds official VRChat Marketplace browsing and more ways to manage your avatars, groups, and instances.

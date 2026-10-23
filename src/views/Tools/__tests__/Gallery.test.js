@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 
@@ -8,7 +8,8 @@ const mocks = vi.hoisted(() => ({
     getInventory: vi.fn(),
     saveProfile: vi.fn(),
     getCurrentUser: vi.fn(),
-    updateUserDialogProfile: vi.fn()
+    updateUserDialogProfile: vi.fn(),
+    consumeInventoryBundle: vi.fn()
 }));
 
 const currentUser = ref({
@@ -17,6 +18,7 @@ const currentUser = ref({
     currentAvatarImageUrl: ''
 });
 const vrcPlusSupporter = ref(true);
+const inventoryCache = ref(new Map());
 
 const galleryStore = {
     galleryTable: ref([]),
@@ -53,7 +55,7 @@ vi.mock('../../../coordinators/userCoordinator', () => ({
     updateUserDialogProfile: (...args) => mocks.updateUserDialogProfile(...args)
 }));
 vi.mock('../../../stores', () => ({
-    useAdvancedSettingsStore: () => ({ currentUserInventory: ref([]) }),
+    useAdvancedSettingsStore: () => ({ currentUserInventory: inventoryCache }),
     useAuthStore: () => ({
         cachedConfig: ref({ maxUserEmoji: 64, maxUserStickers: 64 })
     }),
@@ -66,7 +68,10 @@ vi.mock('../../../stores', () => ({
     })
 }));
 vi.mock('../../../api', () => ({
-    inventoryRequest: {},
+    inventoryRequest: {
+        consumeInventoryBundle: (...args) =>
+            mocks.consumeInventoryBundle(...args)
+    },
     miscRequest: {},
     userRequest: { saveProfile: (...args) => mocks.saveProfile(...args) },
     vrcPlusIconRequest: {},
@@ -118,7 +123,7 @@ const Button = {
 };
 const Passthrough = { template: '<div><slot /></div>' };
 
-function mountIconGallery() {
+function mountIconGallery(tab = 'icons') {
     galleryStore.VRCPlusIconsTable.value = [
         {
             id: 'file_1',
@@ -130,6 +135,14 @@ function mountIconGallery() {
             stubs: {
                 Button,
                 ButtonGroup: Passthrough,
+                Select: Passthrough,
+                SelectTrigger: Passthrough,
+                SelectValue: Passthrough,
+                SelectContent: Passthrough,
+                SelectGroup: Passthrough,
+                SelectItem: Passthrough,
+                Location: Passthrough,
+                DisplayName: Passthrough,
                 TabsUnderline: {
                     props: ['items'],
                     data: () => ({ activeTab: 'gallery' }),
@@ -144,7 +157,8 @@ function mountIconGallery() {
         }
     });
     return wrapper
-        .findAll('[data-testid="gallery-tab"]')[1]
+        .findAll('[data-testid="gallery-tab"]')
+        .find((button) => button.text() === tab)
         .trigger('click')
         .then(() => wrapper);
 }
@@ -162,6 +176,147 @@ describe('Gallery', () => {
             json: { iconUrl: 'https://example.com/file/file_1/1' }
         });
         mocks.getCurrentUser.mockResolvedValue({ json: { id: 'usr_me' } });
+        galleryStore.inventoryTable.value = [];
+        inventoryCache.value.clear();
+        mocks.consumeInventoryBundle.mockReset();
+    });
+    afterEach(() => vi.restoreAllMocks());
+
+    const bundle = {
+        id: 'inv_bundle',
+        name: 'Old gift',
+        itemType: 'bundle',
+        itemTypeLabel: 'Bundle'
+    };
+    const unavailable = () =>
+        Object.assign(new Error('No inventoryItems created'), {
+            status: 400,
+            apiMessage: 'No inventoryItems created'
+        });
+    const consumeButton = (wrapper) => wrapper.find('footer button');
+
+    it('preserves an unavailable bundle and disables consume until inventory refresh', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        galleryStore.inventoryTable.value = [bundle];
+        inventoryCache.value.set(bundle.id, bundle);
+        mocks.consumeInventoryBundle.mockRejectedValueOnce(unavailable());
+        const wrapper = await mountIconGallery('inventory');
+        await consumeButton(wrapper).trigger('click');
+        await flushPromises();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeDefined();
+        expect(wrapper.text()).toContain(
+            'dialog.gallery_icons.bundle_no_claimable_contents'
+        );
+        expect(galleryStore.inventoryTable.value).toEqual([bundle]);
+        expect(inventoryCache.value.has(bundle.id)).toBe(true);
+        expect(mocks.getInventory).not.toHaveBeenCalled();
+        await consumeButton(wrapper).trigger('click');
+        expect(mocks.consumeInventoryBundle).toHaveBeenCalledTimes(1);
+        await wrapper
+            .findAll('button')
+            .find((b) => b.text().includes('dialog.gallery_icons.refresh'))
+            .trigger('click');
+        expect(mocks.getInventory).toHaveBeenCalledOnce();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeUndefined();
+        wrapper.unmount();
+    });
+
+    it('prevents overlapping consumes and refreshes inventory only after success', async () => {
+        let resolve;
+        mocks.consumeInventoryBundle.mockReturnValue(
+            new Promise((r) => {
+                resolve = r;
+            })
+        );
+        galleryStore.inventoryTable.value = [bundle];
+        inventoryCache.value.set(bundle.id, bundle);
+        const wrapper = await mountIconGallery('inventory');
+        await consumeButton(wrapper).trigger('click');
+        expect(consumeButton(wrapper).attributes('disabled')).toBeDefined();
+        await consumeButton(wrapper).trigger('click');
+        expect(mocks.consumeInventoryBundle).toHaveBeenCalledOnce();
+        resolve({
+            json: {
+                inventoryItemsCreated: 1,
+                inventoryItems: [{ id: 'inv_reward' }]
+            }
+        });
+        await flushPromises();
+        expect(galleryStore.inventoryTable.value).toEqual([]);
+        expect(inventoryCache.value.has(bundle.id)).toBe(false);
+        expect(mocks.getInventory).toHaveBeenCalledOnce();
+        wrapper.unmount();
+    });
+
+    it('preserves a bundle when a successful response reports zero items created', async () => {
+        mocks.consumeInventoryBundle.mockResolvedValueOnce({
+            json: { inventoryItemsCreated: 0, inventoryItems: [] }
+        });
+        galleryStore.inventoryTable.value = [bundle];
+        inventoryCache.value.set(bundle.id, bundle);
+        const wrapper = await mountIconGallery('inventory');
+        await consumeButton(wrapper).trigger('click');
+        await flushPromises();
+        expect(galleryStore.inventoryTable.value).toEqual([bundle]);
+        expect(inventoryCache.value.has(bundle.id)).toBe(true);
+        expect(mocks.getInventory).not.toHaveBeenCalled();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeDefined();
+        expect(toast.error).toHaveBeenCalledWith(
+            'dialog.gallery_icons.bundle_unavailable',
+            {
+                description: 'dialog.gallery_icons.bundle_no_claimable_contents'
+            }
+        );
+        wrapper.unmount();
+    });
+
+    it.each([
+        Object.assign(new Error('Network failure'), { status: 0 }),
+        Object.assign(new Error('Forbidden'), {
+            status: 403,
+            apiMessage: 'No inventoryItems created'
+        })
+    ])('allows retry after unrelated failures: %s', async (error) => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        mocks.consumeInventoryBundle.mockRejectedValueOnce(error);
+        galleryStore.inventoryTable.value = [bundle];
+        const wrapper = await mountIconGallery('inventory');
+        await consumeButton(wrapper).trigger('click');
+        await flushPromises();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeUndefined();
+        expect(wrapper.text()).not.toContain(
+            'dialog.gallery_icons.bundle_no_claimable_contents'
+        );
+        expect(galleryStore.inventoryTable.value).toEqual([bundle]);
+        wrapper.unmount();
+    });
+
+    it('clears unavailable state for a different account and ignores its predecessor request', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        mocks.consumeInventoryBundle.mockRejectedValueOnce(unavailable());
+        galleryStore.inventoryTable.value = [bundle];
+        const wrapper = await mountIconGallery('inventory');
+        await consumeButton(wrapper).trigger('click');
+        await flushPromises();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeDefined();
+        currentUser.value = { id: 'usr_other' };
+        await nextTick();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeUndefined();
+        let reject;
+        mocks.consumeInventoryBundle.mockReturnValueOnce(
+            new Promise((_, r) => {
+                reject = r;
+            })
+        );
+        await consumeButton(wrapper).trigger('click');
+        currentUser.value = { id: 'usr_third' };
+        reject(unavailable());
+        await flushPromises();
+        expect(consumeButton(wrapper).attributes('disabled')).toBeUndefined();
+        expect(wrapper.text()).not.toContain(
+            'dialog.gallery_icons.bundle_no_claimable_contents'
+        );
+        wrapper.unmount();
     });
 
     it('switches Gallery tabs, routes an upload, and refreshes inventory from its tab', async () => {

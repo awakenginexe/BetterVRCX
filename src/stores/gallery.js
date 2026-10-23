@@ -438,7 +438,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
             n: 100,
             offset: 0,
             order: 'newest',
-            notFlags: 'ugc'
+            notFlags: 'ugc',
+            archived: false
         };
         galleryDialogInventoryLoading.value = true;
         try {
@@ -446,6 +447,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
                 params.offset = i * params.n;
                 const args = await inventoryRequest.getInventoryItems(params);
                 for (const item of args.json.data) {
+                    if (item.isArchived === true) continue;
                     advancedSettingsStore.currentUserInventory.set(
                         item.id,
                         item
@@ -458,6 +460,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
             }
             const globalInventory = await inventoryRequest.getGlobalInventory();
             for (const item of globalInventory.json) {
+                if (item.isArchived === true) continue;
                 inventoryTable.value.push(item);
             }
         } catch (error) {

@@ -45,6 +45,7 @@ export const useInventoryBundleStore = defineStore('InventoryBundle', () => {
                     n: 100,
                     offset: 0,
                     types: 'bundle',
+                    archived: false,
                     order: 'newest'
                 });
                 if (requestGeneration !== generation) return;
@@ -54,6 +55,7 @@ export const useInventoryBundleStore = defineStore('InventoryBundle', () => {
                 for (const item of json.data) {
                     if (
                         !item ||
+                        item.isArchived === true ||
                         typeof item.id !== 'string' ||
                         !item.id ||
                         shownIds.has(item.id)

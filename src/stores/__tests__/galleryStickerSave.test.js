@@ -1,7 +1,13 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 
-const mocks = vi.hoisted(() => ({ fetch: vi.fn(), error: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+    fetch: vi.fn(),
+    error: vi.fn(),
+    getInventoryItems: vi.fn(),
+    getGlobalInventory: vi.fn(),
+    inventory: new Map()
+}));
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key) => key }) }));
 vi.mock('vue-sonner', () => ({ toast: { error: mocks.error } }));
 vi.mock('../../shared/utils', () => ({}));
@@ -10,9 +16,18 @@ vi.mock('../../plugins/router', () => ({ router: {} }));
 vi.mock('../../services/watchState', () => ({
     watchState: { isLoggedIn: false }
 }));
-vi.mock('../../api', () => ({ queryRequest: { fetch: mocks.fetch } }));
+vi.mock('../../api', () => ({
+    queryRequest: { fetch: mocks.fetch },
+    inventoryRequest: {
+        getInventoryItems: mocks.getInventoryItems,
+        getGlobalInventory: mocks.getGlobalInventory
+    }
+}));
 vi.mock('../settings/advanced', () => ({
-    useAdvancedSettingsStore: () => ({ ugcFolderPath: 'C:/stickers' })
+    useAdvancedSettingsStore: () => ({
+        ugcFolderPath: 'C:/stickers',
+        currentUserInventory: mocks.inventory
+    })
 }));
 vi.mock('../modal', () => ({ useModalStore: () => ({}) }));
 
@@ -65,4 +80,24 @@ test('treats an empty native save result as a failure', async () => {
         store.trySaveStickerToFile('User', 'usr_user', 'inv_sticker')
     ).resolves.toBe(false);
     expect(mocks.error).toHaveBeenCalled();
+});
+
+test('requests active inventory and excludes archived personal and global items', async () => {
+    mocks.getInventoryItems
+        .mockResolvedValueOnce({
+            json: {
+                data: [{ id: 'active' }, { id: 'archived', isArchived: true }]
+            }
+        })
+        .mockResolvedValueOnce({ json: { data: [] } });
+    mocks.getGlobalInventory.mockResolvedValue({
+        json: [{ id: 'global' }, { id: 'global_archived', isArchived: true }]
+    });
+    const store = useGalleryStore();
+    await store.getInventory();
+    expect(mocks.getInventoryItems).toHaveBeenCalledWith(
+        expect.objectContaining({ archived: false })
+    );
+    expect(store.inventoryTable).toEqual([{ id: 'active' }, { id: 'global' }]);
+    expect([...mocks.inventory.keys()]).toEqual(['active']);
 });

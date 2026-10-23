@@ -2384,6 +2384,8 @@
             "note": "Note",
             "crop_print_border": "Crop Print Border",
             "consume_bundle": "Consume",
+            "bundle_unavailable": "Bundle unavailable",
+            "bundle_no_claimable_contents": "This bundle has no claimable contents. You can refresh your inventory to try again.",
             "item": "Item",
             "sticker": "Sticker",
             "drone_skin": "Drone Skin",

@@ -372,13 +372,25 @@ export function $throw(code, error, endpoint, retryAfter) {
     const text = message.join('\n');
 
     if (text.length && !ignoreError) {
-        toast.error(message[0], {
-            description: message.slice(1).join('\n'),
-            position: 'bottom-left'
-        });
+        const unavailableBundle =
+            code === 400 &&
+            /^inventory\/[^/]+\/consume$/.test(endpoint || '') &&
+            error === 'No inventoryItems created';
+        toast.error(
+            unavailableBundle
+                ? t('dialog.gallery_icons.bundle_unavailable')
+                : message[0],
+            {
+                description: unavailableBundle
+                    ? t('dialog.gallery_icons.bundle_no_claimable_contents')
+                    : message.slice(1).join('\n'),
+                position: 'bottom-left'
+            }
+        );
     }
     const e = Object.assign(new Error(text), {
         status: code,
+        apiMessage: error,
         endpoint,
         retryAfter
     });
