@@ -641,6 +641,7 @@
     } from '../../shared/utils';
     import { inventoryRequest, miscRequest, userRequest, vrcPlusIconRequest, vrcPlusImageRequest } from '../../api';
     import { useAdvancedSettingsStore, useAuthStore, useGalleryStore, useModalStore, useUserStore } from '../../stores';
+    import { useInventoryBundleStore } from '../../stores/inventoryBundle';
     import { readFileAsBase64, withUploadTimeout } from '../../shared/utils/imageUpload';
     import { handleImageUploadInput } from '../../coordinators/imageUploadCoordinator';
     import { emojiAnimationStyleList, emojiAnimationStyleUrl } from '../../shared/constants';
@@ -701,14 +702,14 @@
     const emojiAnimLoopPingPong = ref(false);
     const inventoryTypeFilter = ref('all');
     const consumingInventoryIds = ref(new Set());
-    const unavailableInventoryIds = ref(new Set());
+    const inventoryBundleStore = useInventoryBundleStore();
+    const { unavailableInventoryIds } = storeToRefs(inventoryBundleStore);
     let inventoryAccountGeneration = 0;
     watch(
         () => currentUser.value.id,
         () => {
             inventoryAccountGeneration++;
             consumingInventoryIds.value.clear();
-            unavailableInventoryIds.value.clear();
         },
         { flush: 'sync' }
     );
@@ -1253,8 +1254,8 @@
         return b64uri.split(',', 2)[1]; // strip data:...;base64,
     }
 
-    function refreshInventory() {
-        unavailableInventoryIds.value.clear();
+    async function refreshInventory() {
+        await inventoryBundleStore.retryUnavailableBundles();
         return getInventory();
     }
 
@@ -1266,12 +1267,14 @@
         const generation = inventoryAccountGeneration;
         consumingInventoryIds.value.add(inventoryId);
         try {
+            await inventoryBundleStore.loadBundleState();
+            if (generation !== inventoryAccountGeneration || unavailableInventoryIds.value.has(inventoryId)) return;
             const { json } = await inventoryRequest.consumeInventoryBundle({
                 inventoryId
             });
             if (generation !== inventoryAccountGeneration) return;
             if (json?.inventoryItemsCreated === 0) {
-                unavailableInventoryIds.value.add(inventoryId);
+                await inventoryBundleStore.markInventoryBundleUnavailable(inventoryId);
                 toast.error(t('dialog.gallery_icons.bundle_unavailable'), {
                     description: t('dialog.gallery_icons.bundle_no_claimable_contents')
                 });
@@ -1290,7 +1293,7 @@
         } catch (error) {
             if (generation !== inventoryAccountGeneration) return;
             if (error.status === 400 && error.apiMessage === 'No inventoryItems created') {
-                unavailableInventoryIds.value.add(inventoryId);
+                await inventoryBundleStore.markInventoryBundleUnavailable(inventoryId);
             }
             console.error('Error consuming inventory bundle:', error);
         } finally {

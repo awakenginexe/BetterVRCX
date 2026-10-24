@@ -1,6 +1,8 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { watchState } from '../../../services/watchState';
 
 const mocks = vi.hoisted(() => ({
     loadGalleryData: vi.fn(),
@@ -19,6 +21,30 @@ const currentUser = ref({
 });
 const vrcPlusSupporter = ref(true);
 const inventoryCache = ref(new Map());
+const savedState = new Map();
+let pinia;
+
+vi.mock('../../../services/config', () => ({
+    default: {
+        getObject: async (key, fallback) =>
+            JSON.parse(savedState.get(key) ?? JSON.stringify(fallback)),
+        setObject: async (key, value) => {
+            savedState.set(key, JSON.stringify(value));
+        }
+    }
+}));
+vi.mock('../../../stores/settings/notifications', () => ({
+    useNotificationsSettingsStore: () => ({
+        inventoryBundleNotifications: false
+    })
+}));
+vi.mock('../../../stores/user', () => ({
+    useUserStore: () => ({
+        get currentUser() {
+            return currentUser.value;
+        }
+    })
+}));
 
 const galleryStore = {
     galleryTable: ref([]),
@@ -42,7 +68,13 @@ const galleryStore = {
     showFullscreenImageDialog: vi.fn()
 };
 
-vi.mock('pinia', () => ({ storeToRefs: (store) => store }));
+vi.mock('pinia', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        storeToRefs: (store) => (store.$id ? actual.storeToRefs(store) : store)
+    };
+});
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key) => key }) }));
 vi.mock('vue-router', () => ({
     useRouter: () => ({ push: mocks.routerPush })
@@ -166,6 +198,10 @@ function mountIconGallery(tab = 'icons') {
 describe('Gallery', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        savedState.clear();
+        pinia = createPinia();
+        setActivePinia(pinia);
+        watchState.isLoggedIn = true;
         currentUser.value = {
             id: 'usr_me',
             iconUrl: '',
@@ -180,7 +216,10 @@ describe('Gallery', () => {
         inventoryCache.value.clear();
         mocks.consumeInventoryBundle.mockReset();
     });
-    afterEach(() => vi.restoreAllMocks());
+    afterEach(() => {
+        pinia._s.forEach((store) => store.$dispose());
+        vi.restoreAllMocks();
+    });
 
     const bundle = {
         id: 'inv_bundle',
@@ -216,9 +255,32 @@ describe('Gallery', () => {
             .findAll('button')
             .find((b) => b.text().includes('dialog.gallery_icons.refresh'))
             .trigger('click');
+        await flushPromises();
         expect(mocks.getInventory).toHaveBeenCalledOnce();
         expect(consumeButton(wrapper).attributes('disabled')).toBeUndefined();
         wrapper.unmount();
+    });
+
+    it('keeps an unavailable bundle disabled after reopening Gallery and restarting the store', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        galleryStore.inventoryTable.value = [bundle];
+        mocks.consumeInventoryBundle.mockRejectedValueOnce(unavailable());
+        const first = await mountIconGallery('inventory');
+        await consumeButton(first).trigger('click');
+        await flushPromises();
+        first.unmount();
+        pinia._s.forEach((store) => store.$dispose());
+        pinia = createPinia();
+        setActivePinia(pinia);
+        const restarted = await mountIconGallery('inventory');
+        await flushPromises();
+        expect(consumeButton(restarted).attributes('disabled')).toBeDefined();
+        expect(restarted.text()).toContain(
+            'dialog.gallery_icons.bundle_no_claimable_contents'
+        );
+        expect(mocks.consumeInventoryBundle).toHaveBeenCalledOnce();
+        expect(galleryStore.inventoryTable.value).toEqual([bundle]);
+        restarted.unmount();
     });
 
     it('prevents overlapping consumes and refreshes inventory only after success', async () => {
@@ -396,6 +458,7 @@ describe('Gallery', () => {
                 button.text().includes('dialog.gallery_icons.refresh')
             );
         await refresh.trigger('click');
+        await flushPromises();
 
         expect(mocks.getInventory).toHaveBeenCalledOnce();
         wrapper.unmount();

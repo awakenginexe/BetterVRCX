@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.2.2
+
+This update fixes inventory bundle reminders that kept coming back after restarting BetterVRCX.
+
+- The same bundle popup no longer appears every time you restart the app. BetterVRCX now remembers which bundles it has already shown you, separately for each account.
+- Bundles that VRChat reports as having nothing available to claim stay marked **Bundle unavailable**, even after reopening the gallery or restarting the app.
+- Your bundles stay in your inventory. To try opening an unavailable bundle again, use **Refresh** in the **Inventory** tab.
+- Newly received bundles still trigger notifications.
+
+**After updating:** You may see an existing bundle popup one more time because 4.2.1 did not save reminder history. Version 4.2.2 remembers it after that.
+
 ## 4.2.1
 
 This update makes inventory bundles clearer to use, especially older bundles that no longer have anything available to claim.
