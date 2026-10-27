@@ -114,6 +114,13 @@ const navDefinitions = [
         routeName: 'my-avatars'
     },
     {
+        key: 'found-avatars',
+        icon: 'ri-contacts-book-3-line',
+        tooltip: 'nav_tooltip.found_avatars',
+        labelKey: 'nav_tooltip.found_avatars',
+        routeName: 'found-avatars'
+    },
+    {
         key: 'charts-instance',
         icon: 'ri-bar-chart-horizontal-line',
         tooltip: 'view.charts.instance_activity.header',

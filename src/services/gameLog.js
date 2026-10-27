@@ -60,6 +60,11 @@ class GameLogService {
                 gameLog.url = args[0];
                 break;
 
+            case 'avatar-found':
+                gameLog.avatarId = args[0];
+                gameLog.observerId = args[1];
+                break;
+
             case 'avatar-change':
                 gameLog.displayName = args[0];
                 gameLog.avatarName = args[1];

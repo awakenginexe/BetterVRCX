@@ -315,17 +315,22 @@ export async function lookupAvatars(type, search, options = {}) {
 
     const avatars = new Map();
     if (type === 'search') {
+        if (options.isCurrent?.() === false) return avatars;
         if (/^avtr_[a-zA-Z0-9-]+$/.test(search)) {
             try {
                 const args = await avatarRequest.getAvatar({
                     avatarId: search
                 });
+                if (options.isCurrent?.() === false) return avatars;
                 const ref = applyAvatar(args.json);
+                options.onOfficialAvatar?.(args.json);
                 return new Map([[ref.id, ref]]);
-            } catch {
+            } catch (error) {
+                if (error?.status === 429) throw error;
                 // Private/deleted/unavailable official records may still have database entries.
             }
         }
+        if (options.isCurrent?.() === false) return avatars;
         const result = await avatarSearchService.search(search, {
             mode: avatarProviderStore.avatarSearchMode,
             sources: avatarProviderStore.avatarSearchSources,

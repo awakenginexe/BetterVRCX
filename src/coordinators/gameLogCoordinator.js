@@ -26,6 +26,7 @@ import { toast } from 'vue-sonner';
 
 import { useAdvancedSettingsStore } from '../stores/settings/advanced';
 import { useFriendStore } from '../stores/friend';
+import { useFoundAvatarsStore } from '../stores/foundAvatars';
 import { useGalleryStore } from '../stores/gallery';
 import { useGameStore } from '../stores/game';
 import { useGameLogStore } from '../stores/gameLog';
@@ -139,6 +140,19 @@ export async function tryLoadPlayerList() {
  * @param {string} location
  */
 export function addGameLogEntry(gameLog, location, { live = false } = {}) {
+    if (gameLog.type === 'avatar-found') {
+        if (
+            watchState.isLoggedIn &&
+            gameLog.observerId === useUserStore().currentUser.id
+        ) {
+            void useFoundAvatarsStore().recordObservation({
+                avatarId: gameLog.avatarId,
+                observedAt: gameLog.dt,
+                source: 'log'
+            });
+        }
+        return;
+    }
     const gameLogStore = useGameLogStore();
     const locationStore = useLocationStore();
     const instanceStore = useInstanceStore();

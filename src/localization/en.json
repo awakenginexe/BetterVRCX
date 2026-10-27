@@ -1,4 +1,60 @@
 {
+    "found_avatars": {
+        "subtitle": "Your local history of identified avatars",
+        "import": "Import history",
+        "search": "Filter by avatar, creator, ID or wearer",
+        "auto_lookup": "Automatically look up friends' avatars",
+        "storage_error": "Could not load or save avatar history. Restart BetterVRCX to retry.",
+        "loading": "Loading avatar history",
+        "empty": "No avatars found yet. Import history or encounter an avatar with a recorded ID.",
+        "no_matches": "No avatars match this filter.",
+        "no_image": "No saved image",
+        "unknown_creator": "Unknown creator",
+        "unknown": "Unknown",
+        "first_found": "First found",
+        "first_seen": "First seen",
+        "last_seen": "Last seen",
+        "first_wearer": "First seen on",
+        "lookup": "Search by ID",
+        "retry_search": "Retry search",
+        "change_avatar": "Change into avatar",
+        "changing_avatar": "Checking and changing avatar…",
+        "change_errors": {
+            "not_public": "This avatar is no longer public.",
+            "unavailable": "Could not verify or change this avatar. It may be unavailable; try again later."
+        },
+        "saved_details": "Saved details may be out of date. Searching uses your configured avatar services.",
+        "avatar_id": "Avatar ID",
+        "creator": "Creator",
+        "source": "Discovery source",
+        "lookup_status": "Lookup status",
+        "availability": "VRChat availability",
+        "verified_public": "Public (recently verified)",
+        "unverified_public": "Not verified as currently public. Search by ID to check.",
+        "wearers": "Seen wearing this avatar",
+        "wearers_hint": "Only confirmed users you have observed. ID-only logs do not identify a wearer.",
+        "sources": {
+            "log": "VRChat log",
+            "history": "Your worn-avatar history",
+            "photon": "Observed in game",
+            "self": "Your avatar"
+        },
+        "states": {
+            "not_searched": "Not searched",
+            "searching": "Searching",
+            "found": "Details found",
+            "partial": "Details found; some services were unavailable",
+            "not_found": "Not found",
+            "unavailable": "Search unavailable. You can retry manually.",
+            "disabled": "Enable the remote avatar database in Integrations to search."
+        },
+        "import_states": {
+            "loading": "Importing available history locally; no avatar searches are started.",
+            "complete": "History import complete.",
+            "partial": "History imported; some log files could not be read.",
+            "error": "History import failed. You can retry with Import history."
+        }
+    },
     "avatar_search_v2": {
         "mode": "Avatar search mode",
         "contact": "Public application contact for Avtr.icu",
@@ -100,6 +156,8 @@
         "favorite_worlds": "Favorite Worlds",
         "favorite_avatars": "Favorite Avatars",
         "my_avatars": "My Avatars",
+        "avatars": "Avatars",
+        "found_avatars": "Found Avatars",
         "social": "Social",
         "friend_log": "Friend Log",
         "moderation": "Moderation",

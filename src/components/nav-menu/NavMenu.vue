@@ -22,9 +22,10 @@
                             <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
                                 t('nav_tooltip.home') || t('view.home.title') || 'Home'
                             }}</span>
-                            <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
-                                getNavItemDescription({ key: 'home' })
-                            }}</span>
+                            <span
+                                class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5"
+                                >{{ getNavItemDescription({ key: 'home' }) }}</span
+                            >
                         </div>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -61,13 +62,19 @@
                                                                 :class="{ '-right-1!': isCollapsed }"></span>
                                                         </i>
                                                     </div>
-                                                    <div v-show="!isCollapsed" class="bv-nav-content-box flex flex-col min-w-0 flex-1">
-                                                        <span class="bv-nav-item-title truncate font-medium text-xs leading-tight">{{
-                                                            item.titleIsCustom ? item.title : t(item.title || '')
-                                                        }}</span>
-                                                        <span class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5">{{
-                                                            getNavItemDescription(item)
-                                                        }}</span>
+                                                    <div
+                                                        v-show="!isCollapsed"
+                                                        class="bv-nav-content-box flex flex-col min-w-0 flex-1">
+                                                        <span
+                                                            class="bv-nav-item-title truncate font-medium text-xs leading-tight"
+                                                            >{{
+                                                                item.titleIsCustom ? item.title : t(item.title || '')
+                                                            }}</span
+                                                        >
+                                                        <span
+                                                            class="bv-nav-item-desc text-[11px] text-muted-foreground/75 truncate leading-tight mt-0.5"
+                                                            >{{ getNavItemDescription(item) }}</span
+                                                        >
                                                     </div>
                                                     <span
                                                         v-if="item.action === 'direct-access' && !isCollapsed"
@@ -331,6 +338,7 @@
         moderation: 'nav_desc.moderation',
         notification: 'nav_desc.notification',
         'my-avatars': 'nav_desc.my_avatars',
+        'found-avatars': 'found_avatars.subtitle',
         charts: 'nav_desc.charts',
         'charts-instance': 'nav_desc.charts_instance',
         'charts-mutual': 'nav_desc.charts_mutual',
@@ -394,9 +402,7 @@
         }
         if (isToolItem(item)) {
             const toolShortcut = t('nav_desc.tools');
-            return toolShortcut && toolShortcut !== 'nav_desc.tools'
-                ? toolShortcut
-                : 'Tool shortcut';
+            return toolShortcut && toolShortcut !== 'nav_desc.tools' ? toolShortcut : 'Tool shortcut';
         }
         return '';
     }

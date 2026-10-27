@@ -1,6 +1,7 @@
 import { activityV2 } from './activityV2.js';
 import { avatarFavorites } from './avatarFavorites.js';
 import { avatarTags } from './avatarTags.js';
+import { foundAvatars } from './foundAvatars.js';
 import { feed } from './feed.js';
 import { userProfile } from './userProfile.js';
 import { friendFavorites } from './friendFavorites.js';
@@ -37,6 +38,7 @@ const database = {
     ...memos,
     ...avatarFavorites,
     ...avatarTags,
+    ...foundAvatars,
     ...friendFavorites,
     ...worldFavorites,
     ...tableAlter,
@@ -53,6 +55,7 @@ const database = {
     },
 
     async initUserTables(userId) {
+        await foundAvatars.initFoundAvatarTables(userId);
         dbVars.userId = userId;
         dbVars.userPrefix = userId.replaceAll('-', '').replaceAll('_', '');
         // Fix escape, add underscore if prefix starts with a number

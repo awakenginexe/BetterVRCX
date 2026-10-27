@@ -9,6 +9,7 @@ import { useGameStore } from '../stores/game';
 import { applyPresenceGroups } from './groupCoordinator';
 import { useInstanceStore } from '../stores/instance';
 import { useUserStore } from '../stores/user';
+import { useFoundAvatarsStore } from '../stores/foundAvatars';
 
 /**
  * Runs avatar transition side effects for current user updates.
@@ -29,6 +30,13 @@ export function runAvatarSwapFlow(
         return;
     }
     if (json.currentAvatar !== ref.currentAvatar) {
+        void useFoundAvatarsStore().recordObservation({
+            avatarId: json.currentAvatar,
+            observedAt: new Date(now()).toISOString(),
+            wearerId: ref.id,
+            displayName: ref.displayName,
+            source: 'self'
+        });
         addAvatarToHistory(json.currentAvatar);
         if (gameStore.isGameRunning) {
             addAvatarWearTime(ref.currentAvatar);

@@ -17,6 +17,7 @@ import Login from './../views/Login/Login.vue';
 import MainLayout from '../views/Layout/MainLayout.vue';
 import Moderation from './../views/Moderation/Moderation.vue';
 import MyAvatars from './../views/MyAvatars/MyAvatars.vue';
+import FoundAvatars from './../views/FoundAvatars/FoundAvatars.vue';
 import Notification from './../views/Notifications/Notification.vue';
 import PlayerList from './../views/PlayerList/PlayerList.vue';
 import ScreenshotMetadata from './../views/Tools/ScreenshotMetadata.vue';
@@ -106,6 +107,11 @@ const routes = [
                 path: 'my-avatars',
                 name: 'my-avatars',
                 component: MyAvatars
+            },
+            {
+                path: 'found-avatars',
+                name: 'found-avatars',
+                component: FoundAvatars
             },
             {
                 path: 'notification',

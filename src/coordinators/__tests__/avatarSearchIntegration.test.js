@@ -94,6 +94,51 @@ import {
 import { avatarSearchService } from '../../services/avatarSearch/avatarSearchService';
 import { avatarExternalMetadata } from '../../services/avatarSearch/metadataCache';
 
+it('preserves an official 429 so automatic avatar discovery backs off', async () => {
+    mocks.getAvatar.mockRejectedValue({ status: 429, retryAfter: '120' });
+    await expect(
+        lookupAvatars('search', 'avtr_aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+    ).rejects.toMatchObject({ status: 429, retryAfter: '120' });
+    expect(mocks.execute).not.toHaveBeenCalled();
+});
+
+it('starts no fallback after a pending official lookup is cancelled', async () => {
+    let reject;
+    let current = true;
+    mocks.getAvatar.mockImplementation(
+        () =>
+            new Promise((_resolve, fail) => {
+                reject = fail;
+            })
+    );
+    const pending = lookupAvatars(
+        'search',
+        'avtr_aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        { isCurrent: () => current }
+    );
+    current = false;
+    reject(new Error('unavailable'));
+    expect((await pending).size).toBe(0);
+    expect(mocks.execute).not.toHaveBeenCalled();
+});
+
+it('does not apply an official avatar returned after cancellation', async () => {
+    let resolve;
+    let current = true;
+    const id = 'avtr_aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+    mocks.getAvatar.mockImplementation(
+        () =>
+            new Promise((finish) => {
+                resolve = finish;
+            })
+    );
+    const pending = lookupAvatars('search', id, { isCurrent: () => current });
+    current = false;
+    resolve({ json: { id, name: 'Late', publishedListings: [] } });
+    expect((await pending).size).toBe(0);
+    expect(mocks.avatar.cachedAvatars.has(id)).toBe(false);
+});
+
 beforeEach(() => {
     vi.clearAllMocks();
     avatarSearchService.clear();
@@ -185,13 +230,35 @@ it('does not let an earlier official dialog request overwrite a later avatar', a
     expect(mocks.avatar.avatarDialog.ref.id).toBe('avtr_two');
 });
 it('resolves explicit avatar IDs officially before trying public databases', async () => {
+    const onOfficialAvatar = vi.fn();
     mocks.getAvatar.mockResolvedValue({
         json: { id: 'avtr_one', name: 'Official' }
     });
     expect(
-        (await lookupAvatars('search', 'avtr_one')).get('avtr_one').name
+        (await lookupAvatars('search', 'avtr_one', { onOfficialAvatar })).get(
+            'avtr_one'
+        ).name
     ).toBe('Official');
     expect(mocks.execute).not.toHaveBeenCalled();
+    expect(onOfficialAvatar).toHaveBeenCalledWith({
+        id: 'avtr_one',
+        name: 'Official'
+    });
+});
+it('does not certify historical public metadata from a fallback provider as official availability', async () => {
+    const onOfficialAvatar = vi.fn();
+    mocks.getAvatar.mockRejectedValue({ status: 404 });
+    mocks.execute.mockResolvedValue({
+        status: 200,
+        data: JSON.stringify([
+            { id: 'avtr_one', name: 'Historical', releaseStatus: 'public' }
+        ])
+    });
+    const result = await lookupAvatars('search', 'avtr_one', {
+        onOfficialAvatar
+    });
+    expect(result.get('avtr_one').name).toBe('Historical');
+    expect(onOfficialAvatar).not.toHaveBeenCalled();
 });
 it('clears retained metadata through service lifecycle', () => {
     avatarExternalMetadata.set('avtr_one', { sources: ['avtrdb'] });

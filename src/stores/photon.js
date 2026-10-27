@@ -20,6 +20,7 @@ import { photonEmojis, photonEventType } from '../shared/constants/photon';
 import { AppDebug } from '../services/appConfig';
 import { database } from '../services/database';
 import { useAvatarStore } from './avatar';
+import { useFoundAvatarsStore } from './foundAvatars';
 import { applyAvatar } from '../coordinators/avatarCoordinator';
 import {
     showUserDialog,
@@ -1705,6 +1706,16 @@ export const usePhotonStore = defineStore('Photon', () => {
             return;
         }
         const oldAvatarId = photonLobbyAvatars.value.get(user.id);
+        if (oldAvatarId !== avatar.id) {
+            void useFoundAvatarsStore().recordObservation({
+                avatarId: avatar.id,
+                observedAt: gameLogDate || new Date().toISOString(),
+                wearerId: user.id,
+                displayName: user.displayName,
+                metadata: avatar,
+                source: 'photon'
+            });
+        }
         if (
             oldAvatarId &&
             oldAvatarId !== avatar.id &&

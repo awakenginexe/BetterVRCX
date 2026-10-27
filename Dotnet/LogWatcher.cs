@@ -202,6 +202,7 @@ namespace VRCX
                         continue;
                     }
 
+                    var avatarDiscovery = logContext.FoundAvatars.ReadLine(line);
                     if (DateTime.TryParseExact(
                             line.Substring(0, 19),
                             "yyyy.MM.dd HH:mm:ss",
@@ -230,6 +231,11 @@ namespace VRCX
                         continue;
                     }
 
+                    if (avatarDiscovery != null)
+                    {
+                        AppendLog(new[] { fileInfo.Name, avatarDiscovery.ObservedAt.ToString("O"), "avatar-found", avatarDiscovery.AvatarId, avatarDiscovery.ObserverId });
+                        continue;
+                    }
                     var offset = 34;
                     if (line[offset] == '[')
                     {
@@ -1429,6 +1435,7 @@ namespace VRCX
 
         private class LogContext
         {
+            public readonly FoundAvatarLogReader FoundAvatars = new();
             public bool AudioDeviceChanged;
             public string LastAudioDevice;
             public readonly HashSet<string> VideoPlaybackErrors = new(50);

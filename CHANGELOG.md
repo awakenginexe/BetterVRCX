@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.3.0
+
+Found Avatars gives you a place to revisit avatars you have encountered, without digging through the Feed.
+
+- **Your avatars in one menu.** Open **Avatars** in the sidebar to find **My Avatars** and the new **Found Avatars** collection.
+- **Keep a local avatar history.** Browse saved pictures, creator details, recorded sightings, and known wearers. Each account keeps its own collection after restarting BetterVRCX.
+- **Bring in older sightings.** **Import history** reads the VRChat logs and worn-avatar records still on your computer. An entry needs an avatar ID. If a log does not identify the wearer, it shows **Unknown**.
+- **Choose what gets searched.** Friends' identified avatars can be looked up automatically. This is on by default and can be turned off. Other avatars need a manual **Search by ID**, using your existing AvtrDB, Avtr.icu, VRCNDb, or custom search settings.
+- **Change into available public avatars.** **Change into avatar** appears after VRChat recently verified the avatar as public, and checks again before switching. An old picture or database entry alone cannot enable it.
+- **Clearer details and buttons.** Avatar details use the profile glass design. Search, Change, and failed results have softer theme colors. **Not found** means no matching result; **Retry search** means a search service was unavailable.
+
+Older history depends on the files and records still available locally. First-found dates and wearers are shown as **Unknown** when they were not recorded.
+
 ## 4.2.2
 
 This update fixes inventory bundle reminders that kept coming back after restarting BetterVRCX.

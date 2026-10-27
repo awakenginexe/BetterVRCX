@@ -7,6 +7,7 @@ import { useAppearanceSettingsStore } from './settings/appearance';
 import { useAuthStore } from './auth';
 import { useAvatarProviderStore } from './avatarProvider';
 import { useAvatarStore } from './avatar';
+import { useFoundAvatarsStore } from './foundAvatars';
 import { useChartsStore } from './charts';
 import { useDashboardStore } from './dashboard';
 import { useDiscordPresenceSettingsStore } from './settings/discordPresence';
@@ -83,6 +84,7 @@ async function registerSentryPiniaPlugin() {
                     cachedPlayerModerationsUserIds: null
                 },
                 Photon: null,
+                FoundAvatars: null,
                 SharedFeed: {
                     // @ts-ignore
                     ...state.SharedFeed,
@@ -135,6 +137,7 @@ export function createGlobalStores() {
         user: useUserStore(),
         vrcxUpdater: useVRCXUpdaterStore(),
         avatar: useAvatarStore(),
+        foundAvatars: useFoundAvatarsStore(),
         world: useWorldStore(),
         group: useGroupStore(),
         location: useLocationStore(),
@@ -167,6 +170,7 @@ export function createGlobalStores() {
 export {
     useAuthStore,
     useAvatarStore,
+    useFoundAvatarsStore,
     useAvatarProviderStore,
     useFavoriteStore,
     useFeedStore,

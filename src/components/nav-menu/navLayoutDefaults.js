@@ -1,5 +1,48 @@
 import { DASHBOARD_NAV_KEY_PREFIX } from '../../shared/constants';
 
+function avatarFolder(t) {
+    return {
+        type: 'folder',
+        id: 'default-folder-avatars',
+        nameKey: 'nav_tooltip.avatars',
+        name: t('nav_tooltip.avatars'),
+        icon: 'ri-contacts-book-3-line',
+        items: ['my-avatars', 'found-avatars']
+    };
+}
+
+export function migrateAvatarNav(layout, hiddenKeys, t) {
+    const hasFound = layout.some(
+        (item) =>
+            item?.key === 'found-avatars' ||
+            (Array.isArray(item?.items) && item.items.includes('found-avatars'))
+    );
+    if (hasFound || hiddenKeys.includes('found-avatars'))
+        return { layout, hiddenKeys };
+    if (hiddenKeys.includes('my-avatars'))
+        return { layout, hiddenKeys: [...hiddenKeys, 'found-avatars'] };
+    let inserted = false;
+    const migrated = layout.map((item) => {
+        if (item?.type === 'item' && item.key === 'my-avatars') {
+            inserted = true;
+            return avatarFolder(t);
+        }
+        if (
+            item?.type === 'folder' &&
+            Array.isArray(item.items) &&
+            item.items.includes('my-avatars')
+        ) {
+            inserted = true;
+            const items = [...item.items];
+            items.splice(items.indexOf('my-avatars') + 1, 0, 'found-avatars');
+            return { ...item, items };
+        }
+        return item;
+    });
+    if (!inserted) migrated.push(avatarFolder(t));
+    return { layout: migrated, hiddenKeys };
+}
+
 export function createBaseDefaultNavLayout(t) {
     return [
         { type: 'item', key: 'feed' },
@@ -32,7 +75,7 @@ export function createBaseDefaultNavLayout(t) {
             items: ['world-recent', 'world-updated', 'world-library']
         },
         { type: 'item', key: 'notification' },
-        { type: 'item', key: 'my-avatars' },
+        avatarFolder(t),
         {
             type: 'folder',
             id: 'default-folder-charts',

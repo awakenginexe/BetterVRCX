@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAvatarSearchService } from '../avatarSearchService';
 import { normalizeAvatarResult } from '../normalizeAvatarResult';
 import { MetadataCache } from '../metadataCache';
+import { version } from '../../../../package.json';
 
 const record = (id = 'avtr_one', name = 'One') => ({ id, name });
 const ok = (data) => ({ status: 200, data: JSON.stringify(data) });
@@ -117,7 +118,7 @@ describe('avatar search strategies', () => {
             contactEmail: 'support@example.invalid'
         });
         expect(execute.mock.calls[0][0].headers['User-Agent']).toBe(
-            'BetterVRCX/4.1.0 support@example.invalid'
+            `BetterVRCX/${version} support@example.invalid`
         );
         expect(execute.mock.calls[0][0].headers['VRCX-ID']).toBeUndefined();
     });
@@ -125,7 +126,7 @@ describe('avatar search strategies', () => {
         execute.mockResolvedValue(ok([record()]));
         await service.search('Rurune', { sources: ['avtricu'] });
         const agent = execute.mock.calls[0][0].headers['User-Agent'];
-        expect(agent).toContain('BetterVRCX/4.1.0');
+        expect(agent).toContain(`BetterVRCX/${version}`);
         expect(agent).toContain(
             'https://github.com/awakenginexe/BetterVRCX/issues'
         );
@@ -360,6 +361,75 @@ describe('avatar search strategies', () => {
         expect(execute.mock.calls[0][0].url).toContain('limit=20&offset=20');
         expect(execute.mock.calls[1][0].url).toContain('limit=20&page=2');
     });
+});
+
+it('stops provider fallback when the last eligible subscriber cancels', async () => {
+    let resolve;
+    let current = true;
+    const execute = vi
+        .fn()
+        .mockImplementationOnce(
+            () =>
+                new Promise((finish) => {
+                    resolve = finish;
+                })
+        )
+        .mockResolvedValue(ok([record()]));
+    const service = createAvatarSearchService({ execute, log: () => {} });
+    const pending = service.search('cancelled', { isCurrent: () => current });
+    current = false;
+    resolve(ok([]));
+    await pending;
+    expect(execute).toHaveBeenCalledTimes(1);
+    current = true;
+    await service.search('cancelled', { isCurrent: () => current });
+    expect(execute).toHaveBeenCalledTimes(2);
+});
+
+it('keeps a shared lookup running for another eligible subscriber', async () => {
+    let resolve;
+    let firstCurrent = true;
+    const execute = vi
+        .fn()
+        .mockImplementationOnce(
+            () =>
+                new Promise((finish) => {
+                    resolve = finish;
+                })
+        )
+        .mockResolvedValue(ok([record()]));
+    const service = createAvatarSearchService({ execute, log: () => {} });
+    const first = service.search('shared', { isCurrent: () => firstCurrent });
+    const second = service.search('shared', { isCurrent: () => true });
+    firstCurrent = false;
+    resolve(ok([]));
+    const result = await second;
+    await first;
+    expect(execute).toHaveBeenCalledTimes(2);
+    expect(result.avatars.has('avtr_one')).toBe(true);
+});
+
+it('starts no provider request when the caller is already cancelled', async () => {
+    const execute = vi.fn().mockResolvedValue(ok([]));
+    const service = createAvatarSearchService({ execute, log: () => {} });
+    await service.search('cancelled', { isCurrent: () => false });
+    expect(execute).not.toHaveBeenCalled();
+});
+
+it('backs off a rate-limited provider across different avatar IDs', async () => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1_000);
+    const execute = vi
+        .fn()
+        .mockResolvedValue({ status: 429, retryAfter: '120', data: '{}' });
+    const service = createAvatarSearchService({ execute, log: () => {} });
+    await service.search('avtr_first', { sources: ['avtrdb'] });
+    const next = await service.search('avtr_second', { sources: ['avtrdb'] });
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(next.state.failedProviders).toEqual(['avtrdb']);
+    clock.mockReturnValue(121_001);
+    await service.search('avtr_third', { sources: ['avtrdb'] });
+    expect(execute).toHaveBeenCalledTimes(2);
+    clock.mockRestore();
 });
 
 describe('external metadata cache lifecycle', () => {

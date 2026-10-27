@@ -10,6 +10,7 @@ import FriendsLocations from '../../FriendsLocations/FriendsLocations.vue';
 import GameLog from '../../GameLog/GameLog.vue';
 import Moderation from '../../Moderation/Moderation.vue';
 import MyAvatars from '../../MyAvatars/MyAvatars.vue';
+import FoundAvatars from '../../FoundAvatars/FoundAvatars.vue';
 import Notification from '../../Notifications/Notification.vue';
 import PlayerList from '../../PlayerList/PlayerList.vue';
 import Search from '../../Search/Search.vue';
@@ -29,6 +30,7 @@ export const panelComponentMap = {
     moderation: Moderation,
     notification: Notification,
     'my-avatars': MyAvatars,
+    'found-avatars': FoundAvatars,
     'charts-instance': defineAsyncComponent(
         () => import('../../Charts/components/InstanceActivity.vue')
     ),

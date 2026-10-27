@@ -107,6 +107,20 @@ describe('parseRawGameLog', () => {
         });
     });
 
+    test('preserves observer attribution on ID-only avatar discoveries', () => {
+        expect(
+            svc.parseRawGameLog('2026-10-27', 'avatar-found', [
+                'avtr_id',
+                'usr_observer'
+            ])
+        ).toEqual({
+            dt: '2026-10-27',
+            type: 'avatar-found',
+            avatarId: 'avtr_id',
+            observerId: 'usr_observer'
+        });
+    });
+
     test('parses avatar-change type', () => {
         const log = svc.parseRawGameLog('2024-01-01', 'avatar-change', [
             'User1',

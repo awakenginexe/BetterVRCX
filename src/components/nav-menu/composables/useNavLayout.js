@@ -15,6 +15,7 @@ import {
 } from '../navLayoutHelpers';
 import {
     createBaseDefaultNavLayout,
+    migrateAvatarNav,
     insertDashboardEntries
 } from '../navLayoutDefaults';
 import {
@@ -225,6 +226,7 @@ export function useNavLayout({
     const loadNavMenuConfig = async () => {
         let layoutData = null;
         let hiddenKeysData = [];
+        let avatarLayoutChanged = false;
         try {
             const loaded = await loadStoredNavConfig(
                 configRepository,
@@ -236,6 +238,15 @@ export function useNavLayout({
             );
             layoutData = loaded.layout;
             hiddenKeysData = loaded.hiddenKeys;
+            const migrated = migrateAvatarNav(layoutData, hiddenKeysData, t);
+            avatarLayoutChanged =
+                JSON.stringify(migrated) !==
+                JSON.stringify({
+                    layout: layoutData,
+                    hiddenKeys: hiddenKeysData
+                });
+            layoutData = migrated.layout;
+            hiddenKeysData = migrated.hiddenKeys;
         } catch (error) {
             console.error('Failed to load custom nav', error);
         } finally {
@@ -254,7 +265,9 @@ export function useNavLayout({
             navHiddenKeys.value = normalizedHiddenKeys;
             if (
                 layoutData?.length &&
-                (JSON.stringify(sanitized) !== JSON.stringify(fallbackLayout) ||
+                (avatarLayoutChanged ||
+                    JSON.stringify(sanitized) !==
+                        JSON.stringify(fallbackLayout) ||
                     JSON.stringify(normalizedHiddenKeys) !==
                         JSON.stringify(hiddenKeysData))
             ) {

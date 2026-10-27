@@ -31,7 +31,10 @@ async function requestProvider(provider, query, options, execute) {
             })
         ]);
         if (response.status < 200 || response.status >= 300)
-            throw new Error(`HTTP ${response.status}`);
+            throw Object.assign(new Error(`HTTP ${response.status}`), {
+                status: response.status,
+                retryAfter: response.retryAfter
+            });
         const json = JSON.parse(response.data);
         const rows = Array.isArray(json)
             ? json
@@ -65,9 +68,10 @@ export function createAvatarSearchService({
 } = {}) {
     const cache = new Map();
     const pending = new Map();
+    const providerCooldowns = new Map();
     let generation = 0;
 
-    async function run(query, options, listeners) {
+    async function run(query, options, listeners, isActive) {
         const state = {
             mode: options.mode,
             activeProvider: null,
@@ -101,11 +105,16 @@ export function createAvatarSearchService({
                       options.sources.includes(p.id)
                   );
         async function attempt(provider) {
+            if (!isActive()) return [];
             const started = Date.now();
             state.attemptedProviders.push(provider.id);
             state.activeProvider = options.mode === 'deep' ? null : provider.id;
             notify();
+            if (!isActive()) return [];
+            const cooldownKey = `${provider.id}:${provider.url}`;
             try {
+                if ((providerCooldowns.get(cooldownKey) || 0) > Date.now())
+                    throw new Error('Provider rate-limit cooldown');
                 const result = await requestProvider(
                     provider,
                     query,
@@ -118,6 +127,19 @@ export function createAvatarSearchService({
                 );
                 return result.avatars;
             } catch (error) {
+                if (error?.status === 429) {
+                    const seconds = Number(error.retryAfter);
+                    const date = Date.parse(error.retryAfter);
+                    const delay = Number.isFinite(seconds)
+                        ? seconds * 1000
+                        : Number.isFinite(date)
+                          ? date - Date.now()
+                          : 60_000;
+                    providerCooldowns.set(
+                        cooldownKey,
+                        Date.now() + Math.max(60_000, delay)
+                    );
+                }
                 state.failedProviders.push(provider.id);
                 log(
                     `[AvatarSearch] ${provider.label} ${JSON.stringify(query)}: unavailable (${error instanceof Error ? error.message : 'network error'}) in ${Date.now() - started}ms`
@@ -171,8 +193,11 @@ export function createAvatarSearchService({
         query = query.trim();
         const { onState, isCurrent, ...requestOptions } = options;
         const epoch = generation;
+        const eligible = () =>
+            epoch === generation && (!isCurrent || isCurrent());
+        if (!eligible()) return run(query, options, new Set(), () => false);
         const deliver = (result) => {
-            if (epoch === generation && (!isCurrent || isCurrent())) {
+            if (eligible()) {
                 for (const avatar of result.avatars.values())
                     metadata.set(avatar.id, avatar.$searchMetadata);
             }
@@ -186,14 +211,18 @@ export function createAvatarSearchService({
         }
         const active = pending.get(key);
         if (active) {
+            active.guards.add(eligible);
             if (onState) active.listeners.add(onState);
             return active.promise.then(deliver);
         }
         const listeners = new Set(onState ? [onState] : []);
-        const promise = run(query, options, listeners)
+        const guards = new Set([eligible]);
+        const isActive = () => [...guards].some((guard) => guard());
+        const promise = run(query, options, listeners, isActive)
             .then((result) => {
                 if (
                     epoch === generation &&
+                    isActive() &&
                     result.state.failedProviders.length === 0
                 ) {
                     cache.delete(key);
@@ -206,7 +235,7 @@ export function createAvatarSearchService({
             .finally(() => {
                 if (pending.get(key)?.promise === promise) pending.delete(key);
             });
-        pending.set(key, { promise, listeners });
+        pending.set(key, { promise, listeners, guards });
         return promise.then(deliver);
     }
     function clear() {
