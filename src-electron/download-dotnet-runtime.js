@@ -70,7 +70,7 @@ async function downloadDotnetRuntime(arch, platform) {
         throw new Error('Architecture and platform must be specified');
     }
 
-    let dotnetPlatform = '';
+    let dotnetPlatform;
     if (platform === 'linux') {
         dotnetPlatform = 'linux';
     } else if (platform === 'darwin') {

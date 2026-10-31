@@ -9,7 +9,7 @@ const getPrints = vi.fn();
 const deletePrint = vi.fn();
 const getPrintFavorites = vi.fn();
 
-const advancedSettingsStore = {
+const advancedSettings = {
     autoDeleteOldPrints: true,
     ugcFolderPath: '',
     cropInstancePrints: false,
@@ -44,7 +44,7 @@ vi.mock('../../services/database', () => ({
 }));
 
 vi.mock('../settings/advanced', () => ({
-    useAdvancedSettingsStore: () => advancedSettingsStore
+    useAdvancedSettingsStore: () => advancedSettings
 }));
 
 vi.mock('../modal', () => ({
@@ -131,7 +131,7 @@ describe('automatic old print deletion', () => {
 
         vi.clearAllMocks();
 
-        advancedSettingsStore.autoDeleteOldPrints = true;
+        advancedSettings.autoDeleteOldPrints = true;
 
         deletePrint.mockResolvedValue({
             printId: ''
@@ -141,7 +141,7 @@ describe('automatic old print deletion', () => {
     });
 
     test('does nothing when auto delete is disabled', async () => {
-        advancedSettingsStore.autoDeleteOldPrints = false;
+        advancedSettings.autoDeleteOldPrints = false;
 
         const galleryStore = useGalleryStore();
 

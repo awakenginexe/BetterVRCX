@@ -166,7 +166,10 @@ export function request(endpoint, options) {
                 $throw(403, parsed.data.error?.message || '', endpoint);
             }
             if (parsed.hasApiError) {
-                if (parsed.status === 401 && !endpoint?.startsWith('auth/device/')) {
+                if (
+                    parsed.status === 401 &&
+                    !endpoint?.startsWith('auth/device/')
+                ) {
                     if (parsed.data.error.message === '"Missing Credentials"') {
                         authStore.handleAutoLogin();
                         $throw(
@@ -325,7 +328,10 @@ export function shouldIgnoreError(code, endpoint) {
     ) {
         return true;
     }
-    if (endpoint?.startsWith('analysis/') || endpoint?.startsWith('auth/device/')) {
+    if (
+        endpoint?.startsWith('analysis/') ||
+        endpoint?.startsWith('auth/device/')
+    ) {
         return true;
     }
     if (endpoint?.endsWith('/mutuals') && (code === 403 || code === -1)) {
