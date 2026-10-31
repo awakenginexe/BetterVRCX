@@ -34,6 +34,24 @@
                 v-model="playerModerationTable.filters[1].value"
                 :placeholder="t('view.moderation.search_placeholder')"
                 class="moderation__search bv-focus-ring" />
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        :disabled="clearingModerations || playerModerationTable.loading">
+                        {{ t('view.moderation.clear_all') }}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem
+                        v-for="type in moderationTypes"
+                        :key="type"
+                        @click="clearPlayerModerationsByType(type)">
+                        {{ t('view.moderation.filters.' + type) }}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <TooltipWrapper side="bottom" :content="t('view.moderation.refresh_tooltip')">
                 <Button
                     class="rounded-full bv-focus-ring"
@@ -61,6 +79,12 @@
 </template>
 
 <script setup>
+    import {
+        DropdownMenu,
+        DropdownMenuContent,
+        DropdownMenuItem,
+        DropdownMenuTrigger
+    } from '@/components/ui/dropdown-menu';
     import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
     import { computed, ref, watch } from 'vue';
     import { Button } from '@/components/ui/button';
@@ -88,6 +112,7 @@
     const modalStore = useModalStore();
 
     const moderationRef = ref(null);
+    const clearingModerations = ref(false);
 
     async function init() {
         playerModerationTable.value.filters[0].value = JSON.parse(
@@ -115,6 +140,26 @@
             type: row.type
         });
         handlePlayerModerationDelete(args);
+    }
+
+    async function clearPlayerModerationsByType(type) {
+        if (clearingModerations.value || !moderationTypes.includes(type)) return;
+        clearingModerations.value = true;
+        try {
+            const { ok } = await modalStore.confirm({
+                title: t('view.moderation.clear_confirm_title'),
+                description: t('view.moderation.clear_confirm_description', {
+                    type: t('view.moderation.filters.' + type)
+                }),
+                confirmText: t('view.moderation.clear_all'),
+                destructive: true
+            });
+            if (!ok) return;
+            await playerModerationRequest.deletePlayerModerations({ type });
+            await refreshPlayerModerations();
+        } finally {
+            clearingModerations.value = false;
+        }
     }
 
     function deletePlayerModerationPrompt(row) {

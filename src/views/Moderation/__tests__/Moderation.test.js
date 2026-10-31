@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     configGetString: vi.fn(),
     configSetString: vi.fn(),
     deletePlayerModeration: vi.fn(),
+    deletePlayerModerations: vi.fn(),
     pagination: null,
     columnHandlers: null
 }));
@@ -69,6 +70,8 @@ vi.mock('../../../services/config.js', () => ({
 
 vi.mock('../../../api', () => ({
     playerModerationRequest: {
+        deletePlayerModerations: (...args) =>
+            mocks.deletePlayerModerations(...args),
         deletePlayerModeration: (...args) =>
             mocks.deletePlayerModeration(...args)
     }
@@ -193,6 +196,26 @@ describe('Moderation.vue', () => {
         });
     });
 
+    test('clears only the selected personal moderation type after confirmation', async () => {
+        mocks.deletePlayerModerations.mockReset().mockResolvedValue({});
+        const wrapper = mountModeration();
+        await wrapper.vm.clearPlayerModerationsByType('block');
+        expect(mocks.modalConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({ destructive: true })
+        );
+        expect(mocks.deletePlayerModerations).toHaveBeenCalledWith({
+            type: 'block'
+        });
+        expect(mocks.refreshPlayerModerations).toHaveBeenCalledTimes(1);
+    });
+    test('cancelling bulk clear makes no moderation request', async () => {
+        mocks.deletePlayerModerations.mockReset();
+        mocks.modalConfirm.mockResolvedValue({ ok: false });
+        const wrapper = mountModeration();
+        await wrapper.vm.clearPlayerModerationsByType('mute');
+        expect(mocks.deletePlayerModerations).not.toHaveBeenCalled();
+    });
+
     test('loads persisted moderation filter on init', async () => {
         mountModeration();
         await flushAsync();
@@ -250,7 +273,10 @@ describe('Moderation.vue', () => {
     test('refresh button triggers moderation refresh', async () => {
         const wrapper = mountModeration();
 
-        await wrapper.get('[data-testid="moderation-button"]').trigger('click');
+        await wrapper
+            .findAll('[data-testid="moderation-button"]')
+            .at(-1)
+            .trigger('click');
 
         expect(mocks.refreshPlayerModerations).toHaveBeenCalledTimes(1);
     });
