@@ -38,13 +38,14 @@
         "build-electron-arm64": "node ./src-electron/download-dotnet-runtime.js --arch=arm64 && node ./src-electron/patch-package-version.js && electron-builder --arm64 --publish never",
         "postbuild-electron": "node ./src-electron/patch-node-api-dotnet.js --arch=x64 && node ./src-electron/rename-builds.js --arch=x64",
         "postbuild-electron-arm64": "node ./src-electron/patch-node-api-dotnet.js --arch=arm64 && node ./src-electron/rename-builds.js --arch=arm64",
-        "start-electron": "electron . --hot-reload"
+        "start-electron": "electron . --hot-reload",
+        "build-electron-windows-arm64": "dotnet build Dotnet/VRCX-Electron-arm64.csproj -c Release -r win-arm64 -p:Platform=ARM64 && npm run prod-linux && npm run build-electron-arm64"
     },
     "dependencies": {
         "@amplitude/analytics-browser": "2.45.8",
         "@sigma/node-image": "^3.0.0",
         "hazardous": "^0.3.0",
-        "node-api-dotnet": "^0.9.21"
+        "node-api-dotnet": "0.9.27"
     },
     "devDependencies": {
         "@dnd-kit/vue": "^0.5.0",
@@ -95,6 +96,7 @@
         "oxfmt": "^0.60.0",
         "oxlint": "^1.75.0",
         "pinia": "^4.0.2",
+        "qrcode": "^1.5.4",
         "reka-ui": "^2.10.1",
         "remixicon": "^4.9.1",
         "sigma": "^3.0.3",
@@ -117,8 +119,7 @@
         "vue-tsc": "^3.3.8",
         "worker-timers": "^8.0.34",
         "yargs": "^18.1.0",
-        "zod": "^3.25.76",
-        "qrcode": "^1.5.4"
+        "zod": "^3.25.76"
     },
     "overrides": {
         "js-cookie": ">=3.0.7",
@@ -220,6 +221,13 @@
             "icon": "images/BetterVRCX.png",
             "category": "public.app-category.utilities",
             "executableName": "VRCX"
+        },
+        "win": {
+            "artifactName": "BetterVRCX_Version.${ext}",
+            "target": [
+                "nsis"
+            ],
+            "icon": "images/BetterVRCX.ico"
         }
     }
 }

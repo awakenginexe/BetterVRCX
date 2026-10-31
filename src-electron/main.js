@@ -22,16 +22,16 @@ const bundledDotNetPath = path.join(process.resourcesPath, 'dotnet-runtime');
 if (fs.existsSync(bundledDotNetPath)) {
     // Include bundled .NET runtime
     process.env.DOTNET_ROOT = bundledDotNetPath;
-    process.env.PATH = `${bundledDotNetPath}:${process.env.PATH}`;
+    process.env.PATH = `${bundledDotNetPath}${path.delimiter}${process.env.PATH}`;
 } else if (process.platform === 'darwin') {
     const dotnetPath = path.join('/usr/local/share/dotnet');
     const dotnetPathArm = path.join('/usr/local/share/dotnet/x64');
     if (fs.existsSync(dotnetPathArm)) {
         process.env.DOTNET_ROOT = dotnetPathArm;
-        process.env.PATH = `${dotnetPathArm}:${process.env.PATH}`;
+        process.env.PATH = `${dotnetPathArm}${path.delimiter}${process.env.PATH}`;
     } else if (fs.existsSync(dotnetPath)) {
         process.env.DOTNET_ROOT = dotnetPath;
-        process.env.PATH = `${dotnetPath}:${process.env.PATH}`;
+        process.env.PATH = `${dotnetPath}${path.delimiter}${process.env.PATH}`;
     }
 }
 
@@ -845,7 +845,10 @@ function isDotNetInstalled() {
     let dotnetPath;
 
     if (process.env.DOTNET_ROOT) {
-        dotnetPath = path.join(process.env.DOTNET_ROOT, 'dotnet');
+        dotnetPath = path.join(
+            process.env.DOTNET_ROOT,
+            process.platform === 'win32' ? 'dotnet.exe' : 'dotnet'
+        );
         if (!fs.existsSync(dotnetPath)) {
             // fallback to command
             dotnetPath = 'dotnet';
