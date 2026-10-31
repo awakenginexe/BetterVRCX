@@ -94,7 +94,13 @@
     import { storeToRefs } from 'pinia';
     import { useI18n } from 'vue-i18n';
 
-    import { useAppearanceSettingsStore, useModalStore, useModerationStore, useVrcxStore } from '../../stores';
+    import {
+        useAppearanceSettingsStore,
+        useModalStore,
+        useModerationStore,
+        useVrcxStore,
+        useUserStore
+    } from '../../stores';
     import { runRefreshPlayerModerationsFlow as refreshPlayerModerations } from '../../coordinators/moderationCoordinator';
     import { DataTableLayout } from '../../components/ui/data-table';
     import { createColumns } from './columns.jsx';
@@ -103,6 +109,7 @@
     import { useVrcxVueTable } from '../../lib/table/useVrcxVueTable';
 
     import configRepository from '../../services/config.js';
+    import { watchState } from '../../services/watchState';
 
     const { t } = useI18n();
     const { playerModerationTable } = storeToRefs(useModerationStore());
@@ -110,6 +117,9 @@
     const appearanceSettingsStore = useAppearanceSettingsStore();
     const vrcxStore = useVrcxStore();
     const modalStore = useModalStore();
+    const userStore = useUserStore();
+    let accountEpoch = 0;
+    watch([() => watchState.isLoggedIn, () => userStore.currentUser.id], () => ++accountEpoch, { flush: 'sync' });
 
     const moderationRef = ref(null);
     const clearingModerations = ref(false);
@@ -143,7 +153,9 @@
     }
 
     async function clearPlayerModerationsByType(type) {
-        if (clearingModerations.value || !moderationTypes.includes(type)) return;
+        if (!watchState.isLoggedIn || clearingModerations.value || !moderationTypes.includes(type)) return;
+        const epoch = accountEpoch;
+        const isCurrentAccount = () => watchState.isLoggedIn && epoch === accountEpoch;
         clearingModerations.value = true;
         try {
             const { ok } = await modalStore.confirm({
@@ -154,9 +166,9 @@
                 confirmText: t('view.moderation.clear_all'),
                 destructive: true
             });
-            if (!ok) return;
+            if (!ok || !isCurrentAccount()) return;
             await playerModerationRequest.deletePlayerModerations({ type });
-            await refreshPlayerModerations();
+            if (isCurrentAccount()) await refreshPlayerModerations();
         } finally {
             clearingModerations.value = false;
         }

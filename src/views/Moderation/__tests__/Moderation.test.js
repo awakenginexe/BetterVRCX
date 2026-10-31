@@ -13,7 +13,9 @@ const mocks = vi.hoisted(() => ({
     deletePlayerModeration: vi.fn(),
     deletePlayerModerations: vi.fn(),
     pagination: null,
-    columnHandlers: null
+    columnHandlers: null,
+    user: require('vue').reactive({ currentUser: { id: 'usr_me' } }),
+    session: require('vue').reactive({ isLoggedIn: true })
 }));
 
 mocks.playerModerationTable = mocks.makeRef({
@@ -41,7 +43,9 @@ vi.mock('vue-i18n', () => ({
     })
 }));
 
+vi.mock('../../../services/watchState', () => ({ watchState: mocks.session }));
 vi.mock('../../../stores', () => ({
+    useUserStore: () => mocks.user,
     useModerationStore: () => ({
         playerModerationTable: mocks.playerModerationTable,
         refreshPlayerModerations: (...args) =>
@@ -173,6 +177,8 @@ async function flushAsync() {
 
 describe('Moderation.vue', () => {
     beforeEach(() => {
+        mocks.user.currentUser.id = 'usr_me';
+        mocks.session.isLoggedIn = true;
         mocks.playerModerationTable.value = {
             loading: false,
             data: [],
@@ -194,6 +200,44 @@ describe('Moderation.vue', () => {
             ok: true,
             id: 'pm_1'
         });
+    });
+
+    test.each(['account', 'session'])(
+        'aborts a bulk clear when the %s changes during confirmation',
+        async (change) => {
+            mocks.deletePlayerModerations.mockReset();
+            let confirm;
+            mocks.modalConfirm.mockReturnValue(
+                new Promise((resolve) => {
+                    confirm = resolve;
+                })
+            );
+            const wrapper = mountModeration();
+            const pending = wrapper.vm.clearPlayerModerationsByType('block');
+            if (change === 'account') mocks.user.currentUser.id = 'usr_other';
+            else {
+                mocks.session.isLoggedIn = false;
+                mocks.session.isLoggedIn = true;
+            }
+            confirm({ ok: true });
+            await pending;
+            expect(mocks.deletePlayerModerations).not.toHaveBeenCalled();
+        }
+    );
+    test('does not refresh another account after a pending bulk clear', async () => {
+        let finish;
+        mocks.deletePlayerModerations.mockReset().mockReturnValue(
+            new Promise((resolve) => {
+                finish = resolve;
+            })
+        );
+        const wrapper = mountModeration();
+        const pending = wrapper.vm.clearPlayerModerationsByType('mute');
+        await Promise.resolve();
+        mocks.user.currentUser.id = 'usr_other';
+        finish({});
+        await pending;
+        expect(mocks.refreshPlayerModerations).not.toHaveBeenCalled();
     });
 
     test('clears only the selected personal moderation type after confirmation', async () => {

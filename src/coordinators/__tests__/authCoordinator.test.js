@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
     state: { isLoggedIn: true, isFriendsLoaded: true, isFavoritesLoaded: true },
     auth: {
@@ -50,6 +50,19 @@ vi.mock('../../services/webapi', () => ({
 import { runLogoutFlow } from '../authCoordinator';
 
 describe('logout session cleanup', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mocks.state.isLoggedIn = true;
+        mocks.auth.updateStoredUser.mockResolvedValue(undefined);
+        mocks.clear.mockResolvedValue(undefined);
+    });
+    it('never overwrites saved cookies while cleaning up a failed unauthenticated login', async () => {
+        mocks.state.isLoggedIn = false;
+        await runLogoutFlow();
+        expect(mocks.auth.updateStoredUser).not.toHaveBeenCalled();
+        expect(mocks.clear).toHaveBeenCalledTimes(1);
+    });
+
     it('detaches the socket and discards pending secrets before awaiting storage, then awaits cookie cleanup', async () => {
         let finish;
         mocks.auth.updateStoredUser.mockImplementation(() => {
