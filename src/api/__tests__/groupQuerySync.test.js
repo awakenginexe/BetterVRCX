@@ -122,3 +122,46 @@ describe('group query sync', () => {
         });
     });
 });
+
+test('group and calendar writes use their dedicated endpoints with unchanged payloads', async () => {
+    mockRequest.mockResolvedValue({});
+    const recurrence = {
+        frequency: 'weekly',
+        interval: 2,
+        timezone: 'Asia/Bangkok',
+        daysOfWeek: ['SA']
+    };
+    const event = {
+        groupId: 'grp_1',
+        title: 'Weekly meetup',
+        recurrence,
+        occurrenceKind: 'series'
+    };
+    await groupRequest.createGroupEvent(event);
+    expect(mockRequest).toHaveBeenLastCalledWith('calendar/grp_1/event', {
+        method: 'POST',
+        params: event
+    });
+    const edit = { ...event, eventId: 'event_1' };
+    await groupRequest.editGroupEvent(edit);
+    expect(mockRequest).toHaveBeenLastCalledWith(
+        'calendar/grp_1/event_1/event',
+        { method: 'PUT', params: edit }
+    );
+    await groupRequest.checkTransferGroup({
+        groupId: 'grp_1',
+        transferTargetId: 'usr_next'
+    });
+    expect(mockRequest).toHaveBeenLastCalledWith('groups/grp_1/transfer', {
+        method: 'GET',
+        params: { transferTargetId: 'usr_next' }
+    });
+    await groupRequest.transferGroup({
+        groupId: 'grp_1',
+        transferTargetId: 'usr_next'
+    });
+    expect(mockRequest).toHaveBeenLastCalledWith('groups/grp_1/transfer', {
+        method: 'POST',
+        params: { transferTargetId: 'usr_next' }
+    });
+});

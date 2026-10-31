@@ -34,7 +34,8 @@ vi.mock('../../../../services/appConfig', () => ({
     AppDebug: { endpointDomain: 'https://api.example.com' }
 }));
 vi.mock('../../../../shared/utils', () => ({
-    formatDateFilter: () => '12:00'
+    formatDateFilter: () => '12:00',
+    hasGroupPermission: () => false
 }));
 vi.mock('../../../../api', () => ({
     groupRequest: { followGroupEvent: (...a) => mocks.followGroupEvent(...a) }
