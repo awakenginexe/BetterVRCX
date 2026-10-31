@@ -62,10 +62,6 @@
 
                         <p class="text-xs text-muted-foreground mt-1">{{ formatDateFilter(report.created, 'long') }}</p>
                     </div>
-
-                    <Button variant="destructive" size="sm" :disabled="loading" @click="deleteReport(report)">{{
-                        t('group_management.delete')
-                    }}</Button>
                 </div>
             </div>
 
@@ -89,7 +85,7 @@
 
     import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-    import { useAuthStore, useModalStore, useUserStore } from '../../../stores';
+    import { useAuthStore, useUserStore } from '../../../stores';
 
     import { formatDateFilter } from '../../../shared/utils';
 
@@ -109,8 +105,6 @@
 
     const { t } = useI18n();
 
-    const modal = useModalStore();
-
     const { currentUser } = storeToRefs(useUserStore());
 
     const { cachedConfig } = storeToRefs(useAuthStore());
@@ -125,7 +119,7 @@
 
     const reasonLabel = (key) => cachedConfig.value?.reportReasons?.[key]?.text || key;
 
-    const { reports, hasNext, loading, error, load, remove, cancel } = useModerationReports(
+    const { reports, hasNext, loading, error, load, cancel } = useModerationReports(
         type,
         userId,
         moderationReportRequest
@@ -135,20 +129,6 @@
         ({ user: showUserDialog, world: showWorldDialog, avatar: showAvatarDialog, group: showGroupDialog })[
             report.type
         ]?.(report.contentId);
-    }
-
-    async function deleteReport(report) {
-        const user = userId.value;
-
-        const filter = type.value;
-
-        const { ok } = await modal.confirm({
-            title: t('confirm.title'),
-            description: t('group_management.delete_report_confirm'),
-            destructive: true
-        });
-
-        if (ok && open.value && user === userId.value && filter === type.value) await remove(report);
     }
 
     watch(
