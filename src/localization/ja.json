@@ -3377,7 +3377,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "VRCX へようこそ",
+            "title": "BetterVRCX へようこそ",
             "subtitle": "ここにいくつかの機能をご紹介します",
             "features": {
                 "user_profiles": {
@@ -3400,13 +3400,12 @@
             "cta": "使い始めよう！"
         },
         "whatsnew": {
-            "title": "VRCX の新機能",
+            "title": "BetterVRCX の新機能",
             "subtitle": "今回のアップデートの変更点をご紹介します。",
             "cta": "わかった！",
             "common": {
                 "got_it": "わかった！",
-                "view_changelog": "変更履歴を表示",
-                "support": "VRCX をサポート"
+                "view_changelog": "変更履歴を表示"
             },
             "releases": {
                 "2026_05_03": {

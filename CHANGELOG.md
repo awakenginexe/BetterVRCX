@@ -31,6 +31,7 @@
 - New GameLog entries keep stable row identities, and ignored duplicate inserts no longer appear as new entries.
 - Browser data survives genuine CEF upgrades, and the Electron bridge includes the shutdown deadlock fix.
 - Removed the deprecated moderation-report Delete action.
+- Startup messages use BetterVRCX branding without donation promotions.
 - Expected notification-seen rate limits no longer produce error popups, and your own offline duration displays correctly.
 
 ## 4.3.0

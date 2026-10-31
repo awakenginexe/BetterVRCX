@@ -3334,7 +3334,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "Üdvözöl a VRCX",
+            "title": "Üdvözöl a BetterVRCX",
             "subtitle": "Íme néhány dolog, amit talán nem fedezel fel magadtól.",
             "features": {
                 "user_profiles": {
@@ -3357,13 +3357,12 @@
             "cta": "Kezdjük el"
         },
         "whatsnew": {
-            "title": "Mi újság a VRCX-ben",
+            "title": "Mi újság a BetterVRCX-ben",
             "subtitle": "Ezek változtak ebben a frissítésben.",
             "cta": "Értem",
             "common": {
                 "got_it": "Értem",
-                "view_changelog": "Összes változás megtekintése",
-                "support": "VRCX támogatása"
+                "view_changelog": "Összes változás megtekintése"
             },
             "releases": {
                 "2026_05_03": {

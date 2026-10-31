@@ -3210,7 +3210,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "Bem-vindo ao VRCX",
+            "title": "Bem-vindo ao BetterVRCX",
             "subtitle": "Aqui estão algumas coisas que você pode não descobrir por conta própria.",
             "features": {
                 "user_profiles": {
@@ -3233,7 +3233,7 @@
             "cta": "Começar"
         },
         "whatsnew": {
-            "title": "O que há de Novo no VRCX",
+            "title": "O que há de Novo no BetterVRCX",
             "subtitle": "Veja o que mudou nesta atualização.",
             "cta": "Entendido",
             "releases": {

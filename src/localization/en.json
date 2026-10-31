@@ -3681,7 +3681,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "Welcome to VRCX",
+            "title": "Welcome to BetterVRCX",
             "subtitle": "Here are a few things you might not discover on your own.",
             "features": {
                 "user_profiles": {
@@ -3704,13 +3704,12 @@
             "cta": "Get Started"
         },
         "whatsnew": {
-            "title": "What's New in VRCX",
+            "title": "What's New in BetterVRCX",
             "subtitle": "Here's what changed in this update.",
             "cta": "Got It",
             "common": {
                 "got_it": "Got It",
-                "view_changelog": "View All Changes",
-                "support": "Support VRCX"
+                "view_changelog": "View All Changes"
             },
             "releases": {
                 "2026_05_03": {

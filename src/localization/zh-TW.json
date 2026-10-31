@@ -3359,7 +3359,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "歡迎來到 VRCX",
+            "title": "歡迎來到 BetterVRCX",
             "subtitle": "這裡有幾項你可能不會自己發現的功能。",
             "features": {
                 "user_profiles": {
@@ -3382,13 +3382,12 @@
             "cta": "入門指南"
         },
         "whatsnew": {
-            "title": "VRCX 的新功能",
+            "title": "BetterVRCX 的新功能",
             "subtitle": "以下為本次更新的內容變更。",
             "cta": "了解",
             "common": {
                 "got_it": "了解",
-                "view_changelog": "查看所有變更",
-                "support": "支援 VRCX"
+                "view_changelog": "查看所有變更"
             },
             "releases": {
                 "2026_05_03": {
