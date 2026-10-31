@@ -3,13 +3,13 @@
 # <img src="../images/BetterVRCX.png" width="64" height="64"> </img> BetterVRCX
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-4.2.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
+  <img alt="Version" src="https://img.shields.io/badge/version-4.4.0-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-9B6DFF?style=for-the-badge&labelColor=08070B" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5DE2B5?style=for-the-badge&labelColor=08070B" />
 </p>
 
 <p align="center">
-  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/50719875391c2ff9a65c9d220069b0202ebd9c2cbf29495609670f3c1f0e109e">
+  <a data-virustotal-file="BetterVRCX.exe" href="https://www.virustotal.com/gui/file/212057d8ef4893557d0c345d7e29d3d5379faa22918fe051fcf381f118520035">
     <img alt="VirusTotal scan for BetterVRCX.exe" src="./VirusTotal-BetterVRCX.svg" />
   </a>
 </p>

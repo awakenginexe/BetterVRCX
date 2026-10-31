@@ -4,6 +4,7 @@ import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 
 import {
+    convertFileUrlToImageUrl,
     getEmojiFileName,
     getPrintFileName,
     getPrintLocalDate,
@@ -21,6 +22,7 @@ import { router } from '../plugins/router';
 import { useAdvancedSettingsStore } from './settings/advanced';
 import { useModalStore } from './modal';
 import { watchState } from '../services/watchState';
+import { database, dbVars } from '../services/database';
 
 import * as workerTimers from 'worker-timers';
 
@@ -70,6 +72,9 @@ export const useGalleryStore = defineStore('Gallery', () => {
 
     const printTable = ref([]);
 
+    const favoritePrintIds = ref(new Set());
+    let printSession = 0;
+
     const emojiTable = ref([]);
 
     const inventoryTable = ref([]);
@@ -83,6 +88,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
     watch(
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
+            ++printSession;
+            favoritePrintIds.value.clear();
             cachedEmoji.clear();
             galleryTable.value = [];
             VRCPlusIconsTable.value = [];
@@ -150,6 +157,9 @@ export const useGalleryStore = defineStore('Gallery', () => {
         refreshEmojiTable();
         refreshStickerTable();
         refreshPrintTable();
+        refreshPrintFavorites().catch((error) =>
+            console.error('Failed to load print favorites:', error)
+        );
         getInventory();
     }
 
@@ -327,11 +337,23 @@ export const useGalleryStore = defineStore('Gallery', () => {
                 );
             });
             printTable.value = args.json;
+            return true;
         } catch (error) {
             console.error('Error fetching prints:', error);
+            return false;
         } finally {
             galleryDialogPrintsLoading.value = false;
         }
+    }
+
+    async function refreshPrintFavorites() {
+        const session = printSession;
+        const userId = dbVars.userId;
+        const favorites = await database.getPrintFavorites();
+        if (session !== printSession || userId !== dbVars.userId) return;
+        favoritePrintIds.value = new Set(
+            favorites.map((favorite) => favorite.printId)
+        );
     }
 
     /**
@@ -432,6 +454,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
      *
      */
     async function getInventory() {
+        const session = printSession;
+        const userId = dbVars.userId;
         inventoryTable.value = [];
         advancedSettingsStore.currentUserInventory.clear();
         const params = {
@@ -446,6 +470,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
             for (let i = 0; i < 100; i++) {
                 params.offset = i * params.n;
                 const args = await inventoryRequest.getInventoryItems(params);
+                if (session !== printSession || userId !== dbVars.userId)
+                    return;
                 for (const item of args.json.data) {
                     if (item.isArchived === true) continue;
                     advancedSettingsStore.currentUserInventory.set(
@@ -459,6 +485,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
                 }
             }
             const globalInventory = await inventoryRequest.getGlobalInventory();
+            if (session !== printSession || userId !== dbVars.userId) return;
             for (const item of globalInventory.json) {
                 if (item.isArchived === true) continue;
                 inventoryTable.value.push(item);
@@ -466,7 +493,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
         } catch (error) {
             console.error('Error fetching inventory items:', error);
         } finally {
-            galleryDialogInventoryLoading.value = false;
+            if (session === printSession && userId === dbVars.userId)
+                galleryDialogInventoryLoading.value = false;
         }
     }
 
@@ -477,7 +505,16 @@ export const useGalleryStore = defineStore('Gallery', () => {
         if (!advancedSettingsStore.autoDeleteOldPrints) {
             return;
         }
-        await refreshPrintTable();
+        const session = printSession;
+        const userId = dbVars.userId;
+        try {
+            if (!(await refreshPrintTable())) return;
+            await refreshPrintFavorites();
+        } catch (error) {
+            console.error('Failed to load protected prints:', error);
+            return;
+        }
+        if (session !== printSession || userId !== dbVars.userId) return;
         const printLimit = 64 - 2; // 2 reserved for new prints
         const printCount = printTable.value.length;
         if (printCount <= printLimit) {
@@ -488,13 +525,27 @@ export const useGalleryStore = defineStore('Gallery', () => {
             return;
         }
         const idList = [];
-        for (let i = 0; i < deleteCount; i++) {
-            const print = printTable.value[printCount - 1 - i];
+        for (
+            let i = printCount - 1;
+            i >= 0 && idList.length < deleteCount;
+            i--
+        ) {
+            const print = printTable.value[i];
+            if (favoritePrintIds.value.has(print.id)) {
+                continue;
+            }
             idList.push(print.id);
         }
-        console.log(`Deleting ${deleteCount} old prints`, idList);
+        console.log(`Deleting ${idList.length} old prints`, idList);
+        if (idList.length < deleteCount) {
+            console.log(
+                `Unable to automatically delete enough old prints because ${deleteCount - idList.length} print(s) are protected by favorites.`
+            );
+        }
         try {
             for (const printId of idList) {
+                if (session !== printSession || userId !== dbVars.userId)
+                    return;
                 await vrcPlusImageRequest.deletePrint(printId);
                 const text = `Old print automatically deleted: ${printId}`;
                 if (AppDebug.errorNoty) {
@@ -518,7 +569,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
             return;
         }
         const D = fullscreenImageDialog.value;
-        D.imageUrl = imageUrl;
+        D.imageUrl = convertFileUrlToImageUrl(imageUrl, 10_000);
         D.fileName = fileName;
         D.visible = true;
     }
@@ -664,6 +715,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
         stickerTable,
         instanceStickersCache,
         printTable,
+        favoritePrintIds,
         emojiTable,
         inventoryTable,
         fullscreenImageDialog,
@@ -678,6 +730,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
         refreshStickerTable,
         trySaveStickerToFile,
         refreshPrintTable,
+        refreshPrintFavorites,
         queueSavePrintToFile,
         refreshEmojiTable,
         getInventory,

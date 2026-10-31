@@ -274,6 +274,18 @@
             "language_detect": {
                 "title": "偵測到語言",
                 "description": "你的系統語言似乎是 {language}。是否切換到該語言？"
+            },
+            "qr": {
+                "hint": "Scan with the VRChat mobile app to sign in.",
+                "button": "Sign in with QR code",
+                "cancel": "Cancel QR login",
+                "failed": "QR login expired or failed. Please try again."
+            },
+            "reset_password": {
+                "title": "Reset password",
+                "description": "Enter your account email address to request a password reset.",
+                "email": "Email address",
+                "send": "Send reset email"
             }
         },
         "feed": {
@@ -463,7 +475,10 @@
                 "interactOff": "角色互動關閉",
                 "muteChat": "隱藏聊天框",
                 "unmuteChat": "顯示聊天框"
-            }
+            },
+            "clear_all": "Clear by type",
+            "clear_confirm_title": "Clear personal player moderation?",
+            "clear_confirm_description": "Remove all of your {type} records? This applies to every player with that moderation type, including players outside the current table filter."
         },
         "notification": {
             "filter_placeholder": "篩選通知",
@@ -761,6 +776,9 @@
                 },
                 "favorites": {
                     "header": "收藏"
+                },
+                "friend_requests": {
+                    "header": "Friend Requests"
                 }
             },
             "vr": {
@@ -883,6 +901,10 @@
                     "header": "貢獻者",
                     "bettervrcx_header": "BetterVRCX 貢獻者",
                     "vrcx_header": "VRCX 貢獻者"
+                },
+                "friend_requests": {
+                    "header": "Filter requests without recorded encounters",
+                    "header_tooltip": "Automatically hide new friend requests when your local GameLog has no recorded shared-instance encounters with the sender. This can include people you met before logging began. Off by default."
                 }
             },
             "appearance": {
@@ -1106,7 +1128,9 @@
                     "show_current_platform": "顯示目前平台",
                     "world_integration": "世界整合",
                     "world_integration_tooltip": "在 Popcorn Palace、PyPyDance、VRDancing 和 LS Media 顯示「正在觀看／正在聆聽」狀態",
-                    "display_world_name_as_discord_status": "將世界名稱顯示為 Discord 狀態"
+                    "display_world_name_as_discord_status": "將世界名稱顯示為 Discord 狀態",
+                    "show_media_images": "Show Media Images",
+                    "show_media_images_tooltip": "Use the thumbnail of the currently playing video when the world's media player provides one"
                 },
                 "rpc": {
                     "vr": "VR 模式",
@@ -1326,7 +1350,8 @@
         "alertdialog": {
             "ok": "確定",
             "cancel": "取消",
-            "confirm": "確認"
+            "confirm": "確認",
+            "dont_show_again": "Don't show this again"
         },
         "prompt": {
             "input_invalid": "輸入無效"
@@ -1349,7 +1374,8 @@
                 "trust_level": "信用等級",
                 "mutual_friends": "共同好友",
                 "open_in_discord": "在 Discord 中開啟",
-                "discord": "Discord"
+                "discord": "Discord",
+                "mutual_groups": "Mutual Groups"
             },
             "badges": {
                 "assigned": "給予",
@@ -1453,7 +1479,13 @@
                 "open_previous_instance": "開啟過去的房間",
                 "show_mutual_friends": "顯示共同好友",
                 "show_discord_connections": "顯示 Discord 連結",
-                "current_instance": "當前房間"
+                "current_instance": "當前房間",
+                "instance_hype_train": "Hype Train Active",
+                "instance_hype_train_gifts": "Gifts:",
+                "instance_hype_train_contributors": "Contributors:",
+                "instance_hype_train_started": "Started:",
+                "instance_hype_train_time_remaining": "Time Remaining:",
+                "instance_announcement_tooltip": "Send Instance Announcement"
             },
             "groups": {
                 "header": "群組",
@@ -1470,7 +1502,9 @@
                     "members": "成員",
                     "in_game": "遊戲內順序"
                 },
-                "leave_group_tooltip": "離開群組"
+                "leave_group_tooltip": "離開群組",
+                "create_requires_vrc_plus": "Creating a group requires VRC+",
+                "create_limit_reached": "You have reached the owned group limit"
             },
             "worlds": {
                 "header": "世界",
@@ -1770,7 +1804,9 @@
                 "moderation_tools": "管理工具",
                 "leave": "離開群組",
                 "block": "封鎖群組",
-                "unblock": "解除封鎖群組"
+                "unblock": "解除封鎖群組",
+                "create_event": "Create Event",
+                "transfer": "Transfer Group"
             },
             "info": {
                 "header": "資訊",
@@ -1832,6 +1868,26 @@
             },
             "json": {
                 "header": "原始資料"
+            },
+            "transfer": {
+                "header": "Transfer Group",
+                "description": "Search for a member to transfer ownership of {groupName} to.",
+                "search_placeholder": "Search group members",
+                "search_minimum": "Enter at least {count} characters to search.",
+                "no_results": "No matching members found.",
+                "cancel": "Cancel",
+                "submit": "Transfer Group",
+                "requirements_title": "Unable to Transfer Group",
+                "requirements_description": "{displayName} does not meet all requirements to own this group. Requirements not met: {requirements}.",
+                "requirements": {
+                    "group_not_monetized": "the group must not be monetized",
+                    "has_vrc_plus": "the member must have VRC+",
+                    "has_verified_email": "the member must have a verified email address",
+                    "can_own_more_groups": "the member must not exceed the maximum number of groups they can own",
+                    "is_group_member": "the user must be a member of the group"
+                },
+                "confirm_title": "Transfer Group Ownership",
+                "confirm_description": "Send a request to transfer ownership of {groupName} to {displayName}?"
             }
         },
         "favorite": {
@@ -1882,7 +1938,11 @@
             "profile_background_type_image": "圖片",
             "profile_background_type_gradient": "漸變",
             "gradient_top": "漸變頂部",
-            "gradient_bottom": "漸變底部"
+            "gradient_bottom": "漸變底部",
+            "profile_effect": "Profile effect",
+            "nameplate_effect": "Nameplate effect",
+            "icon_frame": "Icon frame",
+            "select_effect": "Select an owned cosmetic"
         },
         "new_instance": {
             "header": "新房間",
@@ -2085,7 +2145,8 @@
             "json": "原始資料"
         },
         "export_own_avatars": {
-            "header": "匯出私有角色"
+            "header": "匯出私有角色",
+            "public_only": "Public avatars only"
         },
         "discord_names": {
             "header": "Discord 名稱",
@@ -2135,7 +2196,10 @@
             "emoji": "表情符號",
             "redeem": "兌換",
             "create_animated_emoji": "動畫表情生成器",
-            "crop_image": "確認上傳"
+            "crop_image": "確認上傳",
+            "favorite_print": "Favorite print",
+            "unfavorite_print": "Remove print favorite",
+            "protected_print": "Remove this print from favorites before deleting it."
         },
         "image_crop": {
             "rotate_left": "向左旋轉",
@@ -2485,6 +2549,163 @@
         "avatar_database_provider": {
             "header": "角色資料庫提供方",
             "add_provider": "新增提供方"
+        },
+        "purchase_history": {
+            "header": "Purchase history",
+            "description": "View purchases and VRChat Credits transactions.",
+            "purchases": "Purchases",
+            "transactions": "Transactions",
+            "filter_type": "Purchase type",
+            "all": "All types",
+            "gift": "Gift",
+            "inactive": "Inactive",
+            "seller": "Seller",
+            "free": "Free",
+            "ends": "Ends",
+            "from": "From",
+            "to": "To",
+            "balance": "Balance",
+            "refresh": "Refresh history",
+            "loading": "Loading history…",
+            "failed": "History could not be loaded. Please try again.",
+            "latest_transactions": "Latest 100 transactions"
+        },
+        "free_store_item_dialog": {
+            "header": "Free store items",
+            "description": "These free store items are available to claim for your account.",
+            "dont_show_again": "Don't show again",
+            "close": "Close",
+            "claim": "Claim all",
+            "claim_success": "Claimed {count} free item(s).",
+            "failed": "Some items could not be claimed or refreshed. Try again."
+        },
+        "group_edit": {
+            "create_header": "Create Group",
+            "edit_header": "Edit Group",
+            "name": "Name",
+            "short_code": "Short Code",
+            "description": "Description",
+            "join_state": "Join State",
+            "privacy": "Privacy",
+            "role_template": "Role Template",
+            "loading_role_templates": "Loading role templates...",
+            "language": "Languages",
+            "no_language": "No languages",
+            "rules": "Rules",
+            "links": "Links",
+            "add_link": "Add Link",
+            "allow_join_prompt": "Automatic Group Invites",
+            "allow_join_prompt_description": "Automatically send group invites to non-members whoÃ¢â‚¬â„¢ve spent over 5 minutes in this groupÃ¢â‚¬â„¢s instances or made a friend there. Only available to Open groups.",
+            "banner": "Banner",
+            "icon": "Icon",
+            "select_image": "Select Image",
+            "clear_image": "Clear Image",
+            "saving": "Saving...",
+            "save": "Save Changes",
+            "create": "Create Group",
+            "create_success": "Group created",
+            "edit_success": "Group updated"
+        },
+        "group_event_edit": {
+            "create_header": "Create Group Event",
+            "edit_header": "Edit Group Event",
+            "title": "Title",
+            "description": "Description",
+            "starts_at": "Starts At",
+            "ends_at": "Ends At",
+            "invalid_date_range": "The event must end after it starts.",
+            "start_in_past": "The event must start in the future.",
+            "access_type": "Access",
+            "access_group": "Group",
+            "access_public": "Public",
+            "category": "Category",
+            "categories": {
+                "arts": "Arts",
+                "avatars": "Avatars",
+                "dance": "Dance",
+                "education": "Education",
+                "exploration": "Exploration",
+                "film_media": "Film & Media",
+                "gaming": "Gaming",
+                "hangout": "Hangout",
+                "music": "Music",
+                "other": "Other",
+                "performance": "Performance",
+                "roleplaying": "Roleplaying",
+                "wellness": "Wellness"
+            },
+            "tags": "Tags",
+            "tags_help": "Separate up to five tags with commas. Each tag can be up to 100 characters.",
+            "languages": "Languages",
+            "platforms": "Platforms",
+            "platform_values": {
+                "android": "Android",
+                "ios": "iOS",
+                "standalonewindows": "Windows"
+            },
+            "none_selected": "None selected",
+            "roles": "Roles",
+            "all_members": "All members",
+            "image": "Image",
+            "select_image": "Select Image",
+            "clear_image": "Clear Image",
+            "host_early_join": "Host Early Join (minutes)",
+            "guest_early_join": "Guest Early Join (minutes)",
+            "close_after_end": "Close After End (minutes)",
+            "send_notification": "Send creation notification",
+            "repeat": "Repeat",
+            "repeat_every": "Repeat every",
+            "repeat_values": {
+                "none": "Never",
+                "weekly": "Week",
+                "monthly": "Month",
+                "yearly": "Year"
+            },
+            "weekly_pattern": "Weekly repeat pattern",
+            "weekly_pattern_values": {
+                "every_week": "Every week",
+                "weekdays": "Every weekday",
+                "weekend": "Every weekend",
+                "custom": "Custom days"
+            },
+            "custom_days": "Select days",
+            "weekday_values": {
+                "MO": "Monday",
+                "TU": "Tuesday",
+                "WE": "Wednesday",
+                "TH": "Thursday",
+                "FR": "Friday",
+                "SA": "Saturday",
+                "SU": "Sunday"
+            },
+            "ends": "Ends",
+            "ends_values": {
+                "never": "Never",
+                "after_occurrences": "After occurrences",
+                "after_date": "On date"
+            },
+            "occurrence_count": "Number of occurrences",
+            "end_date": "End date",
+            "saving": "Saving...",
+            "save": "Save Changes",
+            "edit_parent": "Edit Parent Event",
+            "create": "Create Event",
+            "create_success": "Group event created",
+            "edit_success": "Group event updated",
+            "delete_success": "Group event deleted",
+            "save_error": "Failed to save group event",
+            "delete_error": "Failed to delete group event",
+            "load_error": "Failed to load group event",
+            "delete_confirm": "Are you sure you want to delete this group event?"
+        },
+        "instance_announcement": {
+            "header": "Send Instance Announcement",
+            "message": "Message",
+            "image": "Image (optional)",
+            "clear_image": "Clear Image",
+            "select_image": "Select Image",
+            "sending": "Sending...",
+            "send": "Send Announcement"
         }
     },
     "confirm": {
@@ -2519,7 +2740,9 @@
         "bulk_unfavorite_title": "刪除 {count} 個收藏？",
         "restart_required_title": "需要重新啟動",
         "restart_now": "立即重新啟動",
-        "restart_later": "稍後再說"
+        "restart_later": "稍後再說",
+        "youtube_bot_error": "YouTube is blocking video playback with a \"Sign in to confirm\" error. VRCVideoCacher can fix this, would you like to open its Steam store page?",
+        "youtube_bot_error_title": "YouTube video failed to load"
     },
     "prompt": {
         "totp": {
@@ -2748,7 +2971,8 @@
             "closed": "房間已關閉",
             "removed_form_queue": "已從佇列中移除房間 {worldName}",
             "not_allowed": "你沒有權限進入此房間",
-            "create_failed": "建立房間失敗"
+            "create_failed": "建立房間失敗",
+            "announcement_sent": "Instance announcement sent"
         },
         "avatar": {
             "selected": "已更換角色",
@@ -2791,7 +3015,8 @@
             "joined": "已加入群組",
             "join_request_sent": "已發送加入群組請求",
             "visibility_updated": "群組可見性已更新",
-            "subscription_updated": "群組訂閱設定已更新"
+            "subscription_updated": "群組訂閱設定已更新",
+            "transfer_requested": "Group transfer request sent"
         },
         "invite": {
             "self_sent": "已送出給自己的邀請",
@@ -3134,7 +3359,7 @@
     },
     "onboarding": {
         "welcome": {
-            "title": "歡迎來到 VRCX",
+            "title": "歡迎來到 BetterVRCX",
             "subtitle": "這裡有幾項你可能不會自己發現的功能。",
             "features": {
                 "user_profiles": {
@@ -3157,13 +3382,12 @@
             "cta": "入門指南"
         },
         "whatsnew": {
-            "title": "VRCX 的新功能",
+            "title": "BetterVRCX 的新功能",
             "subtitle": "以下為本次更新的內容變更。",
             "cta": "了解",
             "common": {
                 "got_it": "了解",
-                "view_changelog": "查看所有變更",
-                "support": "支援 VRCX"
+                "view_changelog": "查看所有變更"
             },
             "releases": {
                 "2026_05_03": {
@@ -3185,6 +3409,28 @@
                         "right_click_menus": {
                             "title": "操作菜單",
                             "description": "在好友、表格與標題上按右鍵可進行快速操作。"
+                        }
+                    }
+                },
+                "2026_10_31": {
+                    "title": "BetterVRCX 4.4.0",
+                    "subtitle": "More ways to sign in, manage groups, and keep your library up to date.",
+                    "items": {
+                        "sign_in": {
+                            "title": "QR sign-in and profile cosmetics",
+                            "description": "Keep a passwordless session, reset your password, and choose owned effects and icon frames."
+                        },
+                        "groups": {
+                            "title": "Manage your groups and events",
+                            "description": "Create and edit groups and recurring events, transfer ownership, and announce eligible instances."
+                        },
+                        "purchases_prints": {
+                            "title": "Purchases, credits, and favorite prints",
+                            "description": "Review purchases and credits, claim free store items, and protect favorite prints from automatic cleanup."
+                        },
+                        "reliability_media": {
+                            "title": "Connection and media improvements",
+                            "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
                 }
@@ -3278,5 +3524,8 @@
         "empty": "沒有最後已知位置",
         "instance": "執行個體：{instance}",
         "last_seen_count": "最後出現：{count} 人"
+    },
+    "compatibility": {
+        "free_store_notifications": "Notify me about unclaimed free store items"
     }
 }

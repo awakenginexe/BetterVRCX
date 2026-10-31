@@ -497,6 +497,41 @@
                         </Select>
                     </div>
                 </section>
+                <section v-for="field in cosmeticFields" :key="field.type" class="space-y-3">
+                    <h3 class="text-sm font-semibold">{{ t(field.label) }}</h3>
+                    <div class="flex items-center gap-2">
+                        <Select
+                            v-model="editProfileDialog[field.type]"
+                            :disabled="editProfileDialog.loading || galleryDialogInventoryLoading">
+                            <SelectTrigger class="w-full" :aria-label="t(field.label)">
+                                <SelectValue :placeholder="t('dialog.edit_profile.select_effect')" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem
+                                    v-for="item in ownedCosmetics[field.type]"
+                                    :key="item.templateId"
+                                    :value="item.templateId"
+                                    :text-value="item.name || item.templateId">
+                                    <img
+                                        v-if="item.imageUrl"
+                                        :src="item.imageUrl"
+                                        alt=""
+                                        class="size-8 rounded-sm object-cover"
+                                        loading="lazy" />
+                                    {{ item.name || item.templateId }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            variant="outline"
+                            size="icon-sm"
+                            :disabled="editProfileDialog.loading || !editProfileDialog[field.type]"
+                            :aria-label="t('common.actions.clear')"
+                            @click="editProfileDialog[field.type] = ''">
+                            <X class="size-4" />
+                        </Button>
+                    </div>
+                </section>
             </div>
 
             <DialogFooter class="px-6 py-4">
@@ -519,7 +554,7 @@
 </template>
 
 <script setup>
-    import { computed, ref } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
@@ -549,14 +584,15 @@
     import { useStatusPresets } from './composables/useStatusPresets';
     import GallerySelectDialog from '../GroupDialog/GallerySelectDialog.vue';
     import { updateUserDialogProfile } from '@/coordinators/userCoordinator';
-    import { getProfileIconUpdate } from './editProfilePayload';
+    import { getProfileIconUpdate, getOwnedCosmetics, getProfileCosmeticUpdate } from './editProfilePayload';
     import { profileBackgrounds } from '@/shared/constants/backgrounds';
 
     const { t } = useI18n();
     const { currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
     const authStore = useAuthStore();
     const modalStore = useModalStore();
-    const { refreshGalleryTable } = useGalleryStore();
+    const { refreshGalleryTable, getInventory } = useGalleryStore();
+    const { inventoryTable, galleryDialogInventoryLoading } = storeToRefs(useGalleryStore());
     const { presets, addPreset, removePreset, getStatusClass, MAX_PRESETS } = useStatusPresets();
 
     const props = defineProps({
@@ -565,6 +601,22 @@
             required: true
         }
     });
+
+    const cosmeticFields = [
+        { type: 'profileEffect', label: 'dialog.edit_profile.profile_effect' },
+        { type: 'nameplateEffect', label: 'dialog.edit_profile.nameplate_effect' },
+        { type: 'iconFrame', label: 'dialog.edit_profile.icon_frame' }
+    ];
+    const ownedCosmetics = computed(() =>
+        Object.fromEntries(cosmeticFields.map(({ type }) => [type, getOwnedCosmetics(inventoryTable.value, type)]))
+    );
+    watch(
+        () => props.editProfileDialog.visible,
+        (visible) => {
+            if (visible) getInventory();
+        },
+        { immediate: true }
+    );
 
     const selectedLanguageToAdd = ref('');
     const gallerySelectDialog = ref({
@@ -1042,6 +1094,7 @@
             profilePayload.backgroundGradientTop = D.backgroundGradientTop;
         }
 
+        Object.assign(profilePayload, getProfileCosmeticUpdate(D, inventoryTable.value));
         D.loading = true;
         try {
             if (Object.keys(profilePayload).length) {

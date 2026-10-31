@@ -4,8 +4,12 @@
             <DialogHeader>
                 <DialogTitle>{{ t('dialog.export_own_avatars.header') }}</DialogTitle>
             </DialogHeader>
+            <label class="mt-4 flex items-center justify-between gap-3 text-sm">
+                {{ t('dialog.export_own_avatars.public_only') }}
+                <Switch v-model="publicOnly" :aria-label="t('dialog.export_own_avatars.public_only')" />
+            </label>
             <InputGroupTextareaField
-                v-model="exportAvatarsListCsv"
+                :model-value="exportAvatarsListCsv"
                 :rows="15"
                 readonly
                 input-class="resize-none mt-4"
@@ -25,6 +29,8 @@
     import { applyAvatar, removeAvatarFromCache } from '../../../coordinators/avatarCoordinator';
     import { avatarRequest } from '../../../api';
     import { processBulk } from '../../../services/request';
+    import { Switch } from '@/components/ui/switch';
+    import { formatCsvRow } from '../../../shared/utils/csv';
 
     const { t } = useI18n();
 
@@ -38,7 +44,16 @@
         }
     });
 
-    const exportAvatarsListCsv = ref('');
+    const avatars = ref([]);
+    const publicOnly = ref(false);
+    const exportAvatarsListCsv = computed(() =>
+        [
+            'AvatarID,AvatarName',
+            ...avatars.value
+                .filter((avatar) => !publicOnly.value || avatar.releaseStatus === 'public')
+                .map((avatar) => formatCsvRow(avatar, ['id', 'name']))
+        ].join('\n')
+    );
     const loading = ref(false);
 
     const isVisible = computed({
@@ -88,21 +103,7 @@
                 }
             },
             done: () => {
-                const avatars = Array.from(map.values());
-                if (Array.isArray(avatars) === false) {
-                    return;
-                }
-                const lines = ['AvatarID,AvatarName'];
-                const _ = function (str) {
-                    if (/[\x00-\x1f,"]/.test(str) === true) {
-                        return `"${str.replace(/"/g, '""')}"`;
-                    }
-                    return str;
-                };
-                for (const avatar of avatars) {
-                    lines.push(`${_(avatar.id)},${_(avatar.name)}`);
-                }
-                exportAvatarsListCsv.value = lines.join('\n');
+                avatars.value = Array.from(map.values());
                 loading.value = false;
             }
         });

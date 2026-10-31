@@ -30,13 +30,14 @@ function convertFileUrlToImageUrl(
      * /file/file_fileId/version/file
      * /file/file_fileId/version/file/
      */
-    const pattern = /file\/file_([a-f0-9-]+)\/(\d+)(\/file)?\/?$/;
+    const pattern =
+        /(?:file|image)\/file_([a-f0-9-]+)\/(\d+)(?:\/(?:file|\d+))?\/?([?#].*)?$/;
     const match = url.match(pattern);
 
     if (match) {
         const fileId = match[1];
         const version = match[2];
-        return `${endpointDomain}/image/file_${fileId}/${version}/${resolution}`;
+        return `${endpointDomain}/image/file_${fileId}/${version}/${resolution}${match[3] ?? ''}`;
     }
     // no match return origin url
     return url;

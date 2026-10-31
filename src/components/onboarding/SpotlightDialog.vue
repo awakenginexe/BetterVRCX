@@ -8,7 +8,7 @@
             @interact-outside.prevent>
             <div class="pt-2 text-center">
                 <div class="mb-2 flex justify-center">
-                    <img :src="vrcxLogo" alt="VRCX" class="size-12 rounded-xl" />
+                    <img :src="vrcxLogo" alt="BetterVRCX" class="size-12 rounded-xl" />
                 </div>
                 <h2 class="m-0 text-[22px] font-bold tracking-tight">{{ t('onboarding.welcome.title') }}</h2>
                 <p class="mt-1.5 text-sm text-muted-foreground">{{ t('onboarding.welcome.subtitle') }}</p>

@@ -1,4 +1,12 @@
 const whatsNewReleases = Object.freeze({
+    '2026.10.31': {
+        items: [
+            { key: 'sign_in', icon: 'mouse-pointer-click' },
+            { key: 'groups', icon: 'search' },
+            { key: 'purchases_prints', icon: 'folder-heart' },
+            { key: 'reliability_media', icon: 'refresh-cw' }
+        ]
+    },
     '2026.05.03': {
         items: [
             {

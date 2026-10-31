@@ -27,6 +27,8 @@ export async function runUpdateFriendDelayedCheckFlow(
     { now = Date.now, nowIso = () => new Date().toJSON() } = {}
 ) {
     const friendStore = useFriendStore();
+    const userStore = useUserStore();
+    const account = userStore.currentUser;
     const feedStore = useFeedStore();
     const notificationStore = useNotificationStore();
     const sharedFeedStore = useSharedFeedStore();
@@ -77,10 +79,15 @@ export async function runUpdateFriendDelayedCheckFlow(
                 groupName,
                 time
             };
-            notificationStore.queueFeedNoty(feed);
-            sharedFeedStore.addEntry(feed);
-            feedStore.addFeedEntry(feed);
-            database.addOnlineOfflineToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            const persistedFeed =
+                await database.addOnlineOfflineToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            if (persistedFeed) {
+                notificationStore.queueFeedNoty(persistedFeed);
+                sharedFeedStore.addEntry(persistedFeed);
+                feedStore.addFeedEntry(persistedFeed);
+            }
         } else if (
             newState === 'online' &&
             (ctx.state === 'offline' || ctx.state === 'active')
@@ -103,10 +110,15 @@ export async function runUpdateFriendDelayedCheckFlow(
                 groupName,
                 time: ''
             };
-            notificationStore.queueFeedNoty(feed);
-            sharedFeedStore.addEntry(feed);
-            feedStore.addFeedEntry(feed);
-            database.addOnlineOfflineToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            const persistedFeed =
+                await database.addOnlineOfflineToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            if (persistedFeed) {
+                notificationStore.queueFeedNoty(persistedFeed);
+                sharedFeedStore.addEntry(persistedFeed);
+                feedStore.addFeedEntry(persistedFeed);
+            }
         }
         if (newState === 'active') {
             ctx.ref.$active_for = now();

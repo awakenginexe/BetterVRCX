@@ -5,6 +5,10 @@
                 :label="t('compatibility.bundle_notifications')"
                 :value="inventoryBundleNotifications"
                 @change="setInventoryBundleNotifications" />
+            <SimpleSwitch
+                :label="t('compatibility.free_store_notifications')"
+                :value="freeStoreItemNotifications"
+                @change="setFreeStoreItemNotifications" />
             <SettingsItem :label="t('view.settings.notifications.notifications.layout')">
                 <Select :model-value="notificationLayout" @update:modelValue="setNotificationLayout">
                     <SelectTrigger size="sm">
@@ -213,6 +217,7 @@
         TTSvoices,
         notificationLayout,
         inventoryBundleNotifications,
+        freeStoreItemNotifications,
         nonFriendNotificationInstanceTypes
     } = storeToRefs(notificationsSettingsStore);
 
@@ -226,7 +231,8 @@
         saveNotificationTTS,
         testNotificationTTS,
         setNotificationLayout,
-        setInventoryBundleNotifications
+        setInventoryBundleNotifications,
+        setFreeStoreItemNotifications
     } = notificationsSettingsStore;
 
     const availableInstanceTypes = computed(() => [

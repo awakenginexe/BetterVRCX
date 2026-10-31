@@ -2,7 +2,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
     execute: vi.fn(),
-    executeNonQuery: vi.fn()
+    executeNonQuery: vi.fn(),
+    executeInsert: vi.fn()
 }));
 vi.mock('../../sqlite.js', () => ({ default: mocks }));
 vi.mock('../index.js', () => ({
@@ -41,6 +42,12 @@ beforeEach(() => {
                 )
             )
     );
+});
+beforeEach(() => {
+    mocks.executeInsert.mockImplementation(async (sql, args) => {
+        const result = await mocks.executeNonQuery(sql, args);
+        return result.changes ? Number(result.lastInsertRowid) : 0;
+    });
 });
 afterEach(() => db.close());
 

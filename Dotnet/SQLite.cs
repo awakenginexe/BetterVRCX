@@ -189,5 +189,27 @@ namespace VRCX
             m_Connection.Dispose();
             m_Connection = null;
         }
+        public long ExecuteInsert(string sql, IDictionary<string, object>? args = null)
+        {
+            m_ConnectionLock.EnterWriteLock();
+            try
+            {
+                var connection = GetConnection();
+                using var command = new SQLiteCommand(sql, connection);
+                if (args != null)
+                {
+                    foreach (var arg in args)
+                    {
+                        command.Parameters.Add(new SQLiteParameter(arg.Key, arg.Value));
+                    }
+                }
+
+                return command.ExecuteNonQuery() > 0 ? connection.LastInsertRowId : 0;
+            }
+            finally
+            {
+                m_ConnectionLock.ExitWriteLock();
+            }
+        }
     }
 }

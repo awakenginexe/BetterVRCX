@@ -9,7 +9,7 @@
             <!-- Title -->
             <div class="pt-1 text-center">
                 <div class="mb-2 flex justify-center">
-                    <img :src="vrcxLogo" alt="VRCX" class="size-12 rounded-xl" />
+                    <img :src="vrcxLogo" alt="BetterVRCX" class="size-12 rounded-xl" />
                 </div>
 
                 <h2 class="m-0 text-[23px] font-bold tracking-tight">
@@ -47,32 +47,6 @@
                 </div>
             </div>
 
-            <!-- Support (subdued footer-like) -->
-            <div class="mx-auto mt-4 w-fit max-w-[340px]">
-                <div class="mb-2 text-[11.5px] font-medium tracking-[0.02em] text-muted-foreground/75">
-                    <span>{{ t('onboarding.whatsnew.common.support') }}</span>
-                </div>
-
-                <div class="flex flex-col gap-1 text-left">
-                    <div
-                        v-for="supporter in supporters"
-                        :key="supporter.name"
-                        class="flex flex-wrap items-center gap-1">
-                        <span class="text-[13px] font-semibold text-foreground/90">
-                            {{ supporter.name }}
-                        </span>
-                        <template v-for="link in supporter.links" :key="link.label">
-                            <span class="text-[11px] text-muted-foreground/40">·</span>
-                            <button
-                                class="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-muted-foreground/80 transition-colors duration-200 hover:text-foreground cursor-pointer"
-                                @click="openExternalLink(link.url)">
-                                {{ link.label }}
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
-
             <!-- View Changelog -->
             <div class="mt-2 flex justify-center">
                 <button
@@ -98,7 +72,6 @@
 
     import { Dialog, DialogContent } from '@/components/ui/dialog';
     import { Button } from '@/components/ui/button';
-    import { openExternalLink } from '../../shared/utils';
     import { useVRCXUpdaterStore } from '../../stores';
     import vrcxLogo from '../../../images/BetterVRCX.png';
 
@@ -106,20 +79,6 @@
     const vrcxUpdaterStore = useVRCXUpdaterStore();
     const { whatsNewDialog } = storeToRefs(vrcxUpdaterStore);
     const { closeWhatsNewDialog, openChangeLogDialogOnly } = vrcxUpdaterStore;
-
-    const supporters = [
-        {
-            name: 'Map1en',
-            links: [
-                { label: 'Ko-fi', url: 'https://ko-fi.com/map1en_' },
-                { label: '爱发电', url: 'https://ifdian.net/a/map1en_' }
-            ]
-        },
-        {
-            name: 'Natsumi',
-            links: [{ label: 'Ko-fi', url: 'https://ko-fi.com/natsumi_sama' }]
-        }
-    ];
 
     const iconMap = {
         search: markRaw(Search),

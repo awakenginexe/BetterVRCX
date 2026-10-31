@@ -44,29 +44,5 @@ export function useModerationReports(type, userId, api) {
             if (token === generation) loading.value = false;
         }
     }
-    async function remove(report) {
-        if (
-            loading.value ||
-            !userId.value ||
-            !reports.value.some((item) => item.id === report.id) ||
-            (report.reportingUserId && report.reportingUserId !== userId.value)
-        )
-            return;
-        const token = generation;
-        const user = userId.value;
-        loading.value = true;
-        error.value = '';
-        try {
-            await api.deleteModerationReport({ moderationReportId: report.id });
-            if (token === generation && user === userId.value)
-                reports.value = reports.value.filter(
-                    (item) => item.id !== report.id
-                );
-        } catch (e) {
-            if (token === generation) error.value = e.message || String(e);
-        } finally {
-            if (token === generation) loading.value = false;
-        }
-    }
-    return { reports, hasNext, loading, error, load, remove, cancel };
+    return { reports, hasNext, loading, error, load, cancel };
 }

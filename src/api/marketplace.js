@@ -1,6 +1,12 @@
 import { request } from '../services/request';
 
 const marketplaceRequest = {
+    getEconomyTransactions({ userId, ...params }) {
+        return request(`user/${userId}/economy/transactions`, {
+            method: 'GET',
+            params
+        }).then((json) => ({ json, params }));
+    },
     searchAvatars(params) {
         const query = Object.fromEntries(
             Object.entries(params).filter(([, value]) => value !== undefined)

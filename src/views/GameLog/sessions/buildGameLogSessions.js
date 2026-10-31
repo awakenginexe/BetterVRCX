@@ -109,7 +109,8 @@ function deduplicateVideoPlay(events) {
         if (
             events[i].type === 'VideoPlay' &&
             events[i - 1].type === 'VideoPlay' &&
-            events[i].videoUrl === events[i - 1].videoUrl
+            (events[i].videoUrl || events[i].videoName) ===
+                (events[i - 1].videoUrl || events[i - 1].videoName)
         ) {
             events[i - 1].playCount =
                 (events[i - 1].playCount || 1) + (events[i].playCount || 1);

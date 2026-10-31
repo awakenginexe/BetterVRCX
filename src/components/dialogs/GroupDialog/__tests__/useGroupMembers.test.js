@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
 
 vi.mock('../../../../api', () => ({
@@ -97,8 +97,39 @@ import { useGroupMembers } from '../useGroupMembers';
 import { groupRequest, queryRequest } from '../../../../api';
 import { FILTER_EVERYONE } from '../../../../shared/constants';
 
+test('member search ignores a response after the dialog is replaced', async () => {
+    vi.useFakeTimers();
+    try {
+        const dialog = createGroupDialog({ memberSearch: 'Jamie' });
+        const deps = createDeps();
+        let resolve;
+        groupRequest.getGroupMembersSearch.mockReturnValue(
+            new Promise((r) => {
+                resolve = r;
+            })
+        );
+        const state = useGroupMembers(dialog, deps);
+        state.groupMembersSearch();
+        await vi.advanceTimersByTimeAsync(200);
+        dialog.value = createGroupDialog({
+            id: 'grp_next',
+            memberSearchResults: [{ userId: 'usr_new_group' }]
+        }).value;
+        resolve({
+            json: { results: [{ userId: 'usr_old_group' }] },
+            params: { groupId: 'grp_1' }
+        });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(dialog.value.memberSearchResults).toEqual([
+            { userId: 'usr_new_group' }
+        ]);
+        expect(deps.handleGroupMember).not.toHaveBeenCalled();
+    } finally {
+        vi.useRealTimers();
+    }
+});
+
 /**
- *
  * @param overrides
  */
 function createGroupDialog(overrides = {}) {
@@ -117,7 +148,6 @@ function createGroupDialog(overrides = {}) {
 }
 
 /**
- *
  * @param overrides
  */
 function createDeps(overrides = {}) {
@@ -271,6 +301,10 @@ describe('useGroupMembers', () => {
     });
 
     describe('groupMembersSearch', () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
         test('clears results when search is less than 3 characters', () => {
             const groupDialog = createGroupDialog({ memberSearch: 'ab' });
             const { groupMembersSearch, isGroupMembersLoading } =
@@ -304,6 +338,119 @@ describe('useGroupMembers', () => {
                     }
                 );
             });
+        });
+
+        test('collapses rapid input into a single API call with the latest query', async () => {
+            vi.useFakeTimers();
+            const groupDialog = createGroupDialog({ memberSearch: 'joh' });
+            groupRequest.getGroupMembersSearch.mockResolvedValue({
+                json: { results: [] },
+                params: { groupId: 'grp_1' }
+            });
+
+            const { groupMembersSearch } = useGroupMembers(
+                groupDialog,
+                createDeps()
+            );
+            groupMembersSearch();
+            groupDialog.value.memberSearch = 'john';
+            groupMembersSearch();
+            groupDialog.value.memberSearch = 'johnny';
+            groupMembersSearch();
+
+            expect(groupRequest.getGroupMembersSearch).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(200);
+
+            expect(groupRequest.getGroupMembersSearch).toHaveBeenCalledTimes(1);
+            expect(groupRequest.getGroupMembersSearch).toHaveBeenCalledWith({
+                groupId: 'grp_1',
+                query: 'johnny',
+                n: 100,
+                offset: 0
+            });
+        });
+
+        test('ignores stale responses after the query changed', async () => {
+            vi.useFakeTimers();
+            const groupDialog = createGroupDialog({ memberSearch: 'john' });
+            let resolveFirst;
+            groupRequest.getGroupMembersSearch
+                .mockImplementationOnce(
+                    () =>
+                        new Promise((resolve) => {
+                            resolveFirst = resolve;
+                        })
+                )
+                .mockResolvedValueOnce({
+                    json: { results: [{ userId: 'usr_new' }] },
+                    params: { groupId: 'grp_1' }
+                });
+
+            const { groupMembersSearch } = useGroupMembers(
+                groupDialog,
+                createDeps()
+            );
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // first request for "john" stays pending
+
+            groupDialog.value.memberSearch = 'johnny';
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // second request for "johnny" resolves
+
+            expect(groupDialog.value.memberSearchResults).toEqual([
+                { userId: 'usr_new' }
+            ]);
+
+            resolveFirst({
+                json: { results: [{ userId: 'usr_stale' }] },
+                params: { groupId: 'grp_1' }
+            });
+            await vi.advanceTimersByTimeAsync(0);
+
+            expect(groupDialog.value.memberSearchResults).toEqual([
+                { userId: 'usr_new' }
+            ]);
+        });
+
+        test('loads remaining member pages when search finds no matches', async () => {
+            vi.useFakeTimers();
+            const groupDialog = createGroupDialog({
+                memberSearch: 'jam',
+                members: [
+                    { userId: 'usr_2', user: { displayName: 'Other User' } }
+                ]
+            });
+            groupRequest.getGroupMembersSearch.mockResolvedValue({
+                json: { results: [] },
+                params: { groupId: 'grp_1' }
+            });
+            queryRequest.fetch.mockResolvedValue({
+                json: [{ userId: 'usr_1', user: { displayName: 'Jamie Doe' } }],
+                params: { groupId: 'grp_1', n: 100, offset: 0 }
+            });
+
+            const {
+                groupMembersSearch,
+                loadMoreGroupMembersParams,
+                isGroupMembersDone
+            } = useGroupMembers(groupDialog, createDeps());
+            loadMoreGroupMembersParams.value = {
+                n: 100,
+                offset: 100,
+                groupId: 'grp_1',
+                sort: 'joinedAt:desc'
+            };
+            isGroupMembersDone.value = false;
+
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // debounced search fires, no matches anywhere
+            await vi.advanceTimersByTimeAsync(1000); // next member page loads and finds a match
+
+            expect(groupDialog.value.memberSearchResults).toEqual([
+                { userId: 'usr_1', user: { displayName: 'Jamie Doe' } }
+            ]);
+            expect(groupDialog.value.memberSearch).toBe('jam');
+            expect(queryRequest.fetch).toHaveBeenCalledTimes(1);
         });
     });
 

@@ -1,5 +1,39 @@
 # Changelog
 
+## 4.4.0
+
+### Added
+
+- Sign in with a QR code or device code, keep a saved passwordless session, and request a password reset in the app.
+- View your purchases and your latest 100 VRChat Credits transactions.
+- Receive reminders for unclaimed free store items and claim them together.
+- Favorite prints to protect them from automatic cleanup. Favorites are saved separately for each account.
+- Create and edit groups, transfer ownership, manage calendar events and recurrence, and announce eligible group instances.
+- Select or remove owned profile effects, nameplate effects, and icon frames in the profile editor.
+- Optionally filter new friend requests with no shared-instance encounters recorded in your local GameLog. This starts off.
+- Clear your personal player moderation records by type after confirmation.
+- Windows ARM64 Electron source and build support. An ARM64 release package has not been tested on hardware.
+
+### Improved
+
+- Credit balances and owned purchases refresh when economy events arrive and during background synchronization.
+- TechAnon and ProTV now-playing information supports playback state changes while retaining legacy media and PyPyDance support.
+- User, world, and group searches show 60 results per page.
+- Export only public avatars, open higher-resolution image previews, and see mutual-group counts and available instance hype-train information.
+- Hover over truncated breadcrumbs and group names to read the full text.
+- Playback errors can offer a direct link to VRCVideoCacher, with an option to hide future prompts.
+
+### Fixed
+
+- Group member searches keep the latest query, include known local members, and search additional pages when server results are missing.
+- Friends and notifications refresh more reliably after a connection drops.
+- Historical GameLog names migrate safely when duplicate entries exist.
+- New GameLog entries keep stable row identities, and ignored duplicate inserts no longer appear as new entries.
+- Browser data survives genuine CEF upgrades, and the Electron bridge includes the shutdown deadlock fix.
+- Removed the deprecated moderation-report Delete action.
+- Startup messages use BetterVRCX branding without donation promotions.
+- Expected notification-seen rate limits no longer produce error popups, and your own offline duration displays correctly.
+
 ## 4.3.0
 
 Found Avatars gives you a place to revisit avatars you have encountered, without digging through the Feed.
@@ -69,7 +103,7 @@ BetterVRCX 4.2.0 brings a cleaner sidebar, smoother navigation, and a Mutual Fri
 - Last Known Presence now uses additional game-log and location events to keep locally observed presence information current.
 - Profile history records bio and profile-link changes while avoiding duplicate entries for unchanged information.
 - See saved player memos in the Player List and your own Account Standing when provided by VRChat.
-- Manage **Reduced Profile Animations** under **Settings → Profile Backdrop**, alongside BetterVRCX's existing appearance controls.
+- Manage **Reduced Profile Animations** under **Settings â†’ Profile Backdrop**, alongside BetterVRCX's existing appearance controls.
 
 ### Notifications and reliability
 

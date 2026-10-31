@@ -1,5 +1,5 @@
 import { reactive, ref } from 'vue';
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('vue-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('vue-i18n', () => ({
@@ -88,8 +88,41 @@ vi.mock('../../../../api', () => ({
     }
 }));
 
+vi.mock('worker-timers', () => ({
+    setTimeout: (fn, ms) => globalThis.setTimeout(fn, ms),
+    clearTimeout: (id) => globalThis.clearTimeout(id)
+}));
+
 import { useGroupModerationData } from '../useGroupModerationData';
 import { queryRequest } from '../../../../api';
+
+test('member search ignores a response from the previously open group', async () => {
+    vi.useFakeTimers();
+    try {
+        const deps = createDeps();
+        let resolve;
+        deps.groupRequest.getGroupMembersSearch.mockReturnValue(
+            new Promise((r) => {
+                resolve = r;
+            })
+        );
+        const state = useGroupModerationData(deps);
+        state.memberSearch.value = 'Jamie';
+        state.groupMembersSearch();
+        await vi.advanceTimersByTimeAsync(200);
+        deps.groupMemberModeration.value.id = 'grp_next';
+        deps.tables.members.data = [{ userId: 'usr_new_group' }];
+        resolve({
+            json: { results: [{ userId: 'usr_old_group' }] },
+            params: { groupId: 'grp_test' }
+        });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(deps.tables.members.data).toEqual([{ userId: 'usr_new_group' }]);
+        expect(deps.handleGroupMember).not.toHaveBeenCalled();
+    } finally {
+        vi.useRealTimers();
+    }
+});
 
 function createTables() {
     return {
@@ -432,6 +465,10 @@ describe('useGroupModerationData', () => {
     });
 
     describe('member search / sort / filter', () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
         test('groupMembersSearch clears table when search is too short', () => {
             const deps = createDeps();
             deps.tables.members.data = [{ userId: 'usr_1' }];
@@ -443,6 +480,136 @@ describe('useGroupModerationData', () => {
 
             expect(deps.tables.members.data).toHaveLength(0);
             expect(isGroupMembersLoading.value).toBe(false);
+        });
+
+        test('collapses rapid input into a single API call with the latest query', async () => {
+            vi.useFakeTimers();
+            const deps = createDeps();
+            deps.groupRequest.getGroupMembersSearch.mockResolvedValue({
+                json: { results: [{ userId: 'usr_1' }] },
+                params: { groupId: 'grp_test' }
+            });
+
+            const { groupMembersSearch, memberSearch } =
+                useGroupModerationData(deps);
+            memberSearch.value = 'joh';
+            groupMembersSearch();
+            memberSearch.value = 'john';
+            groupMembersSearch();
+            memberSearch.value = 'johnny';
+            groupMembersSearch();
+
+            expect(
+                deps.groupRequest.getGroupMembersSearch
+            ).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(200);
+
+            expect(
+                deps.groupRequest.getGroupMembersSearch
+            ).toHaveBeenCalledTimes(1);
+            expect(
+                deps.groupRequest.getGroupMembersSearch
+            ).toHaveBeenCalledWith({
+                groupId: 'grp_test',
+                query: 'johnny',
+                n: 100,
+                offset: 0
+            });
+        });
+
+        test('ignores stale responses after the query changed', async () => {
+            vi.useFakeTimers();
+            const deps = createDeps();
+            let resolveFirst;
+            deps.groupRequest.getGroupMembersSearch
+                .mockImplementationOnce(
+                    () =>
+                        new Promise((resolve) => {
+                            resolveFirst = resolve;
+                        })
+                )
+                .mockResolvedValueOnce({
+                    json: { results: [{ userId: 'usr_new' }] },
+                    params: { groupId: 'grp_test' }
+                });
+
+            const { groupMembersSearch, memberSearch } =
+                useGroupModerationData(deps);
+            memberSearch.value = 'john';
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // first request for "john" stays pending
+
+            memberSearch.value = 'johnny';
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // second request for "johnny" resolves
+
+            expect(deps.tables.members.data).toEqual([
+                { userId: 'usr_new', $selected: false }
+            ]);
+
+            resolveFirst({
+                json: { results: [{ userId: 'usr_stale' }] },
+                params: { groupId: 'grp_test' }
+            });
+            await vi.advanceTimersByTimeAsync(0);
+
+            expect(deps.tables.members.data).toEqual([
+                { userId: 'usr_new', $selected: false }
+            ]);
+        });
+
+        test('loads remaining member pages when search finds no matches', async () => {
+            vi.useFakeTimers();
+            const deps = createDeps();
+            deps.groupRequest.getGroupMember.mockResolvedValue({
+                json: null,
+                params: {}
+            });
+            const firstPage = Array.from({ length: 100 }, (_, i) => ({
+                userId: `usr_page1_${i}`,
+                user: { displayName: `Test User ${i}` }
+            }));
+            deps.groupRequest.getGroupMembers
+                .mockResolvedValueOnce({
+                    json: firstPage,
+                    params: { groupId: 'grp_test', n: 100, offset: 0 }
+                })
+                .mockResolvedValue({
+                    json: [
+                        { userId: 'usr_1', user: { displayName: 'Jamie Doe' } }
+                    ],
+                    params: { groupId: 'grp_test', n: 100, offset: 100 }
+                });
+
+            const {
+                setGroupMemberSortOrder,
+                groupMembersSearch,
+                memberSearch
+            } = useGroupModerationData(deps);
+            await setGroupMemberSortOrder({
+                id: 'x',
+                name: 'sort',
+                value: 'joinedAt:asc'
+            }); // loads first page
+
+            memberSearch.value = 'jam';
+            deps.groupRequest.getGroupMembersSearch.mockResolvedValue({
+                json: { results: [] },
+                params: { groupId: 'grp_test' }
+            });
+            groupMembersSearch();
+            await vi.advanceTimersByTimeAsync(200); // debounced search fires, no matches anywhere
+            await vi.advanceTimersByTimeAsync(1000); // next member page loads and finds a match
+
+            expect(deps.tables.members.data).toEqual([
+                {
+                    userId: 'usr_1',
+                    user: { displayName: 'Jamie Doe' },
+                    $selected: false
+                }
+            ]);
+            expect(memberSearch.value).toBe('jam');
+            expect(deps.groupRequest.getGroupMembers).toHaveBeenCalledTimes(2);
         });
 
         test('setGroupMemberSortOrder does nothing when sort is the same', async () => {

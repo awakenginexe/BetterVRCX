@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import {
     groupDialogFilterOptions,
@@ -7,19 +7,20 @@ import {
     FILTER_NO_ROLE
 } from '../../../shared/constants';
 import { groupRequest, queryRequest } from '../../../api';
-import { debounce } from '../../../shared/utils';
+import { debounce, mergeGroupMemberSearchResults } from '../../../shared/utils';
 
 import * as workerTimers from 'worker-timers';
 
 /**
  * Composable for managing group member loading, searching, sorting, and filtering.
- * @param {import('vue').Ref} groupDialog - reactive ref to the group dialog state
- * @param {object} deps - external dependencies
- * @param {import('vue').Ref} deps.currentUser - reactive ref to the current user
- * @param {Function} deps.applyGroupMember - function to apply group member data
- * @param {Function} deps.handleGroupMember - function to handle group member updates
- * @param {Function} deps.t - i18n translation function
- * @returns {object} members composable API
+ *
+ * @param {import('vue').Ref} groupDialog - Reactive ref to the group dialog state
+ * @param {object} deps - External dependencies
+ * @param {import('vue').Ref} deps.currentUser - Reactive ref to the current user
+ * @param {Function} deps.applyGroupMember - Function to apply group member data
+ * @param {Function} deps.handleGroupMember - Function to handle group member updates
+ * @param {Function} deps.t - I18n translation function
+ * @returns {object} Members composable API
  */
 export function useGroupMembers(
     groupDialog,
@@ -117,58 +118,135 @@ export function useGroupMembers(
         ].filter((group) => group.items.length);
     });
 
-    /**
-     *
-     */
+    let memberSearchRequestId = 0;
+    const groupMembersSearchDebounced = debounce(
+        groupMembersSearchRequest,
+        200
+    );
+    // shortcut: scan at most 1,000 additional members; use Load All for larger groups.
+    const groupMembersSearchMaxPages = 10;
+
+    watch(
+        [
+            () => groupDialog.value.id,
+            () => groupDialog.value.visible,
+            () => currentUser.value.id
+        ],
+        () => {
+            memberSearchRequestId++;
+            isGroupMembersLoading.value = false;
+        },
+        { flush: 'sync' }
+    );
+
     function groupMembersSearch() {
+        memberSearchRequestId += 1;
         if (groupDialog.value.memberSearch.length < 3) {
             groupDialog.value.memberSearchResults = [];
             isGroupMembersLoading.value = false;
             return;
         }
-        debounce(groupMembersSearchDebounced, 200)();
+        groupMembersSearchDebounced();
     }
 
-    /**
-     *
-     */
-    function groupMembersSearchDebounced() {
+    async function groupMembersSearchRequest() {
         const D = groupDialog.value;
         const search = D.memberSearch;
+        const requestId = memberSearchRequestId;
         D.memberSearchResults = [];
-        if (!search || search.length < 3) {
+        if (!groupDialog.value.visible || !search || search.length < 3) {
+            isGroupMembersLoading.value = false;
             return;
         }
         isGroupMembersLoading.value = true;
-        groupRequest
-            .getGroupMembersSearch({
+        try {
+            const args = await groupRequest.getGroupMembersSearch({
                 groupId: D.id,
                 query: search,
                 n: 100,
                 offset: 0
-            })
-            .then((args) => {
-                for (const json of args.json.results) {
-                    handleGroupMember({
-                        json,
-                        params: {
-                            groupId: args.params.groupId
-                        }
-                    });
-                }
-                if (D.id === args.params.groupId) {
-                    D.memberSearchResults = args.json.results;
-                }
-            })
-            .finally(() => {
-                isGroupMembersLoading.value = false;
             });
+            if (
+                requestId !== memberSearchRequestId ||
+                groupDialog.value !== D ||
+                !D.visible ||
+                D.id !== args.params.groupId ||
+                search !== D.memberSearch
+            ) {
+                return;
+            }
+            for (const json of args.json.results) {
+                handleGroupMember({
+                    json,
+                    params: {
+                        groupId: args.params.groupId
+                    }
+                });
+            }
+            D.memberSearchResults = mergeGroupMemberSearchResults(
+                args.json.results,
+                D.members,
+                search
+            );
+            await groupMembersSearchLoadRemaining(requestId, search);
+        } catch {
+            // ignore search errors, they are reported by the request layer
+        } finally {
+            if (requestId === memberSearchRequestId) {
+                isGroupMembersLoading.value = false;
+            }
+        }
     }
 
-    /**
-     *
-     */
+    async function groupMembersSearchLoadRemaining(requestId, search) {
+        const D = groupDialog.value;
+        for (let page = 0; page < groupMembersSearchMaxPages; ++page) {
+            if (
+                D.memberSearchResults.length ||
+                !D.visible ||
+                loadMoreGroupMembersParams.value.groupId !== D.id ||
+                requestId !== memberSearchRequestId ||
+                search !== D.memberSearch ||
+                isGroupMembersDone.value
+            ) {
+                return;
+            }
+            isGroupMembersLoading.value = true;
+            await new Promise((resolve) => {
+                workerTimers.setTimeout(resolve, 1000);
+            });
+            if (
+                !D.visible ||
+                requestId !== memberSearchRequestId ||
+                search !== D.memberSearch ||
+                isGroupMembersDone.value
+            ) {
+                return;
+            }
+            isGroupMembersLoading.value = false;
+            try {
+                await loadMoreGroupMembers({ preserveSearch: true });
+            } catch {
+                return;
+            }
+            if (
+                requestId !== memberSearchRequestId ||
+                search !== D.memberSearch
+            ) {
+                return;
+            }
+            D.memberSearchResults = mergeGroupMemberSearchResults(
+                D.memberSearchResults,
+                D.members,
+                search
+            );
+        }
+    }
+
     async function getGroupDialogGroupMembers() {
+        memberSearchRequestId++;
+        isGroupMembersLoading.value = false;
+        const userId = currentUser.value.id;
         const D = groupDialog.value;
         D.members = [];
         isGroupMembersDone.value = false;
@@ -185,6 +263,7 @@ export function useGroupMembers(
         if (D.memberFilter.id !== null) {
             loadMoreGroupMembersParams.value.roleId = D.memberFilter.id;
         }
+        const memberParams = loadMoreGroupMembersParams.value;
         if (D.inGroup) {
             await queryRequest
                 .fetch('groupMember', {
@@ -192,6 +271,12 @@ export function useGroupMembers(
                     userId: currentUser.value.id
                 })
                 .then((args) => {
+                    if (
+                        memberParams.groupId !== groupDialog.value.id ||
+                        memberParams !== loadMoreGroupMembersParams.value ||
+                        currentUser.value.id !== userId
+                    )
+                        return args;
                     args.ref = applyGroupMember(args.json);
                     if (args.json) {
                         args.json.user = currentUser.value;
@@ -203,29 +288,50 @@ export function useGroupMembers(
                     return args;
                 });
         }
+        if (
+            memberParams.groupId !== groupDialog.value.id ||
+            memberParams !== loadMoreGroupMembersParams.value ||
+            currentUser.value.id !== userId
+        )
+            return;
         await loadMoreGroupMembers();
     }
 
     /**
-     *
+     * @param {object} [options]
+     * @param {boolean} [options.preserveSearch] - Keep the active member search when loading more members
      */
-    async function loadMoreGroupMembers() {
+    async function loadMoreGroupMembers(options = {}) {
         if (isGroupMembersDone.value || isGroupMembersLoading.value) {
             return;
         }
         const D = groupDialog.value;
         const params = loadMoreGroupMembersParams.value;
+        const userId = currentUser.value.id;
         if (params.roleId === '') {
             delete params.roleId;
         }
-        D.memberSearch = '';
+        if (!options.preserveSearch) {
+            D.memberSearch = '';
+        }
         isGroupMembersLoading.value = true;
         await queryRequest
             .fetch('groupMembers', params)
             .finally(() => {
-                isGroupMembersLoading.value = false;
+                if (
+                    params === loadMoreGroupMembersParams.value &&
+                    currentUser.value.id === userId
+                )
+                    isGroupMembersLoading.value = false;
             })
             .then((args) => {
+                if (
+                    groupDialog.value !== D ||
+                    D.id !== params.groupId ||
+                    currentUser.value.id !== userId ||
+                    params !== loadMoreGroupMembersParams.value
+                )
+                    return args;
                 for (const json of args.json) {
                     handleGroupMember({
                         json,
@@ -255,14 +361,15 @@ export function useGroupMembers(
                 return args;
             })
             .catch((err) => {
-                isGroupMembersDone.value = true;
+                if (
+                    params === loadMoreGroupMembersParams.value &&
+                    currentUser.value.id === userId
+                )
+                    isGroupMembersDone.value = true;
                 throw err;
             });
     }
 
-    /**
-     *
-     */
     async function loadAllGroupMembers() {
         if (isGroupMembersLoading.value) {
             return;

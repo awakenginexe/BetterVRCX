@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <Configurations>Debug;Release</Configurations>
     <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>linux-x64;win-x64;osx-x64</RuntimeIdentifiers>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <AssemblyTitle>BetterVRCX</AssemblyTitle>
@@ -93,8 +94,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="0.9.21" />
-    <PackageReference Include="Microsoft.JavaScript.NodeApi.Generator" Version="0.9.21" />
+    <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="0.9.27" />
+    <PackageReference Include="Microsoft.JavaScript.NodeApi.Generator" Version="0.9.27" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.4" />

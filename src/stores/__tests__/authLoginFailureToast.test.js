@@ -299,6 +299,103 @@ describe('useAuthStore login failure toast policy', () => {
         vi.useRealTimers();
     });
 
+    test('persists cookies immediately when saving a passwordless device session', async () => {
+        const store = await createAuthStore();
+        store.loginForm.saveCredentials = true;
+        mocks.webApiService.getCookies.mockResolvedValue(['device-cookie']);
+        store.queueSaveCredentials();
+        await store.updateStoredUser({
+            id: 'usr_device',
+            displayName: 'Device User'
+        });
+        const write = mocks.configRepository.setString.mock.calls.find(
+            ([key]) => key === 'savedCredentials'
+        );
+        const saved = JSON.parse(write[1]).usr_device;
+        expect(saved.loginParams.password).toBe('');
+        expect(saved.cookies).toEqual(['device-cookie']);
+    });
+
+    test('removing the remembered account clears its native session and startup marker', async () => {
+        const store = await createAuthStore();
+        store.loginForm.lastUserLoggedIn = 'usr_device';
+        await store.deleteSavedLogin('usr_device');
+        expect(mocks.webApiService.clearCookies).toHaveBeenCalledTimes(1);
+        expect(mocks.configRepository.remove).toHaveBeenCalledWith(
+            'lastUserLoggedIn'
+        );
+        expect(store.loginForm.lastUserLoggedIn).toBe('');
+    });
+
+    test('reuses passwordless cookies without basic auth or primary-password decryption', async () => {
+        const store = await createAuthStore();
+        mocks.advancedSettingsStore.enablePrimaryPassword = true;
+        mocks.request.mockResolvedValue({ id: 'usr_me' });
+        await store.relogin({
+            user: { id: 'usr_me' },
+            loginParams: { password: '' },
+            cookies: ['session']
+        });
+        expect(mocks.webApiService.setCookies).toHaveBeenCalledWith([
+            'session'
+        ]);
+        expect(mocks.request).toHaveBeenCalledExactlyOnceWith('auth/user', {
+            method: 'GET'
+        });
+        expect(mocks.security.decrypt).not.toHaveBeenCalled();
+        expect(mocks.runLoginSuccessFlow).toHaveBeenCalledWith({
+            id: 'usr_me'
+        });
+        expect(store.attemptingAutoLogin).toBe(false);
+    });
+
+    test('removes an expired passwordless session but retains sessions on transient errors', async () => {
+        const store = await createAuthStore();
+        const saved = {
+            user: { id: 'usr_me' },
+            loginParams: { password: '' },
+            cookies: ['session']
+        };
+        mocks.configRepository.getString.mockImplementation(
+            (key, fallback = '') =>
+                Promise.resolve(
+                    key === 'savedCredentials'
+                        ? JSON.stringify({ usr_me: saved })
+                        : fallback
+                )
+        );
+        mocks.request.mockRejectedValueOnce(
+            Object.assign(new Error('Unauthorized'), { status: 401 })
+        );
+        await expect(store.relogin(saved)).rejects.toThrow('Unauthorized');
+        expect(mocks.configRepository.setString).toHaveBeenCalledWith(
+            'savedCredentials',
+            '{}'
+        );
+        mocks.configRepository.setString.mockClear();
+        mocks.request.mockRejectedValueOnce(
+            Object.assign(new Error('Offline'), { status: 503 })
+        );
+        await expect(store.relogin(saved)).rejects.toThrow('Offline');
+        expect(mocks.configRepository.setString).not.toHaveBeenCalledWith(
+            'savedCredentials',
+            '{}'
+        );
+    });
+
+    test('rejects a saved session for a different account before applying the user', async () => {
+        const store = await createAuthStore();
+        mocks.request.mockResolvedValue({ id: 'usr_wrong' });
+        await expect(
+            store.relogin({
+                user: { id: 'usr_expected' },
+                loginParams: { password: '' },
+                cookies: ['session']
+            })
+        ).rejects.toThrow('different account');
+        expect(mocks.runLoginSuccessFlow).not.toHaveBeenCalled();
+    });
+
     test('explains email verification for manual and saved-account login failures', async () => {
         const store = await createAuthStore();
         store.loginForm.username = 'tester@example.com';
