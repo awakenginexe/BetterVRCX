@@ -275,8 +275,37 @@ export const useNotificationStore = defineStore('Notification', () => {
      *
      * @param args
      */
+    async function handleAutoDeclineFriendRequest(ref) {
+        if (!ref.senderUserId || !ref.id) return;
+        const userId = userStore.currentUser.id;
+        const joinInfo = await database.getJoinCount({
+            id: ref.senderUserId,
+            displayName: ref.senderUsername
+        });
+        if (
+            Number(joinInfo?.joinCount) !== 0 ||
+            userStore.currentUser.id !== userId ||
+            !watchState.isLoggedIn ||
+            !generalSettingsStore.autoDeclineFriendRequests
+        )
+            return;
+        await notificationRequest.hideNotification({ notificationId: ref.id });
+        if (userStore.currentUser.id === userId) handleNotificationHide(ref.id);
+    }
+
     function handlePipelineNotification(args) {
         const ref = args.json;
+        if (
+            ref.type === 'friendRequest' &&
+            generalSettingsStore.autoDeclineFriendRequests
+        ) {
+            return handleAutoDeclineFriendRequest(ref).catch((error) => {
+                console.error(
+                    'Failed to check friend request encounters:',
+                    error
+                );
+            });
+        }
         if (
             ref.type !== 'requestInvite' ||
             generalSettingsStore.autoAcceptInviteRequests === 'Off' ||
@@ -1009,7 +1038,7 @@ export const useNotificationStore = defineStore('Notification', () => {
     });
 
     // Overlay dispatch functions (notySaveImage, displayDesktopToast, etc.)
-    // are in ./overlayDispatch.js — destructured above via createOverlayDispatch().
+    // are in ./overlayDispatch.js â€” destructured above via createOverlayDispatch().
 
     /**
      *
