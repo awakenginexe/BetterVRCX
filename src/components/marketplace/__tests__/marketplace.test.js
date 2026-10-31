@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 const mocks = vi.hoisted(() => ({
     api: {
@@ -12,12 +13,22 @@ const mocks = vi.hoisted(() => ({
     confirm: vi.fn(),
     balance: vi.fn(),
     openAvatar: vi.fn(),
+    economy: {
+        balance: null,
+        ownedListingIds: new Set(),
+        ownedProductIds: new Set(),
+        refreshPurchases: vi.fn(),
+        refreshBalance: vi.fn()
+    },
     user: {
         currentUser: { id: 'usr_me' },
         isLocalUserVrcPlusSupporter: false
     }
 }));
 vi.mock('../../../api/marketplace', () => ({ default: mocks.api }));
+vi.mock('../../../stores/economy', () => ({
+    useEconomyStore: () => reactive(mocks.economy)
+}));
 vi.mock('../../../coordinators/avatarCoordinator', () => ({
     showAvatarDialog: mocks.openAvatar
 }));
@@ -70,6 +81,11 @@ beforeEach(() => {
     mocks.api.purchaseListing.mockResolvedValue({ json: {} });
     mocks.balance.mockResolvedValue({ json: { balance: 500 } });
     mocks.confirm.mockResolvedValue({ ok: false });
+    mocks.economy.balance = null;
+    mocks.economy.ownedListingIds = new Set();
+    mocks.economy.ownedProductIds = new Set();
+    mocks.economy.refreshPurchases.mockResolvedValue();
+    mocks.economy.refreshBalance.mockResolvedValue();
 });
 
 describe('MarketplaceSearch', () => {
@@ -204,6 +220,26 @@ describe('StoreBrowser', () => {
         expect(wrapper.emitted('purchased')).toEqual([
             [{ listingId: 'listing', productId: '' }]
         ]);
+    });
+
+    it('uses live economy balance and ownership when an open store receives updates', async () => {
+        const wrapper = mountComponent(StoreBrowser, { listings: [listing] });
+        await flushPromises();
+        expect(
+            wrapper.get('[data-testid="buy-listing"]').attributes('disabled')
+        ).toBeUndefined();
+        reactive(mocks.economy).balance = 10;
+        await flushPromises();
+        expect(
+            wrapper.get('[data-testid="buy-listing"]').attributes('disabled')
+        ).toBeDefined();
+        reactive(mocks.economy).balance = 500;
+        reactive(mocks.economy).ownedListingIds = new Set(['listing']);
+        await flushPromises();
+        expect(wrapper.text()).toContain('marketplace.owned');
+        expect(
+            wrapper.get('[data-testid="buy-listing"]').attributes('disabled')
+        ).toBeDefined();
     });
 
     it('does not purchase when confirmation is cancelled', async () => {

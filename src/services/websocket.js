@@ -31,11 +31,14 @@ import { request } from './request';
 import { runUpdateFriendFlow } from '../coordinators/friendPresenceCoordinator';
 import { runSetCurrentUserLocationFlow } from '../coordinators/locationCoordinator';
 import { watchState } from './watchState';
+import { useEconomyStore } from '../stores/economy';
 
 import * as workerTimers from 'worker-timers';
 
 let webSocket = null;
 let lastWebSocketMessage = '';
+let socketGeneration = 0;
+let reconnectNeedsRefresh = false;
 
 /**
  * Reactive WebSocket state for status bar telemetry.
@@ -55,6 +58,8 @@ export function initWebsocket() {
     if (!watchState.isFriendsLoaded || webSocket !== null) {
         return;
     }
+    const generation = socketGeneration;
+    const userId = useUserStore().currentUser.id;
     return request('auth', {
         method: 'GET'
     })
@@ -62,7 +67,13 @@ export function initWebsocket() {
             const args = {
                 json
             };
-            if (args.json.ok) {
+            if (
+                args.json.ok &&
+                generation === socketGeneration &&
+                watchState.isLoggedIn &&
+                watchState.isFriendsLoaded &&
+                userId === useUserStore().currentUser.id
+            ) {
                 connectWebSocket(args.json.token);
             }
         })
@@ -81,36 +92,57 @@ function connectWebSocket(token) {
         return;
     }
     const socket = new WebSocket(`${AppDebug.websocketDomain}/?auth=${token}`);
+    const generation = socketGeneration;
     socket.onopen = () => {
+        if (webSocket !== socket) return;
         wsState.connected = true;
+        lastWebSocketMessage = '';
+        if (
+            reconnectNeedsRefresh &&
+            watchState.isLoggedIn &&
+            watchState.isFriendsLoaded
+        ) {
+            reconnectNeedsRefresh = false;
+            useNotificationStore().refreshNotifications();
+            Promise.resolve(useFriendStore().refreshFriends()).catch(
+                console.error
+            );
+        }
         if (AppDebug.debugWebSocket) {
             console.log('WebSocket connected');
         }
     };
-    socket.onclose = () => {
+    socket.onclose = ({ code, reason }) => {
+        if (webSocket !== socket) return;
         wsState.connected = false;
-        if (webSocket === socket) {
-            webSocket = null;
-        }
+        webSocket = null;
+        socket.onclose =
+            socket.onerror =
+            socket.onmessage =
+            socket.onopen =
+                null;
+        reconnectNeedsRefresh = code !== 1000 && code !== 1001;
         try {
             socket.close();
         } catch (err) {
             console.error('Error closing WebSocket:', err);
         }
         if (AppDebug.debugWebSocket) {
-            console.log('WebSocket closed');
+            console.log('WebSocket closed', { code, reason });
         }
         workerTimers.setTimeout(() => {
             if (
                 watchState.isLoggedIn &&
                 watchState.isFriendsLoaded &&
+                generation === socketGeneration &&
                 webSocket === null
             ) {
-                initWebsocket();
+                return initWebsocket();
             }
         }, 5000);
     };
     socket.onerror = () => {
+        if (webSocket !== socket) return;
         if (AppDebug.errorNoty) {
             toast.dismiss(AppDebug.errorNoty);
         }
@@ -160,11 +192,16 @@ function connectWebSocket(token) {
  * @returns {void}
  */
 export function closeWebSocket() {
+    socketGeneration++;
+    reconnectNeedsRefresh = false;
+    wsState.connected = false;
+    lastWebSocketMessage = '';
     const socket = webSocket;
     if (socket === null) {
         return;
     }
     webSocket = null;
+    socket.onclose = socket.onerror = socket.onmessage = socket.onopen = null;
     try {
         socket.close();
     } catch (err) {
@@ -214,6 +251,9 @@ function handlePipeline(args) {
         delete content.user.state;
     }
     switch (type) {
+        case 'economy-update':
+            useEconomyStore().handleEvent(content);
+            break;
         case 'notification':
             notificationStore.handleNotification({
                 json: content,

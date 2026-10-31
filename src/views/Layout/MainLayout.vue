@@ -74,6 +74,8 @@
         <MainDialogContainer></MainDialogContainer>
 
         <InviteGroupDialog></InviteGroupDialog>
+        <GroupEditDialog />
+        <GroupEventEditDialog />
 
         <FullscreenImagePreview></FullscreenImagePreview>
 
@@ -97,6 +99,7 @@
 
         <GlobalToolsDialogs></GlobalToolsDialogs>
         <InventoryBundleDialog />
+        <FreeStoreItemDialog />
 
         <ChangelogDialog></ChangelogDialog>
 
@@ -123,6 +126,9 @@
     import FullscreenImagePreview from '../../components/FullscreenImagePreview.vue';
     import GlobalToolsDialogs from '../Tools/components/GlobalToolsDialogs.vue';
     import InventoryBundleDialog from '../../components/dialogs/InventoryBundleDialog.vue';
+    import FreeStoreItemDialog from '../../components/dialogs/FreeStoreItemDialog.vue';
+    import GroupEditDialog from '../../components/dialogs/GroupDialog/GroupEditDialog.vue';
+    import GroupEventEditDialog from '../../components/dialogs/GroupDialog/GroupEventEditDialog.vue';
     import InviteGroupDialog from '../../components/dialogs/InviteGroupDialog.vue';
     import LaunchDialog from '../../components/dialogs/LaunchDialog.vue';
     import LaunchOptionsDialog from '../Settings/dialogs/LaunchOptionsDialog.vue';

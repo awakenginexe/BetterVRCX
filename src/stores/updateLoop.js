@@ -1,6 +1,7 @@
 import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 import { useInventoryBundleStore } from './inventoryBundle';
 import { defineStore } from 'pinia';
+import { useEconomyStore } from './economy';
 import { watch } from 'vue';
 
 import { database } from '../services/database';
@@ -154,6 +155,7 @@ export const useUpdateLoopStore = defineStore('UpdateLoop', () => {
                 if (--state.nextBundleCheck <= 0) {
                     state.nextBundleCheck = 10800;
                     useInventoryBundleStore().checkInventoryBundles();
+                    useEconomyStore().refresh().catch(console.error);
                 }
             }
         } catch (err) {
