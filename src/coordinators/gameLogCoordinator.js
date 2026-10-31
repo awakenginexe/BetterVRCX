@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { checkYoutubeBotError } from './videoPlaybackPrompt';
 import { useLastKnownPresenceStore } from '../addons/lastKnownPresence/store';
 
 import {
@@ -206,6 +207,7 @@ export async function addGameLogEntry(
                 instanceStore.removeQueuedInstance(gameLog.location);
                 runUpdateCurrentUserLocationFlow();
                 gameLogStore.clearNowPlaying();
+                gameLogStore.resetNowPlayingProducers();
                 instanceStore.updateCurrentInstanceWorld();
                 userStore.applyUserDialogLocation();
                 instanceStore.applyWorldDialogInstances();
@@ -223,6 +225,7 @@ export async function addGameLogEntry(
                     capturePresence: live
                 });
                 gameLogStore.clearNowPlaying();
+                gameLogStore.resetNowPlayingProducers();
                 locationStore.setLastLocation({
                     date: Date.parse(gameLog.dt),
                     location: gameLog.location,
@@ -352,7 +355,11 @@ export async function addGameLogEntry(
             persistedEntryPromise =
                 database.addGamelogPortalSpawnToDatabase(entry);
             break;
+        case 'nowplaying':
+            await gameLogStore.handleNowPlayingEvent(gameLog, location);
+            break;
         case 'video-play':
+            if (gameLogStore.hasNowPlayingProducer()) break;
             gameLog.videoUrl = decodeURI(gameLog.videoUrl);
             if (gameLogStore.lastVideoUrl === gameLog.videoUrl) {
                 break;
@@ -479,6 +486,13 @@ export async function addGameLogEntry(
                 data: gameLog.event
             };
             persistedEntryPromise = database.addGamelogEventToDatabase(entry);
+            if (
+                live &&
+                gameStore.isGameRunning &&
+                gameLog.event.startsWith('VideoError: ')
+            ) {
+                void checkYoutubeBotError(gameLog.event).catch(console.error);
+            }
             break;
         case 'vrc-quit':
             if (!gameStore.isGameRunning) {
