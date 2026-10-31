@@ -532,7 +532,8 @@ jobs:
     runs-on: ubuntu-latest
     # A manual dispatch from master can recover a tag whose original workflow
     # stopped before uploading artifacts or creating the GitHub release.
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && startsWith(needs.set_version.outputs.tag, 'v'))
+    # 4.4.0 is published from locally verified assets after desktop preview approval.
+    if: needs.set_version.outputs.tag != 'v4.4.0' && (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && startsWith(needs.set_version.outputs.tag, 'v')))
     needs:
       [
         set_version,
