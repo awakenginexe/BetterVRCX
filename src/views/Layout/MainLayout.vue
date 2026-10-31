@@ -140,6 +140,7 @@
     import VRChatConfigDialog from '../Settings/dialogs/VRChatConfigDialog.vue';
     import WorldImportDialog from '../Favorites/dialogs/WorldImportDialog.vue';
     import SpotlightDialog from '../../components/onboarding/SpotlightDialog.vue';
+    import WhatsNewDialog from '../../components/onboarding/WhatsNewDialog.vue';
     import { useRoute, useRouter } from 'vue-router';
     import { DASHBOARD_NAV_KEY_PREFIX } from '../../shared/constants';
     import { navDefinitions } from '../../shared/constants/ui';
