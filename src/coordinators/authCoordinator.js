@@ -37,14 +37,15 @@ export async function runLogoutFlow() {
     watchState.isLoggedIn = false;
     watchState.isFriendsLoaded = false;
     watchState.isFavoritesLoaded = false;
+    closeWebSocket();
     notificationStore.setNotificationInitStatus(false);
+    authStore.clearPendingCredentials();
     await authStore.updateStoredUser(userStore.currentUser);
-    webApiService.clearCookies();
+    await webApiService.clearCookies();
     authStore.loginForm.lastUserLoggedIn = '';
     await configRepository.remove('lastUserLoggedIn');
     authStore.setAttemptingAutoLogin(false);
     authStore.autoLoginAttempts.clear();
-    closeWebSocket();
     queryClient.clear();
     clearUserDialogCaches();
 }

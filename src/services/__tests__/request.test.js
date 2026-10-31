@@ -225,6 +225,15 @@ test('preserves HTTP 429 when an API error body omits status_code', async () => 
 });
 
 describe('shouldIgnoreError', () => {
+    it('suppresses only expected notification seen rate limits', () => {
+        expect(
+            shouldIgnoreError(429, 'auth/user/notifications/not_1/see')
+        ).toBe(true);
+        expect(shouldIgnoreError(-1, 'notifications/not_1/see')).toBe(true);
+        expect(shouldIgnoreError(500, 'notifications/not_1/see')).toBe(false);
+        expect(shouldIgnoreError(429, 'notifications/not_1')).toBe(false);
+    });
+
     test.each([
         [404, 'users/usr_123'],
         [404, 'worlds/wrld_123'],
@@ -251,6 +260,10 @@ describe('shouldIgnoreError', () => {
     test('ignores any code for analysis/ endpoints', () => {
         expect(shouldIgnoreError(500, 'analysis/something')).toBe(true);
         expect(shouldIgnoreError(200, 'analysis/data')).toBe(true);
+    });
+
+    test('keeps device authorization polling failures quiet', () => {
+        expect(shouldIgnoreError(400, 'auth/device/status')).toBe(true);
     });
 
     test.each([403, -1])('ignores %i for /mutuals endpoints', (code) => {
