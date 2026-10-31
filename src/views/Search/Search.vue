@@ -251,7 +251,7 @@
                         role="status">
                         {{
                             t('avatar_search_v2.unavailable', {
-                                providers: avatarSearchState.failedProviders.map(sourceLabel).join(' · ')
+                                providers: avatarSearchState.failedProviders.map(sourceLabel).join(' Â· ')
                             })
                         }}
                     </p>
@@ -557,7 +557,7 @@
                 return {
                     show: searchUserResults.value.length > 0 && !isSearchUserLoading.value,
                     prevDisabled: !searchUserParams.value.offset,
-                    nextDisabled: searchUserResults.value.length < 10,
+                    nextDisabled: searchUserResults.value.length < 60,
                     onPrev: () => handleMoreSearchUser(-1),
                     onNext: () => handleMoreSearchUser(1)
                 };
@@ -565,7 +565,7 @@
                 return {
                     show: searchWorldResults.value.length > 0 && !isSearchWorldLoading.value,
                     prevDisabled: !searchWorldParams.value.offset,
-                    nextDisabled: searchWorldResults.value.length < 10,
+                    nextDisabled: searchWorldResults.value.length < 60,
                     onPrev: () => moreSearchWorld(-1),
                     onNext: () => moreSearchWorld(1)
                 };
@@ -583,7 +583,7 @@
                 return {
                     show: searchGroupResults.value.length > 0 && !isSearchGroupLoading.value,
                     prevDisabled: !searchGroupParams.value.offset,
-                    nextDisabled: searchGroupResults.value.length < 10,
+                    nextDisabled: searchGroupResults.value.length < 60,
                     onPrev: () => moreSearchGroup(-1),
                     onNext: () => moreSearchGroup(1)
                 };
