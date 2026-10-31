@@ -269,7 +269,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
      *
      * @param data
      */
-    function setNowPlaying(data) {
+    async function setNowPlaying(data) {
         const ctx = structuredClone(data);
         if (nowPlaying.value.url !== ctx.videoUrl) {
             if (!ctx.userId && ctx.displayName) {
@@ -280,9 +280,11 @@ export const useGameLogStore = defineStore('GameLog', () => {
                         userStore.cachedUserIdsByDisplayName
                     )?.id ?? '';
             }
-            notificationStore.queueGameLogNoty(ctx);
-            addGameLog(ctx);
-            database.addGamelogVideoPlayToDatabase(ctx);
+            const persistedEntry = await database.addGamelogVideoPlayToDatabase(ctx);
+            if (persistedEntry) {
+                notificationStore.queueGameLogNoty(persistedEntry);
+                addGameLog(persistedEntry);
+            }
 
             let displayName = '';
             if (ctx.displayName) {
@@ -496,7 +498,7 @@ export const useGameLogStore = defineStore('GameLog', () => {
             ...input,
             groupName
         };
-        database.addGamelogLocationToDatabase(entry);
+        return database.addGamelogLocationToDatabase(entry);
     }
 
     /**

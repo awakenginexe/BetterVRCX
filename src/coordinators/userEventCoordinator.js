@@ -30,6 +30,7 @@ export async function runHandleUserUpdateFlow(
 ) {
     const friendStore = useFriendStore();
     const userStore = useUserStore();
+    const account = userStore.currentUser;
     const worldStore = useWorldStore();
     const groupStore = useGroupStore();
     const instanceStore = useInstanceStore();
@@ -143,10 +144,14 @@ export async function runHandleUserUpdateFlow(
                 previousLocation,
                 time
             };
-            notificationStore.queueFeedNoty(feed);
-            sharedFeedStore.addEntry(feed);
-            feedStore.addFeedEntry(feed);
-            database.addGPSToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            const persistedFeed = await database.addGPSToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            if (persistedFeed) {
+                notificationStore.queueFeedNoty(persistedFeed);
+                sharedFeedStore.addEntry(persistedFeed);
+                feedStore.addFeedEntry(persistedFeed);
+            }
             // clear previousLocation after GPS
             ref.$previousLocation = '';
             ref.$travelingToTime = now();
@@ -259,10 +264,14 @@ export async function runHandleUserUpdateFlow(
                 previousCurrentAvatarTags:
                     props.currentAvatarTags?.[1] ?? ref.currentAvatarTags
             };
-            notificationStore.queueFeedNoty(feed);
-            sharedFeedStore.addEntry(feed);
-            feedStore.addFeedEntry(feed);
-            database.addAvatarToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            const persistedFeed = await database.addAvatarToDatabase(feed);
+            if (userStore.currentUser !== account) return;
+            if (persistedFeed) {
+                notificationStore.queueFeedNoty(persistedFeed);
+                sharedFeedStore.addEntry(persistedFeed);
+                feedStore.addFeedEntry(persistedFeed);
+            }
             lastAvatarFeedTransition.set(ref, transition);
             break;
         }
@@ -310,10 +319,14 @@ export async function runHandleUserUpdateFlow(
             previousStatus,
             previousStatusDescription
         };
-        notificationStore.queueFeedNoty(feed);
-        sharedFeedStore.addEntry(feed);
-        feedStore.addFeedEntry(feed);
-        database.addStatusToDatabase(feed);
+        if (userStore.currentUser !== account) return;
+        const persistedFeed = await database.addStatusToDatabase(feed);
+        if (userStore.currentUser !== account) return;
+        if (persistedFeed) {
+            notificationStore.queueFeedNoty(persistedFeed);
+            sharedFeedStore.addEntry(persistedFeed);
+            feedStore.addFeedEntry(persistedFeed);
+        }
     }
     if (
         props.note &&

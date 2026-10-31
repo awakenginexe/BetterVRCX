@@ -139,7 +139,11 @@ export async function tryLoadPlayerList() {
  * @param {object} gameLog
  * @param {string} location
  */
-export function addGameLogEntry(gameLog, location, { live = false } = {}) {
+export async function addGameLogEntry(
+    gameLog,
+    location,
+    { live = false } = {}
+) {
     if (gameLog.type === 'avatar-found') {
         if (
             watchState.isLoggedIn &&
@@ -169,6 +173,7 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
     const notificationStore = useNotificationStore();
 
     let entry = undefined;
+    let persistedEntryPromise;
     if (advancedSettingsStore.gameLogDisabled) {
         return;
     }
@@ -189,7 +194,9 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                     type: 'LocationDestination',
                     location: gameLog.location
                 });
-                runLastLocationResetFlow(gameLog.dt, { capturePresence: live });
+                await runLastLocationResetFlow(gameLog.dt, {
+                    capturePresence: live
+                });
                 locationStore.setLastLocationLocation('traveling');
                 locationStore.setLastLocationDestination(gameLog.location);
                 locationStore.setLastLocationDestinationTime(
@@ -212,7 +219,9 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             );
             const worldName = replaceBioSymbols(gameLog.worldName);
             if (gameStore.isGameRunning) {
-                runLastLocationResetFlow(gameLog.dt, { capturePresence: live });
+                await runLastLocationResetFlow(gameLog.dt, {
+                    capturePresence: live
+                });
                 gameLogStore.clearNowPlaying();
                 locationStore.setLastLocation({
                     date: Date.parse(gameLog.dt),
@@ -240,7 +249,8 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             getGroupName(gameLog.location).then((groupName) => {
                 entry.groupName = groupName;
             });
-            gameLogStore.addGamelogLocationToDatabase(entry);
+            persistedEntryPromise =
+                gameLogStore.addGamelogLocationToDatabase(entry);
             break;
         case 'player-joined':
             if (live) friendStore.updateFriendLastSeen(userId, gameLog.dt);
@@ -300,7 +310,8 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                 location,
                 userId
             );
-            database.addGamelogJoinLeaveToDatabase(entry);
+            persistedEntryPromise =
+                database.addGamelogJoinLeaveToDatabase(entry);
             break;
         case 'player-left':
             if (live) {
@@ -330,14 +341,16 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                 userId,
                 time
             );
-            database.addGamelogJoinLeaveToDatabase(entry);
+            persistedEntryPromise =
+                database.addGamelogJoinLeaveToDatabase(entry);
             break;
         case 'portal-spawn':
             if (vrcxStore.ipcEnabled && gameStore.isGameRunning) {
                 break;
             }
             entry = createPortalSpawnEntry(gameLog.dt, location);
-            database.addGamelogPortalSpawnToDatabase(entry);
+            persistedEntryPromise =
+                database.addGamelogPortalSpawnToDatabase(entry);
             break;
         case 'video-play':
             gameLog.videoUrl = decodeURI(gameLog.videoUrl);
@@ -345,7 +358,7 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                 break;
             }
             gameLogStore.setLastVideoUrl(gameLog.videoUrl);
-            gameLogStore.addGameLogVideo(gameLog, location, userId);
+            await gameLogStore.addGameLogVideo(gameLog, location, userId);
             break;
         case 'video-sync':
             const timestamp = gameLog.timestamp.replace(/,/g, '');
@@ -368,7 +381,8 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                 gameLog.resourceUrl,
                 location
             );
-            database.addGamelogResourceLoadToDatabase(entry);
+            persistedEntryPromise =
+                database.addGamelogResourceLoadToDatabase(entry);
             break;
         case 'screenshot':
             vrcxStore.processScreenshot(gameLog.screenshotPath);
@@ -421,15 +435,15 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
         case 'vrcx':
             const type = gameLog.data.substr(0, gameLog.data.indexOf(' '));
             if (type === 'VideoPlay(PyPyDance)') {
-                gameLogStore.addGameLogPyPyDance(gameLog, location);
+                await gameLogStore.addGameLogPyPyDance(gameLog, location);
             } else if (type === 'VideoPlay(VRDancing)') {
-                gameLogStore.addGameLogVRDancing(gameLog, location);
+                await gameLogStore.addGameLogVRDancing(gameLog, location);
             } else if (type === 'VideoPlay(ZuwaZuwaDance)') {
-                gameLogStore.addGameLogZuwaZuwaDance(gameLog, location);
+                await gameLogStore.addGameLogZuwaZuwaDance(gameLog, location);
             } else if (type === 'LSMedia') {
-                gameLogStore.addGameLogLSMedia(gameLog, location);
+                await gameLogStore.addGameLogLSMedia(gameLog, location);
             } else if (type === 'VideoPlay(PopcornPalace)') {
-                gameLogStore.addGameLogPopcornPalace(gameLog, location);
+                await gameLogStore.addGameLogPopcornPalace(gameLog, location);
             }
             break;
         case 'photon-id':
@@ -464,7 +478,7 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
                 type: 'Event',
                 data: gameLog.event
             };
-            database.addGamelogEventToDatabase(entry);
+            persistedEntryPromise = database.addGamelogEventToDatabase(entry);
             break;
         case 'vrc-quit':
             if (!gameStore.isGameRunning) {
@@ -518,9 +532,14 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
             break;
     }
     if (typeof entry !== 'undefined') {
-        sharedFeedStore.addEntry(entry);
-        notificationStore.queueGameLogNoty(entry);
-        gameLogStore.addGameLog(entry);
+        const persistedEntry = persistedEntryPromise
+            ? await persistedEntryPromise
+            : entry;
+        if (persistedEntry) {
+            sharedFeedStore.addEntry(persistedEntry);
+            notificationStore.queueGameLogNoty(persistedEntry);
+            gameLogStore.addGameLog(persistedEntry);
+        }
     }
 }
 
@@ -529,26 +548,32 @@ export function addGameLogEntry(gameLog, location, { live = false } = {}) {
  * Called from C# / updateLoop.
  * @param {string} json
  */
-export function addGameLogEvent(json) {
-    const locationStore = useLocationStore();
+let gameLogEventQueue = Promise.resolve();
 
-    const rawLogs = JSON.parse(json);
-    const gameLog = gameLogService.parseRawGameLog(
-        rawLogs[1],
-        rawLogs[2],
-        rawLogs.slice(3)
-    );
-    if (
-        AppDebug.debugGameLog &&
-        gameLog.type !== 'photon-id' &&
-        gameLog.type !== 'api-request' &&
-        gameLog.type !== 'udon-exception'
-    ) {
-        console.log('gameLog:', gameLog);
-    }
-    addGameLogEntry(gameLog, locationStore.lastLocation.location, {
-        live: true
+export function addGameLogEvent(json) {
+    const operation = gameLogEventQueue.catch(console.error).then(async () => {
+        const locationStore = useLocationStore();
+
+        const rawLogs = JSON.parse(json);
+        const gameLog = gameLogService.parseRawGameLog(
+            rawLogs[1],
+            rawLogs[2],
+            rawLogs.slice(3)
+        );
+        if (
+            AppDebug.debugGameLog &&
+            gameLog.type !== 'photon-id' &&
+            gameLog.type !== 'api-request' &&
+            gameLog.type !== 'udon-exception'
+        ) {
+            console.log('gameLog:', gameLog);
+        }
+        await addGameLogEntry(gameLog, locationStore.lastLocation.location, {
+            live: true
+        });
     });
+    gameLogEventQueue = operation;
+    return operation;
 }
 
 /**
@@ -573,7 +598,7 @@ async function updateGameLog(dateTill) {
         if (gameLog.type === 'location') {
             location = gameLog.location;
         }
-        addGameLogEntry(gameLog, location);
+        await addGameLogEntry(gameLog, location);
     }
 }
 

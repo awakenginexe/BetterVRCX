@@ -25,7 +25,9 @@ class SQLiteService {
                 }
                 if (e.message.includes('database or disk is full')) {
                     modalStore.alert({
-                        description: i18n.global.t('message.database.disk_space'),
+                        description: i18n.global.t(
+                            'message.database.disk_space'
+                        ),
                         title: 'Disk containing database is full'
                     });
                 }
@@ -41,7 +43,9 @@ class SQLiteService {
                 }
                 if (e.message.includes('disk I/O error')) {
                     modalStore.alert({
-                        description: i18n.global.t('message.database.disk_error'),
+                        description: i18n.global.t(
+                            'message.database.disk_error'
+                        ),
                         title: 'Disk I/O error'
                     });
                 }
@@ -80,6 +84,16 @@ class SQLiteService {
                 args = new Map(Object.entries(args));
             }
             return await SQLite.ExecuteNonQuery(sql, args);
+        } catch (e) {
+            this.handleSQLiteError(e);
+        }
+    }
+    async executeInsert(sql, args = null) {
+        try {
+            if (LINUX && args) {
+                args = new Map(Object.entries(args));
+            }
+            return await SQLite.ExecuteInsert(sql, args);
         } catch (e) {
             this.handleSQLiteError(e);
         }

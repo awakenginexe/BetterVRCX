@@ -54,6 +54,7 @@ export function runUpdateCurrentUserLocationFlow() {
 
     ref.$online_for = userStore.currentUser.$online_for;
     ref.$offline_for = userStore.currentUser.$offline_for;
+    ref.$active_for = null;
     ref.$location = parseLocation(currentLocation);
     if (!gameStore.isGameRunning || advancedSettingsStore.gameLogDisabled) {
         ref.$location_at = userStore.currentUser.$location_at;
@@ -121,9 +122,12 @@ export async function runSetCurrentUserLocationFlow(
             groupName: await getGroupName(L.groupId),
             time: 0
         };
-        database.addGamelogLocationToDatabase(entry);
         notificationStore.queueGameLogNoty(entry);
-        gameLogStore.addGameLog(entry);
+        const persistedEntry =
+            await database.addGamelogLocationToDatabase(entry);
+        if (persistedEntry) {
+            gameLogStore.addGameLog(persistedEntry);
+        }
         instanceStore.addInstanceJoinHistory(location, dt);
 
         userStore.applyUserDialogLocation();
@@ -138,7 +142,7 @@ export async function runSetCurrentUserLocationFlow(
     }
 }
 
-export function runLastLocationResetFlow(
+export async function runLastLocationResetFlow(
     gameLogDate,
     { capturePresence = true } = {}
 ) {
@@ -181,10 +185,12 @@ export function runLastLocationResetFlow(
         dataBaseEntries.unshift(entry);
         if (capturePresence)
             useFriendStore().updateFriendLastSeen(ref.userId, dateTime);
-
+    }
+    const persistedEntries =
+        await database.addGamelogJoinLeaveBulk(dataBaseEntries);
+    for (const entry of persistedEntries) {
         gameLogStore.addGameLog(entry);
     }
-    database.addGamelogJoinLeaveBulk(dataBaseEntries);
     if (
         locationStore.lastLocation.date !== null &&
         locationStore.lastLocation.date > 0

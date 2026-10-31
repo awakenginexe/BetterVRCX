@@ -137,6 +137,10 @@ declare global {
     const SQLite: {
         Execute: (sql: string, args: string) => Promise<any[]>;
         ExecuteJson: (sql: string, args: string) => Promise<string>;
+        ExecuteInsert: (
+            sql: string,
+            args: Record<string, unknown> | Map<string, unknown> | null
+        ) => Promise<number>;
         ExecuteNonQuery: (sql: string, args: string) => Promise<Number>;
     };
 
