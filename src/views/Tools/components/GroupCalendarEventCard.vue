@@ -130,14 +130,15 @@
 <script setup>
     import { Calendar, Download, Image, Pencil, Repeat, Share2, Star } from 'lucide-vue-next';
     import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-    import { computed, ref } from 'vue';
+    import { computed, ref, watch, onBeforeUnmount } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Card } from '@/components/ui/card';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
 
-    import { useGalleryStore, useGroupStore } from '../../../stores';
+    import { useGalleryStore, useGroupStore, useUserStore } from '../../../stores';
     import { AppDebug } from '../../../services/appConfig';
+    import { watchState } from '../../../services/watchState';
     import { formatDateFilter, hasGroupPermission } from '../../../shared/utils';
     import { groupRequest, queryRequest } from '../../../api';
     import TooltipWrapper from '@/components/ui/tooltip/TooltipWrapper.vue';
@@ -146,6 +147,10 @@
 
     const { t } = useI18n();
     const groupStore = useGroupStore();
+    const userStore = useUserStore();
+    let editRequest = 0;
+    watch([() => watchState.isLoggedIn, () => userStore.currentUser.id], () => ++editRequest, { flush: 'sync' });
+    onBeforeUnmount(() => ++editRequest);
     const { cachedGroups } = groupStore;
 
     const props = defineProps({
@@ -196,20 +201,27 @@
     const bannerError = ref(false);
 
     async function editEvent(event) {
+        const requestId = ++editRequest;
+        const editor = groupStore.groupEventEditDialog;
+        const isCurrentRequest = () =>
+            requestId === editRequest &&
+            watchState.isLoggedIn &&
+            event === props.event &&
+            editor === groupStore.groupEventEditDialog;
         let group = props.groupRef;
-        if (!group) {
-            try {
-                const args = await queryRequest.fetch('group.dialog', {
-                    groupId: event.ownerId
-                });
+        try {
+            if (!group) {
+                const args = await queryRequest.fetch('group.dialog', { groupId: event.ownerId });
                 group = args.ref;
-            } catch (error) {
+            }
+            if (isCurrentRequest() && hasGroupPermission(group, 'group-calendar-manage'))
+                groupStore.showEditGroupEventDialog(event, group);
+        } catch (error) {
+            if (isCurrentRequest()) {
                 console.error('Failed to load group event for editing:', error);
                 toast.error(t('dialog.group_event_edit.load_error'));
-                return;
             }
         }
-        groupStore.showEditGroupEventDialog(event, group);
     }
 
     const groupName = computed(() => {

@@ -333,10 +333,10 @@ export const useVrcxStore = defineStore('Vrcx', () => {
                     type: 'Event',
                     data: data.Data
                 };
-                notificationStore.queueGameLogNoty(entry);
                 const persistedEntry =
                     await database.addGamelogEventToDatabase(entry);
                 if (persistedEntry) {
+                    notificationStore.queueGameLogNoty(persistedEntry);
                     gameLogStore.addGameLog(persistedEntry);
                 }
                 break;
@@ -351,12 +351,11 @@ export const useVrcxStore = defineStore('Vrcx', () => {
                     userId: data.UserId,
                     location: locationStore.lastLocation.location
                 };
-                if (notify) {
-                    notificationStore.queueGameLogNoty(entry);
-                }
                 const persistedEntry =
                     await database.addGamelogExternalToDatabase(entry);
                 if (persistedEntry) {
+                    if (notify)
+                        notificationStore.queueGameLogNoty(persistedEntry);
                     gameLogStore.addGameLog(persistedEntry);
                 }
                 break;

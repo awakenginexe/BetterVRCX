@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
         setNextDiscordUpdate: vi.fn()
     },
     gameLogStore: {
+        addGameLog: vi.fn(),
         clearNowPlaying: vi.fn(),
         resetNowPlayingProducers: vi.fn()
     },
@@ -41,6 +42,11 @@ const mocks = vi.hoisted(() => ({
         setBool: vi.fn().mockResolvedValue(undefined),
         setString: vi.fn().mockResolvedValue(undefined)
     },
+    insert: vi.fn(),
+    notify: vi.fn(),
+    launch: vi.fn(),
+    schedule: vi.fn(),
+    realInstance: vi.fn(() => false),
     addAvatarWearTime: vi.fn(),
     runLastLocationResetFlow: vi.fn()
 }));
@@ -51,7 +57,7 @@ vi.mock('vue-sonner', () => ({
 
 vi.mock('../../shared/utils', () => ({
     deleteVRChatCache: vi.fn(),
-    isRealInstance: vi.fn(() => false)
+    isRealInstance: mocks.realInstance
 }));
 
 vi.mock('../../services/database', () => ({
@@ -60,6 +66,7 @@ vi.mock('../../services/database', () => ({
         {
             get: (_target, prop) => {
                 if (prop === '__esModule') return false;
+                if (prop === 'addGamelogEventToDatabase') return mocks.insert;
                 return vi.fn().mockResolvedValue(null);
             }
         }
@@ -91,7 +98,7 @@ vi.mock('../../stores/instance', () => ({
 }));
 
 vi.mock('../../stores/launch', () => ({
-    useLaunchStore: () => ({})
+    useLaunchStore: () => ({ launchGame: mocks.launch })
 }));
 
 vi.mock('../../stores/location', () => ({
@@ -110,7 +117,7 @@ vi.mock('../../stores/modal', () => ({
 }));
 
 vi.mock('../../stores/notification', () => ({
-    useNotificationStore: () => ({ queueGameLogNoty: vi.fn() })
+    useNotificationStore: () => ({ queueGameLogNoty: mocks.notify })
 }));
 
 vi.mock('../../stores/updateLoop', () => ({
@@ -134,10 +141,13 @@ vi.mock('../../services/config', () => ({
 }));
 
 vi.mock('worker-timers', () => ({
-    setTimeout: vi.fn()
+    setTimeout: mocks.schedule
 }));
 
-import { runGameRunningChangedFlow } from '../gameCoordinator';
+import {
+    runGameRunningChangedFlow,
+    runCheckIfGameCrashedFlow
+} from '../gameCoordinator';
 
 describe('runGameRunningChangedFlow', () => {
     beforeEach(() => {
@@ -178,4 +188,37 @@ describe('runGameRunningChangedFlow', () => {
             expect.any(String)
         );
     });
+});
+
+describe('persisted crash notifications', () => {
+    test.each([false, true])(
+        'notifies only successful inserts with their row ID (inserted=%s)',
+        async (inserted) => {
+            vi.clearAllMocks();
+            mocks.realInstance.mockReturnValue(true);
+            mocks.advancedSettingsStore.relaunchVRChatAfterCrash = true;
+            mocks.gameStore.isGameNoVR = true;
+            mocks.gameStore.state = { lastCrashedTime: null };
+            mocks.gameStore.setLastCrashedTime = vi.fn();
+            mocks.insert.mockImplementation(async (entry) =>
+                inserted ? { ...entry, rowId: 42 } : undefined
+            );
+            globalThis.AppApi.VrcClosedGracefully = vi
+                .fn()
+                .mockResolvedValue(false);
+            globalThis.AppApi.FocusWindow = vi.fn();
+            runCheckIfGameCrashedFlow();
+            await Promise.resolve();
+            await mocks.schedule.mock.calls[0][0]();
+            expect(mocks.notify).toHaveBeenCalledTimes(inserted ? 1 : 0);
+            expect(mocks.gameLogStore.addGameLog).toHaveBeenCalledTimes(
+                inserted ? 1 : 0
+            );
+            if (inserted)
+                expect(mocks.notify).toHaveBeenCalledWith(
+                    expect.objectContaining({ rowId: 42 })
+                );
+            expect(mocks.launch).toHaveBeenCalledTimes(1);
+        }
+    );
 });

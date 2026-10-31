@@ -30,6 +30,21 @@ function setup() {
     return { nowPlaying, publish, clear, title, handler, event };
 }
 describe('structured ProTV/TechAnon media events', () => {
+    test('stopped structured players release ownership for legacy media and can resume', async () => {
+        const { event, handler } = setup();
+        await event({
+            id: 'Main-1',
+            type: 'mediaChange',
+            mediaUrl: 'https://example.com/structured',
+            mediaName: 'Movie'
+        });
+        expect(handler.hasNowPlayingProducer()).toBe(true);
+        await event({ id: 'Main-1', type: 'mediaStop' }, 10);
+        expect(handler.hasNowPlayingProducer()).toBe(false);
+        await event({ id: 'Main-1', type: 'mediaPlay', mediaTime: 10 }, 20);
+        expect(handler.hasNowPlayingProducer()).toBe(true);
+    });
+
     test('pause, seek, speed and resume preserve media identity', async () => {
         const { event, nowPlaying, publish } = setup();
         await event({

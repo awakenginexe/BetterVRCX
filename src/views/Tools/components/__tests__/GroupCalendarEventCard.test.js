@@ -5,7 +5,13 @@ const mocks = vi.hoisted(() => ({
     followGroupEvent: vi.fn(async () => ({ json: { ok: true } })),
     showFullscreenImageDialog: vi.fn(),
     writeText: vi.fn(),
-    toastSuccess: vi.fn()
+    toastSuccess: vi.fn(),
+    fetch: vi.fn(),
+    showEditor: vi.fn(),
+    allowed: false,
+    user: require('vue').reactive({ currentUser: { id: 'usr_me' } }),
+    session: require('vue').reactive({ isLoggedIn: true }),
+    group: require('vue').reactive({ groupEventEditDialog: {} })
 }));
 
 Object.assign(globalThis, {
@@ -13,12 +19,20 @@ Object.assign(globalThis, {
 });
 
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (k) => k }) }));
+vi.mock('../../../../services/watchState', () => ({
+    watchState: mocks.session
+}));
 vi.mock('../../../../stores', () => ({
+    useUserStore: () => mocks.user,
     useGalleryStore: () => ({
         showFullscreenImageDialog: (...a) =>
             mocks.showFullscreenImageDialog(...a)
     }),
     useGroupStore: () => ({
+        get groupEventEditDialog() {
+            return mocks.group.groupEventEditDialog;
+        },
+        showEditGroupEventDialog: mocks.showEditor,
         cachedGroups: new Map([
             [
                 'grp_1',
@@ -35,9 +49,10 @@ vi.mock('../../../../services/appConfig', () => ({
 }));
 vi.mock('../../../../shared/utils', () => ({
     formatDateFilter: () => '12:00',
-    hasGroupPermission: () => false
+    hasGroupPermission: () => mocks.allowed
 }));
 vi.mock('../../../../api', () => ({
+    queryRequest: { fetch: mocks.fetch },
     groupRequest: { followGroupEvent: (...a) => mocks.followGroupEvent(...a) }
 }));
 vi.mock('vue-sonner', () => ({
@@ -60,6 +75,9 @@ vi.mock('@/components/ui/button', () => ({
 }));
 vi.mock('lucide-vue-next', () => ({
     Calendar: { template: '<i />' },
+    Pencil: { template: '<i />' },
+    Image: { template: '<i />' },
+    Repeat: { template: '<i />' },
     Download: { template: '<i />' },
     Share2: { template: '<i />' },
     Star: { template: '<i />' }
@@ -92,9 +110,39 @@ function mountCard() {
 
 describe('GroupCalendarEventCard.vue', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+        mocks.allowed = false;
+        mocks.user.currentUser.id = 'usr_me';
+        mocks.session.isLoggedIn = true;
+        mocks.group.groupEventEditDialog = {};
         mocks.followGroupEvent.mockClear();
         mocks.writeText.mockClear();
     });
+
+    it.each(['account', 'session', 'editor', 'unmounted'])(
+        'discards an edit read after the %s changes',
+        async (change) => {
+            mocks.allowed = true;
+            let resolve;
+            mocks.fetch.mockReturnValueOnce(
+                new Promise((done) => {
+                    resolve = done;
+                })
+            );
+            const wrapper = mountCard();
+            const pending = wrapper.vm.editEvent(wrapper.props('event'));
+            if (change === 'account') mocks.user.currentUser.id = 'usr_other';
+            if (change === 'session') {
+                mocks.session.isLoggedIn = false;
+                mocks.session.isLoggedIn = true;
+            }
+            if (change === 'editor') mocks.group.groupEventEditDialog = {};
+            if (change === 'unmounted') wrapper.unmount();
+            resolve({ ref: { id: 'grp_1' } });
+            await pending;
+            expect(mocks.showEditor).not.toHaveBeenCalled();
+        }
+    );
 
     it('copies event link and toggles follow', async () => {
         const wrapper = mountCard();

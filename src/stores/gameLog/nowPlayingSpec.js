@@ -376,7 +376,9 @@ export function createNowPlayingSpecHandler({
     }
 
     function hasNowPlayingProducer() {
-        return producers.size > 0;
+        return Array.from(producers.values()).some(
+            (producer) => !producer.stopped
+        );
     }
 
     return {

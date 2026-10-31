@@ -222,9 +222,9 @@ async function runRestartCrashedGameFlow(location) {
         type: 'Event',
         data: message
     };
-    notificationStore.queueGameLogNoty(entry);
     const persistedEntry = await database.addGamelogEventToDatabase(entry);
     if (persistedEntry) {
+        notificationStore.queueGameLogNoty(persistedEntry);
         gameLogStore.addGameLog(persistedEntry);
     }
     launchStore.launchGame(location, '', gameStore.isGameNoVR);

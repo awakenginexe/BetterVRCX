@@ -16,7 +16,9 @@ const mocks = vi.hoisted(() => ({
     transferGroup: vi.fn(),
     checkTransferGroup: vi.fn(),
     confirm: vi.fn(),
-    markGroupEventMutation: vi.fn()
+    markGroupEventMutation: vi.fn(),
+    fetch: vi.fn(),
+    showEditGroupEventDialog: vi.fn()
 }));
 vi.mock('pinia', async (importOriginal) => {
     const actual = await importOriginal();
@@ -36,7 +38,7 @@ vi.mock('../../../../stores', () => ({
 vi.mock('../../../../api', () => ({
     groupRequest: mocks,
     instanceRequest: mocks,
-    queryRequest: { fetch: vi.fn() }
+    queryRequest: { fetch: mocks.fetch }
 }));
 vi.mock('../../../../coordinators/groupCoordinator', () => ({
     applyGroup: (json) => json,
@@ -120,6 +122,7 @@ beforeEach(() => {
             closeInstanceAfterEndMinutes: 5,
             recurrence: null
         },
+        showEditGroupEventDialog: mocks.showEditGroupEventDialog,
         markGroupEventMutation: mocks.markGroupEventMutation
     });
     mocks.createGroup.mockResolvedValue({ json: { id: 'grp_new' } });
@@ -133,6 +136,34 @@ beforeEach(() => {
 const setup = (component, props) => shallowMount(component, { props }).vm;
 
 describe('group write dialogs', () => {
+    test.each(['account', 'closed', 'replaced'])(
+        'does not reopen a stale parent event editor after %s changes',
+        async (change) => {
+            const D = mocks.groupStore.groupEventEditDialog;
+            D.mode = 'edit';
+            D.eventId = 'event_child';
+            D.seriesId = 'event_parent';
+            let resolve;
+            mocks.fetch.mockReturnValueOnce(
+                new Promise((done) => {
+                    resolve = done;
+                })
+            );
+            const pending = setup(GroupEventEditDialog).editParentEvent();
+            if (change === 'account')
+                mocks.userStore.currentUser.id = 'usr_other';
+            if (change === 'closed') D.visible = false;
+            if (change === 'replaced')
+                mocks.groupStore.groupEventEditDialog = {
+                    ...D,
+                    eventId: 'event_new'
+                };
+            resolve({ json: { id: 'event_parent' } });
+            await pending;
+            expect(mocks.showEditGroupEventDialog).not.toHaveBeenCalled();
+        }
+    );
+
     test('announcements require the current group instance and use its banner by default', async () => {
         const vm = setup(InstanceAnnouncementDialog, {
             open: true,

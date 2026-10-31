@@ -784,26 +784,21 @@
 
     async function editParentEvent() {
         const D = groupEventEditDialog.value;
-        if (!isEditMode.value || !D.seriesId || D.loading) {
-            return;
-        }
-
-        const groupRef = D.groupRef;
+        if (!isEditMode.value || !D.seriesId || D.loading) return;
+        const userId = currentUser.value.id;
+        const isCurrentDialog = () => D.visible && D === groupEventEditDialog.value && currentUser.value.id === userId;
         D.loading = true;
-        let args;
         try {
-            args = await queryRequest.fetch('groupCalendarEvent', {
-                groupId: D.groupId,
-                eventId: D.seriesId
-            });
+            const args = await queryRequest.fetch('groupCalendarEvent', { groupId: D.groupId, eventId: D.seriesId });
+            if (isCurrentDialog()) groupStore.showEditGroupEventDialog(args.json, D.groupRef);
         } catch (error) {
+            if (isCurrentDialog()) {
+                console.error('Failed to load parent group event for editing:', error);
+                toast.error(t('dialog.group_event_edit.load_error'));
+            }
+        } finally {
             D.loading = false;
-            console.error('Failed to load parent group event for editing:', error);
-            toast.error(t('dialog.group_event_edit.load_error'));
-            return;
         }
-
-        groupStore.showEditGroupEventDialog(args.json, groupRef);
     }
 
     async function saveEvent() {

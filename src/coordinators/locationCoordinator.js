@@ -122,10 +122,10 @@ export async function runSetCurrentUserLocationFlow(
             groupName: await getGroupName(L.groupId),
             time: 0
         };
-        notificationStore.queueGameLogNoty(entry);
         const persistedEntry =
             await database.addGamelogLocationToDatabase(entry);
         if (persistedEntry) {
+            notificationStore.queueGameLogNoty(persistedEntry);
             gameLogStore.addGameLog(persistedEntry);
         }
         instanceStore.addInstanceJoinHistory(location, dt);

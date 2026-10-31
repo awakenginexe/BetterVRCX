@@ -1381,7 +1381,6 @@ export const usePhotonStore = defineStore('Photon', () => {
     }
 
     async function addPhotonEventToGameLog(entry) {
-        notificationStore.queueGameLogNoty(entry);
         let persistedEntry;
         if (entry.type === 'PortalSpawn') {
             persistedEntry =
@@ -1390,6 +1389,7 @@ export const usePhotonStore = defineStore('Photon', () => {
             persistedEntry = await database.addGamelogEventToDatabase(entry);
         }
         if (persistedEntry) {
+            notificationStore.queueGameLogNoty(persistedEntry);
             gameLogStore.addGameLog(persistedEntry);
         }
     }
