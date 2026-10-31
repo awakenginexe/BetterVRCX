@@ -39,6 +39,14 @@
                     </div>
                 </div>
                 <div class="badges">
+                    <Button
+                        v-if="canManageEvent"
+                        @click="editEvent(event)"
+                        size="icon"
+                        variant="secondary"
+                        class="rounded-full badge">
+                        <Pencil />
+                    </Button>
                     <Button @click="copyEventLink(event)" size="icon" variant="secondary" class="rounded-full badge">
                         <Share2 />
                     </Button>
@@ -120,29 +128,39 @@
 </template>
 
 <script setup>
-    import { Calendar, Download, Image, Share2, Star, Repeat } from 'lucide-vue-next';
+    import { Calendar, Download, Image, Pencil, Repeat, Share2, Star } from 'lucide-vue-next';
     import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-    import { computed, ref } from 'vue';
+    import { computed, ref, watch, onBeforeUnmount } from 'vue';
     import { Button } from '@/components/ui/button';
     import { Card } from '@/components/ui/card';
     import { toast } from 'vue-sonner';
     import { useI18n } from 'vue-i18n';
 
-    import { useGalleryStore, useGroupStore } from '../../../stores';
+    import { useGalleryStore, useGroupStore, useUserStore } from '../../../stores';
     import { AppDebug } from '../../../services/appConfig';
-    import { formatDateFilter } from '../../../shared/utils';
-    import { groupRequest } from '../../../api';
+    import { watchState } from '../../../services/watchState';
+    import { formatDateFilter, hasGroupPermission } from '../../../shared/utils';
+    import { groupRequest, queryRequest } from '../../../api';
     import TooltipWrapper from '@/components/ui/tooltip/TooltipWrapper.vue';
 
     const { showFullscreenImageDialog } = useGalleryStore();
 
     const { t } = useI18n();
-    const { cachedGroups } = useGroupStore();
+    const groupStore = useGroupStore();
+    const userStore = useUserStore();
+    let editRequest = 0;
+    watch([() => watchState.isLoggedIn, () => userStore.currentUser.id], () => ++editRequest, { flush: 'sync' });
+    onBeforeUnmount(() => ++editRequest);
+    const { cachedGroups } = groupStore;
 
     const props = defineProps({
         event: {
             type: Object,
             required: true
+        },
+        groupRef: {
+            type: Object,
+            default: null
         },
         mode: {
             type: String,
@@ -163,6 +181,9 @@
     const emit = defineEmits(['update-following-calendar-data', 'click-action']);
 
     const showGroupName = computed(() => props.mode === 'timeline');
+    const canManageEvent = computed(() =>
+        hasGroupPermission(props.groupRef ?? cachedGroups.get(props.event.ownerId), 'group-calendar-manage')
+    );
 
     const timeClass = computed(() => (props.mode === 'grid' ? 'event-time' : ''));
     const eventPopoverOpen = ref(false);
@@ -178,6 +199,30 @@
     });
 
     const bannerError = ref(false);
+
+    async function editEvent(event) {
+        const requestId = ++editRequest;
+        const editor = groupStore.groupEventEditDialog;
+        const isCurrentRequest = () =>
+            requestId === editRequest &&
+            watchState.isLoggedIn &&
+            event === props.event &&
+            editor === groupStore.groupEventEditDialog;
+        let group = props.groupRef;
+        try {
+            if (!group) {
+                const args = await queryRequest.fetch('group.dialog', { groupId: event.ownerId });
+                group = args.ref;
+            }
+            if (isCurrentRequest() && hasGroupPermission(group, 'group-calendar-manage'))
+                groupStore.showEditGroupEventDialog(event, group);
+        } catch (error) {
+            if (isCurrentRequest()) {
+                console.error('Failed to load group event for editing:', error);
+                toast.error(t('dialog.group_event_edit.load_error'));
+            }
+        }
+    }
 
     const groupName = computed(() => {
         if (!props.event) return '';

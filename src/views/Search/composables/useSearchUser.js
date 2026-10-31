@@ -21,7 +21,7 @@ export function useSearchUser() {
      */
     async function searchUser() {
         searchUserParams.value = {
-            n: 10,
+            n: 60,
             offset: 0,
             search: searchText.value,
             customFields: searchUserByBio.value ? 'bio' : 'displayName',

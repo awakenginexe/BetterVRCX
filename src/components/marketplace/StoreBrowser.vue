@@ -85,6 +85,7 @@
     import { AppDebug } from '../../services/appConfig';
     import marketplaceRequest from '../../api/marketplace';
     import miscRequest from '../../api/misc';
+    import { useEconomyStore } from '../../stores/economy';
 
     const props = defineProps({
         storeId: { type: String, default: '' },
@@ -97,6 +98,7 @@
     const { t } = useI18n();
     const userStore = useUserStore();
     const modalStore = useModalStore();
+    const economy = useEconomyStore();
     const query = ref(props.search);
     const listings = ref([]);
     const purchases = ref([]);
@@ -145,8 +147,9 @@
         const ids = listing.productIds?.length ? listing.productIds : props.productId ? [props.productId] : [];
         return (
             confirmedListings.value.has(listingId(listing)) ||
+            economy.ownedListingIds.has(listingId(listing)) ||
             ownedListings.value.has(listingId(listing)) ||
-            (ids.length > 0 && ids.every((id) => ownedProducts.value.has(id)))
+            (ids.length > 0 && ids.every((id) => ownedProducts.value.has(id) || economy.ownedProductIds.has(id)))
         );
     }
     function canPurchase(listing) {
@@ -272,6 +275,8 @@
                 await marketplaceRequest.purchaseListing({ listingId: id, totalPrice, quantity: 1 });
                 if (token === generation) {
                     confirmedListings.value.add(id);
+                    economy.refreshPurchases().catch(console.error);
+                    economy.refreshBalance().catch(console.error);
                     message.value = t('marketplace.purchase_success');
                     emit('purchased', { listingId: id, productId: props.productId });
                 }
@@ -294,6 +299,12 @@
     watch(query, () => {
         page.value = 0;
     });
+    watch(
+        () => economy.balance,
+        (value) => {
+            if (Number.isSafeInteger(value) && value >= 0) balance.value = value;
+        }
+    );
     watch(
         () => userStore.currentUser.id,
         () => {

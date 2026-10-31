@@ -245,7 +245,7 @@
                                                     loading="lazy" />
                                             </div>
                                             <span class="truncate text-sm" v-text="item.label"></span>
-                                            <span v-if="selected" class="ml-auto opacity-70">✓</span>
+                                            <span v-if="selected" class="ml-auto opacity-70">âœ“</span>
                                         </div>
                                     </template>
                                 </VirtualCombobox>
@@ -498,6 +498,26 @@
                                         @click="deletePrint(image.id)">
                                         <Trash2 />
                                     </Button>
+                                    <Button
+                                        size="icon-sm"
+                                        variant="ghost"
+                                        class="rounded-full ml-auto"
+                                        @click="toggleFavoritePrint(image.id)"
+                                        :aria-label="
+                                            t(
+                                                favoritePrintIds.has(image.id)
+                                                    ? 'dialog.gallery_icons.unfavorite_print'
+                                                    : 'dialog.gallery_icons.favorite_print'
+                                            )
+                                        "
+                                        :aria-pressed="favoritePrintIds.has(image.id)">
+                                        <Star
+                                            :class="
+                                                favoritePrintIds.has(image.id)
+                                                    ? 'text-yellow-500 fill-yellow-500'
+                                                    : 'hover:text-yellow-500'
+                                            " />
+                                    </Button>
                                 </ItemFooter>
                             </div>
                         </Item>
@@ -602,7 +622,7 @@
 </template>
 
 <script setup>
-    import { ArrowLeft, Check, Gift, RefreshCw, Trash2, Upload, X } from 'lucide-vue-next';
+    import { ArrowLeft, Check, Gift, RefreshCw, Trash2, Upload, X, Star } from 'lucide-vue-next';
     import {
         NumberField,
         NumberFieldContent,
@@ -650,6 +670,7 @@
 
     import Emoji from '../../components/Emoji.vue';
     import ImageCropDialog from '../../components/dialogs/ImageCropDialog.vue';
+    import { database, dbVars } from '../../services/database';
 
     const { t } = useI18n();
     const router = useRouter();
@@ -663,6 +684,7 @@
         printCropBorder,
         stickerTable,
         printTable,
+        favoritePrintIds,
         emojiTable,
         inventoryTable
     } = storeToRefs(useGalleryStore());
@@ -672,6 +694,7 @@
         refreshVRCPlusIconsTable,
         refreshStickerTable,
         refreshPrintTable,
+        refreshPrintFavorites,
         refreshEmojiTable,
         getInventory,
         handleStickerAdd,
@@ -1191,9 +1214,24 @@
      * @param printId
      */
     function deletePrint(printId) {
+        if (favoritePrintIds.value.has(printId)) {
+            toast.warning(t('dialog.gallery_icons.protected_print'));
+            return;
+        }
         vrcPlusImageRequest.deletePrint(printId).then((args) => {
             removeItemById(printTable.value, args.printId);
         });
+    }
+
+    async function toggleFavoritePrint(printId) {
+        const userId = dbVars.userId;
+        if (favoritePrintIds.value.has(printId)) {
+            await database.removePrintFromFavorites(printId);
+            if (userId === dbVars.userId) favoritePrintIds.value.delete(printId);
+        } else {
+            await database.addPrintToFavorites(printId);
+            if (userId === dbVars.userId) favoritePrintIds.value.add(printId);
+        }
     }
 
     async function handleDropGallery(event) {

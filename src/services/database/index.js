@@ -16,6 +16,7 @@ import { tableAlter } from './tableAlter.js';
 import { tableFixes } from './tableFixes.js';
 import { tableSize } from './tableSize.js';
 import { worldFavorites } from './worldFavorites.js';
+import { printFavorites } from './printFavorites.js';
 
 import sqliteService from '../sqlite.js';
 
@@ -41,6 +42,7 @@ const database = {
     ...foundAvatars,
     ...friendFavorites,
     ...worldFavorites,
+    ...printFavorites,
     ...tableAlter,
     ...tableFixes,
     ...tableSize,
@@ -62,6 +64,9 @@ const database = {
         if (dbVars.userPrefix.match(/^\d/)) {
             dbVars.userPrefix = '_' + dbVars.userPrefix;
         }
+        await sqliteService.executeNonQuery(
+            `CREATE TABLE IF NOT EXISTS ${dbVars.userPrefix}_favorite_print (print_id TEXT PRIMARY KEY, created_at TEXT)`
+        );
         await sqliteService.executeNonQuery(
             `CREATE TABLE IF NOT EXISTS ${dbVars.userPrefix}_user_profile (user_id TEXT PRIMARY KEY, bio TEXT, bio_links TEXT)`
         );

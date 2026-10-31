@@ -1380,13 +1380,17 @@ export const usePhotonStore = defineStore('Photon', () => {
         });
     }
 
-    function addPhotonEventToGameLog(entry) {
-        notificationStore.queueGameLogNoty(entry);
-        gameLogStore.addGameLog(entry);
+    async function addPhotonEventToGameLog(entry) {
+        let persistedEntry;
         if (entry.type === 'PortalSpawn') {
-            database.addGamelogPortalSpawnToDatabase(entry);
+            persistedEntry =
+                await database.addGamelogPortalSpawnToDatabase(entry);
         } else if (entry.type === 'Event') {
-            database.addGamelogEventToDatabase(entry);
+            persistedEntry = await database.addGamelogEventToDatabase(entry);
+        }
+        if (persistedEntry) {
+            notificationStore.queueGameLogNoty(persistedEntry);
+            gameLogStore.addGameLog(persistedEntry);
         }
     }
 
@@ -1585,9 +1589,7 @@ export const usePhotonStore = defineStore('Photon', () => {
                     photonId
                 )} (${getUserIdFromPhotonId(photonId)})`
             };
-            notificationStore.queueGameLogNoty(entry);
-            gameLogStore.addGameLog(entry);
-            database.addGamelogEventToDatabase(entry);
+            void addPhotonEventToGameLog(entry);
         }
     }
 

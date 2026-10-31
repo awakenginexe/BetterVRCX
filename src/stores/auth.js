@@ -202,13 +202,15 @@ export const useAuthStore = defineStore('Auth', () => {
             );
             return;
         }
+        const savedUser = await getSavedCredentials(
+            loginForm.value.lastUserLoggedIn
+        );
         if (
-            !advancedSettingsStore.enablePrimaryPassword &&
+            (!advancedSettingsStore.enablePrimaryPassword ||
+                (savedUser && !savedUser.loginParams.password)) &&
             (await configRepository.getString('lastUserLoggedIn')) !== null
         ) {
-            const user = await getSavedCredentials(
-                loginForm.value.lastUserLoggedIn
-            );
+            const user = savedUser;
             if (user?.loginParams?.endpoint) {
                 AppDebug.endpointDomain = user.loginParams.endpoint;
                 AppDebug.websocketDomain = user.loginParams.websocket;
@@ -217,6 +219,12 @@ export const useAuthStore = defineStore('Auth', () => {
             // login at startup
             loginForm.value.loading = true;
             try {
+                if (savedUser && !savedUser.loginParams.password) {
+                    await relogin(savedUser, {
+                        shouldTrackLoginNetworkIssueHint: false
+                    });
+                    return;
+                }
                 await authRequest.getConfig();
                 try {
                     await getCurrentUser();
@@ -402,6 +410,8 @@ export const useAuthStore = defineStore('Auth', () => {
                         )
                     );
                     for (const userId in savedCredentials) {
+                        if (!savedCredentials[userId].loginParams.password)
+                            continue;
                         security
                             .decrypt(
                                 savedCredentials[userId].loginParams.password,
@@ -454,6 +464,7 @@ export const useAuthStore = defineStore('Auth', () => {
             const key = enablePrimaryPasswordDialog.value.password;
             const savedCredentials = await getAllSavedCredentials();
             for (const userId in savedCredentials) {
+                if (!savedCredentials[userId].loginParams.password) continue;
                 security
                     .encrypt(savedCredentials[userId].loginParams.password, key)
                     .then((ct) => {
@@ -482,9 +493,12 @@ export const useAuthStore = defineStore('Auth', () => {
                     password: '',
                     endpoint: '',
                     websocket: '',
+                    ...savedCredentials[user.id]?.loginParams,
                     ...credentialsToSave.value
                 }
             };
+            savedCredentials[user.id].cookies =
+                await webApiService.getCookies();
             credentialsToSave.value = null;
         } else if (typeof savedCredentials[user.id] !== 'undefined') {
             savedCredentials[user.id].user = user;
@@ -503,6 +517,29 @@ export const useAuthStore = defineStore('Auth', () => {
     /**
      *
      */
+    function queueSaveCredentials() {
+        // A device session must replace any previously saved password for this account.
+        credentialsToSave.value = loginForm.value.saveCredentials
+            ? {
+                  username: '',
+                  password: '',
+                  endpoint:
+                      AppDebug.endpointDomain === AppDebug.endpointDomainVrchat
+                          ? ''
+                          : AppDebug.endpointDomain,
+                  websocket:
+                      AppDebug.websocketDomain ===
+                      AppDebug.websocketDomainVrchat
+                          ? ''
+                          : AppDebug.websocketDomain
+              }
+            : null;
+    }
+
+    function clearPendingCredentials() {
+        credentialsToSave.value = null;
+    }
+
     async function migrateStoredUsers() {
         const savedCredentials = await getAllSavedCredentials();
         for (const name in savedCredentials) {
@@ -592,6 +629,7 @@ export const useAuthStore = defineStore('Auth', () => {
         { shouldTrackLoginNetworkIssueHint = !attemptingAutoLogin.value } = {}
     ) {
         const { loginParams } = user;
+        await webApiService.clearCookies();
         if (user.cookies) {
             await webApiService.setCookies(user.cookies);
         }
@@ -615,7 +653,7 @@ export const useAuthStore = defineStore('Auth', () => {
                     websocket: loginParams.websocket
                 });
             }
-            if (advancedSettingsStore.enablePrimaryPassword) {
+            if (advancedSettingsStore.enablePrimaryPassword && password) {
                 try {
                     password = await checkPrimaryPassword(loginParams);
                 } catch (err) {
@@ -626,12 +664,33 @@ export const useAuthStore = defineStore('Auth', () => {
 
             await authRequest.getConfig();
             try {
-                await authLogin({
-                    username: loginParams.username,
-                    password,
-                    endpoint: loginParams.endpoint,
-                    websocket: loginParams.websocket
-                });
+                if (password) {
+                    await authLogin({
+                        username: loginParams.username,
+                        password,
+                        endpoint: loginParams.endpoint,
+                        websocket: loginParams.websocket
+                    });
+                } else {
+                    const wasAttempting = attemptingAutoLogin.value;
+                    attemptingAutoLogin.value = true;
+                    try {
+                        const json = await request('auth/user', {
+                            method: 'GET'
+                        });
+                        if (json.id && json.id !== user.user.id) {
+                            throw Object.assign(
+                                new Error(
+                                    'Saved session belongs to a different account'
+                                ),
+                                { status: 401 }
+                            );
+                        }
+                        handleCurrentUserUpdate(json);
+                    } finally {
+                        attemptingAutoLogin.value = wasAttempting;
+                    }
+                }
             } catch (err) {
                 if (
                     shouldTrackLoginNetworkIssueHint &&
@@ -643,7 +702,10 @@ export const useAuthStore = defineStore('Auth', () => {
                 throw err;
             }
         } catch (err) {
-            if (err.message.includes('Invalid Username/Email or Password')) {
+            if (
+                (!loginParams.password && err.status === 401) ||
+                err.message?.includes('Invalid Username/Email or Password')
+            ) {
                 toast.error(t('message.auth.saved_credentials_invalid'));
                 await deleteSavedLogin(user.user.id);
             }
@@ -660,6 +722,14 @@ export const useAuthStore = defineStore('Auth', () => {
     async function deleteSavedLogin(userId) {
         const savedCredentials = await getAllSavedCredentials();
         delete savedCredentials[userId];
+        if (
+            loginForm.value.lastUserLoggedIn === userId &&
+            !watchState.isLoggedIn
+        ) {
+            await webApiService.clearCookies();
+            loginForm.value.lastUserLoggedIn = '';
+            await configRepository.remove('lastUserLoggedIn');
+        }
         // Disable primary password when no account is available.
         if (Object.keys(savedCredentials).length === 0) {
             advancedSettingsStore.setEnablePrimaryPassword(false);
@@ -716,14 +786,16 @@ export const useAuthStore = defineStore('Auth', () => {
                                     'savedCredentials'
                                 )
                             );
-                            const saveCredential =
-                                savedCredentials[
-                                    Object.keys(savedCredentials)[0]
-                                ];
-                            await security.decrypt(
-                                saveCredential.loginParams.password,
-                                value
+                            const saveCredential = Object.values(
+                                savedCredentials
+                            ).find(
+                                (credential) => credential.loginParams.password
                             );
+                            if (saveCredential)
+                                await security.decrypt(
+                                    saveCredential.loginParams.password,
+                                    value
+                                );
                             const pwd = await security.encrypt(
                                 loginForm.value.password,
                                 value
@@ -1059,6 +1131,8 @@ export const useAuthStore = defineStore('Auth', () => {
         enablePrimaryPasswordChange,
         setPrimaryPassword,
         updateStoredUser,
+        queueSaveCredentials,
+        clearPendingCredentials,
         migrateStoredUsers,
         checkPrimaryPassword,
         autoLoginAfterMounted,

@@ -61,6 +61,7 @@ const state = vi.hoisted(() => {
         addGameLog: noop,
         resetLastMediaUrls: noop,
         clearNowPlaying: noop,
+        resetNowPlayingProducers: noop,
         addGamelogLocationToDatabase: noop
     };
     const empty = new Proxy({}, { get: () => noop });
@@ -199,7 +200,7 @@ const tag = 'wrld_a:4582~friends(usr_owner)';
 let store;
 let friend;
 function log(type, seconds, ...args) {
-    addGameLogEvent(
+    return addGameLogEvent(
         JSON.stringify([
             0,
             new Date(seconds * 1000).toISOString(),
@@ -262,27 +263,27 @@ afterEach(() => {
 });
 
 describe('real event integration', () => {
-    it('updates last seen for live physical joins, departures and world departure', () => {
-        log('player-joined', 2, 'Friend', friend.id);
+    it('updates last seen for live physical joins, departures and world departure', async () => {
+        await log('player-joined', 2, 'Friend', friend.id);
         expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
             friend.id,
             '1970-01-01T00:00:02.000Z'
         );
-        log('player-left', 3, 'Friend', friend.id);
+        await log('player-left', 3, 'Friend', friend.id);
         expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
             friend.id,
             '1970-01-01T00:00:03.000Z'
         );
-        log('player-joined', 4, 'Friend', friend.id);
-        log('location-destination', 46, 'wrld_c:12');
+        await log('player-joined', 4, 'Friend', friend.id);
+        await log('location-destination', 46, 'wrld_c:12');
         expect(state.friendStore.updateFriendLastSeen).toHaveBeenLastCalledWith(
             friend.id,
             '1970-01-01T00:00:46.000Z'
         );
     });
 
-    it('does not turn replayed game logs into a new last-seen observation', () => {
-        addGameLogEntry(
+    it('does not turn replayed game logs into a new last-seen observation', async () => {
+        await addGameLogEntry(
             {
                 type: 'player-joined',
                 dt: '1970-01-01T00:00:02.000Z',
@@ -291,33 +292,33 @@ describe('real event integration', () => {
             },
             tag
         );
-        runLastLocationResetFlow('1970-01-01T00:00:46.000Z', {
+        await runLastLocationResetFlow('1970-01-01T00:00:46.000Z', {
             capturePresence: false
         });
         expect(state.friendStore.updateFriendLastSeen).not.toHaveBeenCalled();
     });
 
-    it('snapshots a fresh physical join when we leave, before synthetic leave history', () => {
-        log('player-joined', 2, 'Friend', friend.id);
+    it('snapshots a fresh physical join when we leave, before synthetic leave history', async () => {
+        await log('player-joined', 2, 'Friend', friend.id);
         expect(store.observations.get(friend.id)?.locationTag).toBe(tag);
-        log('location-destination', 46, 'wrld_c:12');
+        await log('location-destination', 46, 'wrld_c:12');
         expect(store.observations.get(friend.id)?.observedAt).toBe(46000);
         expect(state.locationStore.lastLocation.playerList.size).toBe(0);
         expect(friend.location).toBe('private');
     });
 
-    it('actual player-left invalidates even if our list no longer contains the friend', () => {
-        log('player-joined', 2, 'Friend', friend.id);
+    it('actual player-left invalidates even if our list no longer contains the friend', async () => {
+        await log('player-joined', 2, 'Friend', friend.id);
         expect(store.observations.size).toBe(1);
         state.locationStore.lastLocation.playerList.clear();
-        log('player-left', 3, 'Friend', friend.id);
+        await log('player-left', 3, 'Friend', friend.id);
         expect(store.observations.size).toBe(0);
-        runLastLocationResetFlow(new Date(46000).toISOString());
+        await runLastLocationResetFlow(new Date(46000).toISOString());
         expect(store.observations.size).toBe(0);
     });
 
-    it('history replay does not capture observations or departure timestamps', () => {
-        addGameLogEntry(
+    it('history replay does not capture observations or departure timestamps', async () => {
+        await addGameLogEntry(
             {
                 type: 'player-joined',
                 dt: new Date(2000).toISOString(),
@@ -326,7 +327,7 @@ describe('real event integration', () => {
             },
             tag
         );
-        runLastLocationResetFlow(new Date(46000).toISOString());
+        await runLastLocationResetFlow(new Date(46000).toISOString());
         expect(store.observations.size).toBe(0);
     });
 
@@ -347,7 +348,7 @@ describe('real event integration', () => {
     it.each(['friend-active', 'friend-offline', 'friend-delete'])(
         '%s clears immediately even without a user payload',
         async (type) => {
-            log('player-joined', 2, 'Friend', friend.id);
+            await log('player-joined', 2, 'Friend', friend.id);
             expect(store.observations.size).toBe(1);
             await initWebsocket();
             state.socket.onmessage({
@@ -360,12 +361,12 @@ describe('real event integration', () => {
         }
     );
 
-    it('disabled rejects real game-log and applyUser capture paths', () => {
+    it('disabled rejects real game-log and applyUser capture paths', async () => {
         store.setEnabled(false);
-        log('player-joined', 2, 'Friend', friend.id);
+        await log('player-joined', 2, 'Friend', friend.id);
         applyUser({ id: friend.id, status: 'active', location: tag });
         applyUser({ id: friend.id, status: 'ask me', location: 'private' });
-        log('location-destination', 46, 'wrld_c:12');
+        await log('location-destination', 46, 'wrld_c:12');
         expect(store.observations.size).toBe(0);
     });
 });

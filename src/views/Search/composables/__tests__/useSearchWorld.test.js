@@ -60,7 +60,7 @@ describe('useSearchWorld', () => {
 
         expect(mocks.getWorlds).toHaveBeenCalledWith(
             {
-                n: 10,
+                n: 60,
                 offset: 0,
                 sort: 'relevance',
                 search: 'home world',
@@ -93,7 +93,7 @@ describe('useSearchWorld', () => {
         expect(api.searchWorldCategoryIndex.value).toBe(2);
         expect(mocks.getWorlds).toHaveBeenCalledWith(
             {
-                n: 10,
+                n: 60,
                 offset: 0,
                 sort: 'order',
                 featured: 'true',

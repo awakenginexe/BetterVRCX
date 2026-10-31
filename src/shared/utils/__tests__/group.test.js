@@ -1,4 +1,8 @@
-import { hasGroupModerationPermission, hasGroupPermission } from '../group';
+import {
+    hasGroupModerationPermission,
+    hasGroupPermission,
+    mergeGroupMemberSearchResults
+} from '../group';
 
 // Mock transitive deps to avoid import errors
 vi.mock('../../../views/Feed/Feed.vue', () => ({
@@ -99,4 +103,21 @@ describe('Group Utils', () => {
             expect(hasGroupModerationPermission(null)).toBe(false);
         });
     });
+});
+
+test('member search merges case-insensitive local matches without duplicating server results', () => {
+    const indexed = { userId: 'usr_1', user: { displayName: 'Jamie' } };
+    const local = { userId: 'usr_2', user: { displayName: 'Jamie Doe' } };
+    expect(
+        mergeGroupMemberSearchResults(
+            [indexed],
+            [
+                indexed,
+                local,
+                { userId: 'usr_3', user: { displayName: 'Alice' } },
+                { userId: 'usr_4' }
+            ],
+            'JAM'
+        )
+    ).toEqual([indexed, local]);
 });

@@ -1,4 +1,5 @@
 <template>
+    <PurchaseHistoryDialog :visible="purchaseHistory" @close="closeDialog('purchaseHistory')" />
     <GroupUserActionsDialog v-model:open="groupUserActions" />
     <ModerationReportsDialog v-model:open="moderationReports" />
     <InfoPushDialog :is-info-push-dialog-visible="infoPush" @close="closeDialog('infoPush')" />
@@ -19,6 +20,7 @@
 <script setup>
     import { storeToRefs } from 'pinia';
     import GroupUserActionsDialog from '../../../components/dialogs/GroupDialog/GroupUserActionsDialog.vue';
+    import PurchaseHistoryDialog from '../dialogs/PurchaseHistoryDialog.vue';
     import ModerationReportsDialog from '../../../components/dialogs/GroupDialog/ModerationReportsDialog.vue';
 
     import { useFriendStore, useToolsStore } from '../../../stores';
@@ -37,6 +39,7 @@
     const { friends } = storeToRefs(useFriendStore());
     const toolsStore = useToolsStore();
     const {
+        purchaseHistory,
         autoChangeStatus,
         infoPush,
         groupUserActions,

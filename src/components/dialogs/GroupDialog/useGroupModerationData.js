@@ -1,7 +1,7 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
-import { debounce } from '../../../shared/utils';
+import { debounce, mergeGroupMemberSearchResults } from '../../../shared/utils';
 import { queryRequest } from '../../../api';
 
 import * as workerTimers from 'worker-timers';
@@ -9,19 +9,20 @@ import * as workerTimers from 'worker-timers';
 /**
  * Composable for group moderation data fetching, member management,
  * searching, sorting and filtering.
+ *
  * @param {object} deps
- * @param {import('vue').Ref} deps.groupMemberModeration - store ref
- * @param {import('vue').Ref} deps.currentUser - store ref
- * @param {Function} deps.applyGroupMember - store action
- * @param {Function} deps.handleGroupMember - store action
- * @param {object} deps.tables - reactive table data objects
+ * @param {import('vue').Ref} deps.groupMemberModeration - Store ref
+ * @param {import('vue').Ref} deps.currentUser - Store ref
+ * @param {Function} deps.applyGroupMember - Store action
+ * @param {Function} deps.handleGroupMember - Store action
+ * @param {object} deps.tables - Reactive table data objects
  * @param {object} deps.tables.members
  * @param {object} deps.tables.bans
  * @param {object} deps.tables.invites
  * @param {object} deps.tables.joinRequests
  * @param {object} deps.tables.blocked
  * @param {object} deps.tables.logs
- * @param {object} deps.selection - from useGroupModerationSelection
+ * @param {object} deps.selection - From useGroupModerationSelection
  * @param {object} deps.selection.selectedUsers
  * @param {Function} deps.selection.setSelectedUsers
  * @param {object} deps.groupRequest - API module
@@ -60,10 +61,10 @@ export function useGroupModerationData(deps) {
 
     // ── Members ──────────────────────────────────────────────────
 
-    /**
-     *
-     */
     async function getGroupMembers() {
+        memberSearchRequestId++;
+        isGroupMembersLoading.value = false;
+        const userId = currentUser.value.id;
         members.value = [];
         isGroupMembersDone.value = false;
         loadMoreGroupMembersParams.value = {
@@ -79,12 +80,19 @@ export function useGroupModerationData(deps) {
         if (memberFilter.value.id !== null) {
             loadMoreGroupMembersParams.value.roleId = memberFilter.value.id;
         }
+        const memberParams = loadMoreGroupMembersParams.value;
         await groupRequest
             .getGroupMember({
                 groupId: groupMemberModeration.value.id,
                 userId: currentUser.value.id
             })
             .then((args) => {
+                if (
+                    memberParams.groupId !== groupMemberModeration.value.id ||
+                    memberParams !== loadMoreGroupMembersParams.value ||
+                    currentUser.value.id !== userId
+                )
+                    return args;
                 args.ref = applyGroupMember(args.json);
                 if (args.json) {
                     args.json.user = currentUser.value;
@@ -94,28 +102,48 @@ export function useGroupModerationData(deps) {
                 }
                 return args;
             });
+        if (
+            memberParams.groupId !== groupMemberModeration.value.id ||
+            memberParams !== loadMoreGroupMembersParams.value ||
+            currentUser.value.id !== userId
+        )
+            return;
         await loadMoreGroupMembers();
     }
 
     /**
-     *
+     * @param {object} [options]
+     * @param {boolean} [options.preserveSearch] - Keep the active member search when loading more members
      */
-    async function loadMoreGroupMembers() {
+    async function loadMoreGroupMembers(options = {}) {
         if (isGroupMembersDone.value || isGroupMembersLoading.value) {
             return;
         }
         const params = loadMoreGroupMembersParams.value;
+        const userId = currentUser.value.id;
         if (params.roleId === '') {
             delete params.roleId;
         }
-        memberSearch.value = '';
+        if (!options.preserveSearch) {
+            memberSearch.value = '';
+        }
         isGroupMembersLoading.value = true;
         await groupRequest
             .getGroupMembers(params)
             .finally(() => {
-                isGroupMembersLoading.value = false;
+                if (
+                    params === loadMoreGroupMembersParams.value &&
+                    currentUser.value.id === userId
+                )
+                    isGroupMembersLoading.value = false;
             })
             .then((args) => {
+                if (
+                    groupMemberModeration.value.id !== params.groupId ||
+                    currentUser.value.id !== userId ||
+                    params !== loadMoreGroupMembersParams.value
+                )
+                    return args;
                 for (const json of args.json) {
                     handleGroupMember({
                         json,
@@ -138,22 +166,27 @@ export function useGroupModerationData(deps) {
                     isGroupMembersDone.value = true;
                 }
                 members.value = [...members.value, ...args.json];
-                tables.members.data = members.value.map((member) => ({
-                    ...member,
-                    $selected: Boolean(selection.selectedUsers[member.userId])
-                }));
+                if (!options.preserveSearch) {
+                    tables.members.data = members.value.map((member) => ({
+                        ...member,
+                        $selected: Boolean(
+                            selection.selectedUsers[member.userId]
+                        )
+                    }));
+                }
                 params.offset += params.n;
                 return args;
             })
             .catch((err) => {
-                isGroupMembersDone.value = true;
+                if (
+                    params === loadMoreGroupMembersParams.value &&
+                    currentUser.value.id === userId
+                )
+                    isGroupMembersDone.value = true;
                 throw err;
             });
     }
 
-    /**
-     *
-     */
     async function loadAllGroupMembers() {
         if (isGroupMembersLoading.value) {
             return;
@@ -173,7 +206,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param sortOrder
      */
     async function setGroupMemberSortOrder(sortOrder) {
@@ -185,7 +217,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param filter
      */
     async function setGroupMemberFilter(filter) {
@@ -196,62 +227,144 @@ export function useGroupModerationData(deps) {
         await getGroupMembers();
     }
 
-    /**
-     *
-     */
+    let memberSearchRequestId = 0;
+    const groupMembersSearchDebounced = debounce(
+        groupMembersSearchRequest,
+        200
+    );
+    // shortcut: scan at most 1,000 additional members; use Load All for larger groups.
+    const groupMembersSearchMaxPages = 10;
+
+    watch(
+        [
+            () => groupMemberModeration.value.id,
+            () => groupMemberModeration.value.visible,
+            () => currentUser.value.id
+        ],
+        () => {
+            memberSearchRequestId++;
+            isGroupMembersLoading.value = false;
+        },
+        { flush: 'sync' }
+    );
+
     function groupMembersSearch() {
+        memberSearchRequestId += 1;
         if (memberSearch.value.length < 3) {
             tables.members.data = [];
             isGroupMembersLoading.value = false;
             return;
         }
-        isGroupMembersLoading.value = true;
-        debounce(groupMembersSearchDebounced, 200)();
+        groupMembersSearchDebounced();
     }
 
-    /**
-     *
-     */
-    function groupMembersSearchDebounced() {
+    async function groupMembersSearchRequest() {
         const groupId = groupMemberModeration.value.id;
         const search = memberSearch.value;
+        const requestId = memberSearchRequestId;
         tables.members.data = [];
-        if (memberSearch.value.length < 3) {
+        if (
+            !groupMemberModeration.value.visible ||
+            !search ||
+            search.length < 3
+        ) {
+            isGroupMembersLoading.value = false;
             return;
         }
         isGroupMembersLoading.value = true;
-        groupRequest
-            .getGroupMembersSearch({
+        try {
+            const args = await groupRequest.getGroupMembersSearch({
                 groupId,
                 query: search,
                 n: 100,
                 offset: 0
-            })
-            .then((args) => {
-                for (const json of args.json.results) {
-                    handleGroupMember({
-                        json,
-                        params: { groupId: args.params.groupId }
-                    });
-                }
-                if (groupId === args.params.groupId) {
-                    tables.members.data = args.json.results.map((member) => ({
-                        ...member,
-                        $selected: Boolean(
-                            selection.selectedUsers[member.userId]
-                        )
-                    }));
-                }
-            })
-            .finally(() => {
-                isGroupMembersLoading.value = false;
             });
+            if (
+                requestId !== memberSearchRequestId ||
+                !groupMemberModeration.value.visible ||
+                groupMemberModeration.value.id !== groupId ||
+                groupId !== args.params.groupId ||
+                search !== memberSearch.value
+            ) {
+                return;
+            }
+            for (const json of args.json.results) {
+                handleGroupMember({
+                    json,
+                    params: { groupId: args.params.groupId }
+                });
+            }
+            const results = mergeGroupMemberSearchResults(
+                args.json.results,
+                members.value,
+                search
+            );
+            tables.members.data = results.map((member) => ({
+                ...member,
+                $selected: Boolean(selection.selectedUsers[member.userId])
+            }));
+            await groupMembersSearchLoadRemaining(requestId, search);
+        } catch {
+            // ignore search errors, they are reported by the request layer
+        } finally {
+            if (requestId === memberSearchRequestId) {
+                isGroupMembersLoading.value = false;
+            }
+        }
+    }
+
+    async function groupMembersSearchLoadRemaining(requestId, search) {
+        const groupId = groupMemberModeration.value.id;
+        for (let page = 0; page < groupMembersSearchMaxPages; ++page) {
+            if (
+                tables.members.data.length ||
+                !groupMemberModeration.value.visible ||
+                loadMoreGroupMembersParams.value.groupId !== groupId ||
+                requestId !== memberSearchRequestId ||
+                search !== memberSearch.value ||
+                isGroupMembersDone.value
+            ) {
+                return;
+            }
+            isGroupMembersLoading.value = true;
+            await new Promise((resolve) => {
+                workerTimers.setTimeout(resolve, 1000);
+            });
+            if (
+                !groupMemberModeration.value.visible ||
+                requestId !== memberSearchRequestId ||
+                search !== memberSearch.value ||
+                isGroupMembersDone.value
+            ) {
+                return;
+            }
+            isGroupMembersLoading.value = false;
+            try {
+                await loadMoreGroupMembers({ preserveSearch: true });
+            } catch {
+                return;
+            }
+            if (
+                requestId !== memberSearchRequestId ||
+                search !== memberSearch.value
+            ) {
+                return;
+            }
+            const results = mergeGroupMemberSearchResults(
+                tables.members.data,
+                members.value,
+                search
+            );
+            tables.members.data = results.map((member) => ({
+                ...member,
+                $selected: Boolean(selection.selectedUsers[member.userId])
+            }));
+        }
     }
 
     // ── Bans ─────────────────────────────────────────────────────
 
     /**
-     *
      * @param groupId
      */
     async function getAllGroupBans(groupId) {
@@ -295,7 +408,6 @@ export function useGroupModerationData(deps) {
     // ── Invites / Join Requests / Blocked ────────────────────────
 
     /**
-     *
      * @param groupId
      */
     async function getAllGroupInvites(groupId) {
@@ -335,7 +447,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param groupId
      */
     async function getAllGroupJoinRequests(groupId) {
@@ -371,7 +482,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param groupId
      */
     async function getAllGroupBlockedRequests(groupId) {
@@ -407,7 +517,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param groupId
      */
     async function getAllGroupInvitesAndJoinRequests(groupId) {
@@ -425,7 +534,6 @@ export function useGroupModerationData(deps) {
     // ── Logs ─────────────────────────────────────────────────────
 
     /**
-     *
      * @param groupId
      * @param eventTypes
      */
@@ -475,7 +583,6 @@ export function useGroupModerationData(deps) {
     // ── User Selection ───────────────────────────────────────────
 
     /**
-     *
      * @param userId
      */
     async function addGroupMemberToSelection(userId) {
@@ -500,7 +607,6 @@ export function useGroupModerationData(deps) {
     }
 
     /**
-     *
      * @param userIdInput
      */
     async function selectGroupMemberUserId(userIdInput) {
@@ -524,10 +630,9 @@ export function useGroupModerationData(deps) {
 
     // ── Reset ────────────────────────────────────────────────────
 
-    /**
-     *
-     */
     function resetData() {
+        memberSearchRequestId++;
+        isGroupMembersLoading.value = false;
         tables.members.data = [];
         tables.bans.data = [];
         tables.invites.data = [];
