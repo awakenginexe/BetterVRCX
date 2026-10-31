@@ -454,6 +454,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
      *
      */
     async function getInventory() {
+        const session = printSession;
+        const userId = dbVars.userId;
         inventoryTable.value = [];
         advancedSettingsStore.currentUserInventory.clear();
         const params = {
@@ -468,6 +470,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
             for (let i = 0; i < 100; i++) {
                 params.offset = i * params.n;
                 const args = await inventoryRequest.getInventoryItems(params);
+                if (session !== printSession || userId !== dbVars.userId)
+                    return;
                 for (const item of args.json.data) {
                     if (item.isArchived === true) continue;
                     advancedSettingsStore.currentUserInventory.set(
@@ -481,6 +485,7 @@ export const useGalleryStore = defineStore('Gallery', () => {
                 }
             }
             const globalInventory = await inventoryRequest.getGlobalInventory();
+            if (session !== printSession || userId !== dbVars.userId) return;
             for (const item of globalInventory.json) {
                 if (item.isArchived === true) continue;
                 inventoryTable.value.push(item);
@@ -488,7 +493,8 @@ export const useGalleryStore = defineStore('Gallery', () => {
         } catch (error) {
             console.error('Error fetching inventory items:', error);
         } finally {
-            galleryDialogInventoryLoading.value = false;
+            if (session === printSession && userId === dbVars.userId)
+                galleryDialogInventoryLoading.value = false;
         }
     }
 

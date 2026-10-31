@@ -251,7 +251,7 @@
                         role="status">
                         {{
                             t('avatar_search_v2.unavailable', {
-                                providers: avatarSearchState.failedProviders.map(sourceLabel).join(' Â· ')
+                                providers: avatarSearchState.failedProviders.map(sourceLabel).join(' · ')
                             })
                         }}
                     </p>
