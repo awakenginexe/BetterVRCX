@@ -44,6 +44,59 @@ export const useGroupStore = defineStore('Group', () => {
         galleries: {}
     });
 
+    const groupEditDialog = ref({
+        visible: false,
+        loading: false,
+        roleTemplatesLoading: false,
+        mode: 'create',
+        groupId: '',
+        groupRef: {},
+        name: '',
+        shortCode: '',
+        description: '',
+        joinState: 'open',
+        privacy: 'default',
+        roleTemplate: 'default',
+        roleTemplates: [],
+        languages: [],
+        rules: '',
+        links: [],
+        bannerId: '',
+        bannerUrl: '',
+        iconId: '',
+        iconUrl: '',
+        allowGroupJoinPrompt: false
+    });
+
+    const groupEventEditDialog = ref({
+        visible: false,
+        loading: false,
+        mode: 'create',
+        groupId: '',
+        eventId: '',
+        groupRef: {},
+        startsAt: '',
+        endsAt: '',
+        title: '',
+        accessType: 'group',
+        description: '',
+        category: 'other',
+        tags: [],
+        imageId: '',
+        imageUrl: '',
+        roleIds: [],
+        parentId: null,
+        platforms: [],
+        languages: [],
+        sendCreationNotification: false,
+        hostEarlyJoinMinutes: 60,
+        guestEarlyJoinMinutes: 5,
+        closeInstanceAfterEndMinutes: 5,
+        seriesId: null,
+        recurrence: null
+    });
+    const groupEventRevision = ref(0);
+
     const currentUserGroups = reactive(new Map());
 
     const inviteGroupDialog = ref({
@@ -125,6 +178,8 @@ export const useGroupStore = defineStore('Group', () => {
         () => watchState.isLoggedIn,
         (isLoggedIn) => {
             groupDialog.value.visible = false;
+            groupEditDialog.value.visible = false;
+            groupEventEditDialog.value.visible = false;
             inviteGroupDialog.value.visible = false;
             moderateGroupDialog.value.visible = false;
             groupMemberModeration.value.visible = false;
@@ -325,8 +380,185 @@ export const useGroupStore = defineStore('Group', () => {
         groupInstances.value = value;
     }
 
+    function resetGroupEditDialog() {
+        groupEditDialog.value = {
+            visible: false,
+            loading: false,
+            roleTemplatesLoading: false,
+            mode: 'create',
+            groupId: '',
+            groupRef: {},
+            name: '',
+            shortCode: '',
+            description: '',
+            joinState: 'open',
+            privacy: 'default',
+            roleTemplate: 'default',
+            roleTemplates: [],
+            languages: [],
+            rules: '',
+            links: [],
+            bannerId: '',
+            bannerUrl: '',
+            iconId: '',
+            iconUrl: '',
+            allowGroupJoinPrompt: false
+        };
+    }
+
+    async function showCreateGroupDialog() {
+        resetGroupEditDialog();
+        const D = groupEditDialog.value;
+        D.visible = true;
+        D.roleTemplatesLoading = true;
+        try {
+            const args = await groupRequest.getRoleTemplates();
+            D.roleTemplates = Array.isArray(args.json)
+                ? args.json
+                : Object.entries(args.json ?? {}).map(([value, template]) => ({
+                      value,
+                      ...(typeof template === 'object' && template !== null
+                          ? template
+                          : {})
+                  }));
+        } finally {
+            D.roleTemplatesLoading = false;
+        }
+    }
+
+    /**
+     * @param {object} group
+     */
+    function showEditGroupDialog(group) {
+        resetGroupEditDialog();
+        groupEditDialog.value = {
+            visible: true,
+            loading: false,
+            roleTemplatesLoading: false,
+            mode: 'edit',
+            groupId: group.id,
+            groupRef: group,
+            name: group.name,
+            shortCode: group.shortCode,
+            description: group.description,
+            joinState: group.joinState ?? 'open',
+            privacy: group.privacy ?? 'default',
+            roleTemplate: group.roleTemplate ?? 'default',
+            roleTemplates: Array.isArray(group.roleTemplates)
+                ? [...group.roleTemplates]
+                : [],
+            languages: Array.isArray(group.languages)
+                ? [...group.languages]
+                : [],
+            rules: group.rules,
+            links: Array.isArray(group.links) ? [...group.links] : [],
+            bannerId: group.bannerId,
+            bannerUrl: group.bannerUrl,
+            iconId: group.iconId,
+            iconUrl: group.iconUrl,
+            allowGroupJoinPrompt: !!group.allowGroupJoinPrompt
+        };
+    }
+
+    function resetGroupEventEditDialog() {
+        const startsAt = new Date();
+        startsAt.setMinutes(0, 0, 0);
+        startsAt.setHours(startsAt.getHours() + 1);
+        const endsAt = new Date(startsAt);
+        endsAt.setHours(endsAt.getHours() + 2);
+        groupEventEditDialog.value = {
+            visible: false,
+            loading: false,
+            mode: 'create',
+            groupId: '',
+            eventId: '',
+            groupRef: {},
+            startsAt: startsAt.toISOString(),
+            endsAt: endsAt.toISOString(),
+            title: '',
+            accessType: 'group',
+            description: '',
+            category: 'other',
+            tags: [],
+            imageId: '',
+            imageUrl: '',
+            roleIds: [],
+            parentId: null,
+            platforms: [],
+            languages: [],
+            sendCreationNotification: false,
+            hostEarlyJoinMinutes: 60,
+            guestEarlyJoinMinutes: 5,
+            closeInstanceAfterEndMinutes: 5,
+            seriesId: null,
+            recurrence: null
+        };
+    }
+
+    /**
+     * @param {object} group
+     */
+    function showCreateGroupEventDialog(group) {
+        resetGroupEventEditDialog();
+        groupEventEditDialog.value = {
+            ...groupEventEditDialog.value,
+            visible: true,
+            groupId: group.id,
+            groupRef: group
+        };
+    }
+
+    /**
+     * @param {object} event
+     * @param {object} group
+     */
+    function showEditGroupEventDialog(event, group) {
+        resetGroupEventEditDialog();
+        groupEventEditDialog.value = {
+            visible: true,
+            loading: false,
+            mode: 'edit',
+            groupId: event.ownerId,
+            eventId: event.id,
+            groupRef: group,
+            startsAt: event.startsAt,
+            endsAt: event.endsAt,
+            title: event.title ?? '',
+            accessType: event.accessType ?? 'group',
+            description: event.description ?? '',
+            category: event.category ?? 'other',
+            tags: Array.isArray(event.tags) ? [...event.tags] : [],
+            imageId: event.imageId ?? '',
+            imageUrl: event.imageUrl ?? '',
+            roleIds: Array.isArray(event.roleIds) ? [...event.roleIds] : [],
+            parentId: null,
+            platforms: Array.isArray(event.platforms)
+                ? [...event.platforms]
+                : [],
+            languages: Array.isArray(event.languages)
+                ? [...event.languages]
+                : [],
+            sendCreationNotification: false,
+            hostEarlyJoinMinutes: event.hostEarlyJoinMinutes ?? 60,
+            guestEarlyJoinMinutes: event.guestEarlyJoinMinutes ?? 5,
+            closeInstanceAfterEndMinutes:
+                event.closeInstanceAfterEndMinutes ?? 5,
+            seriesId: event.seriesId,
+            recurrence: event.recurrence
+                ? JSON.parse(JSON.stringify(event.recurrence))
+                : null
+        };
+    }
+
+    function markGroupEventMutation() {
+        groupEventRevision.value++;
+    }
+
     return {
         groupDialog,
+        groupEditDialog,
+        groupEventEditDialog,
+        groupEventRevision,
         currentUserGroups,
         inviteGroupDialog,
         moderateGroupDialog,
@@ -346,6 +578,11 @@ export const useGroupStore = defineStore('Group', () => {
         setGroupMemberModerationVisible,
         setCurrentUserGroupsInit,
         setInGameGroupOrder,
-        setGroupInstances
+        setGroupInstances,
+        showCreateGroupDialog,
+        showEditGroupDialog,
+        showCreateGroupEventDialog,
+        showEditGroupEventDialog,
+        markGroupEventMutation
     };
 });

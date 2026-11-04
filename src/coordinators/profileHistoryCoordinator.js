@@ -55,11 +55,13 @@ export function recordUserProfile(profile, userId) {
                     bioLinks: snapshot.bioLinks,
                     previousBioLinks: previous.bioLinks
                 };
-                await database.addBioToDatabase(entry);
+                const persistedEntry = await database.addBioToDatabase(entry);
                 if (!isCurrent()) return;
-                useFeedStore().addFeedEntry(entry);
-                useSharedFeedStore().addEntry(entry);
-                useNotificationStore().queueFeedNoty(entry);
+                if (persistedEntry) {
+                    useFeedStore().addFeedEntry(persistedEntry);
+                    useSharedFeedStore().addEntry(persistedEntry);
+                    useNotificationStore().queueFeedNoty(persistedEntry);
+                }
             }
             await database.setUserProfile(snapshot);
         });

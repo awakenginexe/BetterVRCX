@@ -90,6 +90,22 @@ describe('useModalStore', () => {
     });
 
     describe('confirm', () => {
+        test('returns checkbox state on cancel and resets it for the next dialog', async () => {
+            const first = store.confirm({
+                title: 'Playback',
+                description: 'Fix',
+                checkboxLabel: 'Remember'
+            });
+            expect(store.alertCheckboxLabel).toBe('Remember');
+            store.alertChecked = true;
+            store.handleCancel();
+            expect(await first).toMatchObject({ ok: false, checked: true });
+            const next = store.confirm({ title: 'Next', description: 'Next' });
+            expect(store.alertCheckboxLabel).toBe('');
+            expect(store.alertChecked).toBe(false);
+            store.handleCancel();
+            await next;
+        });
         test('opens dialog and resolves ok:true on handleOk', async () => {
             const promise = store.confirm({
                 title: 'Delete?',

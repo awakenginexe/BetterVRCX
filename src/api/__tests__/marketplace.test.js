@@ -49,4 +49,15 @@ describe('marketplace API contracts', () => {
             params
         });
     });
+
+    it('binds transactions to the requested account without sending userId in the query', async () => {
+        await marketplaceRequest.getEconomyTransactions({
+            userId: 'usr_a',
+            n: 100
+        });
+        expect(request).toHaveBeenLastCalledWith(
+            'user/usr_a/economy/transactions',
+            { method: 'GET', params: { n: 100 } }
+        );
+    });
 });

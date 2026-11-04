@@ -9,6 +9,16 @@ const toolCategories = [
 
 const toolDefinitions = [
     {
+        key: 'purchase-history',
+        category: 'other',
+        iconKey: 'file-text',
+        navIcon: 'ri-history-line',
+        titleKey: 'dialog.purchase_history.header',
+        descriptionKey: 'dialog.purchase_history.description',
+        navEligible: true,
+        action: { type: 'dialog', dialogKey: 'purchase-history' }
+    },
+    {
         key: 'group-user-actions',
         category: 'group',
         iconKey: 'users',

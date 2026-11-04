@@ -54,16 +54,8 @@ describe('personal moderation reports', () => {
         expect(state.reports.value).toEqual([{ id: 'new' }]);
         expect(state.hasNext.value).toBe(false);
     });
-    test('deletes an owned report and keeps failed deletions visible', async () => {
-        const { state, api } = setup();
-        await state.load(true);
-        api.deleteModerationReport.mockRejectedValueOnce(
-            new Error('Unavailable')
-        );
-        await state.remove(state.reports.value[0]);
-        expect(state.reports.value).toHaveLength(1);
-        expect(state.error.value).toBe('Unavailable');
-        await state.remove(state.reports.value[0]);
-        expect(state.reports.value).toEqual([]);
+    test('reports are read-only because the delete endpoint is deprecated', () => {
+        const { state } = setup();
+        expect(state).not.toHaveProperty('remove');
     });
 });

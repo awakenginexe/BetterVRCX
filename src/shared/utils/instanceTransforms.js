@@ -69,6 +69,7 @@ export function createDefaultInstanceRef(json) {
         instancePersistenceEnabled: null,
         playerPersistenceEnabled: null,
         ageGate: null,
+        hypeTrain: null,
         // VRCX
         $fetchedAt: '',
         $disabledContentSettings: [],

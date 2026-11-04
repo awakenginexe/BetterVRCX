@@ -270,7 +270,8 @@ namespace VRCX
                     }
                     else
                     {
-                        if (ParseLogShaderKeywordsLimit(fileInfo, logContext, line, offset) ||
+                        if (ParseLogNowPlaying(fileInfo, logContext, line, offset) ||
+                            ParseLogShaderKeywordsLimit(fileInfo, logContext, line, offset) ||
                             ParseLogSDK2VideoPlay(fileInfo, logContext, line, offset) ||
                             ParseApplicationQuit(fileInfo, logContext, line, offset) ||
                             ParseOpenVRInit(fileInfo, logContext, line, offset) ||
@@ -637,17 +638,12 @@ namespace VRCX
             // 2024.07.31 23:04:15 Error      -  [AVProVideo] Error: Loading failed.  File not found, codec not supported, video resolution too high or insufficient system resources.
 
             // 2025.05.04 22:38:12 Error      -  Attempted to play an untrusted URL (Domain: localhost) that is not allowlisted for public instances. If this URL is needed for the world to work, the domain needs to be added to the world's Video Player Allowed Domains list on the website.
-            const string youtubeBotError = "Sign in to confirm";
-            const string youtubeBotErrorFixUrl = "[VRCX] Fix error with this: https://github.com/EllyVR/VRCVideoCacher";
 
             if (line.Contains("[Video Playback] ERROR: "))
             {
                 var data = line.Substring(offset + 24);
                 if (!logContext.VideoPlaybackErrors.Add(data))
                     return true;
-
-                if (data.Contains(youtubeBotError))
-                    data = $"{youtubeBotErrorFixUrl}\n{data}";
 
                 AppendLog(new[]
                 {
@@ -665,9 +661,6 @@ namespace VRCX
                 var data = line.Substring(offset + 20);
                 if (!logContext.VideoPlaybackErrors.Add(data))
                     return true;
-
-                if (data.Contains(youtubeBotError))
-                    data = $"{youtubeBotErrorFixUrl}\n{data}";
 
                 AppendLog(new[]
                 {
@@ -722,6 +715,32 @@ namespace VRCX
                 ConvertLogTimeToISO8601(line),
                 "vrcx",
                 data
+            });
+
+            return true;
+        }
+
+        private bool ParseLogNowPlaying(FileInfo fileInfo, LogContext logContext, string line, int offset)
+        {
+            // 2026.10.25 12:00:00 Debug      -  nowplaying {"id":"Main-1","type":"mediaPlay","mediaTime":12.5}
+            // https://protv.dev/guides/nowplaying for more information on the nowplaying log format
+
+            const string marker = "nowplaying {";
+            var markerPos = line.IndexOf(marker, offset, StringComparison.Ordinal);
+            if (markerPos < 0)
+                return false;
+
+            var jsonStart = markerPos + marker.Length - 1;
+            var jsonEnd = line.LastIndexOf('}');
+            if (jsonEnd < jsonStart)
+                return false;
+
+            AppendLog(new[]
+            {
+                fileInfo.Name,
+                ConvertLogTimeToISO8601(line),
+                "nowplaying",
+                line.Substring(jsonStart, jsonEnd - jsonStart + 1)
             });
 
             return true;

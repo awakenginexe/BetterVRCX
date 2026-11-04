@@ -2,6 +2,23 @@ import { request } from '../services/request';
 import { handleConfig } from '../coordinators/userCoordinator';
 
 const loginReq = {
+    getDeviceCode() {
+        return request('auth/device/code', { method: 'POST' }).then((json) => ({
+            json
+        }));
+    },
+
+    getDeviceStatus(params) {
+        return request('auth/device/status', { method: 'POST', params }).then(
+            (json) => ({ json, params })
+        );
+    },
+
+    resetPassword(params) {
+        return request('auth/password', { method: 'PUT', params }).then(
+            (json) => ({ json, params })
+        );
+    },
     /**
      * @param {{ code: string }} params One-time password
      * @returns {Promise<{json: any, params: { code: string }}>}

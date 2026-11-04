@@ -140,6 +140,22 @@ const instanceReq = {
                 toast.error(i18n.global.t('message.instance.not_allowed'));
                 throw err;
             });
+    },
+
+    /**
+     * Send instance announcement
+     * @type {import('../types/api/instance').InstanceAnnouncement}
+     */
+    instanceAnnouncement(params) {
+        return request(`instances/${params.location}/announce`, {
+            method: 'POST',
+            params
+        }).then((json) => {
+            return {
+                json,
+                params
+            };
+        });
     }
 };
 

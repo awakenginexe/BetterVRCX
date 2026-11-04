@@ -14,7 +14,10 @@ vi.mock('vue-router', async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useRouter: () => ({ replace: (...a) => mocks.replace(...a) })
+        useRouter: () => ({
+            replace: (...a) => mocks.replace(...a),
+            beforeEach: vi.fn(() => vi.fn())
+        })
     };
 });
 vi.mock('../../../services/watchState', () => ({
@@ -86,6 +89,28 @@ vi.mock('../../Sidebar/Sidebar.vue', () => ({
 }));
 vi.mock('../../../components/StatusBar.vue', () => ({
     default: { template: '<div />' }
+}));
+vi.mock('../../../components/dialogs/GroupDialog/GroupEditDialog.vue', () => ({
+    default: { template: '<div data-testid="global-dialog-group-edit" />' }
+}));
+vi.mock(
+    '../../../components/dialogs/GroupDialog/GroupEventEditDialog.vue',
+    () => ({
+        default: {
+            template: '<div data-testid="global-dialog-group-event-edit" />'
+        }
+    })
+);
+vi.mock(
+    '../../../components/dialogs/GroupDialog/GroupTransferDialog.vue',
+    () => ({
+        default: {
+            template: '<div data-testid="global-dialog-group-transfer" />'
+        }
+    })
+);
+vi.mock('../../../components/dialogs/FreeStoreItemDialog.vue', () => ({
+    default: { template: '<div data-testid="global-dialog-free-store-item" />' }
 }));
 vi.mock('../../../components/dialogs/MainDialogContainer.vue', () => ({
     default: { template: '<div data-testid="global-dialog-main" />' }
@@ -217,6 +242,10 @@ describe('MainLayout.vue', () => {
         const routedContent = wrapper.get('[data-shell-region="content"]');
         const expectedDialogIds = [
             'global-dialog-main',
+            'global-dialog-group-edit',
+            'global-dialog-group-event-edit',
+            'global-dialog-free-store-item',
+
             'global-dialog-invite-group',
             'global-dialog-inventory-bundle',
             'global-dialog-image-preview',
@@ -235,12 +264,12 @@ describe('MainLayout.vue', () => {
             'global-dialog-spotlight'
         ];
 
-        expect(wrapper.findAll('[data-testid^="global-dialog-"]')).toHaveLength(
-            expectedDialogIds.length
-        );
         for (const testId of expectedDialogIds) {
             const dialog = wrapper.get(`[data-testid="${testId}"]`);
             expect(routedContent.element.contains(dialog.element)).toBe(false);
         }
+        expect(wrapper.findAll('[data-testid^="global-dialog-"]')).toHaveLength(
+            expectedDialogIds.length
+        );
     });
 });

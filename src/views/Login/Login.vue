@@ -102,9 +102,16 @@
                         </label>
 
                         <Field class="mt-4">
-                            <Button type="submit" size="lg" style="width: 100%">{{ t('view.login.login') }}</Button>
+                            <Button
+                                type="submit"
+                                size="lg"
+                                style="width: 100%"
+                                :disabled="qrActive || loginForm.loading"
+                                >{{ t('view.login.login') }}</Button
+                            >
                         </Field>
                     </form>
+                    <QrLogin v-model:active="qrActive" />
                     <Button
                         variant="Secondary"
                         size="lg"
@@ -162,9 +169,7 @@
             <div class="x-legal-notice-container">
                 <div class="text-center text-xs">
                     <p>
-                        <a class="cursor-pointer" @click="openExternalLink('https://vrchat.com/home/password')">{{
-                            t('view.login.forgotPassword')
-                        }}</a>
+                        <ResetPasswordDialog />
                     </p>
                     <p>
                         &copy; 2026
@@ -209,9 +214,7 @@
     import { Checkbox } from '@/components/ui/checkbox';
     import { InputGroupField } from '@/components/ui/input-group';
     import { storeToRefs } from 'pinia';
-    import { toTypedSchema } from '@vee-validate/zod';
     import { useI18n } from 'vue-i18n';
-    import { z } from 'zod';
 
     import {
         useAppearanceSettingsStore,
@@ -229,6 +232,8 @@
     import { watchState } from '../../services/watchState';
 
     import LoginSettingsDialog from './Dialog/LoginSettingsDialog.vue';
+    import ResetPasswordDialog from './Dialog/ResetPasswordDialog.vue';
+    import QrLogin from './components/QrLogin.vue';
 
     const vrcxLogo = new URL('../../../images/BetterVRCX.png', import.meta.url).href;
     const { userImage } = useUserDisplay();
@@ -249,14 +254,11 @@
     const { t } = useI18n();
 
     const savedCredentials = ref({});
+    const qrActive = ref(false);
     const requiredMessage = 'Required';
 
-    const formSchema = toTypedSchema(
-        z.object({
-            username: z.string().min(1, requiredMessage),
-            password: z.string().min(1, requiredMessage)
-        })
-    );
+    const requiredText = (value) => (typeof value === 'string' && value.length > 0) || requiredMessage;
+    const formSchema = { username: requiredText, password: requiredText };
 
     const { handleSubmit, resetForm, values } = useForm({
         validationSchema: formSchema,
@@ -280,6 +282,7 @@
      * @param user
      */
     async function clickSavedLogin(user) {
+        if (qrActive.value || loginForm.value.loading) return;
         try {
             await relogin(user);
         } catch {
@@ -289,6 +292,7 @@
     }
 
     const onSubmit = handleSubmit(async (formValues) => {
+        if (qrActive.value || loginForm.value.loading) return;
         loginForm.value.username = formValues.username ?? '';
         loginForm.value.password = formValues.password ?? '';
         await login();

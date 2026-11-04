@@ -47,7 +47,7 @@ describe('useSearchGroup', () => {
 
         expect(mocks.replaceBioSymbols).toHaveBeenCalledWith('group+name');
         expect(mocks.groupSearch).toHaveBeenCalledWith({
-            n: 10,
+            n: 60,
             offset: 0,
             query: 'group name'
         });
@@ -60,12 +60,12 @@ describe('useSearchGroup', () => {
     it('moves backward paging offset without going below zero', async () => {
         mocks.groupSearch.mockResolvedValue({ json: [] });
         const api = useSearchGroup();
-        api.searchGroupParams.value = { n: 10, offset: 5, query: 'abc' };
+        api.searchGroupParams.value = { n: 60, offset: 5, query: 'abc' };
 
         await api.moreSearchGroup(-1);
 
         expect(mocks.groupSearch).toHaveBeenCalledWith({
-            n: 10,
+            n: 60,
             offset: 0,
             query: 'abc'
         });

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { reactive, toRefs } from 'vue';
 
 const initialDialogState = () => ({
+    purchaseHistory: false,
     groupCalendar: false,
     infoPush: false,
     groupUserActions: false,

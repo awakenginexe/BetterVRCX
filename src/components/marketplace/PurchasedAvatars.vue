@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-    import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+    import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
     import { useI18n } from 'vue-i18n';
     import { Image, RefreshCw } from 'lucide-vue-next';
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -45,12 +45,14 @@
     import marketplaceRequest from '../../api/marketplace';
     import { showAvatarDialog } from '../../coordinators/avatarCoordinator';
     import { compareByCreatedAt, compareByName, compareByUpdatedAt } from '../../shared/utils/compare';
+    import { useEconomyStore } from '../../stores/economy';
 
     const props = defineProps({
         searchQuery: { type: String, default: '' },
         sorting: { type: String, default: 'name' }
     });
     const { t } = useI18n();
+    const economy = useEconomyStore();
     const avatars = ref([]);
     const loading = ref(false);
     const error = ref(false);
@@ -95,6 +97,7 @@
     }
 
     onMounted(refresh);
+    watch(() => economy.ownershipRevision, refresh);
     onBeforeUnmount(() => {
         generation++;
     });

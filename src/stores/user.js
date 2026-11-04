@@ -309,7 +309,10 @@ export const useUserStore = defineStore('User', () => {
         backgroundType: 'default',
         backgroundTextureId: '',
         backgroundGradientBottom: '',
-        backgroundGradientTop: ''
+        backgroundGradientTop: '',
+        nameplateEffect: '',
+        profileEffect: '',
+        iconFrame: ''
     });
 
     const currentTravelers = reactive(new Map());
@@ -943,6 +946,9 @@ export const useUserStore = defineStore('User', () => {
             D.backgroundTextureId = ref.backgroundTextureId;
             D.backgroundGradientBottom = ref.backgroundGradientBottom;
             D.backgroundGradientTop = ref.backgroundGradientTop;
+            D.nameplateEffect = ref.nameplateEffect || '';
+            D.profileEffect = ref.profileEffect || '';
+            D.iconFrame = ref.iconFrame || '';
         });
 
         D.visible = true;

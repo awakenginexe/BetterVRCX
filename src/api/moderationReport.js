@@ -10,10 +10,5 @@ export default {
         return request('moderationReports', { method: 'POST', params }).then(
             (json) => ({ json, params })
         );
-    },
-    deleteModerationReport(params) {
-        return request(`moderationReports/${params.moderationReportId}`, {
-            method: 'DELETE'
-        }).then((json) => ({ json, params }));
     }
 };

@@ -11,8 +11,11 @@ const mocks = vi.hoisted(() => ({
     configGetString: vi.fn(),
     configSetString: vi.fn(),
     deletePlayerModeration: vi.fn(),
+    deletePlayerModerations: vi.fn(),
     pagination: null,
-    columnHandlers: null
+    columnHandlers: null,
+    user: require('vue').reactive({ currentUser: { id: 'usr_me' } }),
+    session: require('vue').reactive({ isLoggedIn: true })
 }));
 
 mocks.playerModerationTable = mocks.makeRef({
@@ -40,7 +43,9 @@ vi.mock('vue-i18n', () => ({
     })
 }));
 
+vi.mock('../../../services/watchState', () => ({ watchState: mocks.session }));
 vi.mock('../../../stores', () => ({
+    useUserStore: () => mocks.user,
     useModerationStore: () => ({
         playerModerationTable: mocks.playerModerationTable,
         refreshPlayerModerations: (...args) =>
@@ -69,6 +74,8 @@ vi.mock('../../../services/config.js', () => ({
 
 vi.mock('../../../api', () => ({
     playerModerationRequest: {
+        deletePlayerModerations: (...args) =>
+            mocks.deletePlayerModerations(...args),
         deletePlayerModeration: (...args) =>
             mocks.deletePlayerModeration(...args)
     }
@@ -170,6 +177,8 @@ async function flushAsync() {
 
 describe('Moderation.vue', () => {
     beforeEach(() => {
+        mocks.user.currentUser.id = 'usr_me';
+        mocks.session.isLoggedIn = true;
         mocks.playerModerationTable.value = {
             loading: false,
             data: [],
@@ -191,6 +200,64 @@ describe('Moderation.vue', () => {
             ok: true,
             id: 'pm_1'
         });
+    });
+
+    test.each(['account', 'session'])(
+        'aborts a bulk clear when the %s changes during confirmation',
+        async (change) => {
+            mocks.deletePlayerModerations.mockReset();
+            let confirm;
+            mocks.modalConfirm.mockReturnValue(
+                new Promise((resolve) => {
+                    confirm = resolve;
+                })
+            );
+            const wrapper = mountModeration();
+            const pending = wrapper.vm.clearPlayerModerationsByType('block');
+            if (change === 'account') mocks.user.currentUser.id = 'usr_other';
+            else {
+                mocks.session.isLoggedIn = false;
+                mocks.session.isLoggedIn = true;
+            }
+            confirm({ ok: true });
+            await pending;
+            expect(mocks.deletePlayerModerations).not.toHaveBeenCalled();
+        }
+    );
+    test('does not refresh another account after a pending bulk clear', async () => {
+        let finish;
+        mocks.deletePlayerModerations.mockReset().mockReturnValue(
+            new Promise((resolve) => {
+                finish = resolve;
+            })
+        );
+        const wrapper = mountModeration();
+        const pending = wrapper.vm.clearPlayerModerationsByType('mute');
+        await Promise.resolve();
+        mocks.user.currentUser.id = 'usr_other';
+        finish({});
+        await pending;
+        expect(mocks.refreshPlayerModerations).not.toHaveBeenCalled();
+    });
+
+    test('clears only the selected personal moderation type after confirmation', async () => {
+        mocks.deletePlayerModerations.mockReset().mockResolvedValue({});
+        const wrapper = mountModeration();
+        await wrapper.vm.clearPlayerModerationsByType('block');
+        expect(mocks.modalConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({ destructive: true })
+        );
+        expect(mocks.deletePlayerModerations).toHaveBeenCalledWith({
+            type: 'block'
+        });
+        expect(mocks.refreshPlayerModerations).toHaveBeenCalledTimes(1);
+    });
+    test('cancelling bulk clear makes no moderation request', async () => {
+        mocks.deletePlayerModerations.mockReset();
+        mocks.modalConfirm.mockResolvedValue({ ok: false });
+        const wrapper = mountModeration();
+        await wrapper.vm.clearPlayerModerationsByType('mute');
+        expect(mocks.deletePlayerModerations).not.toHaveBeenCalled();
     });
 
     test('loads persisted moderation filter on init', async () => {
@@ -250,7 +317,10 @@ describe('Moderation.vue', () => {
     test('refresh button triggers moderation refresh', async () => {
         const wrapper = mountModeration();
 
-        await wrapper.get('[data-testid="moderation-button"]').trigger('click');
+        await wrapper
+            .findAll('[data-testid="moderation-button"]')
+            .at(-1)
+            .trigger('click');
 
         expect(mocks.refreshPlayerModerations).toHaveBeenCalledTimes(1);
     });

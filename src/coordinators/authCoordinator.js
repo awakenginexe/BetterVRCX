@@ -24,7 +24,8 @@ export async function runLogoutFlow() {
     const notificationStore = useNotificationStore();
     const t = i18n.global.t;
 
-    if (watchState.isLoggedIn) {
+    const wasLoggedIn = watchState.isLoggedIn;
+    if (wasLoggedIn) {
         new Noty({
             type: 'success',
             text: t('message.auth.logout_greeting', {
@@ -37,14 +38,15 @@ export async function runLogoutFlow() {
     watchState.isLoggedIn = false;
     watchState.isFriendsLoaded = false;
     watchState.isFavoritesLoaded = false;
+    closeWebSocket();
     notificationStore.setNotificationInitStatus(false);
-    await authStore.updateStoredUser(userStore.currentUser);
-    webApiService.clearCookies();
+    authStore.clearPendingCredentials();
+    if (wasLoggedIn) await authStore.updateStoredUser(userStore.currentUser);
+    await webApiService.clearCookies();
     authStore.loginForm.lastUserLoggedIn = '';
     await configRepository.remove('lastUserLoggedIn');
     authStore.setAttemptingAutoLogin(false);
     authStore.autoLoginAttempts.clear();
-    closeWebSocket();
     queryClient.clear();
     clearUserDialogCaches();
 }

@@ -24,6 +24,33 @@ describe('convertFileUrlToImageUrl', () => {
         }
     );
 
+    test('upgrades an image preview URL and preserves its query', () => {
+        expect(
+            convertFileUrlToImageUrl(
+                'https://api.vrchat.cloud/api/1/image/file_abc123-def456/2/128?variant=icon',
+                10000
+            )
+        ).toBe(
+            'https://api.vrchat.cloud/api/1/image/file_abc123-def456/2/10000?variant=icon'
+        );
+    });
+    test('upgrades file URLs with a query without changing external image URLs', () => {
+        expect(
+            convertFileUrlToImageUrl(
+                'https://api.vrchat.cloud/api/1/file/file_abc123-def456/2/file?version=2',
+                10000
+            )
+        ).toBe(
+            'https://api.vrchat.cloud/api/1/image/file_abc123-def456/2/10000?version=2'
+        );
+        expect(
+            convertFileUrlToImageUrl(
+                'https://example.com/photo.png?width=128',
+                10000
+            )
+        ).toBe('https://example.com/photo.png?width=128');
+    });
+
     test('converts standard file URL to image URL', () => {
         const url =
             'https://api.vrchat.cloud/api/1/file/file_abc123-def456/1/file';

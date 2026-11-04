@@ -137,6 +137,10 @@ declare global {
     const SQLite: {
         Execute: (sql: string, args: string) => Promise<any[]>;
         ExecuteJson: (sql: string, args: string) => Promise<string>;
+        ExecuteInsert: (
+            sql: string,
+            args: Record<string, unknown> | Map<string, unknown> | null
+        ) => Promise<number>;
         ExecuteNonQuery: (sql: string, args: string) => Promise<Number>;
     };
 
@@ -224,6 +228,7 @@ declare global {
         GetColourFromUserID(userId: string): Promise<number>;
         OpenLink(url: string): Promise<void>;
         OpenDiscordProfile(discordId: string): Promise<void>;
+        OpenSteamStorePage(appId: number): Promise<void>;
         GetLaunchCommand(): Promise<string>;
         IPCAnnounceStart(): Promise<void>;
         SendIpc(type: string, data: string): Promise<void>;

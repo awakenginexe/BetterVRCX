@@ -97,6 +97,7 @@ vi.mock('../../composables/useInviteChecks', () => ({
 vi.mock('../../shared/utils', () => ({
     parseLocation: (...args) => mocks.parseLocation(...args),
     hasGroupPermission: (...args) => mocks.hasGroupPermission(...args),
+    formatSeconds: (seconds) => String(Math.floor(seconds)),
     formatDateFilter: (...args) => mocks.formatDateFilter(...args)
 }));
 
@@ -122,6 +123,13 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 vi.mock('lucide-vue-next', () => ({
+    TrainFront: { template: '<i data-testid="icon-train" />' },
+    Megaphone: { template: '<i data-testid="icon-announcement" />' },
+    PowerIcon: { template: '<i data-testid="icon-close" />' },
+    IdCard: { template: '<i />' },
+    SquareStack: { template: '<i />' },
+    UserLock: { template: '<i />' },
+    UserPlus2: { template: '<i />' },
     History: { template: '<i data-testid="icon-history" />' },
     Loader2: { template: '<i data-testid="icon-loader" />' },
     LogIn: { template: '<i data-testid="icon-login" />' },
@@ -331,9 +339,7 @@ describe('InstanceActionBar.vue', () => {
 
         const closeBtn = wrapper
             .findAll('button')
-            .find((btn) =>
-                btn.text().includes('dialog.user.info.close_instance')
-            );
+            .find((btn) => btn.find('[data-testid="icon-close"]').exists());
         expect(closeBtn).toBeTruthy();
 
         await closeBtn.trigger('click');
@@ -362,4 +368,34 @@ describe('InstanceActionBar.vue', () => {
 
         expect(wrapper.findAll('[data-testid="btn"]')).toHaveLength(0);
     });
+});
+
+it('shows the active hype train counts and updates its remaining time', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-31T12:00:00Z'));
+    const wrapper = mountBar({
+        instance: {
+            hypeTrain: {
+                current: {
+                    currentGiftCount: 1,
+                    totalGiftGoal: 10,
+                    totalGiftContributors: 2,
+                    startDate: '2026-10-31T11:59:00Z',
+                    endDate: '2026-10-31T12:01:00Z'
+                }
+            }
+        }
+    });
+    try {
+        expect(wrapper.find('[data-testid="icon-train"]').exists()).toBe(true);
+        expect(wrapper.text()).toContain('1/10');
+        expect(wrapper.vm.hypeTrainTimeRemaining).toBe('60');
+        await vi.advanceTimersByTimeAsync(10_000);
+        expect(wrapper.vm.hypeTrainTimeRemaining).toBe('50');
+        await wrapper.setProps({ instance: { hypeTrain: { current: null } } });
+        expect(wrapper.find('[data-testid="icon-train"]').exists()).toBe(false);
+    } finally {
+        wrapper.unmount();
+        vi.useRealTimers();
+    }
 });

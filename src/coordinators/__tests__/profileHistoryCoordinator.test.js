@@ -49,7 +49,10 @@ beforeEach(() => {
     mocks.database.setUserProfile.mockImplementation(async (profile) =>
         mocks.snapshots.set(profile.id, structuredClone(profile))
     );
-    mocks.database.addBioToDatabase.mockResolvedValue(undefined);
+    mocks.database.addBioToDatabase.mockImplementation(async (entry) => ({
+        ...entry,
+        rowId: 1
+    }));
 });
 
 describe('profile history', () => {

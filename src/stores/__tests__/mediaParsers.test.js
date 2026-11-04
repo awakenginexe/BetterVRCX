@@ -45,6 +45,26 @@ describe('addGameLogVideo', () => {
         parsers = createMediaParsers(deps);
     });
 
+    test('structured media without a title still works inside a legacy integration world', async () => {
+        isRpcWorld.mockReturnValue(true);
+        await parsers.addGameLogVideo(
+            {
+                dt: '2026-10-31',
+                videoUrl: 'https://example.com/movie',
+                fromNowPlaying: true,
+                mediaIdOverride: 'Main'
+            },
+            'world',
+            ''
+        );
+        expect(deps.setNowPlaying).toHaveBeenCalledWith(
+            expect.objectContaining({
+                videoId: 'Main',
+                videoUrl: 'https://example.com/movie'
+            })
+        );
+    });
+
     test('creates VideoPlay entry for a normal URL', async () => {
         const gameLog = {
             dt: '2024-01-01',

@@ -51,6 +51,20 @@
                     </Button>
                 </TooltipWrapper>
             </div>
+            <TooltipWrapper
+                v-if="instanceInfoState.canSendAnnouncement"
+                side="top"
+                :content="t('dialog.user.info.instance_announcement_tooltip')">
+                <Button
+                    class="rounded-full h-6 w-6 text-xs text-muted-foreground hover:text-foreground"
+                    :style="buttonStyle"
+                    size="icon-sm"
+                    variant="outline"
+                    :ariaLabel="t('dialog.user.info.instance_announcement_tooltip')"
+                    @click="instanceAnnouncementDialogVisible = true">
+                    <Megaphone class="h-4 w-4" />
+                </Button>
+            </TooltipWrapper>
             <TooltipWrapper v-if="showRefreshButton" side="top" :content="refreshTooltip">
                 <Button
                     class="rounded-full w-6 h-6 text-xs text-muted-foreground hover:text-foreground"
@@ -178,6 +192,32 @@
                         <UserLock class="h-4 w-4" />
                     </span>
                 </TooltipWrapper>
+                <TooltipWrapper v-if="currentHypeTrain" side="top">
+                    <template #content>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-medium">{{ t('dialog.user.info.instance_hype_train') }}</span>
+                            <span>
+                                {{ t('dialog.user.info.instance_hype_train_gifts') }}
+                                {{ currentHypeTrain.currentGiftCount }}/{{ currentHypeTrain.totalGiftGoal }}
+                            </span>
+                            <span>
+                                {{ t('dialog.user.info.instance_hype_train_contributors') }}
+                                {{ currentHypeTrain.totalGiftContributors }}
+                            </span>
+                            <span v-if="hypeTrainTimeRemaining">
+                                {{ t('dialog.user.info.instance_hype_train_time_remaining') }}
+                                {{ hypeTrainTimeRemaining }}
+                            </span>
+                            <span v-if="hypeTrainStartEpoch">
+                                {{ t('dialog.user.info.instance_hype_train_started') }}
+                                <Timer :epoch="hypeTrainStartEpoch" />
+                            </span>
+                        </div>
+                    </template>
+                    <span class="flex items-center gap-0.5">
+                        <TrainFront class="h-4 w-4" />
+                    </span>
+                </TooltipWrapper>
                 <TooltipWrapper
                     v-if="instance?.minimumAvatarPerformance && instance.minimumAvatarPerformance !== 'None'"
                     side="top"
@@ -190,6 +230,10 @@
                 </TooltipWrapper>
             </template>
         </div>
+        <InstanceAnnouncementDialog
+            v-if="instanceAnnouncementDialogVisible"
+            v-model:open="instanceAnnouncementDialogVisible"
+            :location="resolvedInstanceLocation" />
     </div>
 </template>
 
@@ -202,15 +246,18 @@
         LogIn,
         Mail,
         MapPin,
+        Megaphone,
         PowerIcon,
         RefreshCw,
         UsersRound,
         SquareStack,
         IdCard,
+        TrainFront,
         UserLock,
         UserPlus2
     } from 'lucide-vue-next';
     import { computed, reactive, ref, watch } from 'vue';
+    import { useIntervalFn } from '@vueuse/core';
     import { Button } from '@/components/ui/button';
     import { storeToRefs } from 'pinia';
     import { toast } from 'vue-sonner';
@@ -226,9 +273,10 @@
         useModalStore,
         useUserStore
     } from '../stores';
-    import { hasGroupPermission, parseLocation } from '../shared/utils';
+    import { formatSeconds, hasGroupPermission, parseLocation } from '../shared/utils';
     import { useInviteChecks } from '../composables/useInviteChecks';
     import { instanceRequest, miscRequest } from '../api';
+    import InstanceAnnouncementDialog from './dialogs/InstanceAnnouncementDialog.vue';
 
     defineOptions({
         inheritAttrs: false
@@ -349,10 +397,12 @@
     const showHistoryButton = computed(() => props.showHistory && typeof props.onHistory === 'function');
 
     const lastJoin = ref(null);
+    const instanceAnnouncementDialogVisible = ref(false);
     const showLastJoinIndicator = computed(() => props.showLastJoin && lastJoin.value);
     const hasInstanceMetadata = computed(() => {
         return !!(
-            props.instance.value?.queueSize ||
+            props.instance?.queueSize ||
+            props.instance?.hypeTrain?.current ||
             instanceInfoState.isAgeGated ||
             instanceInfoState.isRoleRestricted ||
             (props.instance.minimumAvatarPerformance && props.instance.minimumAvatarPerformance !== 'None')
@@ -368,9 +418,27 @@
     const instanceInfoState = reactive({
         isValidInstance: false,
         canCloseInstance: false,
+        canSendAnnouncement: false,
         isAgeGated: false,
         isRoleRestricted: false,
         disabledContentSettings: ''
+    });
+
+    const currentHypeTrain = computed(() => props.instance?.hypeTrain?.current ?? null);
+    const hypeTrainStartEpoch = computed(() => {
+        const startDate = currentHypeTrain.value?.startDate;
+        return startDate ? Date.parse(startDate) || 0 : 0;
+    });
+    const now = ref(Date.now());
+    const { pause: pauseNow, resume: resumeNow } = useIntervalFn(() => (now.value = Date.now()), 1000, {
+        immediate: false,
+        immediateCallback: true
+    });
+    watch(currentHypeTrain, (train) => (train ? resumeNow() : pauseNow()), { immediate: true });
+    const hypeTrainTimeRemaining = computed(() => {
+        const endEpoch = Date.parse(currentHypeTrain.value?.endDate);
+        if (!endEpoch) return '';
+        return formatSeconds(Math.max(0, (endEpoch - now.value) / 1000));
     });
 
     const handleRefresh = () => {
@@ -424,6 +492,7 @@
         Object.assign(instanceInfoState, {
             isValidInstance: false,
             canCloseInstance: false,
+            canSendAnnouncement: false,
             isAgeGated: false,
             isRoleRestricted: false,
             disabledContentSettings: ''
@@ -437,6 +506,9 @@
         } else if (props.instance.ownerId?.startsWith('grp_')) {
             const group = groupStore.cachedGroups.get(props.instance.ownerId);
             instanceInfoState.canCloseInstance = hasGroupPermission(group, 'group-instance-moderate');
+            instanceInfoState.canSendAnnouncement =
+                hasGroupPermission(group, 'group-instance-announcement-create') &&
+                resolvedInstanceLocation.value === locationStore.lastLocation.location;
         }
         instanceInfoState.isAgeGated = props.instance.ageGate === true;
         if (resolvedInstanceLocation.value?.includes('~ageGate')) instanceInfoState.isAgeGated = true;
@@ -465,7 +537,17 @@
 
     watch(() => resolvedLastJoinLocation.value, parseLastJoin, { immediate: true });
     watch(() => props.currentlocation, parseLastJoin);
-    watch([resolvedInstanceLocation, () => props.instance, () => props.friendcount], parseInstanceInfo, {
-        immediate: true
-    });
+    watch(
+        [
+            resolvedInstanceLocation,
+            () => props.instance,
+            () => props.friendcount,
+            () => locationStore.lastLocation.location,
+            () => groupStore.cachedGroups.get(props.instance?.ownerId)?.myMember?.permissions
+        ],
+        parseInstanceInfo,
+        {
+            immediate: true
+        }
+    );
 </script>

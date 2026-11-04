@@ -476,7 +476,7 @@
                                         t('view.profile.profile.vrchat_credits')
                                     }}</span>
                                     <span class="text-right text-muted-foreground">{{
-                                        vrchatCredit ?? t('view.profile.profile.refresh')
+                                        economy.balance ?? vrchatCredit ?? t('view.profile.profile.refresh')
                                     }}</span>
                                 </div>
                             </TooltipWrapper>
@@ -558,12 +558,14 @@
     import { useLastKnownPresenceStore } from '../../../addons/lastKnownPresence/store';
     import { getPresenceHints } from '../../../addons/lastKnownPresence/presentation';
     import { parseLocation } from '../../../shared/utils/locationParser';
+    import { useEconomyStore } from '../../../stores/economy';
 
     import EditNoteAndMemoDialog from './EditNoteAndMemoDialog.vue';
 
     const { t } = useI18n();
 
     const modalStore = useModalStore();
+    const economy = useEconomyStore();
     const instanceStore = useInstanceStore();
 
     const { hideUserNotes, hideUserMemos } = storeToRefs(useAppearanceSettingsStore());
@@ -608,6 +610,12 @@
 
     const isEditNoteAndMemoDialogVisible = ref(false);
     const vrchatCredit = ref(null);
+    watch(
+        () => currentUser.value.id,
+        () => {
+            vrchatCredit.value = null;
+        }
+    );
     const translateLoading = ref(false);
 
     watch(
@@ -717,7 +725,10 @@
      *
      */
     function getVRChatCredits() {
-        queryRequest.fetch('vrchatCredits').then((args) => (vrchatCredit.value = args.json?.balance));
+        const userId = currentUser.value.id;
+        queryRequest.fetch('vrchatCredits').then((args) => {
+            if (userId === currentUser.value.id) vrchatCredit.value = args.json?.balance;
+        });
     }
 
     /**

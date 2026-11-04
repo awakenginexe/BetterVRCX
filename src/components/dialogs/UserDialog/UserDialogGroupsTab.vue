@@ -276,7 +276,7 @@
                     </div>
                 </template>
                 <template v-else-if="groupSearchActive">
-                    <div class="flex flex-wrap items-start" style="margin-top: 8px; min-height: 60px">
+                    <div class="flex flex-wrap items-start" style="margin-top: 8px">
                         <UserDialogGroupCard
                             v-for="group in allFilteredGroups"
                             :key="group.id"
@@ -285,30 +285,44 @@
                     </div>
                 </template>
                 <template v-else>
-                    <template v-if="userDialog.userGroups.ownGroups.length > 0">
-                        <span class="text-base font-bold">{{ t('dialog.user.groups.own_groups') }}</span>
-                        <span class="text-xs ml-1.5"
-                            >{{ userDialog.userGroups.ownGroups.length }}/{{
-                                // @ts-ignore
-                                cachedConfig?.constants?.GROUPS?.MAX_OWNED
-                            }}</span
+                    <div class="flex justify-between align-bottom">
+                        <span class="text-base font-bold"
+                            >{{ t('dialog.user.groups.own_groups') }}
+                            <span class="text-xs ml-1.5"
+                                >{{ userDialog.userGroups.ownGroups.length }}/{{
+                                    // @ts-ignore
+                                    cachedConfig?.constants?.GROUPS?.MAX_OWNED
+                                }}</span
+                            ></span
                         >
-                        <div
-                            class="flex flex-wrap items-start"
-                            style="margin-top: 8px; margin-bottom: 16px; min-height: 60px">
-                            <UserDialogGroupCard
-                                v-for="group in userDialog.userGroups.ownGroups"
-                                :key="group.id"
-                                :group="group"
-                                :can-manage="currentUser.id === userDialog.id" />
-                        </div>
-                    </template>
+
+                        <TooltipWrapper
+                            v-if="currentUser.id === userDialog.id"
+                            :content="createGroupTooltip"
+                            side="top">
+                            <span class="ml-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    :disabled="!canCreateGroup"
+                                    @click="showCreateGroupDialog">
+                                    <Plus />
+                                    {{ t('dialog.group_edit.create') }}
+                                </Button>
+                            </span>
+                        </TooltipWrapper>
+                    </div>
+                    <div class="flex flex-wrap items-start" style="margin-top: 8px; margin-bottom: 16px">
+                        <UserDialogGroupCard
+                            v-for="group in userDialog.userGroups.ownGroups"
+                            :key="group.id"
+                            :group="group"
+                            :can-manage="currentUser.id === userDialog.id" />
+                    </div>
                     <template v-if="userDialog.userGroups.mutualGroups.length > 0">
                         <span class="text-base font-bold">{{ t('dialog.user.groups.mutual_groups') }}</span>
                         <span class="text-xs ml-1.5">{{ userDialog.userGroups.mutualGroups.length }}</span>
-                        <div
-                            class="flex flex-wrap items-start"
-                            style="margin-top: 8px; margin-bottom: 16px; min-height: 60px">
+                        <div class="flex flex-wrap items-start" style="margin-top: 8px; margin-bottom: 16px">
                             <UserDialogGroupCard
                                 v-for="group in userDialog.userGroups.mutualGroups"
                                 :key="group.id"
@@ -330,9 +344,7 @@
                                 </template>
                             </template>
                         </span>
-                        <div
-                            class="flex flex-wrap items-start"
-                            style="margin-top: 8px; margin-bottom: 16px; min-height: 60px">
+                        <div class="flex flex-wrap items-start" style="margin-top: 8px; margin-bottom: 16px">
                             <UserDialogGroupCard
                                 v-for="group in userDialog.userGroups.remainingGroups"
                                 :key="group.id"
@@ -347,7 +359,18 @@
 </template>
 
 <script setup>
-    import { ArrowDown, ArrowUp, DownloadIcon, Eye, LogOut, RefreshCw, Tag, Users } from 'lucide-vue-next';
+    import {
+        ArrowDown,
+        ArrowUp,
+        DownloadIcon,
+        Eye,
+        LogOut,
+        Plus,
+        RefreshCw,
+        Tag,
+        ToolCase,
+        Users
+    } from 'lucide-vue-next';
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
     import { computed, nextTick, ref, watch } from 'vue';
@@ -380,7 +403,9 @@
     const { t } = useI18n();
 
     const { userDialog, currentUser, isLocalUserVrcPlusSupporter } = storeToRefs(useUserStore());
-    const { currentUserGroups, inGameGroupOrder } = storeToRefs(useGroupStore());
+    const groupStore = useGroupStore();
+    const { currentUserGroups, inGameGroupOrder } = storeToRefs(groupStore);
+    const { showCreateGroupDialog } = groupStore;
     const { cachedConfig } = storeToRefs(useAuthStore());
     const { shiftHeld } = storeToRefs(useUiStore());
 
@@ -397,11 +422,31 @@
 
     const groupSearchQuery = ref('');
     const groupSearchActive = computed(() => groupSearchQuery.value.trim().length > 0);
+    const maxOwnedGroups = computed(() => Number(cachedConfig.value?.constants?.GROUPS?.MAX_OWNED ?? 5));
+    const isOwnedGroupLimitReached = computed(
+        () => userDialog.value.userGroups.ownGroups.length >= maxOwnedGroups.value
+    );
+    const canCreateGroup = computed(
+        () =>
+            currentUser.value.id === userDialog.value.id &&
+            !userDialog.value.isGroupsLoading &&
+            isLocalUserVrcPlusSupporter.value &&
+            !isOwnedGroupLimitReached.value
+    );
+    const createGroupTooltip = computed(() => {
+        if (!isLocalUserVrcPlusSupporter.value) {
+            return t('dialog.user.groups.create_requires_vrc_plus');
+        }
+        if (isOwnedGroupLimitReached.value) {
+            return t('dialog.user.groups.create_limit_reached');
+        }
+    });
     const allFilteredGroups = computed(() => {
         const query = groupSearchQuery.value.trim().toLowerCase();
         if (!query) return [];
         return userDialog.value.userGroups.groups.filter((g) => (g.name || '').toLowerCase().includes(query));
     });
+
     watch(
         () => userDialog.value.id,
         () => {

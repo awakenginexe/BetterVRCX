@@ -24,6 +24,7 @@ export const useNotificationsSettingsStore = defineStore(
         const ovrtWristNotifications = ref(false);
         const imageNotifications = ref(true);
         const inventoryBundleNotifications = ref(false);
+        const freeStoreItemNotifications = ref(false);
         const desktopToast = ref('Never');
         const afkDesktopToast = ref(false);
         const notificationTTS = ref('Never');
@@ -144,6 +145,7 @@ export const useNotificationsSettingsStore = defineStore(
                 ovrtWristNotificationsConfig,
                 imageNotificationsConfig,
                 inventoryBundleNotificationsConfig,
+                freeStoreItemNotificationsConfig,
                 desktopToastConfig,
                 afkDesktopToastConfig,
                 notificationTTSConfig,
@@ -164,6 +166,10 @@ export const useNotificationsSettingsStore = defineStore(
                 configRepository.getBool('VRCX_imageNotifications', true),
                 configRepository.getBool(
                     'VRCX_inventoryBundleNotifications',
+                    true
+                ),
+                configRepository.getBool(
+                    'VRCX_freeStoreItemNotifications',
                     true
                 ),
                 configRepository.getString('VRCX_desktopToast', 'Never'),
@@ -205,6 +211,7 @@ export const useNotificationsSettingsStore = defineStore(
             imageNotifications.value = imageNotificationsConfig;
             inventoryBundleNotifications.value =
                 inventoryBundleNotificationsConfig;
+            freeStoreItemNotifications.value = freeStoreItemNotificationsConfig;
             desktopToast.value = desktopToastConfig;
             afkDesktopToast.value = afkDesktopToastConfig;
             notificationTTS.value = notificationTTSConfig;
@@ -249,6 +256,13 @@ export const useNotificationsSettingsStore = defineStore(
             configRepository.setBool(
                 'VRCX_inventoryBundleNotifications',
                 inventoryBundleNotifications.value
+            );
+        }
+        function setFreeStoreItemNotifications(value) {
+            freeStoreItemNotifications.value = value === true;
+            configRepository.setBool(
+                'VRCX_freeStoreItemNotifications',
+                freeStoreItemNotifications.value
             );
         }
         function setOverlayNotifications() {
@@ -548,6 +562,7 @@ export const useNotificationsSettingsStore = defineStore(
             ovrtWristNotifications,
             imageNotifications,
             inventoryBundleNotifications,
+            freeStoreItemNotifications,
             desktopToast,
             afkDesktopToast,
             notificationTTS,
@@ -570,6 +585,7 @@ export const useNotificationsSettingsStore = defineStore(
             setOvrtWristNotifications,
             setImageNotifications,
             setInventoryBundleNotifications,
+            setFreeStoreItemNotifications,
             setDesktopToast,
             setAfkDesktopToast,
             setNotificationTTS,

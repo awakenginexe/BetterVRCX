@@ -1,12 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 const mocks = vi.hoisted(() => ({
     getLicensedAvatars: vi.fn(),
-    showAvatarDialog: vi.fn()
+    showAvatarDialog: vi.fn(),
+    economy: { ownershipRevision: 0 }
 }));
 vi.mock('../../../api/marketplace', () => ({
     default: { getLicensedAvatars: mocks.getLicensedAvatars }
+}));
+vi.mock('../../../stores/economy', () => ({
+    useEconomyStore: () => reactive(mocks.economy)
 }));
 vi.mock('../../../coordinators/avatarCoordinator', () => ({
     showAvatarDialog: mocks.showAvatarDialog
@@ -78,5 +83,17 @@ describe('purchased avatars', () => {
         await flushPromises();
         expect(wrapper.find('[role="alert"]').exists()).toBe(false);
         expect(wrapper.text()).toContain('profile_improvements.licensed_empty');
+    });
+
+    it('refreshes the licensed library after ownership synchronization', async () => {
+        mocks.getLicensedAvatars.mockResolvedValue({ json: [] });
+        wrapper = mount(PurchasedAvatars);
+        await flushPromises();
+        mocks.getLicensedAvatars.mockResolvedValue({
+            json: [{ id: 'avtr_new', name: 'New purchase' }]
+        });
+        reactive(mocks.economy).ownershipRevision++;
+        await flushPromises();
+        expect(wrapper.text()).toContain('New purchase');
     });
 });

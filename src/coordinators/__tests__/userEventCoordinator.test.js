@@ -6,7 +6,8 @@ const mocks = vi.hoisted(() => ({
     addEntry: vi.fn(),
     queueFeedNoty: vi.fn(),
     addAvatarToDatabase: vi.fn(),
-    friends: new Map()
+    friends: new Map(),
+    account: { id: 'usr_self' }
 }));
 
 vi.mock('../avatarCoordinator', () => ({
@@ -39,6 +40,9 @@ vi.mock('../../stores/friend', () => ({
 }));
 vi.mock('../../stores/user', () => ({
     useUserStore: () => ({
+        get currentUser() {
+            return mocks.account;
+        },
         state: { instancePlayerCount: new Map() },
         userDialog: { $location: {} },
         applyUserDialogLocation: vi.fn(),
@@ -77,6 +81,11 @@ function avatarInfo(url) {
 describe('avatar feed user updates', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.account = { id: 'usr_self' };
+        mocks.addAvatarToDatabase.mockImplementation(async (entry) => ({
+            ...entry,
+            rowId: 1
+        }));
         mocks.friends.clear();
         mocks.friends.set('usr_friend', {});
         mocks.getAvatarName.mockImplementation(async (url) => avatarInfo(url));
@@ -96,6 +105,35 @@ describe('avatar feed user updates', () => {
             currentAvatarImageUrl: 'avatar-new',
             previousCurrentAvatarImageUrl: 'avatar-old'
         });
+    });
+
+    test('ignored database inserts do not add phantom feed rows', async () => {
+        mocks.addAvatarToDatabase.mockResolvedValueOnce(undefined);
+        await runHandleUserUpdateFlow(user(), {
+            iconUrl: ['avatar-new', 'avatar-old']
+        });
+        expect(mocks.addFeedEntry).not.toHaveBeenCalled();
+        expect(mocks.addEntry).not.toHaveBeenCalled();
+        expect(mocks.queueFeedNoty).not.toHaveBeenCalled();
+    });
+
+    test('does not publish an insert that finishes after the account changes', async () => {
+        let finish;
+        mocks.addAvatarToDatabase.mockImplementationOnce(
+            (entry) =>
+                new Promise((resolve) => {
+                    finish = () => resolve({ ...entry, rowId: 42 });
+                })
+        );
+        const pending = runHandleUserUpdateFlow(user(), {
+            iconUrl: ['avatar-new', 'avatar-old']
+        });
+        await vi.waitFor(() => expect(finish).toBeTypeOf('function'));
+        mocks.account = { id: 'usr_other' };
+        finish();
+        await pending;
+        expect(mocks.addFeedEntry).not.toHaveBeenCalled();
+        expect(mocks.queueFeedNoty).not.toHaveBeenCalled();
     });
 
     test('does not call a custom profile icon an avatar', async () => {

@@ -47,12 +47,7 @@ async function uploadToVirusTotal(filePath, apiKey) {
 
     if (!apiKey) {
         console.log('[VirusTotal] No VIRUSTOTAL_API_KEY provided. Skipping remote upload.');
-        return {
-            sha256,
-            flaggedCount: 0,
-            totalEngines: 74,
-            guiUrl: `https://www.virustotal.com/gui/file/${sha256}`
-        };
+        return null;
     }
 
     const headers = { 'x-apikey': apiKey };
@@ -64,7 +59,8 @@ async function uploadToVirusTotal(filePath, apiKey) {
             const data = await checkRes.json();
             const stats = data?.data?.attributes?.last_analysis_stats || {};
             const malicious = (stats.malicious || 0) + (stats.suspicious || 0);
-            const total = (stats.harmless || 0) + (stats.undetected || 0) + (stats.malicious || 0) + (stats.suspicious || 0) || 74;
+            const total = (stats.harmless || 0) + (stats.undetected || 0) + (stats.malicious || 0) + (stats.suspicious || 0);
+            if (total <= 0) return null;
             console.log(`[VirusTotal] Found existing scan: ${malicious} flagged / ${total} engines`);
             return {
                 sha256,
@@ -118,7 +114,8 @@ async function uploadToVirusTotal(filePath, apiKey) {
                     if (status === 'completed') {
                         const stats = aData?.data?.attributes?.stats || {};
                         const malicious = (stats.malicious || 0) + (stats.suspicious || 0);
-                        const total = (stats.harmless || 0) + (stats.undetected || 0) + (stats.malicious || 0) + (stats.suspicious || 0) || 74;
+                        const total = (stats.harmless || 0) + (stats.undetected || 0) + (stats.malicious || 0) + (stats.suspicious || 0);
+                        if (total <= 0) return null;
                         console.log(`[VirusTotal] Analysis complete: ${malicious} flagged / ${total} engines`);
                         return {
                             sha256,
@@ -135,12 +132,7 @@ async function uploadToVirusTotal(filePath, apiKey) {
         console.error('[VirusTotal] Error during upload/analysis:', err.message);
     }
 
-    return {
-        sha256,
-        flaggedCount: 0,
-        totalEngines: 74,
-        guiUrl: `https://www.virustotal.com/gui/file/${sha256}`
-    };
+    return null;
 }
 
 function updateReadmeFiles(version, sha256, vtUrl) {
@@ -199,6 +191,10 @@ async function main() {
 
     const apiKey = process.env.VIRUSTOTAL_API_KEY || process.env.VT_API_KEY || '';
     const result = await uploadToVirusTotal(targetFile, apiKey);
+    if (!result) {
+        console.log('[VirusTotal] Not scanned: no verified scan result; badges and README claims unchanged.');
+        return;
+    }
 
     // Write SVG badge
     const badgeSvg = await generateSvgBadge('BetterVRCX.exe', result.flaggedCount, result.totalEngines);

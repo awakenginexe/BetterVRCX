@@ -20,7 +20,22 @@ try {
     process.exit(1);
 }
 function renameBuild(arch, platform) {
-    if (platform === 'linux') {
+    if (platform === 'win32') {
+        for (const fileName of ['BetterVRCX_Version.exe', 'VRCX_Version.exe']) {
+            const source = path.join(buildDir, fileName);
+            if (fs.existsSync(source)) {
+                fs.renameSync(
+                    source,
+                    path.join(
+                        buildDir,
+                        `BetterVRCX_${version}_Setup_${arch}.exe`
+                    )
+                );
+                return;
+            }
+        }
+        throw new Error(`Windows installer not found in ${buildDir}`);
+    } else if (platform === 'linux') {
         const candidateNames = [
             'BetterVRCX_Version.AppImage',
             'VRCX_Version.AppImage',
@@ -31,8 +46,8 @@ function renameBuild(arch, platform) {
             `BetterVRCX_${version}_${arch}.AppImage`
         );
         let found = false;
-        for (const name of candidateNames) {
-            const oldAppImage = path.join(buildDir, name);
+        for (const fileName of candidateNames) {
+            const oldAppImage = path.join(buildDir, fileName);
             if (fs.existsSync(oldAppImage)) {
                 try {
                     fs.renameSync(oldAppImage, newAppImage);
@@ -58,8 +73,8 @@ function renameBuild(arch, platform) {
         ];
         const newDmg = path.join(buildDir, `BetterVRCX_${version}_${arch}.dmg`);
         let found = false;
-        for (const name of candidateNames) {
-            const oldDmg = path.join(buildDir, name);
+        for (const fileName of candidateNames) {
+            const oldDmg = path.join(buildDir, fileName);
             if (fs.existsSync(oldDmg)) {
                 try {
                     fs.renameSync(oldDmg, newDmg);

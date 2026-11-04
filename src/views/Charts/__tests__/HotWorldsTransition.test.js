@@ -99,8 +99,11 @@ describe('Hot Worlds route transitions', () => {
         wrapper.vm.activePage = 'next';
         await nextTick();
         await flushPromises();
-        await new Promise((resolve) => setTimeout(resolve, 50));
-
-        expect(wrapper.get('[data-testid="next-page"]').exists()).toBe(true);
+        await vi.waitFor(() => {
+            expect(wrapper.find('[data-testid="next-page"]').exists()).toBe(
+                true
+            );
+        });
+        wrapper.unmount();
     });
 });

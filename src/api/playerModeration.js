@@ -1,6 +1,13 @@
 import { request } from '../services/request';
 
 const playerModerationReq = {
+    deletePlayerModerations({ type }) {
+        return request('auth/user/unplayermoderate', {
+            method: 'PUT',
+            params: { type }
+        }).then((json) => ({ json, params: { type } }));
+    },
+
     getPlayerModerations() {
         return request('auth/user/playermoderations', {
             method: 'GET'
