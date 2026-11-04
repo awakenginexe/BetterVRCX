@@ -2106,6 +2106,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "Podrobnosti o přátelích a přehlednější postranní panely.",
+                    "items": {
+                        "friend_details": {
+                            "title": "Podrobnosti při najetí myší",
+                            "description": "Najeďte na přítele a zobrazte poslední aktivitu, datum přidání, společný čas a počet připojení."
+                        },
+                        "sidebars": {
+                            "title": "Přehlednější panely",
+                            "description": "Lépe čitelné počty přátel, náhledy instancí a vybrané položky navigace."
+                        },
+                        "security": {
+                            "title": "Aktualizace zabezpečení",
+                            "description": "Aktualizované prostředí Electron a závislosti opravují známé zranitelnosti."
+                        }
+                    }
                 }
             }
         }

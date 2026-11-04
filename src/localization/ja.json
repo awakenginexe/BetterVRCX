@@ -3451,6 +3451,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "フレンドの詳細表示とサイドバーの視認性を改善。",
+                    "items": {
+                        "friend_details": {
+                            "title": "ホバーでフレンドの詳細を表示",
+                            "description": "フレンドにカーソルを合わせると、最終オンライン、フレンド登録日、一緒に過ごした時間、合流回数を確認できます。"
+                        },
+                        "sidebars": {
+                            "title": "見やすいサイドバー",
+                            "description": "フレンド数、インスタンスのプレビュー、選択中のナビゲーションを見やすくしました。"
+                        },
+                        "security": {
+                            "title": "セキュリティ更新",
+                            "description": "既知の脆弱性に対応するため、Electronとアプリの依存関係を更新しました。"
+                        }
+                    }
                 }
             }
         }

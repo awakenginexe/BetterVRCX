@@ -6,13 +6,16 @@ const workflow = readFileSync('.github/workflows/github_actions.yml', 'utf8');
 const releaseJob = workflow.slice(workflow.indexOf('\n  release:'));
 
 describe('release workflow', () => {
-    test('reserves all 4.4.0 release mutations for the approved local publisher', () => {
+    test('reserves locally published releases and notes for the local publisher', () => {
         const jobHeader = releaseJob.slice(
             0,
             releaseJob.indexOf('\n    steps:')
         );
         expect(jobHeader).toContain(
             "needs.set_version.outputs.tag != 'v4.4.0'"
+        );
+        expect(jobHeader).toContain(
+            "needs.set_version.outputs.tag != 'v4.5.0'"
         );
         expect(jobHeader).toContain('&& (');
     });

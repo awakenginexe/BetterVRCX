@@ -214,9 +214,7 @@
     import { Checkbox } from '@/components/ui/checkbox';
     import { InputGroupField } from '@/components/ui/input-group';
     import { storeToRefs } from 'pinia';
-    import { toTypedSchema } from '@vee-validate/zod';
     import { useI18n } from 'vue-i18n';
-    import { z } from 'zod';
 
     import {
         useAppearanceSettingsStore,
@@ -259,12 +257,8 @@
     const qrActive = ref(false);
     const requiredMessage = 'Required';
 
-    const formSchema = toTypedSchema(
-        z.object({
-            username: z.string().min(1, requiredMessage),
-            password: z.string().min(1, requiredMessage)
-        })
-    );
+    const requiredText = (value) => (typeof value === 'string' && value.length > 0) || requiredMessage;
+    const formSchema = { username: requiredText, password: requiredText };
 
     const { handleSubmit, resetForm, values } = useForm({
         validationSchema: formSchema,

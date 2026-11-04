@@ -2219,6 +2219,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "Сведения о друзьях и более понятные боковые панели.",
+                    "items": {
+                        "friend_details": {
+                            "title": "Сведения при наведении",
+                            "description": "Наведите курсор на друга, чтобы увидеть последнюю активность, дату добавления, время вместе и число встреч."
+                        },
+                        "sidebars": {
+                            "title": "Более понятные панели",
+                            "description": "Число друзей, превью инстансов и выбранные пункты навигации стали заметнее."
+                        },
+                        "security": {
+                            "title": "Обновления безопасности",
+                            "description": "Обновлены Electron и зависимости приложения для устранения известных уязвимостей."
+                        }
+                    }
                 }
             }
         }

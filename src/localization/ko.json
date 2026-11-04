@@ -1917,6 +1917,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "친구 상세 정보와 더 보기 쉬운 사이드바.",
+                    "items": {
+                        "friend_details": {
+                            "title": "마우스를 올려 친구 정보 확인",
+                            "description": "친구 위에 마우스를 올리면 마지막 접속, 친구가 된 날짜, 함께한 시간과 합류 횟수를 볼 수 있습니다."
+                        },
+                        "sidebars": {
+                            "title": "더 보기 쉬운 사이드바",
+                            "description": "친구 수, 인스턴스 미리 보기와 선택한 탐색 항목을 더 쉽게 확인할 수 있습니다."
+                        },
+                        "security": {
+                            "title": "보안 업데이트",
+                            "description": "알려진 취약점에 대응하도록 Electron과 앱 종속성을 업데이트했습니다."
+                        }
+                    }
                 }
             }
         }

@@ -3408,6 +3408,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "Barátadatok és átláthatóbb oldalsávok.",
+                    "items": {
+                        "friend_details": {
+                            "title": "Barátadatok rámutatáskor",
+                            "description": "Mutass egy barátra az utolsó aktivitás, a barátság kezdete, az együtt töltött idő és a találkozások megtekintéséhez."
+                        },
+                        "sidebars": {
+                            "title": "Átláthatóbb oldalsávok",
+                            "description": "Könnyebben olvasható barátszámok, példányelőnézetek és kijelölt navigációs elemek."
+                        },
+                        "security": {
+                            "title": "Biztonsági frissítések",
+                            "description": "Frissített Electron és függőségek az ismert sebezhetőségek javításához."
+                        }
+                    }
                 }
             }
         }

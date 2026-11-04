@@ -3258,6 +3258,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "Detalhes de amigos e barras laterais mais claras.",
+                    "items": {
+                        "friend_details": {
+                            "title": "Detalhes ao passar o cursor",
+                            "description": "Passe o cursor sobre um amigo para ver a última conexão, a data da amizade, o tempo juntos e os encontros."
+                        },
+                        "sidebars": {
+                            "title": "Barras laterais mais claras",
+                            "description": "Veja com mais facilidade as contagens de amigos, as prévias de instâncias e a navegação selecionada."
+                        },
+                        "security": {
+                            "title": "Atualizações de segurança",
+                            "description": "O Electron e as dependências foram atualizados para corrigir vulnerabilidades conhecidas."
+                        }
+                    }
                 }
             }
         }

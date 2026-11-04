@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n';
 import { createTestingPinia } from '@pinia/testing';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
+import { useForm } from 'vee-validate';
 
 vi.mock('../../../views/Feed/Feed.vue', () => ({
     default: { template: '<div />' }
@@ -86,7 +87,6 @@ vi.mock('vee-validate', () => ({
         values: {}
     }))
 }));
-vi.mock('@vee-validate/zod', () => ({ toTypedSchema: vi.fn((s) => s) }));
 
 import Login from '../Login.vue';
 import en from '../../../localization/en.json';
@@ -181,6 +181,29 @@ function mountLogin(storeOverrides = {}) {
 describe('Login.vue', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+    });
+
+    test('requires text credentials and preserves valid input without trimming', async () => {
+        const actual = await vi.importActual('vee-validate');
+        let form;
+        vi.mocked(useForm).mockImplementationOnce((options) => {
+            form = actual.useForm(options);
+            return form;
+        });
+        const wrapper = mountLogin();
+        expect((await form.validate()).errors).toEqual({
+            username: 'Required',
+            password: 'Required'
+        });
+        form.setValues({ username: ' Awake ', password: ' password ' });
+        expect((await form.validate()).valid).toBe(true);
+        expect(form.values).toEqual({
+            username: ' Awake ',
+            password: ' password '
+        });
+        form.setValues({ username: [], password: {} });
+        expect((await form.validate()).valid).toBe(false);
+        wrapper.unmount();
     });
 
     describe('form rendering', () => {

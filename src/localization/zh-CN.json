@@ -3454,6 +3454,24 @@
                             "description": "Recover friends and notifications after reconnecting, search larger pages, and follow structured media playback."
                         }
                     }
+                },
+                "2026_11_05": {
+                    "title": "BetterVRCX 4.5.0",
+                    "subtitle": "好友详情与更清晰的侧边栏。",
+                    "items": {
+                        "friend_details": {
+                            "title": "悬停查看好友详情",
+                            "description": "将鼠标悬停在好友上，查看最后在线时间、成为好友的日期、相处时间和加入次数。"
+                        },
+                        "sidebars": {
+                            "title": "更清晰的侧边栏",
+                            "description": "更轻松地查看好友数量、实例预览和当前选中的导航项目。"
+                        },
+                        "security": {
+                            "title": "安全更新",
+                            "description": "更新了 Electron 和应用依赖项，以修复已知漏洞。"
+                        }
+                    }
                 }
             }
         }

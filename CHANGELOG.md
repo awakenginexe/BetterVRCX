@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.5.0
+
+Hover over a friend in the sidebar to see useful details without opening their profile.
+
+- **Friend details at a glance.** See online or last-seen information, when you became friends, time spent together, and join counts recorded by BetterVRCX.
+- **Easier-to-read sidebars.** Clearer tabs and friend counts, world previews for instances, and more visible navigation and selection states in light and dark themes.
+- **Security updates.** Updated Electron and other dependencies to address known vulnerabilities.
+
+**Windows downloads:** choose the Setup file to install, or the ZIP for a portable copy. Back up your data before updating.
+
 ## 4.4.0
 
 ### Added
