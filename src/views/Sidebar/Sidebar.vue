@@ -306,11 +306,11 @@
             style="height: calc(100% - 70px); margin-top: 6px">
             <template #label-friends>
                 <span>{{ t('side_panel.friends') }}</span>
-                <span class="sidebar-tab-count"> ({{ onlineFriendCount }}/{{ friends.size }}) </span>
+                <span class="sidebar-tab-count">{{ onlineFriendCount }}/{{ friends.size }}</span>
             </template>
             <template #label-groups>
                 <span>{{ t('side_panel.groups') }}</span>
-                <span class="sidebar-tab-count"> ({{ groupInstances.length }}) </span>
+                <span class="sidebar-tab-count">{{ groupInstances.length }}</span>
             </template>
             <template #friends>
                 <div class="h-full overflow-hidden">
@@ -522,8 +522,58 @@
     }
 
     .sidebar-tab-count {
+        margin-left: 6px;
+        padding: 1px 8px;
+        border-radius: 999px;
         font-size: 12px;
-        margin-left: 8px;
+        font-weight: 600;
+        line-height: 18px;
+        font-variant-numeric: tabular-nums;
+        background: color-mix(in oklch, var(--foreground) 6%, transparent);
+        color: var(--muted-foreground);
+        transition:
+            background-color 0.2s,
+            color 0.2s;
+    }
+
+    /* Segmented pill tabs (overrides the shared underline tabs only in this rail) */
+    .bv-right-sidebar :deep([data-slot='tabs-list']) {
+        gap: 2px;
+        margin: 0 2px;
+        width: auto;
+        padding: 3px;
+        border: 1px solid color-mix(in oklch, var(--foreground) 6%, transparent);
+        border-radius: 12px;
+        background: color-mix(in oklch, var(--foreground) 3%, transparent);
+    }
+
+    .bv-right-sidebar :deep([data-slot='tabs-indicator']) {
+        top: 3px;
+        bottom: 3px;
+        height: auto;
+    }
+
+    .bv-right-sidebar :deep([data-slot='tabs-indicator'] > div) {
+        border-radius: 9px;
+        background: color-mix(in oklch, var(--foreground) 8%, transparent);
+        box-shadow:
+            inset 0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent),
+            0 1px 3px rgb(0 0 0 / 0.3);
+    }
+
+    .bv-right-sidebar :deep([data-slot='tabs-trigger']) {
+        height: 30px;
+        border-radius: 9px;
+        font-size: 13px;
+    }
+
+    .bv-right-sidebar :deep([data-slot='tabs-trigger'][data-state='active']) {
+        color: var(--foreground);
+    }
+
+    .bv-right-sidebar :deep([data-slot='tabs-trigger'][data-state='active'] .sidebar-tab-count) {
+        background: color-mix(in oklch, var(--foreground) 12%, transparent);
+        color: var(--foreground);
     }
 
     .search-container {

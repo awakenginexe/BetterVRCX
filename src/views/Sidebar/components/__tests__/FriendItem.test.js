@@ -16,7 +16,13 @@ const mocks = vi.hoisted(() => ({
         cachedNameplateEffects: require('vue').ref(new Map())
     },
     showUserDialog: vi.fn(),
-    confirmDeleteFriend: vi.fn()
+    confirmDeleteFriend: vi.fn(),
+    getUserStats: vi.fn(async () => ({
+        joinCount: 0,
+        timeSpent: 0,
+        lastSeen: ''
+    })),
+    getFriendLogHistoryForUserId: vi.fn(async () => [])
 }));
 
 vi.mock('pinia', async (importOriginal) => {
@@ -30,7 +36,31 @@ vi.mock('pinia', async (importOriginal) => {
 vi.mock('../../../../stores', () => ({
     useAppearanceSettingsStore: () => mocks.appearanceStore,
     useFriendStore: () => mocks.friendStore,
-    useUserStore: () => mocks.userStore
+    useUserStore: () => mocks.userStore,
+    useLocationStore: () => ({ lastLocation: { playerList: new Map() } })
+}));
+
+vi.mock('../../../../services/database', () => ({
+    database: {
+        getUserStats: (...args) => mocks.getUserStats(...args),
+        getFriendLogHistoryForUserId: (...args) =>
+            mocks.getFriendLogHistoryForUserId(...args)
+    }
+}));
+
+// Render the hover card inline and report it as opened on mount.
+vi.mock('@/components/ui/hover-card', () => ({
+    HoverCard: {
+        emits: ['update:open'],
+        mounted() {
+            this.$emit('update:open', true);
+        },
+        template: '<div><slot /></div>'
+    },
+    HoverCardTrigger: { template: '<div><slot /></div>' },
+    HoverCardContent: {
+        template: '<div data-testid="hover-card"><slot /></div>'
+    }
 }));
 
 vi.mock('../../../../coordinators/userCoordinator', () => ({
@@ -43,7 +73,9 @@ vi.mock('../../../../coordinators/friendRelationshipCoordinator', () => ({
 
 vi.mock('../../../../shared/utils', () => ({
     userImage: vi.fn(() => 'https://example.com/avatar.png'),
-    userStatusClass: vi.fn(() => 'status-online')
+    userStatusClass: vi.fn(() => 'status-online'),
+    timeAgo: vi.fn((value) => `ago:${value}`),
+    userOnlineForTimestamp: vi.fn(() => null)
 }));
 
 vi.mock('vue-i18n', () => ({
@@ -439,5 +471,31 @@ describe('FriendItem.vue', () => {
         expect(fetchSpy).not.toHaveBeenCalled();
         expect(mocks.showUserDialog).not.toHaveBeenCalled();
         fetchSpy.mockRestore();
+    });
+
+    test('hover card loads stats and shows the latest friended date', async () => {
+        mocks.getUserStats.mockResolvedValueOnce({
+            userId: 'usr_1',
+            joinCount: 28,
+            timeSpent: 0,
+            lastSeen: ''
+        });
+        mocks.getFriendLogHistoryForUserId.mockResolvedValueOnce([
+            { userId: 'usr_1', created_at: '2024-01-01T00:00:00Z' },
+            { userId: 'usr_1', created_at: '2025-06-01T00:00:00Z' },
+            { userId: 'usr_other', created_at: '2026-01-01T00:00:00Z' }
+        ]);
+
+        const wrapper = mountItem();
+        await new Promise((resolve) => setTimeout(resolve));
+        const card = wrapper.get('[data-testid="hover-card"]').text();
+
+        expect(mocks.getFriendLogHistoryForUserId).toHaveBeenCalledWith(
+            'usr_1',
+            ['Friend']
+        );
+        expect(card).toContain('28');
+        expect(card).toContain('ago:2025-06-01T00:00:00Z');
+        expect(card).not.toContain('2026-01-01');
     });
 });

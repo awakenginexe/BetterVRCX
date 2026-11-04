@@ -399,7 +399,7 @@ describe('FriendsSidebar.vue', () => {
 
         expect(wrapper.text()).toContain('side_panel.same_instance');
         expect(wrapper.findAll('[data-testid="friend-item"]').length).toBe(2);
-        expect(wrapper.text()).toContain('(2)');
+        expect(wrapper.get('[data-instance-count]').text()).toBe('2');
     });
 
     test('adds session-only last-seen rows only while the addon is enabled', async () => {
@@ -522,7 +522,7 @@ describe('FriendsSidebar.vue', () => {
                 .findAll('[data-testid="friend-item"]')
                 .map((row) => row.text())
         ).toEqual(['usr_a', 'usr_b', 'usr_hidden:last-seen']);
-        expect(wrapper.text()).toContain('(2)');
+        expect(wrapper.get('[data-instance-count]').text()).toBe('2');
         expect(wrapper.text()).not.toContain('(3)');
         expect(wrapper.text()).not.toContain(
             'last_known_presence.last_seen_friends'
@@ -559,7 +559,6 @@ describe('FriendsSidebar.vue', () => {
         expect(bg.attributes('style')).toContain(
             'https://example.com/sidebar-historical.png'
         );
-        expect(bg.classes()).toContain('saturate-0');
         expect(bg.classes()).toContain('group-hover:grayscale-0');
     });
 

@@ -12,18 +12,19 @@
                             :style="rowStyle(item)">
                             <template v-if="item.row.type === 'toggle-header'">
                                 <div
-                                    class="flex cursor-pointer items-center pt-4 pb-1.5 text-xs"
+                                    class="group/hdr flex cursor-pointer select-none items-center gap-2 px-1.5 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground transition-colors"
                                     :style="item.row.headerPadding ? { padding: item.row.headerPadding } : undefined"
                                     @click="item.row.onClick && item.row.onClick()">
-                                    <ChevronDown
-                                        class="transition-transform duration-200 ease-in-out"
-                                        :class="{ '-rotate-90': !item.row.expanded }" />
-                                    <span class="ml-1.5">
-                                        {{ item.row.label }}
-                                        <template v-if="item.row.count !== null && item.row.count !== undefined">
-                                            &horbar; {{ item.row.count }}
-                                        </template>
+                                    <span class="truncate">{{ item.row.label }}</span>
+                                    <span
+                                        v-if="item.row.count !== null && item.row.count !== undefined"
+                                        class="shrink-0 rounded-full bg-foreground/[0.07] px-1.5 py-px text-[10px] font-medium tabular-nums tracking-normal text-foreground/80">
+                                        {{ item.row.count }}
                                     </span>
+                                    <span class="h-px flex-1 bg-foreground/[0.06]" aria-hidden="true" />
+                                    <ChevronDown
+                                        class="size-3.5 shrink-0 opacity-60 transition-transform duration-200 ease-in-out group-hover/hdr:opacity-100"
+                                        :class="{ '-rotate-90': !item.row.expanded }" />
                                 </div>
                             </template>
 
@@ -31,7 +32,7 @@
                                 <ContextMenu>
                                     <ContextMenuTrigger as-child>
                                         <div
-                                            class="friend-row relative isolate overflow-hidden rounded-lg box-border flex items-center p-1.5 text-[13px] cursor-pointer hover:bg-muted/50"
+                                            class="friend-row relative isolate overflow-hidden rounded-xl box-border flex items-center p-2 text-[13px] cursor-pointer border border-foreground/[0.07] bg-gradient-to-br from-[var(--bv-accent-primary)]/15 via-foreground/[0.03] to-transparent hover:border-foreground/15 transition-colors"
                                             @click="showUserDialog(currentUser.id)">
                                             <NameplateEffect
                                                 variant="sidebar"
@@ -141,33 +142,34 @@
 
                             <template v-else-if="item.row.type === 'instance-group'">
                                 <div
-                                    class="relative overflow-hidden mb-2.5 p-2 rounded-xl border border-white/15 bg-black/20 group shadow-md hover:border-white/25 transition-all">
-                                    <!-- Instance World Image Background (covers entire group card) -->
-                                    <div
-                                        v-if="getInstanceWorldImage(item.row.location)"
-                                        class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity duration-300 pointer-events-none scale-105"
-                                        :style="{
-                                            backgroundImage: `url(${getInstanceWorldImage(item.row.location)})`
-                                        }" />
-                                    <div
-                                        v-if="getInstanceWorldImage(item.row.location)"
-                                        class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30 pointer-events-none" />
-
-                                    <div class="relative z-10 space-y-1">
-                                        <!-- Header with location & count -->
+                                    class="group relative overflow-hidden mb-2.5 rounded-2xl border border-foreground/[0.08] bg-foreground/[0.025] shadow-lg shadow-black/20 hover:border-foreground/15 transition-colors">
+                                    <!-- World banner -->
+                                    <div class="relative h-16 overflow-hidden">
                                         <div
-                                            class="flex items-center justify-between pb-1.5 mb-1 border-b border-white/15 px-1">
+                                            v-if="getInstanceWorldImage(item.row.location)"
+                                            class="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-500 group-hover:scale-110"
+                                            :style="{
+                                                backgroundImage: `url(${getInstanceWorldImage(item.row.location)})`
+                                            }" />
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+                                        <div
+                                            class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 px-2.5 pb-1.5">
                                             <Location
-                                                class="inline text-xs truncate max-w-[200px] drop-shadow-sm font-medium"
+                                                class="min-w-0 truncate text-[12.5px] font-semibold text-white drop-shadow"
                                                 :location="item.row.location" />
                                             <span
-                                                class="text-xs font-bold font-mono text-white/90 drop-shadow-sm shrink-0"
-                                                >({{ item.row.count }})</span
-                                            >
+                                                data-instance-count
+                                                class="shrink-0 rounded-full bg-black/50 px-2 py-0.5 text-[10.5px] font-semibold tabular-nums text-white ring-1 ring-white/15 backdrop-blur-sm">
+                                                {{ item.row.count }}
+                                            </span>
                                         </div>
+                                    </div>
+
+                                    <div class="relative z-10 space-y-1 p-1.5 pt-1">
                                         <span
                                             v-if="item.row.remembered?.length"
-                                            class="block text-xs text-muted-foreground">
+                                            class="block px-1 text-xs text-muted-foreground">
                                             ◌
                                             {{
                                                 t('last_known_presence.last_seen_count', {
@@ -237,8 +239,8 @@
 
                             <template v-else-if="item.row.type === 'last-known-group'">
                                 <div
-                                    class="relative overflow-hidden mb-2.5 p-2 rounded-xl border border-white/15 bg-black/20 group shadow-md hover:border-white/25 transition-all">
-                                    <!-- Historical World Image Background (grayscale, transitions to color on hover) -->
+                                    class="group relative overflow-hidden mb-2.5 rounded-2xl border border-dashed border-foreground/[0.1] bg-foreground/[0.015] hover:border-foreground/20 transition-colors">
+                                    <!-- Historical world banner (grayscale until hover) -->
                                     <div
                                         v-if="
                                             getInstanceWorldImage(
@@ -246,7 +248,7 @@
                                                 item.row.remembered?.[0]?.observation?.worldId
                                             )
                                         "
-                                        class="absolute inset-0 z-0 bg-cover bg-center grayscale saturate-0 opacity-65 group-hover:grayscale-0 group-hover:saturate-100 group-hover:opacity-85 transition-all duration-300 pointer-events-none scale-105"
+                                        class="absolute inset-x-0 top-0 h-16 bg-cover bg-center grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-500 pointer-events-none"
                                         :style="{
                                             backgroundImage: `url(${getInstanceWorldImage(
                                                 item.row.locationTag,
@@ -254,18 +256,12 @@
                                             )})`
                                         }" />
                                     <div
-                                        v-if="
-                                            getInstanceWorldImage(
-                                                item.row.locationTag,
-                                                item.row.remembered?.[0]?.observation?.worldId
-                                            )
-                                        "
-                                        class="absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30 pointer-events-none" />
+                                        class="absolute inset-x-0 top-0 h-16 bg-gradient-to-t from-black/70 to-black/20 pointer-events-none" />
 
-                                    <div class="relative z-10 space-y-1">
+                                    <div class="relative z-10 space-y-1 p-1.5 pt-8">
                                         <button
                                             type="button"
-                                            class="block text-xs truncate font-medium mb-1 text-left hover:underline drop-shadow-sm"
+                                            class="block w-full px-1 text-[12.5px] truncate font-semibold text-left text-white hover:underline drop-shadow"
                                             :title="t('last_known_presence.uncertain')"
                                             @click="showWorldDialog(item.row.remembered[0].observation.worldId)">
                                             ◌
@@ -275,7 +271,7 @@
                                             }}
                                             #{{ parseLocation(item.row.locationTag).instanceName }}
                                         </button>
-                                        <span class="block text-xs text-muted-foreground mb-1">
+                                        <span class="block px-1 text-[11px] text-muted-foreground mb-1">
                                             {{
                                                 t(
                                                     item.row.historicalOnly
@@ -303,25 +299,23 @@
 
                             <template v-else-if="item.row.type === 'instance-header'">
                                 <div
-                                    class="relative overflow-hidden mb-1 px-2.5 py-1.5 rounded-lg border border-white/15 flex items-center justify-between text-xs bg-black/20 group hover:border-white/25 transition-all">
-                                    <!-- Instance World Image Background -->
+                                    class="relative overflow-hidden mb-1 px-2.5 py-2 rounded-xl border border-foreground/[0.08] flex items-center justify-between text-xs bg-foreground/[0.025] group hover:border-foreground/15 transition-colors">
                                     <div
                                         v-if="getInstanceWorldImage(item.row.location)"
-                                        class="absolute inset-0 z-0 bg-cover bg-center opacity-70 group-hover:opacity-85 transition-opacity pointer-events-none scale-105"
+                                        class="absolute inset-y-0 right-0 w-2/3 z-0 bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none"
                                         :style="{
                                             backgroundImage: `url(${getInstanceWorldImage(item.row.location)})`
                                         }" />
                                     <div
-                                        v-if="getInstanceWorldImage(item.row.location)"
-                                        class="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35 pointer-events-none" />
+                                        class="absolute inset-0 z-0 bg-gradient-to-r from-[var(--bv-bg-rail)] via-[var(--bv-bg-rail)]/85 to-transparent pointer-events-none" />
 
-                                    <div class="relative z-10 flex items-center min-w-0 flex-1">
+                                    <div class="relative z-10 flex items-center gap-2 min-w-0 flex-1">
                                         <Location
-                                            class="inline text-xs truncate drop-shadow-sm font-medium"
+                                            class="min-w-0 truncate text-xs font-semibold drop-shadow-sm"
                                             :location="item.row.location" />
                                         <span
-                                            class="text-xs ml-1.5 font-bold font-mono text-white/90 drop-shadow-sm shrink-0"
-                                            >{{ `(${item.row.count})` }}</span
+                                            class="shrink-0 rounded-full bg-black/50 px-1.5 py-px text-[10px] font-semibold tabular-nums text-white ring-1 ring-white/15"
+                                            >{{ item.row.count }}</span
                                         >
                                     </div>
                                 </div>
